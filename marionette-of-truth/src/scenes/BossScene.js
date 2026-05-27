@@ -17,6 +17,7 @@ class BossScene extends Phaser.Scene {
     this.autoShootTimer = 0;
     this.bossAttackTimer = 0;
     this.bossPhase = 0;
+    this.bossLaneTimer = null;
   }
 
   create() {
@@ -40,6 +41,14 @@ class BossScene extends Phaser.Scene {
       follow: this.player, scale: { start: 0.6, end: 0 },
       alpha: { start: 0.3, end: 0 }, tint: 0x4FD1FF,
       lifespan: 250, frequency: 60, blendMode: 'ADD'
+    });
+
+    // Draw 3 lanes visually
+    const laneYs = [300, 540, 780];
+    const laneGraphics = this.add.graphics().setDepth(1);
+    laneGraphics.lineStyle(2, 0x4FD1FF, 0.25); // faint blue glow
+    laneYs.forEach(function (y) {
+      laneGraphics.lineBetween(0, y, w, y);
     });
 
     MOT.setupControls(this);
@@ -144,8 +153,45 @@ class BossScene extends Phaser.Scene {
         // Intro dialogue
         this.showDialogue(cfg.name, cfg.intro, function () {
           this.dialogActive = false;
+          this.startBossLaneMovement();
         }.bind(this));
       }.bind(this)
+    });
+  }
+
+  startBossLaneMovement() {
+    if (this.bossLaneTimer) {
+      this.bossLaneTimer.destroy();
+    }
+    this.bossLaneTimer = this.time.addEvent({
+      delay: 3000,
+      callback: function () {
+        if (this.currentBoss && this.currentBoss.active && !this.dialogActive) {
+          var laneYs = [300, 540, 780];
+          var targetY = laneYs[Phaser.Math.Between(0, 2)];
+          this.tweens.killTweensOf(this.currentBoss);
+          this.tweens.add({
+            targets: this.currentBoss,
+            y: targetY,
+            duration: 800,
+            ease: 'Cubic.easeInOut',
+            onComplete: function () {
+              if (this.currentBoss && this.currentBoss.active && !this.dialogActive) {
+                this.tweens.add({
+                  targets: this.currentBoss,
+                  y: targetY - 15,
+                  yoyo: true,
+                  repeat: -1,
+                  duration: 1000,
+                  ease: 'Sine.easeInOut'
+                });
+              }
+            }.bind(this)
+          });
+        }
+      },
+      callbackScope: this,
+      loop: true
     });
   }
 
@@ -254,6 +300,9 @@ class BossScene extends Phaser.Scene {
     if (this.bossHP <= 0 && !this.bossDefeated) {
       this.bossDefeated = true; // Prevent multiple triggers
       this.dialogActive = true;
+      if (this.bossLaneTimer) {
+        this.bossLaneTimer.destroy();
+      }
       this.enemyBullets.clear(true, true);
       this.player.setVelocity(0, 0);
       
@@ -318,6 +367,11 @@ class BossScene extends Phaser.Scene {
     });
     this.dialogContainer.add(bodyText);
 
+    var contText = this.add.text(w - 160, boxY + boxH - 30, '▼ CLICK', {
+      fontFamily: '"Press Start 2P"', fontSize: '12px', color: '#9CA3AF'
+    }).setAlpha(0);
+    this.dialogContainer.add(contText);
+
     var charIndex = 0;
     var typeTimer = this.time.addEvent({
       delay: 40, callback: function(){
@@ -326,7 +380,7 @@ class BossScene extends Phaser.Scene {
         if (text[charIndex-1] !== ' ') MOT.Audio.playBleep();
         if (charIndex >= text.length) {
           typeTimer.destroy();
-          this.dialogContainer.add(contText);
+          contText.setAlpha(1);
           this.tweens.add({ targets: contText, alpha: 0.3, yoyo: true, repeat: -1, duration: 500 });
           this.input.once('pointerdown', function(){
             if (this.dialogContainer) this.dialogContainer.destroy();

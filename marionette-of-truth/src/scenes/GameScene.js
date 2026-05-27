@@ -52,6 +52,14 @@ class GameScene extends Phaser.Scene {
       blendMode: 'ADD'
     });
 
+    // Draw 3 lanes visually
+    const laneYs = [300, 540, 780];
+    const laneGraphics = this.add.graphics().setDepth(1);
+    laneGraphics.lineStyle(2, 0x4FD1FF, 0.25); // faint blue glow
+    laneYs.forEach(y => {
+      laneGraphics.lineBetween(0, y, w, y);
+    });
+
     // Controls
     MOT.setupControls(this);
     MOT.setupTouchControls(this, this.player);
@@ -143,8 +151,32 @@ class GameScene extends Phaser.Scene {
         MOT.fireFan(this, this.minion1.x, this.minion1.y, 3, 300, 180, 40);
       }
       
-      // Floating movement
-      this.minion1.y = 540 + Math.sin(this.stageTimer / 500) * 200;
+      // Periodically move to a random lane Y
+      this.minion1.laneChangeTimer = (this.minion1.laneChangeTimer || 0) + delta;
+      if (this.minion1.laneChangeTimer >= 3000) {
+        this.minion1.laneChangeTimer = 0;
+        const laneYs = [300, 540, 780];
+        const targetY = laneYs[Phaser.Math.Between(0, 2)];
+        this.tweens.killTweensOf(this.minion1);
+        this.tweens.add({
+          targets: this.minion1,
+          y: targetY,
+          duration: 600,
+          ease: 'Cubic.easeInOut',
+          onComplete: function () {
+            if (this.minion1 && this.minion1.active) {
+              this.tweens.add({
+                targets: this.minion1,
+                y: targetY - 10,
+                yoyo: true,
+                repeat: -1,
+                duration: 1000,
+                ease: 'Sine.easeInOut'
+              });
+            }
+          }.bind(this)
+        });
+      }
     }
 
     // Process wave schedule
@@ -204,10 +236,15 @@ class GameScene extends Phaser.Scene {
           MOT.spawnWave(this, wave.count, 200, wave.speed);
           break;
         case 'items':
-          for (let i = 0; i < 3; i++) {
-            MOT.spawnEnergyItem(this, 1900 + i * 100, Phaser.Math.Between(200, 880));
+          {
+            const laneYs = [300, 540, 780];
+            for (let i = 0; i < 3; i++) {
+              const laneY = laneYs[Phaser.Math.Between(0, 2)];
+              MOT.spawnEnergyItem(this, 1900 + i * 100, laneY);
+            }
+            const healthLaneY = laneYs[Phaser.Math.Between(0, 2)];
+            MOT.spawnHealthItem(this, 1950, healthLaneY);
           }
-          MOT.spawnHealthItem(this, 1950, Phaser.Math.Between(300, 780));
           break;
         case 'minion1_encounter':
           this.triggerMinion1Encounter();

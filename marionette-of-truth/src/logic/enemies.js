@@ -30,15 +30,16 @@ MOT.spawnBasicEnemy = function (scene, x, y, texture) {
  */
 MOT.spawnWave = function (scene, count, ySpread, speed) {
   const startX = 1950;
+  const laneYs = [300, 540, 780];
   for (let i = 0; i < count; i++) {
-    const y = Phaser.Math.Between(100, 1080 - 100);
-    const enemy = scene.enemyGroup.create(startX + i * 60, y, 'enemy_basic');
+    const laneY = laneYs[Phaser.Math.Between(0, 2)];
+    const enemy = scene.enemyGroup.create(startX + i * 60, laneY, 'enemy_basic');
     enemy.setVelocityX(-(speed || 150));
     enemy.hp = 2;
-    // Sinusoidal movement
+    // Slight float wobble to keep them dynamic but restricted to their lane
     scene.tweens.add({
       targets: enemy,
-      y: enemy.y + Phaser.Math.Between(-150, 150),
+      y: laneY + Phaser.Math.Between(-10, 10),
       yoyo: true,
       repeat: -1,
       duration: Phaser.Math.Between(800, 1500),
