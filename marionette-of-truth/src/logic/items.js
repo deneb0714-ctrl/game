@@ -7,10 +7,18 @@ window.MOT = window.MOT || {};
  * Spawn an energy item at position.
  */
 MOT.spawnEnergyItem = function (scene, x, y) {
+  const isMurderous = Phaser.Math.Between(0, 100) < 8; // 8% chance for red‑black orb
   const item = scene.itemGroup.create(x, y, 'item_energy');
   item.setVelocityX(-120);
-  item.itemType = 'energy';
-  item.value = 10;
+  
+  if (isMurderous) {
+    item.itemType = 'energy_murderous';
+    item.value = 30;
+    item.setTint(0xFF0000);
+  } else {
+    item.itemType = 'energy';
+    item.value = 12; // slightly more energy for regular orb
+  }
 
   // Floating animation
   scene.tweens.add({
@@ -50,10 +58,15 @@ MOT.spawnHealthItem = function (scene, x, y) {
  * Handle item pickup.
  */
 MOT.collectItem = function (scene, player, item) {
-  if (item.itemType === 'energy') {
+  if (item.itemType === 'energy' || item.itemType === 'energy_murderous') {
     MOT.addEnergy(item.value);
-    // Visual feedback
-    MOT.showPickupText(scene, item.x, item.y, '+' + item.value + ' EN', 0x4FD1FF);
+    
+    if (item.itemType === 'energy_murderous') {
+      if (MOT.incrementMurderousOrb) MOT.incrementMurderousOrb();
+      MOT.showPickupText(scene, item.x, item.y, '+' + item.value + ' EN', 0xFF0000);
+    } else {
+      MOT.showPickupText(scene, item.x, item.y, '+' + item.value + ' EN', 0x4FD1FF);
+    }
   } else if (item.itemType === 'health') {
     MOT.flags.playerHP = Math.min(MOT.flags.playerHP + item.value, MOT.flags.playerMaxHP);
     MOT.showPickupText(scene, item.x, item.y, '+' + item.value + ' HP', 0x4FFF7F);

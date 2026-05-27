@@ -15,6 +15,7 @@ MOT.flags = {
   obeyDoctor: 0,
   showMercy: 0,
   brutality: 0,
+  murderousOrbCount: 0,
   heardDemonLord: false,
   maxEnergy: false,
   diedCount: 0,
@@ -29,6 +30,7 @@ MOT.resetFlags = function () {
   MOT.flags.obeyDoctor = 0;
   MOT.flags.showMercy = 0;
   MOT.flags.brutality = 0;
+  MOT.flags.murderousOrbCount = 0;
   MOT.flags.heardDemonLord = false;
   MOT.flags.maxEnergy = false;
   MOT.flags.diedCount = 0;
@@ -59,4 +61,8 @@ MOT.addEnergy = function (amount) {
   if (MOT.flags.energy >= MOT.flags.maxEnergyThreshold) {
     MOT.flags.maxEnergy = true;
   }
+};
+
+MOT.incrementMurderousOrb = function () {
+  MOT.flags.murderousOrbCount++;
 };

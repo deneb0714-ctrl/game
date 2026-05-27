@@ -17,6 +17,10 @@ class GameScene extends Phaser.Scene {
     this.minion1 = null;
     this.playerInvincible = false;
     this.autoShootTimer = 0;
+    this.barrierCooldown = 0;
+    this.barrierActive = false;
+    this.barrierTime = 0;
+    this.barrierVisual = null;
   }
 
   create() {
@@ -143,6 +147,22 @@ class GameScene extends Phaser.Scene {
       MOT.Audio.playShot();
     }
 
+    // Barrier Logic
+    if (this.barrierCooldown > 0) {
+      this.barrierCooldown -= delta;
+      if (this.barrierCooldown < 0) this.barrierCooldown = 0;
+    }
+
+    if (this.barrierActive) {
+      this.barrierTime += delta;
+      if (this.barrierVisual) {
+        this.barrierVisual.setPosition(this.player.x, this.player.y);
+      }
+      if (this.barrierTime >= 3000) {
+        this.deactivateBarrier();
+      }
+    }
+
     // Minion 1 Battle Logic
     if (this.minionBattleActive && this.minion1 && this.minion1.active) {
       this.minion1.fireTimer = (this.minion1.fireTimer || 0) + delta;
@@ -200,12 +220,39 @@ class GameScene extends Phaser.Scene {
     }
   }
 
+  onBarrierUse() {
+    if (this.barrierCooldown <= 0 && !this.barrierActive && !this.dialogActive) {
+      MOT.Audio.playBleep();
+      this.barrierActive = true;
+      this.barrierTime = 0;
+      this.barrierCooldown = 5000;
+      
+      this.barrierVisual = this.add.circle(this.player.x, this.player.y, 60, 0x00FFaa, 0.3);
+      this.barrierVisual.setStrokeStyle(4, 0x00FFaa, 0.8);
+      this.barrierVisual.setDepth(9);
+    }
+  }
+
+  deactivateBarrier() {
+    this.barrierActive = false;
+    if (this.barrierVisual) {
+      this.tweens.add({
+        targets: this.barrierVisual,
+        scale: 1.5,
+        alpha: 0,
+        duration: 200,
+        onComplete: () => {
+          if (this.barrierVisual) this.barrierVisual.destroy();
+          this.barrierVisual = null;
+        }
+      });
+    }
+  }
+
   onSpecialAttack() {
     if (MOT.flags.maxEnergy) {
       MOT.Audio.playSpecial();
       this.cameras.main.flash(500, 79, 209, 255);
-      
-      // Fire 36 bullets in a circle
       for (let i = 0; i < 36; i++) {
         const angle = Phaser.Math.DegToRad(i * 10);
         const bullet = this.playerBullets.create(this.player.x, this.player.y, 'bullet_player');
@@ -213,13 +260,12 @@ class GameScene extends Phaser.Scene {
           bullet.setVelocity(Math.cos(angle) * 1000, Math.sin(angle) * 1000);
           bullet.setScale(4);
           bullet.setTint(0x4FD1FF);
+          bullet.damage = 10; // 10× damage for special attack
           this.time.delayedCall(1500, function () {
             if (bullet.active) bullet.destroy();
           });
         }
       }
-      
-      // Reset energy
       MOT.flags.energy = 0;
       MOT.flags.maxEnergy = false;
     }
@@ -258,6 +304,7 @@ class GameScene extends Phaser.Scene {
 
   triggerMinion1Encounter() {
     this.dialogActive = true;
+    this.physics.pause();
     this.player.setVelocity(0, 0);
 
     // Clear all enemies and bullets
@@ -283,6 +330,7 @@ class GameScene extends Phaser.Scene {
     this.time.delayedCall(1000, function () {
       this.showDialogue('下っ端1', '「ひ、ひえぇ！博士の人形が来たぞ！\nや、やられる前にやってやる！」', function () {
         this.dialogActive = false;
+        this.physics.resume();
         this.minionBattleActive = true;
       }.bind(this));
     }, [], this);
@@ -291,6 +339,7 @@ class GameScene extends Phaser.Scene {
   onMinion1Defeated() {
     this.minionBattleActive = false;
     this.dialogActive = true;
+    this.physics.pause();
     this.player.setVelocity(0, 0);
     this.enemyBullets.clear(true, true);
     if (this.minion1) this.minion1.body.enable = false;
@@ -304,6 +353,7 @@ class GameScene extends Phaser.Scene {
           this.showDialogue('下っ端1', '「あ、ありがとう…！\n兄貴たちには弱点があるんだ。覚えておいてくれ。」', function () {
             this.tweens.add({ targets: this.minion1, alpha: 0, x: 1800, duration: 600, onComplete: function() { this.minion1.destroy(); }.bind(this)});
             this.dialogActive = false;
+            this.physics.resume();
           }.bind(this));
         }.bind(this)},
         { text: '倒す', callback: function () {
@@ -314,6 +364,7 @@ class GameScene extends Phaser.Scene {
           this.showExplosion(this.minion1.x, this.minion1.y);
           this.minion1.destroy();
           this.dialogActive = false;
+          this.physics.resume();
         }.bind(this)},
         { text: '博士の指示に従う', callback: function () {
           MOT.Audio.playSelect();
@@ -323,6 +374,7 @@ class GameScene extends Phaser.Scene {
           this.showExplosion(this.minion1.x, this.minion1.y);
           this.minion1.destroy();
           this.dialogActive = false;
+          this.physics.resume();
         }.bind(this)}
       ]);
     }.bind(this));
@@ -462,16 +514,35 @@ class GameScene extends Phaser.Scene {
         this.scene.restart({ stage: 2 });
       }, [], this);
     } else {
-      // Go to BossScene
+      // Go to boss fight after this stage
       this.cameras.main.fadeOut(800, 5, 8, 20);
       this.time.delayedCall(800, function () {
-        this.scene.start('BossScene');
+        // Pass the next boss index (stage-1) to BossScene
+        this.scene.start('BossScene', { bossIndex: this.currentStage - 1 });
       }, [], this);
     }
   }
 
   onPlayerHit(player, obj) {
     if (this.playerInvincible || this.dialogActive) return;
+
+    if (this.barrierActive) {
+      obj.destroy();
+      this.deactivateBarrier();
+      for (let i = 0; i < 8; i++) {
+        const p = this.add.circle(player.x, player.y, 4, 0x00FFaa).setDepth(20);
+        this.tweens.add({
+          targets: p,
+          x: player.x + Phaser.Math.Between(-100, 100),
+          y: player.y + Phaser.Math.Between(-100, 100),
+          alpha: 0,
+          scale: 0,
+          duration: 300,
+          onComplete: function () { p.destroy(); }
+        });
+      }
+      return;
+    }
 
     obj.destroy();
     MOT.flags.playerHP--;
@@ -503,12 +574,11 @@ class GameScene extends Phaser.Scene {
   }
 
   onEnemyHit(bullet, enemy) {
+    const dmg = bullet.damage || 1;
     bullet.destroy();
-    enemy.hp = (enemy.hp || 1) - 1;
+    enemy.hp = (enemy.hp || 1) - dmg;
     enemy.setTint(0xffffff);
-    this.time.delayedCall(50, function () {
-      if (enemy.active) enemy.clearTint();
-    });
+    this.time.delayedCall(50, function(){ if(enemy.active) enemy.clearTint(); });
 
     if (enemy.hp <= 0) {
       if (enemy === this.minion1) {
@@ -516,8 +586,8 @@ class GameScene extends Phaser.Scene {
         return;
       }
       this.showExplosion(enemy.x, enemy.y);
-      // Drop items sometimes
-      if (Phaser.Math.Between(0, 100) < 30) {
+      // Drop items sometimes (30% chance)
+      if (Phaser.Math.Between(0, 100) < 40) {
         MOT.spawnEnergyItem(this, enemy.x, enemy.y);
       }
       enemy.destroy();
@@ -546,6 +616,8 @@ class GameScene extends Phaser.Scene {
     }).setDepth(100).setScrollFactor(0);
 
     this.energyBar = this.add.graphics().setDepth(100).setScrollFactor(0);
+    this.barrierIconBg = this.add.graphics().setDepth(100).setScrollFactor(0);
+    this.barrierIconFg = this.add.graphics().setDepth(100).setScrollFactor(0);
   }
 
   updateHUD() {
@@ -568,6 +640,31 @@ class GameScene extends Phaser.Scene {
     this.energyBar.strokeRect(30, 80, 200, 16);
 
     this.energyText.setText('EN: ' + MOT.flags.energy + '/' + MOT.flags.maxEnergyThreshold);
+
+    const iconX = 260;
+    const iconY = 88;
+    const iconRadius = 12;
+
+    this.barrierIconBg.clear();
+    this.barrierIconFg.clear();
+
+    this.barrierIconBg.fillStyle(0x1F2933, 1);
+    this.barrierIconBg.fillCircle(iconX, iconY, iconRadius);
+    this.barrierIconBg.lineStyle(2, 0x334155, 1);
+    this.barrierIconBg.strokeCircle(iconX, iconY, iconRadius);
+
+    if (this.barrierCooldown <= 0) {
+      this.barrierIconFg.fillStyle(0x00FFaa, 1);
+      this.barrierIconFg.fillCircle(iconX, iconY, iconRadius - 2);
+    } else {
+      const cdPct = 1 - (this.barrierCooldown / 5000);
+      this.barrierIconFg.fillStyle(0x00FFaa, 0.4);
+      this.barrierIconFg.beginPath();
+      this.barrierIconFg.moveTo(iconX, iconY);
+      this.barrierIconFg.arc(iconX, iconY, iconRadius - 2, Phaser.Math.DegToRad(-90), Phaser.Math.DegToRad(-90 + 360 * cdPct), false);
+      this.barrierIconFg.closePath();
+      this.barrierIconFg.fillPath();
+    }
   }
 }
 

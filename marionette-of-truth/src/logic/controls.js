@@ -34,6 +34,7 @@ MOT.setupControls = function (scene) {
     right: Phaser.Input.Keyboard.KeyCodes.D
   });
   scene.enterKey = scene.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.ENTER);
+  scene.spaceKey = scene.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE);
 };
 
 MOT.handleMovement = function (scene, player) {
@@ -69,6 +70,11 @@ MOT.handleMovement = function (scene, player) {
   // Special Attack (Enter)
   if (Phaser.Input.Keyboard.JustDown(scene.enterKey)) {
     if (scene.onSpecialAttack) scene.onSpecialAttack();
+  }
+
+  // Barrier (Space)
+  if (Phaser.Input.Keyboard.JustDown(scene.spaceKey)) {
+    if (scene.onBarrierUse) scene.onBarrierUse();
   }
 };
 

@@ -18,6 +18,10 @@ class BossScene extends Phaser.Scene {
     this.bossAttackTimer = 0;
     this.bossPhase = 0;
     this.bossLaneTimer = null;
+    this.barrierCooldown = 0;
+    this.barrierActive = false;
+    this.barrierTime = 0;
+    this.barrierVisual = null;
   }
 
   create() {
@@ -46,7 +50,31 @@ class BossScene extends Phaser.Scene {
     // Draw 3 lanes visually
     const laneYs = [300, 540, 780];
     const laneGraphics = this.add.graphics().setDepth(1);
-    laneGraphics.lineStyle(2, 0x4FD1FF, 0.25); // faint blue glow
+    laneGraphics.lineStyle(2, 0x4FD1FF, 0.25);   // Adjust orb spawn probabilities: red-black (murderous) rarer (8%)
+  MOT.spawnEnergyItem = function (scene, x, y) {
+    const rand = Phaser.Math.Between(0, 100);
+    const isMurderous = rand < 8; // 8% chance
+    const item = scene.itemGroup.create(x, y, 'item_energy');
+    item.setVelocityX(-120);
+    if (isMurderous) {
+      item.itemType = 'energy_murderous';
+      item.value = 30;
+      item.setTint(0xFF0000);
+    } else {
+      item.itemType = 'energy';
+      item.value = 10;
+    }
+    // Floating animation
+    scene.tweens.add({
+      targets: item,
+      y: '-=10',
+      yoyo: true,
+      repeat: -1,
+      duration: 800,
+      ease: 'Sine.easeInOut'
+    });
+  };
+
     laneYs.forEach(function (y) {
       laneGraphics.lineBetween(0, y, w, y);
     });
@@ -140,6 +168,7 @@ class BossScene extends Phaser.Scene {
 
     // Entrance
     this.dialogActive = true;
+    this.physics.pause();
     this.cameras.main.shake(400, 0.015);
 
     this.tweens.add({
@@ -153,6 +182,7 @@ class BossScene extends Phaser.Scene {
         // Intro dialogue
         this.showDialogue(cfg.name, cfg.intro, function () {
           this.dialogActive = false;
+          this.physics.resume();
           this.startBossLaneMovement();
         }.bind(this));
       }.bind(this)
@@ -212,6 +242,22 @@ class BossScene extends Phaser.Scene {
       }
     }
 
+    // Barrier Logic
+    if (this.barrierCooldown > 0) {
+      this.barrierCooldown -= delta;
+      if (this.barrierCooldown < 0) this.barrierCooldown = 0;
+    }
+
+    if (this.barrierActive) {
+      this.barrierTime += delta;
+      if (this.barrierVisual) {
+        this.barrierVisual.setPosition(this.player.x, this.player.y);
+      }
+      if (this.barrierTime >= 3000) {
+        this.deactivateBarrier();
+      }
+    }
+
     // Boss attacks
     if (this.currentBoss && this.currentBoss.active) {
       this.bossAttackTimer += delta;
@@ -228,6 +274,35 @@ class BossScene extends Phaser.Scene {
     });
 
     this.updateHUD();
+  }
+
+  onBarrierUse() {
+    if (this.barrierCooldown <= 0 && !this.barrierActive && !this.dialogActive) {
+      MOT.Audio.playBleep();
+      this.barrierActive = true;
+      this.barrierTime = 0;
+      this.barrierCooldown = 5000;
+      
+      this.barrierVisual = this.add.circle(this.player.x, this.player.y, 60, 0x00FFaa, 0.3);
+      this.barrierVisual.setStrokeStyle(4, 0x00FFaa, 0.8);
+      this.barrierVisual.setDepth(9);
+    }
+  }
+
+  deactivateBarrier() {
+    this.barrierActive = false;
+    if (this.barrierVisual) {
+      this.tweens.add({
+        targets: this.barrierVisual,
+        scale: 1.5,
+        alpha: 0,
+        duration: 200,
+        onComplete: () => {
+          if (this.barrierVisual) this.barrierVisual.destroy();
+          this.barrierVisual = null;
+        }
+      });
+    }
   }
 
   onSpecialAttack() {
@@ -274,6 +349,25 @@ class BossScene extends Phaser.Scene {
 
   onPlayerHit(player, obj) {
     if (this.playerInvincible || this.dialogActive) return;
+
+    if (this.barrierActive) {
+      obj.destroy();
+      this.deactivateBarrier();
+      for (let i = 0; i < 8; i++) {
+        const p = this.add.circle(player.x, player.y, 4, 0x00FFaa).setDepth(20);
+        this.tweens.add({
+          targets: p,
+          x: player.x + Phaser.Math.Between(-100, 100),
+          y: player.y + Phaser.Math.Between(-100, 100),
+          alpha: 0,
+          scale: 0,
+          duration: 300,
+          onComplete: function () { p.destroy(); }
+        });
+      }
+      return;
+    }
+
     obj.destroy();
     MOT.flags.playerHP--;
     this.cameras.main.shake(150, 0.008);
@@ -291,15 +385,27 @@ class BossScene extends Phaser.Scene {
   }
 
   onBossHit(bullet, boss) {
-    bullet.destroy();
-    this.bossHP--;
-    boss.hp = this.bossHP;
-    boss.setTint(0xffffff);
-    this.time.delayedCall(50, function(){ if(boss.active) boss.clearTint(); });
+      // Apply bullet damage to boss HP
+      const dmg = bullet.damage || 1;
+      this.bossHP -= dmg;
+      boss.hp = this.bossHP;
+      // Visual feedback
+      boss.setTint(0xffffff);
+      this.time.delayedCall(50, function(){ if (boss.active) boss.clearTint(); });
+      // Drop orbs with same chance as normal enemies (now handled by spawnEnergyItem)
+      if (Phaser.Math.Between(0, 100) < 50) { // 50% chance to drop energy/orb on hit
+        MOT.spawnEnergyItem(this, boss.x, boss.y);
+      }
+      // If boss defeated, proceed as before
+      if (this.bossHP <= 0 && !this.bossDefeated) {
+        // Existing defeat handling will run after this method returns
+        // Ensure intermission does not interfere
+      }
 
     if (this.bossHP <= 0 && !this.bossDefeated) {
       this.bossDefeated = true; // Prevent multiple triggers
       this.dialogActive = true;
+      this.physics.pause();
       if (this.bossLaneTimer) {
         this.bossLaneTimer.destroy();
       }
@@ -330,9 +436,13 @@ class BossScene extends Phaser.Scene {
                   this.currentBoss = null;
                   this.currentBossIndex++;
                   this.dialogActive = false;
+                  this.physics.resume();
                   // Item drop
                   MOT.spawnHealthItem(this, 960, 540);
-                  this.time.delayedCall(1500, function(){ this.startBoss(); }, [], this);
+                // After boss defeat, start intermission before next boss
+    this.startIntermission();
+    // Delay next boss start until intermission cleared
+    // The intermission will call startBoss() when done
                 }.bind(this)
               };
             }.bind(this)));
@@ -432,6 +542,8 @@ class BossScene extends Phaser.Scene {
     this.hpText = this.add.text(30, 20, '', { fontFamily:'"Press Start 2P"', fontSize:'16px', color:'#FF4B6E' }).setDepth(100);
     this.energyText = this.add.text(30, 50, '', { fontFamily:'"Press Start 2P"', fontSize:'14px', color:'#4FD1FF' }).setDepth(100);
     this.energyBar = this.add.graphics().setDepth(100);
+    this.barrierIconBg = this.add.graphics().setDepth(100);
+    this.barrierIconFg = this.add.graphics().setDepth(100);
     this.bossHPText = this.add.text(960, 20, '', { fontFamily:'"Press Start 2P"', fontSize:'14px', color:'#FF2E2E' }).setOrigin(0.5,0).setDepth(100);
     this.bossHPBar = this.add.graphics().setDepth(100);
   }
@@ -448,6 +560,31 @@ class BossScene extends Phaser.Scene {
     this.energyBar.fillRect(32,82,196*pct,12);
     this.energyBar.lineStyle(1,0x4FD1FF,0.6); this.energyBar.strokeRect(30,80,200,16);
     this.energyText.setText('EN: '+MOT.flags.energy+'/'+MOT.flags.maxEnergyThreshold);
+
+    const iconX = 260;
+    const iconY = 88;
+    const iconRadius = 12;
+
+    this.barrierIconBg.clear();
+    this.barrierIconFg.clear();
+
+    this.barrierIconBg.fillStyle(0x1F2933, 1);
+    this.barrierIconBg.fillCircle(iconX, iconY, iconRadius);
+    this.barrierIconBg.lineStyle(2, 0x334155, 1);
+    this.barrierIconBg.strokeCircle(iconX, iconY, iconRadius);
+
+    if (this.barrierCooldown <= 0) {
+      this.barrierIconFg.fillStyle(0x00FFaa, 1);
+      this.barrierIconFg.fillCircle(iconX, iconY, iconRadius - 2);
+    } else {
+      const cdPct = 1 - (this.barrierCooldown / 5000);
+      this.barrierIconFg.fillStyle(0x00FFaa, 0.4);
+      this.barrierIconFg.beginPath();
+      this.barrierIconFg.moveTo(iconX, iconY);
+      this.barrierIconFg.arc(iconX, iconY, iconRadius - 2, Phaser.Math.DegToRad(-90), Phaser.Math.DegToRad(-90 + 360 * cdPct), false);
+      this.barrierIconFg.closePath();
+      this.barrierIconFg.fillPath();
+    }
 
     // Boss HP
     this.bossHPBar.clear();
