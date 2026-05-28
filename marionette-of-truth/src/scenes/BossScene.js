@@ -385,21 +385,34 @@ class BossScene extends Phaser.Scene {
   }
 
   onBossHit(bullet, boss) {
-      // Apply bullet damage to boss HP
+      bullet.destroy(); // 弾を消す
       const dmg = bullet.damage || 1;
+
+      // ── 幕間中の雑魚敵の場合 ──────────────────────────────────────
+      if (boss.isIntermissionEnemy) {
+        boss.hp = (boss.hp || 3) - dmg;
+        boss.setTint(0xffffff);
+        this.time.delayedCall(50, function(){ if (boss.active) boss.clearTint(); });
+        if (boss.hp <= 0) {
+          this.showExplosion(boss.x, boss.y);
+          if (Phaser.Math.Between(0, 100) < 40) MOT.spawnEnergyItem(this, boss.x, boss.y);
+          boss.destroy();
+          // 全体が倒されたら幕間終了
+          this.intermissionKills = (this.intermissionKills || 0) + 1;
+          if (this.intermissionKills >= this.intermissionTotal) {
+            this.endIntermission();
+          }
+        }
+        return;
+      }
+
+      // ── ボス敵への処理 ────────────────────────────────────────────
       this.bossHP -= dmg;
       boss.hp = this.bossHP;
-      // Visual feedback
       boss.setTint(0xffffff);
       this.time.delayedCall(50, function(){ if (boss.active) boss.clearTint(); });
-      // Drop orbs with same chance as normal enemies (now handled by spawnEnergyItem)
-      if (Phaser.Math.Between(0, 100) < 50) { // 50% chance to drop energy/orb on hit
+      if (Phaser.Math.Between(0, 100) < 50) {
         MOT.spawnEnergyItem(this, boss.x, boss.y);
-      }
-      // If boss defeated, proceed as before
-      if (this.bossHP <= 0 && !this.bossDefeated) {
-        // Existing defeat handling will run after this method returns
-        // Ensure intermission does not interfere
       }
 
     if (this.bossHP <= 0 && !this.bossDefeated) {
@@ -439,10 +452,12 @@ class BossScene extends Phaser.Scene {
                   this.physics.resume();
                   // Item drop
                   MOT.spawnHealthItem(this, 960, 540);
-                // After boss defeat, start intermission before next boss
-    this.startIntermission();
-    // Delay next boss start until intermission cleared
-    // The intermission will call startBoss() when done
+                  // 次のボスが残っている場合は幕間（雑魚ウェーブ）を挟む
+                  if (this.currentBossIndex < this.bossQueue.length) {
+                    this.startIntermission();
+                  } else {
+                    this.time.delayedCall(1500, function(){ this.startBoss(); }, [], this);
+                  }
                 }.bind(this)
               };
             }.bind(this)));
@@ -450,6 +465,79 @@ class BossScene extends Phaser.Scene {
         }.bind(this)
       });
     }
+  }
+
+  // ─── 幕間ウェーブ：ボスとボスの間に雑魚敵を出す ───────────────────
+  startIntermission() {
+    this.intermissionActive = true;
+    var self = this;
+    var w = 1920, h = 1080;
+
+    // 「次の敵が来るぞ」テキストを一瞬表示
+    var warnText = this.add.text(w / 2, h / 2 - 100,
+      '── 次の幹部が迫っている！ ──',
+      { fontFamily: '"DotGothic16"', fontSize: '28px', color: '#FF4B6E' }
+    ).setOrigin(0.5).setDepth(110).setAlpha(0);
+    this.tweens.add({ targets: warnText, alpha: 1, duration: 400,
+      onComplete: function() {
+        self.tweens.add({ targets: warnText, alpha: 0, duration: 400, delay: 1500,
+          onComplete: function() { warnText.destroy(); }
+        });
+      }
+    });
+
+    // 幕間カウンター（雑魚の残数を管理）
+    this.intermissionKills = 0;
+    this.intermissionTotal = 5; // 雑魚5体
+
+    // 1.5秒後に雑魚スポーン開始
+    this.time.delayedCall(1500, function() {
+      var laneYs = [300, 540, 780];
+      for (var i = 0; i < self.intermissionTotal; i++) {
+        self.time.delayedCall(i * 600, function() {
+          if (!self.intermissionActive) return;
+          var laneY = laneYs[Phaser.Math.Between(0, 2)];
+          var e = self.enemyGroup.create(w + 50, laneY, 'enemy_basic');
+          e.setVelocityX(-200);
+          e.hp = 3;
+          e.isIntermissionEnemy = true;
+          // 左右にふわふわ動く
+          self.tweens.add({
+            targets: e, y: laneY + Phaser.Math.Between(-40, 40),
+            yoyo: true, repeat: -1, duration: 900, ease: 'Sine.easeInOut'
+          });
+          // 周期的に弾を撃つ
+          e.fireTimer = self.time.addEvent({
+            delay: Phaser.Math.Between(1000, 1800),
+            callback: function() { if (e.active) MOT.fireLinear(self, e.x, e.y, -320, 0); },
+            loop: true
+          });
+          e.on('destroy', function() { if (e.fireTimer) e.fireTimer.destroy(); });
+        });
+      }
+
+      // タイムアウト保険：12秒後に残っていても次へ進む
+      self.intermissionTimeout = self.time.delayedCall(12000, function() {
+        self.endIntermission();
+      });
+    });
+  }
+
+  // 幕間クリア（全滅 or タイムアウト）→ 次のボスへ
+  endIntermission() {
+    if (!this.intermissionActive) return;
+    this.intermissionActive = false;
+    if (this.intermissionTimeout) {
+      this.intermissionTimeout.destroy();
+      this.intermissionTimeout = null;
+    }
+    // 残っている雑魚をすべて破棄
+    this.enemyGroup.getChildren().slice().forEach(function(e) {
+      if (e.isIntermissionEnemy && e.active) e.destroy();
+    });
+    this.enemyBullets.clear(true, true);
+    // 次のボスを開始
+    this.time.delayedCall(800, function() { this.startBoss(); }, [], this);
   }
 
   showDialogue(speaker, text, onComplete) {
