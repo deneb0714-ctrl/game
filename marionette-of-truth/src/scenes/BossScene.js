@@ -55,7 +55,7 @@ class BossScene extends Phaser.Scene {
     const rand = Phaser.Math.Between(0, 100);
     const isMurderous = rand < 8; // 8% chance
     const item = scene.itemGroup.create(x, y, 'item_energy');
-    item.setVelocityX(-120);
+    item.setVelocityX(Phaser.Math.Between(-400, -200));
     if (isMurderous) {
       item.itemType = 'energy_murderous';
       item.value = 30;
