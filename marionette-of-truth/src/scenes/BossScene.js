@@ -321,6 +321,15 @@ class BossScene extends Phaser.Scene {
           });
         }
       }
+
+      if (this.enemyGroup) {
+        this.enemyGroup.getChildren().slice().forEach(enemy => {
+          if (enemy.isIntermissionEnemy && enemy.active) {
+            this.onBossHit({ damage: 9999, destroy: () => {} }, enemy);
+          }
+        });
+      }
+
       MOT.flags.energy = 0;
       MOT.flags.maxEnergy = false;
     }

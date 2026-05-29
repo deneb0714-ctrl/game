@@ -9,7 +9,7 @@ window.MOT = window.MOT || {};
 MOT.spawnEnergyItem = function (scene, x, y) {
   const isMurderous = Phaser.Math.Between(0, 100) < 8; // 8% chance for red‑black orb
   const item = scene.itemGroup.create(x, y, 'item_energy');
-  item.setVelocityX(-120);
+  item.setVelocityX(-300);
   
   if (isMurderous) {
     item.itemType = 'energy_murderous';
@@ -38,7 +38,7 @@ MOT.spawnEnergyItem = function (scene, x, y) {
  */
 MOT.spawnHealthItem = function (scene, x, y) {
   const item = scene.itemGroup.create(x, y, 'item_health');
-  item.setVelocityX(-100);
+  item.setVelocityX(-300);
   item.itemType = 'health';
   item.value = 1;
 
