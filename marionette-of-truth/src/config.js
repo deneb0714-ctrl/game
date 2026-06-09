@@ -34,6 +34,7 @@ MOT.GAME_CONFIG = {
   scene: [
     BootScene,
     TitleScene,
+    StoryScene,
     GameScene,
     BossScene,
     EndingScene

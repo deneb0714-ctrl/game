@@ -1,0 +1,189 @@
+// =============================================
+// StoryScene.js – プロローグシーン
+// =============================================
+class StoryScene extends Phaser.Scene {
+  constructor() {
+    super({ key: 'StoryScene' });
+  }
+
+  create() {
+    const w = this.cameras.main.width;
+    const h = this.cameras.main.height;
+
+    // Dark background initially
+    this.cameras.main.setBackgroundColor('#000000');
+    // Lab background (invisible at first)
+    this.bg = this.add.image(w / 2, h / 2, 'bg_stage1').setAlpha(0);
+
+    // Dialogue Data
+    this.dialogue = [
+      { speaker: '誰かの声', text: 'さぁ、起きるのだ。勇者よ。', bg: 'black' },
+      { speaker: '誰かの声', text: 'そして魔王を倒し、この世界を救う宿命を背負え。', bg: 'black' },
+      { speaker: '？？？', text: 'おお、ようやく成功したぞ！目覚めたか！！勇者よ。', bg: 'lab' },
+      { speaker: '勇者？', text: '……あなたは、誰ですか', bg: 'lab' },
+      { speaker: '博士', text: '私か？私はしがない博士だ。そして君を呼んだ人間だ。', bg: 'lab' },
+      { speaker: '博士', text: '遥か昔、この世界は平和だった。しかし突如現れた魔王によって蹂躙され、今はもう平和とは程遠い世界になってしまった。', bg: 'lab' },
+      { speaker: '博士', text: '目覚めてすぐで悪いが、君にはまず、その魔王を倒してきてほしいのだ。', bg: 'lab' },
+      { speaker: '勇者', text: '倒す……？', bg: 'lab' },
+      { speaker: '博士', text: '君にはそれだけの力がある。', bg: 'lab', choice: true }
+    ];
+
+    this.currentIndex = 0;
+    this.isWaitingForChoice = false;
+
+    // Portraits Layer
+    // Hero portrait placeholder (left)
+    this.heroPortrait = this.add.rectangle(300, h / 2, 400, 600, 0x3a3a5e).setAlpha(0);
+    this.heroLabel = this.add.text(300, h / 2, '勇者(仮)', { fontFamily: '"DotGothic16"', fontSize: '32px', color: '#ffffff' }).setOrigin(0.5).setAlpha(0);
+    this.heroGroup = [this.heroPortrait, this.heroLabel];
+
+    // Doctor portrait placeholder (right)
+    this.doctorFrame = this.add.rectangle(w - 300, h / 2, 400, 600, 0x1F2933).setAlpha(0);
+    this.doctorLabel = this.add.text(w - 300, h / 2, '博士(仮)', { fontFamily: '"DotGothic16"', fontSize: '32px', color: '#ffffff' }).setOrigin(0.5).setAlpha(0);
+    this.doctorGroup = [this.doctorFrame, this.doctorLabel];
+
+    // UI Layer - Dialog Box
+    const boxH = 250;
+    const boxY = h - boxH - 40;
+    this.dialogBox = this.add.rectangle(w / 2, boxY + boxH / 2, w - 160, boxH, 0x000000, 0.85).setStrokeStyle(2, 0x4FD1FF);
+    
+    // Name Tag
+    this.nameBox = this.add.rectangle(200, boxY, 240, 60, 0x1F2933).setStrokeStyle(2, 0x4FD1FF);
+    this.nameText = this.add.text(200, boxY, '', { fontFamily: '"DotGothic16"', fontSize: '32px', color: '#ffffff' }).setOrigin(0.5);
+
+    // Message Text
+    this.messageText = this.add.text(120, boxY + 40, '', {
+      fontFamily: '"DotGothic16"',
+      fontSize: '36px',
+      color: '#E5E7EB',
+      wordWrap: { width: w - 240, useAdvancedWrap: true },
+      lineSpacing: 10
+    });
+
+    // Advance on click
+    this.input.on('pointerdown', () => {
+      if (!this.isWaitingForChoice) {
+        this.nextDialogue();
+      }
+    });
+
+    // Start Scene
+    this.cameras.main.fadeIn(1000);
+    this.showDialogue(this.currentIndex);
+  }
+
+  showDialogue(index) {
+    if (index >= this.dialogue.length) return;
+    const data = this.dialogue[index];
+
+    // Background transition
+    if (data.bg === 'lab' && this.bg.alpha === 0) {
+      this.tweens.add({ targets: this.bg, alpha: 1, duration: 1000 });
+      this.tweens.add({ targets: this.heroGroup, alpha: 1, duration: 1000 });
+      this.tweens.add({ targets: this.doctorGroup, alpha: 1, duration: 1000 });
+    }
+
+    // Set Text
+    this.nameText.setText(data.speaker);
+    this.messageText.setText(data.text);
+
+    // Portrait highlighting
+    if (this.bg.alpha > 0 || data.bg === 'lab') {
+      const isHero = data.speaker.includes('勇者');
+      const isDoctor = data.speaker.includes('博士') || data.speaker === '？？？';
+      this.heroPortrait.setAlpha(isHero ? 1 : 0.5);
+      this.heroPortrait.setStrokeStyle(isHero ? 4 : 0, 0xffffff);
+      this.doctorFrame.setAlpha(isDoctor ? 1 : 0.5);
+      this.doctorFrame.setStrokeStyle(isDoctor ? 4 : 0, 0xffffff);
+    }
+
+    // Handle Choice
+    if (data.choice) {
+      this.isWaitingForChoice = true;
+      this.time.delayedCall(500, () => {
+        this.showChoices();
+      });
+    }
+  }
+
+  nextDialogue() {
+    this.currentIndex++;
+    if (this.currentIndex < this.dialogue.length) {
+      this.showDialogue(this.currentIndex);
+    }
+  }
+
+  showChoices() {
+    const w = this.cameras.main.width;
+    const h = this.cameras.main.height;
+
+    this.choice1 = this.createChoiceButton(w / 2, h / 2 - 60, '1「わかった、協力する」', () => {
+      this.handleChoice(1);
+    });
+    this.choice2 = this.createChoiceButton(w / 2, h / 2 + 60, '2「訳が分からない。いきなりそんなこと言われても困る」', () => {
+      this.handleChoice(2);
+    });
+  }
+
+  createChoiceButton(x, y, label, callback) {
+    const btn = this.add.rectangle(x, y, 900, 80, 0x1F2933).setStrokeStyle(2, 0x4FD1FF).setInteractive({ useHandCursor: true });
+    const txt = this.add.text(x, y, label, { fontFamily: '"DotGothic16"', fontSize: '32px', color: '#4FD1FF' }).setOrigin(0.5);
+
+    btn.on('pointerover', () => {
+      btn.setFillStyle(0x3a3a5e);
+      txt.setColor('#ffffff');
+    });
+    btn.on('pointerout', () => {
+      btn.setFillStyle(0x1F2933);
+      txt.setColor('#4FD1FF');
+    });
+    btn.on('pointerdown', () => {
+      if (window.MOT && MOT.Audio) MOT.Audio.playSelect();
+      this.choice1.btn.destroy(); this.choice1.txt.destroy();
+      this.choice2.btn.destroy(); this.choice2.txt.destroy();
+      callback();
+    });
+
+    return { btn, txt };
+  }
+
+  handleChoice(choiceIndex) {
+    this.isWaitingForChoice = false; // Block further clicks just in case
+    // Prevent normal advancing
+    this.input.removeAllListeners('pointerdown');
+
+    if (choiceIndex === 1) {
+      this.nameText.setText('博士');
+      this.messageText.setText('気のいい返事をもらえてうれしいよ。早速冒険に向かってもらうとしよう。');
+      
+      this.doctorFrame.setAlpha(1);
+      this.doctorFrame.setStrokeStyle(4, 0xffffff);
+      this.heroPortrait.setAlpha(0.5);
+      this.heroPortrait.setStrokeStyle(0);
+
+      this.time.delayedCall(3000, () => {
+        this.cameras.main.fadeOut(1000);
+        this.time.delayedCall(1000, () => {
+          this.scene.start('GameScene', { stage: 1 });
+        });
+      });
+    } else {
+      this.nameText.setText('博士');
+      this.messageText.setText('そうか、それは残念だ。無理なら君にもう用はない。');
+
+      this.doctorFrame.setAlpha(1);
+      this.doctorFrame.setStrokeStyle(4, 0xffffff);
+      this.heroPortrait.setAlpha(0.5);
+      this.heroPortrait.setStrokeStyle(0);
+
+      this.time.delayedCall(3000, () => {
+        this.cameras.main.fadeOut(1000);
+        this.time.delayedCall(1000, () => {
+          this.scene.start('TitleScene');
+        });
+      });
+    }
+  }
+}
+
+window.StoryScene = StoryScene;

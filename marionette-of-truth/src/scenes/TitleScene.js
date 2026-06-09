@@ -111,7 +111,7 @@ class TitleScene extends Phaser.Scene {
       this.cameras.main.fadeOut(500, 5, 8, 20);
       this.time.delayedCall(500, function () {
         MOT.resetFlags();
-        this.scene.start('GameScene', { stage: 1 });
+        this.scene.start('StoryScene');
       }, [], this);
     }.bind(this));
 
