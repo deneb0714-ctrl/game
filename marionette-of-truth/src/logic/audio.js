@@ -75,6 +75,29 @@ MOT.Audio = (function () {
       playTone(200, 'sawtooth', 0.5, 0.2);
       playTone(400, 'sawtooth', 0.5, 0.2);
       playTone(800, 'sawtooth', 0.5, 0.2);
+    },
+    // Clock tick
+    playTick: function () {
+      playTone(1500, 'square', 0.02, 0.03);
+    },
+    // Shutdown sound (pitch drop)
+    playShutdown: function () {
+      resume();
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+
+      osc.type = 'sawtooth';
+      osc.frequency.setValueAtTime(300, ctx.currentTime);
+      osc.frequency.exponentialRampToValueAtTime(10, ctx.currentTime + 1.2);
+
+      gain.gain.setValueAtTime(0.2, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 1.2);
+
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+
+      osc.start();
+      osc.stop(ctx.currentTime + 1.2);
     }
   };
 })();

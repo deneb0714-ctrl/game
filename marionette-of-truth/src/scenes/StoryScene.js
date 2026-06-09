@@ -176,10 +176,21 @@ class StoryScene extends Phaser.Scene {
       this.heroPortrait.setAlpha(0.5);
       this.heroPortrait.setStrokeStyle(0);
 
-      this.time.delayedCall(3000, () => {
-        this.cameras.main.fadeOut(1000);
-        this.time.delayedCall(1000, () => {
-          this.scene.start('TitleScene');
+      this.time.delayedCall(2000, () => {
+        // Fade out over 3 seconds
+        this.cameras.main.fadeOut(3000);
+        
+        // Ticks during fadeout
+        this.time.delayedCall(0, () => { if (window.MOT && MOT.Audio) MOT.Audio.playTick(); });
+        this.time.delayedCall(1000, () => { if (window.MOT && MOT.Audio) MOT.Audio.playTick(); });
+        this.time.delayedCall(2000, () => { if (window.MOT && MOT.Audio) MOT.Audio.playTick(); });
+
+        // Shutdown and transition
+        this.time.delayedCall(3000, () => {
+          if (window.MOT && MOT.Audio) MOT.Audio.playShutdown();
+          this.time.delayedCall(1500, () => {
+            this.scene.start('TitleScene');
+          });
         });
       });
     }
