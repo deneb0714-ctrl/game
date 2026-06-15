@@ -284,7 +284,7 @@ class BossScene extends Phaser.Scene {
     }
 
     // Boss attacks
-    if (this.currentBoss && this.currentBoss.active) {
+    if (this.currentBoss && this.currentBoss.active && this.currentBoss.visible) {
       this.bossAttackTimer += delta;
       var interval = this.bossHP < this.bossMaxHP * 0.5 ? 600 : 1000;
       if (this.bossAttackTimer >= interval) {
@@ -984,7 +984,7 @@ class BossScene extends Phaser.Scene {
 
     // Boss HP
     this.bossHPBar.clear();
-    if (this.currentBoss && this.currentBoss.active) {
+    if (this.currentBoss && this.currentBoss.active && this.currentBoss.visible) {
       var bpct = this.bossHP / this.bossMaxHP;
       var key = this.currentBoss.configKey;
       var cfg = this.getBossConfig(key);
