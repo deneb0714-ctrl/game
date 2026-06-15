@@ -281,7 +281,7 @@ class BossScene extends Phaser.Scene {
       MOT.Audio.playBleep();
       this.barrierActive = true;
       this.barrierTime = 0;
-      this.barrierCooldown = 3000;
+      this.barrierCooldown = 2000;
       this.barrierActivatedTime = this.time.now; // ジャストガード用タイマー記録
       
       this.barrierVisual = this.add.circle(this.player.x, this.player.y, 60, 0x00FFaa, 0.3);
@@ -705,10 +705,12 @@ class BossScene extends Phaser.Scene {
     this.barrierIconBg.strokeCircle(iconX, iconY, iconRadius);
 
     if (this.barrierCooldown <= 0) {
+      this.barrierIconFg.clear();
       this.barrierIconFg.fillStyle(0x00FFaa, 1);
       this.barrierIconFg.fillCircle(iconX, iconY, iconRadius - 2);
     } else {
-      const cdPct = 1 - (this.barrierCooldown / 3000);
+      const cdPct = 1 - (this.barrierCooldown / 2000);
+      this.barrierIconFg.clear();
       this.barrierIconFg.fillStyle(0x00FFaa, 0.4);
       this.barrierIconFg.beginPath();
       this.barrierIconFg.moveTo(iconX, iconY);
