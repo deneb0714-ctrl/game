@@ -226,6 +226,7 @@ class GameScene extends Phaser.Scene {
       this.barrierActive = true;
       this.barrierTime = 0;
       this.barrierCooldown = 5000;
+      this.barrierActivatedTime = this.time.now; // ジャストガード用タイマー記録
       
       this.barrierVisual = this.add.circle(this.player.x, this.player.y, 60, 0x00FFaa, 0.3);
       this.barrierVisual.setStrokeStyle(4, 0x00FFaa, 0.8);
@@ -536,19 +537,52 @@ class GameScene extends Phaser.Scene {
     if (this.playerInvincible || this.dialogActive) return;
 
     if (this.barrierActive) {
+      const isJustGuard = (this.time.now - this.barrierActivatedTime) <= 150; // シビアな判定 (150ms)
+
       obj.destroy();
       this.deactivateBarrier();
-      for (let i = 0; i < 8; i++) {
-        const p = this.add.circle(player.x, player.y, 4, 0x00FFaa).setDepth(20);
-        this.tweens.add({
-          targets: p,
-          x: player.x + Phaser.Math.Between(-100, 100),
-          y: player.y + Phaser.Math.Between(-100, 100),
-          alpha: 0,
-          scale: 0,
-          duration: 300,
-          onComplete: function () { p.destroy(); }
-        });
+
+      if (isJustGuard) {
+        // ジャストガード（黄色のエフェクト）
+        this.cameras.main.flash(200, 255, 215, 0); // 画面を少し黄色く光らせる
+        for (let i = 0; i < 12; i++) {
+          const p = this.add.circle(player.x, player.y, 6, 0xFFD700).setDepth(20); // ゴールド
+          this.tweens.add({
+            targets: p,
+            x: player.x + Phaser.Math.Between(-150, 150),
+            y: player.y + Phaser.Math.Between(-150, 150),
+            alpha: 0,
+            scale: 0,
+            duration: 400,
+            onComplete: function () { p.destroy(); }
+          });
+        }
+        
+        // 反射弾を発射 (威力と速度が高い)
+        const reflectBullet = this.playerBullets.create(player.x + 30, player.y, 'bullet_player');
+        if (reflectBullet) {
+          reflectBullet.setVelocityX(1200);
+          reflectBullet.setScale(3);
+          reflectBullet.setTint(0xFFD700); // ゴールドに光る
+          reflectBullet.damage = 3; // ダメージ3倍
+          this.time.delayedCall(2000, function () {
+            if (reflectBullet.active) reflectBullet.destroy();
+          });
+        }
+      } else {
+        // 通常のバリア（緑のエフェクト）
+        for (let i = 0; i < 8; i++) {
+          const p = this.add.circle(player.x, player.y, 4, 0x00FFaa).setDepth(20);
+          this.tweens.add({
+            targets: p,
+            x: player.x + Phaser.Math.Between(-100, 100),
+            y: player.y + Phaser.Math.Between(-100, 100),
+            alpha: 0,
+            scale: 0,
+            duration: 300,
+            onComplete: function () { p.destroy(); }
+          });
+        }
       }
       return;
     }
