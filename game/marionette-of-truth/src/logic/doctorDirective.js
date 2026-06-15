@@ -155,13 +155,16 @@ MOT.DoctorDirective = {
   // update（毎フレーム呼び出す）
   update: function(scene, delta, player, dialogActive) {
     if (dialogActive) {
-      // キャラクターのセリフ表示中は指示を隠し、待機状態にリセットする
-      if (!this.isWaiting) {
-        this.hideDirective(scene);
-        this.isWaiting = true;
-        this.waitTimer = 0;
-        this.waitDuration = Phaser.Math.Between(3000, 6000);
+      // キャラクターのセリフ表示中は指示を即座に隠す（isWaitingの状態に関わらず）
+      if (this.directiveContainer) {
+        // フェードアウトではなく即時破棄（セリフと重複させない）
+        this.directiveContainer.destroy();
+        this.directiveContainer = null;
       }
+      this.currentDirective = null;
+      this.isWaiting = true;
+      this.waitTimer = 0;
+      this.waitDuration = Phaser.Math.Between(3000, 6000);
       return;
     }
     if (this.isWaiting) {
