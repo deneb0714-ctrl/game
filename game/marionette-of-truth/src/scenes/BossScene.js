@@ -52,30 +52,7 @@ class BossScene extends Phaser.Scene {
     // Draw 3 lanes visually
     const laneYs = [300, 540, 780];
     const laneGraphics = this.add.graphics().setDepth(1);
-    laneGraphics.lineStyle(2, 0x4FD1FF, 0.25);   // Adjust orb spawn probabilities: red-black (murderous) rarer (8%)
-  MOT.spawnEnergyItem = function (scene, x, y) {
-    const rand = Phaser.Math.Between(0, 100);
-    const isMurderous = rand < 8; // 8% chance
-    const item = scene.itemGroup.create(x, y, 'item_energy');
-    item.setVelocityX(Phaser.Math.Between(-400, -200));
-    if (isMurderous) {
-      item.itemType = 'energy_murderous';
-      item.value = 30;
-      item.setTint(0xFF0000);
-    } else {
-      item.itemType = 'energy';
-      item.value = 10;
-    }
-    // Floating animation
-    scene.tweens.add({
-      targets: item,
-      y: '-=10',
-      yoyo: true,
-      repeat: -1,
-      duration: 800,
-      ease: 'Sine.easeInOut'
-    });
-  };
+    laneGraphics.lineStyle(2, 0x4FD1FF, 0.25);
 
     laneYs.forEach(function (y) {
       laneGraphics.lineBetween(0, y, w, y);
@@ -97,49 +74,61 @@ class BossScene extends Phaser.Scene {
 
   getBossConfig(key) {
     var configs = {
-      boss1: { texture: 'boss1_muscle', name: '幹部1 – 筋肉', hp: 30, scale: 0.15,
+      boss1: {
+        texture: 'boss1_muscle', name: '幹部1 – 筋肉', hp: 30, scale: 0.15,
         intro: '「貴様が博士の人形か。\nこの俺の拳で叩き潰してやる！」',
         defeat: '「馬鹿な…この俺が…！」',
         choices: [
-          { text: '止めを刺す', flag: function(){ MOT.modifyFlag('brutality',1); MOT.modifyFlag('obeyDoctor',1); }},
-          { text: '見逃す', flag: function(){ MOT.modifyFlag('showMercy',1); MOT.modifyFlag('favor.boss1',1); }}
-        ]},
-      boss2: { texture: 'boss2_combat', name: '幹部2 – 戦闘狂', hp: 35, scale: 0.15,
+          { text: '止めを刺す', flag: function () { MOT.modifyFlag('brutality', 1); MOT.modifyFlag('obeyDoctor', 1); } },
+          { text: '見逃す', flag: function () { MOT.modifyFlag('showMercy', 1); MOT.modifyFlag('favor.boss1', 1); } }
+        ]
+      },
+      boss2: {
+        texture: 'boss2_combat', name: '幹部2 – 戦闘狂', hp: 35, scale: 0.15,
         intro: '「ヒャハハ！ 踊れ踊れぇ！！\n俺の双銃から逃げられるかなぁ！？」',
         defeat: '「アハハハハ…最高にイカれた気分だぜ…」',
         choices: [
-          { text: '止めを刺す', flag: function(){ MOT.modifyFlag('brutality',1); MOT.modifyFlag('favor.boss2',-1); }},
-          { text: '見逃す', flag: function(){ MOT.modifyFlag('showMercy',1); MOT.modifyFlag('favor.boss2',1); }}
-        ]},
-      boss3: { texture: 'boss3', name: '幹部3 – 三男', hp: 40, scale: 3,
+          { text: '止めを刺す', flag: function () { MOT.modifyFlag('brutality', 1); MOT.modifyFlag('favor.boss2', -1); } },
+          { text: '見逃す', flag: function () { MOT.modifyFlag('showMercy', 1); MOT.modifyFlag('favor.boss2', 1); } }
+        ]
+      },
+      boss3: {
+        texture: 'boss3', name: '幹部3 – 三男', hp: 40, scale: 3,
         intro: '「お前…本当に自分の意思で戦っているのか？\n博士の操り人形じゃないのか？」',
         defeat: '「やはり…お前は普通の兵器じゃない。」',
         choices: [
-          { text: '黙れ（止めを刺す）', flag: function(){ MOT.modifyFlag('brutality',1); MOT.modifyFlag('obeyDoctor',1); }},
-          { text: '…話を聞く', flag: function(){ MOT.modifyFlag('showMercy',1); MOT.modifyFlag('favor.boss3',1); }}
-        ]},
-      wing_left: { texture: 'wing_left', name: '魔王左翼 – 蒼氷のレイス', hp: 50, scale: 3.5,
+          { text: '黙れ（止めを刺す）', flag: function () { MOT.modifyFlag('brutality', 1); MOT.modifyFlag('obeyDoctor', 1); } },
+          { text: '…話を聞く', flag: function () { MOT.modifyFlag('showMercy', 1); MOT.modifyFlag('favor.boss3', 1); } }
+        ]
+      },
+      wing_left: {
+        texture: 'wing_left', name: '魔王左翼 – 蒼氷のレイス', hp: 50, scale: 3.5,
         intro: '「冷静に分析しよう。\nお前が本当に倒すべき相手は、ここにはいない。」',
         defeat: '「…これを受け取れ。真実に辿り着くために。」',
         choices: [
-          { text: '受け取らない（止めを刺す）', flag: function(){ MOT.modifyFlag('brutality',1); }},
-          { text: 'アイテムを受け取る', flag: function(){ MOT.modifyFlag('favor.wingL',1); MOT.addEnergy(20); }}
-        ]},
-      wing_right: { texture: 'wing_right', name: '魔王右翼 – 紅蓮のヴァルク', hp: 50, scale: 3.5,
+          { text: '受け取らない（止めを刺す）', flag: function () { MOT.modifyFlag('brutality', 1); } },
+          { text: 'アイテムを受け取る', flag: function () { MOT.modifyFlag('favor.wingL', 1); MOT.addEnergy(20); } }
+        ]
+      },
+      wing_right: {
+        texture: 'wing_right', name: '魔王右翼 – 紅蓮のヴァルク', hp: 50, scale: 3.5,
         intro: '「理屈なんかどうでもいい！\nお前が仲間を傷つけたなら、俺が叩き潰す！」',
         defeat: '「ぐっ…だが、お前の目…憎しみじゃない。」',
         choices: [
-          { text: '容赦なく倒す', flag: function(){ MOT.modifyFlag('brutality',1); }},
-          { text: '手を差し伸べる', flag: function(){ MOT.modifyFlag('favor.wingR',1); MOT.addEnergy(20); }}
-        ]},
-      demon_lord: { texture: 'demon_lord', name: '魔王 – ヴェリタス', hp: 80, scale: 2,
+          { text: '容赦なく倒す', flag: function () { MOT.modifyFlag('brutality', 1); } },
+          { text: '手を差し伸べる', flag: function () { MOT.modifyFlag('favor.wingR', 1); MOT.addEnergy(20); } }
+        ]
+      },
+      demon_lord: {
+        texture: 'demon_lord', name: '魔王 – ヴェリタス', hp: 80, scale: 2,
         intro: '「…来たか、博士の人形よ。\nお前に真実を伝えなければならない。」',
         defeat: '「聞いてくれ。博士こそが…この世界を壊そうとしている。\n俺は…それを止めたかっただけだ。」',
         choices: [
-          { text: '最後まで話を聞く', flag: function(){ MOT.flags.heardDemonLord = true; }},
-          { text: '任務を遂行する（倒す）', flag: function(){ MOT.modifyFlag('obeyDoctor',1); }},
-          { text: '力を吸収する', flag: function(){ MOT.modifyFlag('brutality',1); MOT.addEnergy(50); }}
-        ]}
+          { text: '最後まで話を聞く', flag: function () { MOT.flags.heardDemonLord = true; } },
+          { text: '任務を遂行する（倒す）', flag: function () { MOT.modifyFlag('obeyDoctor', 1); } },
+          { text: '力を吸収する', flag: function () { MOT.modifyFlag('brutality', 1); MOT.addEnergy(50); } }
+        ]
+      }
     };
     return configs[key];
   }
@@ -147,7 +136,7 @@ class BossScene extends Phaser.Scene {
   startBoss() {
     if (this.currentBossIndex >= this.bossQueue.length) {
       this.cameras.main.fadeOut(1000, 0, 0, 0);
-      this.time.delayedCall(1000, function(){ this.scene.start('EndingScene'); }, [], this);
+      this.time.delayedCall(1000, function () { this.scene.start('EndingScene'); }, [], this);
       return;
     }
 
@@ -240,10 +229,10 @@ class BossScene extends Phaser.Scene {
     if (this.autoShootTimer >= 200) {
       this.autoShootTimer = 0;
       var b = this.playerBullets.create(this.player.x + 30, this.player.y, 'bullet_player');
-      if (b) { 
+      if (b) {
         b.setVelocityX(600); b.setScale(2);
         MOT.Audio.playShot();
-        this.time.delayedCall(2000, function(){ if(b.active) b.destroy(); }); 
+        this.time.delayedCall(2000, function () { if (b.active) b.destroy(); });
       }
     }
 
@@ -274,8 +263,8 @@ class BossScene extends Phaser.Scene {
     }
 
     // Cleanup
-    this.enemyBullets.getChildren().forEach(function(b){
-      if(b.x<-50||b.x>2000||b.y<-50||b.y>1130) b.destroy();
+    this.enemyBullets.getChildren().forEach(function (b) {
+      if (b.x < -50 || b.x > 2000 || b.y < -50 || b.y > 1130) b.destroy();
     });
 
     this.updateHUD();
@@ -288,7 +277,7 @@ class BossScene extends Phaser.Scene {
       this.barrierTime = 0;
       this.barrierCooldown = 2000;
       this.barrierActivatedTime = this.time.now; // ジャストガード用タイマー記録
-      
+
       this.barrierVisual = this.add.circle(this.player.x, this.player.y, 60, 0x00FFaa, 0.3);
       this.barrierVisual.setStrokeStyle(4, 0x00FFaa, 0.8);
       this.barrierVisual.setDepth(9);
@@ -331,7 +320,7 @@ class BossScene extends Phaser.Scene {
       if (this.enemyGroup) {
         this.enemyGroup.getChildren().slice().forEach(enemy => {
           if (enemy.isIntermissionEnemy && enemy.active) {
-            this.onBossHit({ damage: 9999, destroy: () => {} }, enemy);
+            this.onBossHit({ damage: 9999, destroy: () => { } }, enemy);
           }
         });
       }
@@ -367,7 +356,7 @@ class BossScene extends Phaser.Scene {
       MOT.fireHoming(this, x, y - 40, 200, this.player);
     } else {
       for (var i = 0; i < 3; i++) {
-        this.time.delayedCall(i * 150, function(){
+        this.time.delayedCall(i * 150, function () {
           MOT.fireFan(this, x - 30, y, 3, 300, 180, 30);
         }, [], this);
       }
@@ -388,7 +377,7 @@ class BossScene extends Phaser.Scene {
       // 2本連続で同じレーンに（よりゆっくり間隔をあける）
       var idx = Phaser.Math.Between(0, 2);
       self.fireSlash(bx, laneYs[idx]);
-      self.time.delayedCall(1000, function() {
+      self.time.delayedCall(1000, function () {
         if (self.currentBoss && self.currentBoss.active) self.fireSlash(bx, laneYs[idx]);
       });
     } else {
@@ -396,7 +385,7 @@ class BossScene extends Phaser.Scene {
       var idx1 = Phaser.Math.Between(0, 2);
       var idx2 = (idx1 + 1) % 3;
       self.fireSlash(bx, laneYs[idx1]);
-      self.time.delayedCall(1200, function() {
+      self.time.delayedCall(1200, function () {
         if (self.currentBoss && self.currentBoss.active) {
           self.fireSlash(bx, laneYs[idx2]);
         }
@@ -421,7 +410,7 @@ class BossScene extends Phaser.Scene {
       ease: 'Sine.easeInOut'
     });
     // 7秒後に自動破棄（画面左端まで到達させるため時間を延長）
-    this.time.delayedCall(7000, function() { if (slash.active) slash.destroy(); });
+    this.time.delayedCall(7000, function () { if (slash.active) slash.destroy(); });
   }
 
   // 双銃攻撃（幹部2 戦闘狂用）
@@ -429,7 +418,7 @@ class BossScene extends Phaser.Scene {
     var self = this;
     var laneYs = [300, 540, 780];
     var p = Phaser.Math.Between(0, 2);
-    
+
     if (p === 0) {
       // 2つの異なるレーンに同時発射（回避がシビアに）
       var l1 = Phaser.Math.Between(0, 2);
@@ -440,7 +429,7 @@ class BossScene extends Phaser.Scene {
       // 同じレーンに2連射（時間差を150msに短縮し高速化）
       var l = laneYs[Phaser.Math.Between(0, 2)];
       self.fireGunBullet(bx, l);
-      self.time.delayedCall(150, function() {
+      self.time.delayedCall(150, function () {
         if (self.currentBoss && self.currentBoss.active) self.fireGunBullet(bx, l);
       });
     } else {
@@ -448,7 +437,7 @@ class BossScene extends Phaser.Scene {
       var l1 = Phaser.Math.Between(0, 2);
       var l2 = Phaser.Math.Between(0, 2);
       self.fireGunBullet(bx, laneYs[l1] - 20); // 少し上にずらす
-      self.time.delayedCall(100, function() {
+      self.time.delayedCall(100, function () {
         if (self.currentBoss && self.currentBoss.active) self.fireGunBullet(bx, laneYs[l2] + 20); // 少し下にずらす
       });
     }
@@ -461,7 +450,7 @@ class BossScene extends Phaser.Scene {
       b.setVelocityX(-800); // 高速の弾丸（難易度アップ）
       b.setScale(1.5);
       b.setDepth(9);
-      this.time.delayedCall(4000, function() { if (b.active) b.destroy(); });
+      this.time.delayedCall(4000, function () { if (b.active) b.destroy(); });
     }
   }
 
@@ -489,7 +478,7 @@ class BossScene extends Phaser.Scene {
             onComplete: function () { p.destroy(); }
           });
         }
-        
+
         // 反射弾を発射 (威力と速度が高い)
         const reflectBullet = this.playerBullets.create(player.x + 30, player.y, 'bullet_player');
         if (reflectBullet) {
@@ -526,45 +515,45 @@ class BossScene extends Phaser.Scene {
     player.setTint(0xFF4B6E);
     this.tweens.add({
       targets: player, alpha: 0.3, yoyo: true, repeat: 3, duration: 100,
-      onComplete: function(){ player.setAlpha(1); player.clearTint(); this.playerInvincible = false; }.bind(this)
+      onComplete: function () { player.setAlpha(1); player.clearTint(); this.playerInvincible = false; }.bind(this)
     });
     if (MOT.flags.playerHP <= 0) {
       MOT.flags.diedCount++;
       this.cameras.main.fadeOut(1000, 0, 0, 0);
-      this.time.delayedCall(1000, function(){ this.scene.start('EndingScene'); }, [], this);
+      this.time.delayedCall(1000, function () { this.scene.start('EndingScene'); }, [], this);
     }
   }
 
   onBossHit(bullet, boss) {
-      bullet.destroy(); // 弾を消す
-      const dmg = bullet.damage || 1;
+    bullet.destroy(); // 弾を消す
+    const dmg = bullet.damage || 1;
 
-      // ── 幕間中の雑魚敵の場合 ──────────────────────────────────────
-      if (boss.isIntermissionEnemy) {
-        boss.hp = (boss.hp || 3) - dmg;
-        boss.setTint(0xffffff);
-        this.time.delayedCall(50, function(){ if (boss.active) boss.clearTint(); });
-        if (boss.hp <= 0) {
-          this.showExplosion(boss.x, boss.y);
-          if (Phaser.Math.Between(0, 100) < 40) MOT.spawnEnergyItem(this, boss.x, boss.y);
-          boss.destroy();
-          // 全体が倒されたら幕間終了
-          this.intermissionKills = (this.intermissionKills || 0) + 1;
-          if (this.intermissionKills >= this.intermissionTotal) {
-            this.endIntermission();
-          }
-        }
-        return;
-      }
-
-      // ── ボス敵への処理 ────────────────────────────────────────────
-      this.bossHP -= dmg;
-      boss.hp = this.bossHP;
+    // ── 幕間中の雑魚敵の場合 ──────────────────────────────────────
+    if (boss.isIntermissionEnemy) {
+      boss.hp = (boss.hp || 3) - dmg;
       boss.setTint(0xffffff);
-      this.time.delayedCall(50, function(){ if (boss.active) boss.clearTint(); });
-      if (Phaser.Math.Between(0, 100) < 50) {
-        MOT.spawnEnergyItem(this, boss.x, boss.y);
+      this.time.delayedCall(50, function () { if (boss.active) boss.clearTint(); });
+      if (boss.hp <= 0) {
+        this.showExplosion(boss.x, boss.y);
+        if (Phaser.Math.Between(0, 100) < 40) MOT.spawnEnergyItem(this, boss.x, boss.y);
+        boss.destroy();
+        // 全体が倒されたら幕間終了
+        this.intermissionKills = (this.intermissionKills || 0) + 1;
+        if (this.intermissionKills >= this.intermissionTotal) {
+          this.endIntermission();
+        }
       }
+      return;
+    }
+
+    // ── ボス敵への処理 ────────────────────────────────────────────
+    this.bossHP -= dmg;
+    boss.hp = this.bossHP;
+    boss.setTint(0xffffff);
+    this.time.delayedCall(50, function () { if (boss.active) boss.clearTint(); });
+    if (Phaser.Math.Between(0, 100) < 50) {
+      MOT.spawnEnergyItem(this, boss.x, boss.y);
+    }
 
     if (this.bossHP <= 0 && !this.bossDefeated) {
       this.bossDefeated = true; // Prevent multiple triggers
@@ -575,7 +564,7 @@ class BossScene extends Phaser.Scene {
       }
       this.enemyBullets.clear(true, true);
       this.player.setVelocity(0, 0);
-      
+
       // Disable boss to prevent further hits/attacks
       boss.body.enable = false;
 
@@ -586,12 +575,12 @@ class BossScene extends Phaser.Scene {
       // Boss defeat flash
       this.tweens.add({
         targets: boss, alpha: 0.3, yoyo: true, repeat: 2, duration: 150,
-        onComplete: function(){
-          this.showDialogue(cfg.name, cfg.defeat, function(){
-            this.showChoice(cfg.choices.map(function(c){
+        onComplete: function () {
+          this.showDialogue(cfg.name, cfg.defeat, function () {
+            this.showChoice(cfg.choices.map(function (c) {
               return {
                 text: c.text,
-                callback: function(){
+                callback: function () {
                   MOT.Audio.playSelect();
                   c.flag();
                   // Explosion and move to next
@@ -607,7 +596,7 @@ class BossScene extends Phaser.Scene {
                   if (this.currentBossIndex < this.bossQueue.length) {
                     this.startIntermission();
                   } else {
-                    this.time.delayedCall(1500, function(){ this.startBoss(); }, [], this);
+                    this.time.delayedCall(1500, function () { this.startBoss(); }, [], this);
                   }
                 }.bind(this)
               };
@@ -629,10 +618,12 @@ class BossScene extends Phaser.Scene {
       '── 次の幹部が迫っている！ ──',
       { fontFamily: '"DotGothic16"', fontSize: '28px', color: '#FF4B6E' }
     ).setOrigin(0.5).setDepth(110).setAlpha(0);
-    this.tweens.add({ targets: warnText, alpha: 1, duration: 400,
-      onComplete: function() {
-        self.tweens.add({ targets: warnText, alpha: 0, duration: 400, delay: 1500,
-          onComplete: function() { warnText.destroy(); }
+    this.tweens.add({
+      targets: warnText, alpha: 1, duration: 400,
+      onComplete: function () {
+        self.tweens.add({
+          targets: warnText, alpha: 0, duration: 400, delay: 1500,
+          onComplete: function () { warnText.destroy(); }
         });
       }
     });
@@ -642,10 +633,10 @@ class BossScene extends Phaser.Scene {
     this.intermissionTotal = 5; // 雑魚5体
 
     // 1.5秒後に雑魚スポーン開始
-    this.time.delayedCall(1500, function() {
+    this.time.delayedCall(1500, function () {
       var laneYs = [300, 540, 780];
       for (var i = 0; i < self.intermissionTotal; i++) {
-        self.time.delayedCall(i * 600, function() {
+        self.time.delayedCall(i * 600, function () {
           if (!self.intermissionActive) return;
           var laneY = laneYs[Phaser.Math.Between(0, 2)];
           var e = self.enemyGroup.create(w + 50, laneY, 'enemy_basic');
@@ -660,15 +651,15 @@ class BossScene extends Phaser.Scene {
           // 周期的に弾を撃つ
           e.fireTimer = self.time.addEvent({
             delay: Phaser.Math.Between(1000, 1800),
-            callback: function() { if (e.active) MOT.fireLinear(self, e.x, e.y, -320, 0); },
+            callback: function () { if (e.active) MOT.fireLinear(self, e.x, e.y, -320, 0); },
             loop: true
           });
-          e.on('destroy', function() { if (e.fireTimer) e.fireTimer.destroy(); });
+          e.on('destroy', function () { if (e.fireTimer) e.fireTimer.destroy(); });
         });
       }
 
       // タイムアウト保険：12秒後に残っていても次へ進む
-      self.intermissionTimeout = self.time.delayedCall(12000, function() {
+      self.intermissionTimeout = self.time.delayedCall(12000, function () {
         self.endIntermission();
       });
     });
@@ -683,12 +674,12 @@ class BossScene extends Phaser.Scene {
       this.intermissionTimeout = null;
     }
     // 残っている雑魚をすべて破棄
-    this.enemyGroup.getChildren().slice().forEach(function(e) {
+    this.enemyGroup.getChildren().slice().forEach(function (e) {
       if (e.isIntermissionEnemy && e.active) e.destroy();
     });
     this.enemyBullets.clear(true, true);
     // 次のボスを開始
-    this.time.delayedCall(800, function() { this.startBoss(); }, [], this);
+    this.time.delayedCall(800, function () { this.startBoss(); }, [], this);
   }
 
   showDialogue(speaker, text, onComplete) {
@@ -723,18 +714,18 @@ class BossScene extends Phaser.Scene {
 
     var charIndex = 0;
     var typeTimer = this.time.addEvent({
-      delay: 40, callback: function(){
+      delay: 40, callback: function () {
         charIndex++;
         bodyText.setText(text.substring(0, charIndex));
-        if (text[charIndex-1] !== ' ') MOT.Audio.playBleep();
+        if (text[charIndex - 1] !== ' ') MOT.Audio.playBleep();
         if (charIndex >= text.length) {
           typeTimer.destroy();
           contText.setAlpha(1);
           this.tweens.add({ targets: contText, alpha: 0.3, yoyo: true, repeat: -1, duration: 500 });
-          this.input.once('pointerdown', function(){
+          this.input.once('pointerdown', function () {
             if (this.dialogContainer) this.dialogContainer.destroy();
             this.dialogContainer = null;
-            if(onComplete) onComplete();
+            if (onComplete) onComplete();
           }, this);
         }
       }, callbackScope: this, loop: true
@@ -746,44 +737,44 @@ class BossScene extends Phaser.Scene {
     var startY = h / 2 - (choices.length * 35);
     var elements = [];
     var overlay = this.add.graphics();
-    overlay.fillStyle(0x000000, 0.5); overlay.fillRect(0,0,w,h); overlay.setDepth(49);
+    overlay.fillStyle(0x000000, 0.5); overlay.fillRect(0, 0, w, h); overlay.setDepth(49);
     elements.push(overlay);
 
-    choices.forEach(function(choice, i){
+    choices.forEach(function (choice, i) {
       var y = startY + i * 70;
-      var btn = this.add.image(w/2, y, 'ui_button_wide').setInteractive({useHandCursor:true}).setDepth(50);
-      var txt = this.add.text(w/2, y, choice.text, {
-        fontFamily:'"DotGothic16"', fontSize:'22px', color:'#E5E7EB'
+      var btn = this.add.image(w / 2, y, 'ui_button_wide').setInteractive({ useHandCursor: true }).setDepth(50);
+      var txt = this.add.text(w / 2, y, choice.text, {
+        fontFamily: '"DotGothic16"', fontSize: '22px', color: '#E5E7EB'
       }).setOrigin(0.5).setDepth(51);
       elements.push(btn, txt);
       btn.setAlpha(0); txt.setAlpha(0);
-      this.tweens.add({ targets:[btn,txt], alpha:1, duration:300, delay:i*100 });
-      btn.on('pointerover', function(){ this.tweens.add({targets:[btn,txt],scale:1.06,duration:100}); txt.setColor('#4FD1FF'); }, this);
-      btn.on('pointerout', function(){ this.tweens.add({targets:[btn,txt],scale:1.0,duration:100}); txt.setColor('#E5E7EB'); }, this);
-      btn.on('pointerdown', function(){ elements.forEach(function(el){el.destroy();}); choice.callback(); }, this);
+      this.tweens.add({ targets: [btn, txt], alpha: 1, duration: 300, delay: i * 100 });
+      btn.on('pointerover', function () { this.tweens.add({ targets: [btn, txt], scale: 1.06, duration: 100 }); txt.setColor('#4FD1FF'); }, this);
+      btn.on('pointerout', function () { this.tweens.add({ targets: [btn, txt], scale: 1.0, duration: 100 }); txt.setColor('#E5E7EB'); }, this);
+      btn.on('pointerdown', function () { elements.forEach(function (el) { el.destroy(); }); choice.callback(); }, this);
     }, this);
   }
 
   showExplosion(x, y) {
     MOT.Audio.playExplosion();
     var exp = this.add.sprite(x, y, 'explosion').setScale(4).setDepth(20);
-    this.tweens.add({ targets: exp, scale: 8, alpha: 0, duration: 700, onComplete: function(){ exp.destroy(); }});
+    this.tweens.add({ targets: exp, scale: 8, alpha: 0, duration: 700, onComplete: function () { exp.destroy(); } });
     for (var i = 0; i < 20; i++) {
-      var p = this.add.circle(x, y, Phaser.Math.Between(3,8), Phaser.Math.Between(0,1) ? 0xFF8C00 : 0xFF2E2E).setDepth(20);
+      var p = this.add.circle(x, y, Phaser.Math.Between(3, 8), Phaser.Math.Between(0, 1) ? 0xFF8C00 : 0xFF2E2E).setDepth(20);
       this.tweens.add({
-        targets: p, x: x+Phaser.Math.Between(-200,200), y: y+Phaser.Math.Between(-200,200),
-        alpha: 0, scale: 0, duration: Phaser.Math.Between(300,800), onComplete: function(){ p.destroy(); }
+        targets: p, x: x + Phaser.Math.Between(-200, 200), y: y + Phaser.Math.Between(-200, 200),
+        alpha: 0, scale: 0, duration: Phaser.Math.Between(300, 800), onComplete: function () { p.destroy(); }
       });
     }
   }
 
   createHUD() {
-    this.hpText = this.add.text(30, 20, '', { fontFamily:'"Press Start 2P"', fontSize:'16px', color:'#FF4B6E' }).setDepth(100);
-    this.energyText = this.add.text(30, 50, '', { fontFamily:'"Press Start 2P"', fontSize:'14px', color:'#4FD1FF' }).setDepth(100);
+    this.hpText = this.add.text(30, 20, '', { fontFamily: '"Press Start 2P"', fontSize: '16px', color: '#FF4B6E' }).setDepth(100);
+    this.energyText = this.add.text(30, 50, '', { fontFamily: '"Press Start 2P"', fontSize: '14px', color: '#4FD1FF' }).setDepth(100);
     this.energyBar = this.add.graphics().setDepth(100);
     this.barrierIconBg = this.add.graphics().setDepth(100);
     this.barrierIconFg = this.add.graphics().setDepth(100);
-    this.bossHPText = this.add.text(960, 20, '', { fontFamily:'"Press Start 2P"', fontSize:'14px', color:'#FF2E2E' }).setOrigin(0.5,0).setDepth(100);
+    this.bossHPText = this.add.text(960, 20, '', { fontFamily: '"Press Start 2P"', fontSize: '14px', color: '#FF2E2E' }).setOrigin(0.5, 0).setDepth(100);
     this.bossHPBar = this.add.graphics().setDepth(100);
   }
 
@@ -794,11 +785,11 @@ class BossScene extends Phaser.Scene {
 
     var pct = MOT.flags.energy / MOT.flags.maxEnergyThreshold;
     this.energyBar.clear();
-    this.energyBar.fillStyle(0x1F2933,1); this.energyBar.fillRect(30,80,200,16);
+    this.energyBar.fillStyle(0x1F2933, 1); this.energyBar.fillRect(30, 80, 200, 16);
     this.energyBar.fillStyle(MOT.flags.maxEnergy ? 0xFF4B6E : 0x4FD1FF, 1);
-    this.energyBar.fillRect(32,82,196*pct,12);
-    this.energyBar.lineStyle(1,0x4FD1FF,0.6); this.energyBar.strokeRect(30,80,200,16);
-    this.energyText.setText('EN: '+MOT.flags.energy+'/'+MOT.flags.maxEnergyThreshold);
+    this.energyBar.fillRect(32, 82, 196 * pct, 12);
+    this.energyBar.lineStyle(1, 0x4FD1FF, 0.6); this.energyBar.strokeRect(30, 80, 200, 16);
+    this.energyText.setText('EN: ' + MOT.flags.energy + '/' + MOT.flags.maxEnergyThreshold);
 
     const iconX = 260;
     const iconY = 88;
@@ -834,9 +825,9 @@ class BossScene extends Phaser.Scene {
       var key = this.currentBoss.configKey;
       var cfg = this.getBossConfig(key);
       this.bossHPText.setText(cfg.name);
-      this.bossHPBar.fillStyle(0x1F2933,1); this.bossHPBar.fillRect(560,50,800,20);
-      this.bossHPBar.fillStyle(0xFF2E2E,1); this.bossHPBar.fillRect(562,52,796*bpct,16);
-      this.bossHPBar.lineStyle(1,0xFF2E2E,0.6); this.bossHPBar.strokeRect(560,50,800,20);
+      this.bossHPBar.fillStyle(0x1F2933, 1); this.bossHPBar.fillRect(560, 50, 800, 20);
+      this.bossHPBar.fillStyle(0xFF2E2E, 1); this.bossHPBar.fillRect(562, 52, 796 * bpct, 16);
+      this.bossHPBar.lineStyle(1, 0xFF2E2E, 0.6); this.bossHPBar.strokeRect(560, 50, 800, 20);
     } else {
       this.bossHPText.setText('');
     }
