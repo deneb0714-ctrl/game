@@ -141,7 +141,7 @@ class GameScene extends Phaser.Scene {
 
     // Auto-shoot
     this.autoShootTimer += delta;
-    if (this.autoShootTimer >= 180) {
+    if (this.autoShootTimer >= 144) {
       this.autoShootTimer = 0;
       this.firePlayerBullet();
       MOT.Audio.playShot();

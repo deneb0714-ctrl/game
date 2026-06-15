@@ -232,7 +232,7 @@ class BossScene extends Phaser.Scene {
 
     // Auto-shoot
     this.autoShootTimer += delta;
-    if (this.autoShootTimer >= 200) {
+    if (this.autoShootTimer >= 160) {
       this.autoShootTimer = 0;
       var b = this.playerBullets.create(this.player.x + 30, this.player.y, 'bullet_player');
       if (b) { 
