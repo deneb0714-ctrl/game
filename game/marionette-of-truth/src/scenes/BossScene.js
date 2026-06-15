@@ -157,27 +157,58 @@ class BossScene extends Phaser.Scene {
     boss.hp = cfg.hp;
     boss.configKey = key;
 
-    // Entrance
     this.dialogActive = true;
     this.physics.pause();
-    this.cameras.main.shake(400, 0.015);
 
-    this.tweens.add({
-      targets: boss,
-      x: 1400,
-      duration: 1200,
-      ease: 'Power2',
-      onComplete: function () {
-        // Boss floating
-        this.tweens.add({ targets: boss, y: boss.y - 30, yoyo: true, repeat: -1, duration: 1000, ease: 'Sine.easeInOut' });
-        // Intro dialogue
-        this.showDialogue(cfg.name, cfg.intro, function () {
-          this.dialogActive = false;
-          this.physics.resume();
-          this.startBossLaneMovement();
-        }.bind(this));
-      }.bind(this)
-    });
+    if (key === 'boss1') {
+      // 幹部1の専用シナリオ（ボスはまだ見せない）
+      boss.setVisible(false);
+      boss.body.enable = false;
+      this.showDeviceDialogue('「最初のエリアに着いたか。そこは、○○だ。魔王城までまだ距離があるからそこまで敵は強くないが気は抜くなよ。」', function () {
+        this.dialogActive = false;
+        this.physics.resume();
+        
+        // 雑魚戦闘
+        this.minionBattleActive = true;
+        this.minionsToKill = 3;
+        var laneYs = [300, 540, 780];
+        for(let i = 0; i < 3; i++) {
+          this.time.delayedCall(1000 + i * 800, function() {
+            var e = this.enemyGroup.create(1920 + 50, laneYs[Phaser.Math.Between(0, 2)], 'enemy_basic');
+            e.setVelocityX(-200);
+            e.hp = 3;
+            e.isScenarioMinion = true;
+            this.tweens.add({
+              targets: e, y: e.y + Phaser.Math.Between(-40, 40),
+              yoyo: true, repeat: -1, duration: 900, ease: 'Sine.easeInOut'
+            });
+            e.fireTimer = this.time.addEvent({
+              delay: 1500, callback: function () { if (e.active) MOT.fireLinear(this, e.x, e.y, -300, 0); }, loop: true, callbackScope: this
+            });
+            e.on('destroy', function () { if (e.fireTimer) e.fireTimer.destroy(); });
+          }, [], this);
+        }
+      }.bind(this));
+    } else {
+      // Entrance
+      this.cameras.main.shake(400, 0.015);
+      this.tweens.add({
+        targets: boss,
+        x: 1400,
+        duration: 1200,
+        ease: 'Power2',
+        onComplete: function () {
+          // Boss floating
+          this.tweens.add({ targets: boss, y: boss.y - 30, yoyo: true, repeat: -1, duration: 1000, ease: 'Sine.easeInOut' });
+          // Intro dialogue
+          this.showDialogue(cfg.name, cfg.intro, function () {
+            this.dialogActive = false;
+            this.physics.resume();
+            this.startBossLaneMovement();
+          }.bind(this));
+        }.bind(this)
+      });
+    }
   }
 
   startBossLaneMovement() {
@@ -529,18 +560,57 @@ class BossScene extends Phaser.Scene {
     const dmg = bullet.damage || 1;
 
     // ── 幕間中の雑魚敵の場合 ──────────────────────────────────────
-    if (boss.isIntermissionEnemy) {
+    if (boss.isIntermissionEnemy || boss.isScenarioMinion) {
       boss.hp = (boss.hp || 3) - dmg;
       boss.setTint(0xffffff);
       this.time.delayedCall(50, function () { if (boss.active) boss.clearTint(); });
       if (boss.hp <= 0) {
         this.showExplosion(boss.x, boss.y);
         if (Phaser.Math.Between(0, 100) < 40) MOT.spawnEnergyItem(this, boss.x, boss.y);
+        
+        const isScenario = boss.isScenarioMinion;
         boss.destroy();
-        // 全体が倒されたら幕間終了
-        this.intermissionKills = (this.intermissionKills || 0) + 1;
-        if (this.intermissionKills >= this.intermissionTotal) {
-          this.endIntermission();
+        
+        if (isScenario) {
+          this.minionsToKill--;
+          if (this.minionsToKill <= 0 && this.minionBattleActive) {
+            this.minionBattleActive = false;
+            // 雑魚戦終了後のシナリオ続行
+            this.dialogActive = true;
+            this.physics.pause();
+            this.enemyBullets.clear(true, true);
+            this.player.setVelocity(0, 0);
+            
+            this.showDialogue('???', '「おいおい、こんなところで何してんだ？今引き返すっていうなら見逃してやるぜ？」', function () {
+              this.showDeviceDialogue('「まずい。魔王軍のやつらに気付かれた。しかし、勇者の君なら倒せるだろう。」', function () {
+                
+                // 幹部1 登場
+                var realBoss = this.currentBoss;
+                realBoss.setVisible(true);
+                realBoss.body.enable = true;
+                this.cameras.main.shake(400, 0.015);
+                this.tweens.add({
+                  targets: realBoss, x: 1400, duration: 1200, ease: 'Power2',
+                  onComplete: function () {
+                    this.tweens.add({ targets: realBoss, y: realBoss.y - 30, yoyo: true, repeat: -1, duration: 1000, ease: 'Sine.easeInOut' });
+                    this.showDialogue(this.getBossConfig('boss1').name, '「なんだ、お前が勇者か。そりゃラッキーなこった。王様から勇者を連れてこいって命じられてんだ。お前も戦う気満々って感じだしやるしかないな！！」', function () {
+                      this.showDeviceDialogue('「奴は○○、見かけ通りに己の力のみで戦うことを良しとする。近接攻撃には気を付けるんだ。」', function () {
+                        this.dialogActive = false;
+                        this.physics.resume();
+                        this.startBossLaneMovement();
+                      }.bind(this));
+                    }.bind(this));
+                  }.bind(this)
+                });
+              }.bind(this));
+            }.bind(this));
+          }
+        } else {
+          // 全体が倒されたら幕間終了
+          this.intermissionKills = (this.intermissionKills || 0) + 1;
+          if (this.intermissionKills >= this.intermissionTotal) {
+            this.endIntermission();
+          }
         }
       }
       return;
@@ -576,34 +646,69 @@ class BossScene extends Phaser.Scene {
       this.tweens.add({
         targets: boss, alpha: 0.3, yoyo: true, repeat: 2, duration: 150,
         onComplete: function () {
-          this.showDialogue(cfg.name, cfg.defeat, function () {
-            this.showChoice(cfg.choices.map(function (c) {
-              return {
-                text: c.text,
-                callback: function () {
-                  MOT.Audio.playSelect();
-                  c.flag();
-                  // Explosion and move to next
-                  this.showExplosion(boss.x, boss.y);
-                  boss.destroy();
-                  this.currentBoss = null;
-                  this.currentBossIndex++;
-                  this.dialogActive = false;
-                  this.physics.resume();
-                  // Item drop
-                  MOT.spawnHealthItem(this, 960, 540);
-                  // 次のボスが残っている場合は幕間（雑魚ウェーブ）を挟む
-                  if (this.currentBossIndex < this.bossQueue.length) {
-                    this.startIntermission();
-                  } else {
-                    this.time.delayedCall(1500, function () { this.startBoss(); }, [], this);
-                  }
-                }.bind(this)
-              };
-            }.bind(this)));
-          }.bind(this));
+          if (key === 'boss1') {
+            // 幹部1の敗北後シナリオ
+            this.showDeviceDialogue('「よくやった。このまま止めを刺すんだ。魔物も人間と変わらず心臓を打ち抜けば死ぬ。」', function () {
+              this.showChoice([
+                { text: '心臓を打ち抜く', callback: function () {
+                    MOT.Audio.playSelect();
+                    MOT.modifyFlag('brutality', 1);
+                    MOT.modifyFlag('obeyDoctor', 1); // 人形ポイント+1
+                    this.showDialogue(cfg.name, '「(死にボイスなんかほしい)」', function () {
+                      this.showDeviceDialogue('「よくやった。まずは一歩平和に近づいたな。そのまま進んでいくといい」', function () {
+                        this.proceedToNextArea(boss);
+                      }.bind(this));
+                    }.bind(this));
+                  }.bind(this)
+                },
+                { text: '見逃す', callback: function () {
+                    MOT.Audio.playSelect();
+                    MOT.modifyFlag('showMercy', 1);
+                    MOT.modifyFlag('favor.boss1', 1);
+                    this.showDialogue(cfg.name, '「なんで殺さない…？」', function () {
+                      this.showDeviceDialogue('「お前は一体何をしている？」', function () {
+                        this.proceedToNextArea(boss);
+                      }.bind(this));
+                    }.bind(this));
+                  }.bind(this)
+                }
+              ]);
+            }.bind(this));
+          } else {
+            // 通常の敗北後
+            this.showDialogue(cfg.name, cfg.defeat, function () {
+              this.showChoice(cfg.choices.map(function (c) {
+                return {
+                  text: c.text,
+                  callback: function () {
+                    MOT.Audio.playSelect();
+                    c.flag();
+                    this.proceedToNextArea(boss);
+                  }.bind(this)
+                };
+              }.bind(this)));
+            }.bind(this));
+          }
         }.bind(this)
       });
+    }
+  }
+
+  // 撃破後の共通進行処理
+  proceedToNextArea(boss) {
+    this.showExplosion(boss.x, boss.y);
+    boss.destroy();
+    this.currentBoss = null;
+    this.currentBossIndex++;
+    this.dialogActive = false;
+    this.physics.resume();
+    // Item drop
+    MOT.spawnHealthItem(this, 960, 540);
+    // 次のボスが残っている場合は幕間（雑魚ウェーブ）を挟む
+    if (this.currentBossIndex < this.bossQueue.length) {
+      this.startIntermission();
+    } else {
+      this.time.delayedCall(1500, function () { this.startBoss(); }, [], this);
     }
   }
 
@@ -680,6 +785,65 @@ class BossScene extends Phaser.Scene {
     this.enemyBullets.clear(true, true);
     // 次のボスを開始
     this.time.delayedCall(800, function () { this.startBoss(); }, [], this);
+  }
+
+  showDeviceDialogue(text, onComplete) {
+    if (this.dialogContainer) {
+      this.dialogContainer.destroy();
+    }
+    this.dialogContainer = this.add.container(0, 0).setDepth(100);
+
+    var w = 1920, h = 1080, boxH = 180, boxY = h - boxH - 20;
+    var box = this.add.graphics();
+    box.fillStyle(0x0a0a1a, 0.92);
+    box.fillRoundedRect(60, boxY, w - 120, boxH, 12);
+    box.lineStyle(2, 0x39FF14, 0.8); // デバイス越しの緑枠
+    box.strokeRoundedRect(60, boxY, w - 120, boxH, 12);
+    this.dialogContainer.add(box);
+
+    // 博士の顔アイコン (左端の枠内)
+    var iconBox = this.add.graphics();
+    iconBox.lineStyle(2, 0x39FF14, 0.8);
+    iconBox.strokeRect(80, boxY + 40, 100, 100);
+    this.dialogContainer.add(iconBox);
+    
+    var face = this.add.image(130, boxY + 90, 'doctor_face').setDisplaySize(96, 96);
+    this.dialogContainer.add(face);
+
+    var nameText = this.add.text(210, boxY + 15, '博士 📡', {
+      fontFamily: '"DotGothic16"', fontSize: '22px', color: '#39FF14'
+    });
+    this.dialogContainer.add(nameText);
+
+    var bodyText = this.add.text(210, boxY + 50, '', {
+      fontFamily: '"DotGothic16"', fontSize: '20px', color: '#E5E7EB',
+      wordWrap: { width: w - 330 }, lineSpacing: 8
+    });
+    this.dialogContainer.add(bodyText);
+
+    var contText = this.add.text(w - 160, boxY + boxH - 30, '▼ CLICK', {
+      fontFamily: '"Press Start 2P"', fontSize: '12px', color: '#9CA3AF'
+    }).setAlpha(0);
+    this.dialogContainer.add(contText);
+
+    var charIndex = 0;
+    var typeTimer = this.time.addEvent({
+      delay: 40, callback: function () {
+        charIndex++;
+        bodyText.setText(text.substring(0, charIndex));
+        if (text[charIndex - 1] !== ' ') MOT.Audio.playBleep();
+        if (charIndex >= text.length) {
+          typeTimer.destroy();
+          contText.setAlpha(1);
+          this.tweens.add({ targets: contText, alpha: 0.3, yoyo: true, repeat: -1, duration: 500 });
+          this.input.once('pointerdown', function () {
+            if (this.dialogContainer) this.dialogContainer.destroy();
+            this.dialogContainer = null;
+            if (onComplete) onComplete();
+          }, this);
+        }
+      }, callbackScope: this, loop: true
+    });
   }
 
   showDialogue(speaker, text, onComplete) {

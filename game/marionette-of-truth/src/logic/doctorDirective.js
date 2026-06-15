@@ -76,24 +76,33 @@ MOT.DoctorDirective = {
     var box = scene.add.graphics();
     box.fillStyle(0x0a0a1a, 0.92);
     box.fillRoundedRect(60, boxY, w - 120, boxH, 12);
-    box.lineStyle(2, 0x4FD1FF, 0.8);
+    box.lineStyle(2, 0x39FF14, 0.8); // デバイス越しの通信枠（緑色）
     box.strokeRoundedRect(60, boxY, w - 120, boxH, 12);
     container.add(box);
 
+    // 博士の顔アイコン (左端の枠内)
+    var iconBox = scene.add.graphics();
+    iconBox.lineStyle(2, 0x39FF14, 0.8);
+    iconBox.strokeRect(80, boxY + 40, 100, 100);
+    container.add(iconBox);
+    
+    var face = scene.add.image(130, boxY + 90, 'doctor_face').setDisplaySize(96, 96);
+    container.add(face);
+
     // 「博士」ラベル
-    var nameText = scene.add.text(100, boxY + 15, '博士', {
+    var nameText = scene.add.text(210, boxY + 15, '博士 📡', {
       fontFamily: '"DotGothic16"',
       fontSize: '22px',
-      color: '#4FD1FF'
+      color: '#39FF14'
     });
     container.add(nameText);
 
     // 指示テキスト
-    var txt = scene.add.text(100, boxY + 50, directive.text, {
+    var txt = scene.add.text(210, boxY + 50, directive.text, {
       fontFamily: '"DotGothic16"',
       fontSize: '20px',
       color: '#FFFFFF',
-      wordWrap: { width: w - 220 },
+      wordWrap: { width: w - 330 },
       lineSpacing: 8
     });
     this.directiveTextObj = txt;

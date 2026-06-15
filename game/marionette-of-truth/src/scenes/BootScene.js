@@ -43,6 +43,9 @@ class BootScene extends Phaser.Scene {
     
     // 幹部2戦闘狂（添付画像）
     this.load.image('boss2_combat', 'assets/images/boss2_combat.jpg');
+    
+    // 博士の顔アイコン
+    this.load.image('doctor_face', 'assets/images/doctor_face.jpg');
   }
 
   create() {
