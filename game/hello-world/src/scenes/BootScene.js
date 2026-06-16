@@ -39,13 +39,16 @@ class BootScene extends Phaser.Scene {
     this.load.image('_placeholder', 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==');
 
     // 幹部1筋肉（添付画像）
-    this.load.image('boss1_muscle', 'assets/images/boss1_muscle.jpg');
+    this.load.image('boss1_muscle', window.BOSS1_B64);
     
     // 幹部2戦闘狂（添付画像）
-    this.load.image('boss2_combat', 'assets/images/boss2_combat.jpg');
+    this.load.image('boss2_combat', window.BOSS2_B64);
     
     // 博士の顔アイコン
-    this.load.image('doctor_face', 'assets/images/doctor_face.jpg');
+    this.load.image('doctor_face', window.DOCTOR_B64);
+
+    // Title background (Hello World)
+    this.load.image('title_bg', window.TITLE_BG_B64);
   }
 
   create() {
