@@ -98,21 +98,21 @@ class GameScene extends Phaser.Scene {
     // Wave schedule
     this.waveSchedule = this.getWaveSchedule();
 
+    // Tutorial State
+    if (this.currentStage === 1) {
+      this.tutorialPhase = 1;
+      this.tutorialTimer = 0;
+      this.tutorialWaitSpecial = false;
+    }
+
     // Fade in
     this.cameras.main.fadeIn(500, 5, 8, 20);
   }
 
   getWaveSchedule() {
     if (this.currentStage === 1) {
-      return [
-        { time: 3000, action: 'wave', count: 3, speed: 150 },
-        { time: 7000, action: 'wave', count: 5, speed: 180 },
-        { time: 12000, action: 'wave', count: 4, speed: 200 },
-        { time: 16000, action: 'items' },
-        { time: 18000, action: 'wave', count: 6, speed: 200 },
-        { time: 23000, action: 'minion1_encounter' },
-        { time: 28000, action: 'stage_end' }
-      ];
+      // Tutorial stage handles spawning manually in updateTutorial
+      return [];
     } else {
       return [
         { time: 2000, action: 'wave', count: 5, speed: 200 },
@@ -127,6 +127,10 @@ class GameScene extends Phaser.Scene {
   }
 
   update(time, delta) {
+    if (this.currentStage === 1 && this.tutorialPhase) {
+      this.updateTutorial(delta);
+    }
+    
     if (this.dialogActive) return;
 
     this.stageTimer += delta;
@@ -141,8 +145,10 @@ class GameScene extends Phaser.Scene {
     // Player movement (keyboard)
     MOT.handleMovement(this, this.player);
 
-    // 博士の指示システム update
-    MOT.DoctorDirective.update(this, delta, this.player, this.dialogActive);
+    // 博士の指示システム update (チュートリアル中は出さない)
+    if (this.currentStage !== 1) {
+      MOT.DoctorDirective.update(this, delta, this.player, this.dialogActive);
+    }
 
     // Auto-shoot
     this.autoShootTimer += delta;
@@ -626,8 +632,10 @@ class GameScene extends Phaser.Scene {
         return;
       }
       this.showExplosion(enemy.x, enemy.y);
-      // Drop items sometimes (30% chance)
-      if (Phaser.Math.Between(0, 100) < 40) {
+      // Tutorial specific drop logic
+      if (enemy.tutorialDrop) {
+        MOT.spawnEnergyItem(this, enemy.x, enemy.y, enemy.tutorialRed);
+      } else if (Phaser.Math.Between(0, 100) < 40) {
         MOT.spawnEnergyItem(this, enemy.x, enemy.y);
       }
       enemy.destroy();
@@ -704,6 +712,197 @@ class GameScene extends Phaser.Scene {
       this.barrierIconFg.arc(iconX, iconY, iconRadius - 2, Phaser.Math.DegToRad(-90), Phaser.Math.DegToRad(-90 + 360 * cdPct), false);
       this.barrierIconFg.closePath();
       this.barrierIconFg.fillPath();
+    }
+  }
+  showDeviceDialogue(text, onComplete) {
+    if (this.dialogContainer) {
+      this.dialogContainer.destroy();
+    }
+    this.dialogContainer = this.add.container(0, 0).setDepth(100);
+
+    var w = 1920, h = 1080, boxH = 180, boxY = h - boxH - 20;
+    var box = this.add.graphics();
+    box.fillStyle(0x0a0a1a, 0.92);
+    box.fillRoundedRect(60, boxY, w - 120, boxH, 12);
+    box.lineStyle(2, 0x39FF14, 0.8);
+    box.strokeRoundedRect(60, boxY, w - 120, boxH, 12);
+    this.dialogContainer.add(box);
+
+    var iconBox = this.add.graphics();
+    iconBox.lineStyle(2, 0x39FF14, 0.8);
+    iconBox.strokeRect(80, boxY + 40, 100, 100);
+    this.dialogContainer.add(iconBox);
+    
+    var face = this.add.image(130, boxY + 90, 'doctor_face').setDisplaySize(96, 96);
+    this.dialogContainer.add(face);
+
+    var nameText = this.add.text(210, boxY + 15, '博士 📡', {
+      fontFamily: '"DotGothic16"', fontSize: '22px', color: '#39FF14'
+    });
+    this.dialogContainer.add(nameText);
+
+    var bodyText = this.add.text(210, boxY + 50, '', {
+      fontFamily: '"DotGothic16"', fontSize: '20px', color: '#E5E7EB',
+      wordWrap: { width: w - 330 }, lineSpacing: 8
+    });
+    this.dialogContainer.add(bodyText);
+
+    var contText = this.add.text(w - 160, boxY + boxH - 30, '▼ CLICK', {
+      fontFamily: '"Press Start 2P"', fontSize: '12px', color: '#9CA3AF'
+    }).setAlpha(0);
+    this.dialogContainer.add(contText);
+
+    var charIndex = 0;
+    var typeTimer = this.time.addEvent({
+      delay: 40, callback: function () {
+        charIndex++;
+        bodyText.setText(text.substring(0, charIndex));
+        if (text[charIndex - 1] !== ' ' && window.MOT && MOT.Audio) MOT.Audio.playBleep();
+        if (charIndex >= text.length) {
+          typeTimer.destroy();
+          contText.setAlpha(1);
+          this.tweens.add({ targets: contText, alpha: 0.3, yoyo: true, repeat: -1, duration: 500 });
+          this.input.once('pointerdown', function () {
+            if (this.dialogContainer) this.dialogContainer.destroy();
+            this.dialogContainer = null;
+            if (onComplete) onComplete();
+          }, this);
+        }
+      }, callbackScope: this, loop: true
+    });
+  }
+
+  spawnTutorialEnemy(laneIndex, speed) {
+    const laneYs = [300, 540, 780];
+    const enemy = this.enemyGroup.create(1920, laneYs[laneIndex], 'enemy_basic');
+    enemy.setVelocityX(-speed);
+    enemy.hp = 1;
+    enemy.fireTimer = this.time.addEvent({
+      delay: Phaser.Math.Between(1500, 2500),
+      callback: () => {
+        if (enemy.active) {
+          MOT.fireLinear(this, enemy.x, enemy.y, -300, 0);
+        }
+      },
+      loop: true
+    });
+    return enemy;
+  }
+
+  updateTutorial(delta) {
+    if (this.dialogActive) return;
+    this.tutorialTimer += delta;
+
+    if (this.tutorialPhase === 1 && this.tutorialTimer > 1000) {
+      this.tutorialPhase = 1.1;
+      this.physics.pause();
+      this.dialogActive = true;
+      this.showDeviceDialogue('「そこは始まりの村だ。お前はまだまだ目覚めたばかりで戦いには慣れていないだろう。」', () => {
+        this.showDeviceDialogue('「ここで戦闘慣れしていくといい。」', () => {
+          this.dialogActive = false;
+          this.physics.resume();
+          
+          let e = this.spawnTutorialEnemy(1, 150);
+          e.x = 1700;
+          
+          this.time.delayedCall(500, () => {
+            this.physics.pause();
+            this.dialogActive = true;
+            this.showDeviceDialogue('「敵がやってきたな。お前は敵の前に移動して撃ち殺すんだ。」', () => {
+              this.showDeviceDialogue('「移動方法は、パソコンなら矢印キーで移動できる。スマホなら画面をスライドしろ。」', () => {
+                this.dialogActive = false;
+                this.tutorialPhase = 2;
+                this.physics.resume();
+              });
+            });
+          });
+        });
+      });
+    } else if (this.tutorialPhase === 2) {
+      if (this.enemyGroup.countActive() === 0) {
+        this.tutorialPhase = 2.1;
+        this.physics.pause();
+        this.dialogActive = true;
+        this.showDeviceDialogue('「よくやった。」', () => {
+          this.showDeviceDialogue('「それと、今くらいの敵なら問題ないと思うが、魔王城に近づくにつれて敵の攻撃も強くなる。」', () => {
+            this.showDeviceDialogue('「よけきれないときはシールドを貼るんだ。パソコンはスペース、スマホは長押しだ。タイミング良く敵の攻撃にシールドを貼れた場合、反撃することもできるだろう。」', () => {
+              this.showDeviceDialogue('「気を付けないといけないのは、シールドはすぐに何度も貼り直しはできない。左上の緑の円がクールタイムだ。それが溜まりきれば貼れる状態になっている。」', () => {
+                this.dialogActive = false;
+                this.tutorialPhase = 3;
+              });
+            });
+          });
+        });
+      }
+    } else if (this.tutorialPhase === 3) {
+      this.tutorialPhase = 3.1;
+      
+      for(let i=0; i<3; i++) {
+        let e = this.spawnTutorialEnemy(i, 180);
+        e.x = 1700 + Phaser.Math.Between(0, 100);
+        e.tutorialDrop = true;
+        e.tutorialRed = (i === 1);
+      }
+      
+      this.time.delayedCall(500, () => {
+        this.physics.pause();
+        this.dialogActive = true;
+        this.showDeviceDialogue('「敵が来たな。すべて倒してみろ」', () => {
+          this.dialogActive = false;
+          this.tutorialPhase = 4;
+          this.physics.resume();
+        });
+      });
+    } else if (this.tutorialPhase === 4) {
+      if (this.enemyGroup.countActive() === 0) {
+        this.tutorialPhase = 4.1;
+        this.physics.pause();
+        this.dialogActive = true;
+        this.showDeviceDialogue('「よくやった。今、倒したときに青と赤のダイヤがドロップしただろう？」', () => {
+          this.showDeviceDialogue('「それを拾うことで左上にある必殺技ゲージを貯めることができる。赤の方がドロップ確率は低いが、ゲージを多く溜まる。うまく拾っていくんだな。」', () => {
+            this.dialogActive = false;
+            this.tutorialPhase = 5;
+            this.physics.resume();
+          });
+        });
+      }
+    } else if (this.tutorialPhase === 5) {
+      if (!this.tutorialPhase5Timer) this.tutorialPhase5Timer = 0;
+      this.tutorialPhase5Timer += delta;
+
+      if (MOT.flags.energy >= 100 || this.tutorialPhase5Timer >= 3000) {
+        if (MOT.flags.energy < 100) {
+          MOT.flags.energy = 100;
+          MOT.flags.maxEnergy = true;
+        }
+        
+        this.tutorialPhase = 5.1;
+        this.physics.pause();
+        this.dialogActive = true;
+        this.showDeviceDialogue('「ゲージが溜まったな。それが溜まると必殺技を打つことができる。パソコンならエンター、スマホならダブルタップで打てる。試してみろ。」', () => {
+          this.dialogActive = false;
+          this.tutorialPhase = 6;
+          this.physics.resume();
+          this.tutorialWaitSpecial = true;
+        });
+      }
+    } else if (this.tutorialPhase === 6) {
+      if (MOT.flags.energy < 100 && this.tutorialWaitSpecial) {
+        // Special was used
+        this.tutorialWaitSpecial = false;
+        this.tutorialPhase = 6.1;
+        this.time.delayedCall(500, () => {
+          this.physics.pause();
+          this.dialogActive = true;
+          this.showDeviceDialogue('「使えたな。戦闘中、上手く使ってこのまま敵を倒していくといい。」', () => {
+            this.dialogActive = false;
+            this.cameras.main.fadeOut(1000, 0,0,0);
+            this.time.delayedCall(1000, () => {
+              this.scene.start('GameScene', { stage: 2 });
+            });
+          });
+        });
+      }
     }
   }
 }

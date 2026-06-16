@@ -6,8 +6,8 @@ window.MOT = window.MOT || {};
 /**
  * Spawn an energy item at position.
  */
-MOT.spawnEnergyItem = function (scene, x, y) {
-  const isMurderous = Phaser.Math.Between(0, 100) < 8; // 8% chance for red‑black orb
+MOT.spawnEnergyItem = function (scene, x, y, forceRed = false) {
+  const isMurderous = forceRed || Phaser.Math.Between(0, 100) < 8; // 8% chance for red‑black orb
   const item = scene.itemGroup.create(x, y, 'item_energy');
   item.setVelocityX(Phaser.Math.Between(-400, -200));
   
