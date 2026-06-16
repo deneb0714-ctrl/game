@@ -37,10 +37,21 @@ class StoryScene extends Phaser.Scene {
     this.heroLabel = this.add.text(300, h / 2, '勇者(仮)', { fontFamily: '"DotGothic16"', fontSize: '32px', color: '#ffffff' }).setOrigin(0.5).setAlpha(0);
     this.heroGroup = [this.heroPortrait, this.heroLabel];
 
-    // Doctor portrait placeholder (right)
+    // Doctor portrait (right) - bust-up crop of full-body image
     this.doctorFrame = this.add.rectangle(w - 300, h / 2, 400, 600, 0x1F2933).setAlpha(0);
-    this.doctorLabel = this.add.text(w - 300, h / 2, '博士(仮)', { fontFamily: '"DotGothic16"', fontSize: '32px', color: '#ffffff' }).setOrigin(0.5).setAlpha(0);
-    this.doctorGroup = [this.doctorFrame, this.doctorLabel];
+    this.doctorImage = this.add.image(w - 300, h / 2 - 40, 'doctor_stand').setAlpha(0);
+    // Scale to fit the frame width while showing bust-up (top portion)
+    var imgW = this.textures.get('doctor_stand').getSourceImage().width;
+    var imgH = this.textures.get('doctor_stand').getSourceImage().height;
+    var targetW = 380;
+    var scale = targetW / imgW;
+    this.doctorImage.setScale(scale);
+    // Crop to show only bust-up (top ~55% of image)
+    var cropH = Math.floor(imgH * 0.55);
+    this.doctorImage.setCrop(0, 0, imgW, cropH);
+    // Adjust Y position so bust-up is centered in frame
+    this.doctorImage.setY(h / 2 - 60);
+    this.doctorGroup = [this.doctorFrame, this.doctorImage];
 
     // UI Layer - Dialog Box
     const boxH = 250;
@@ -91,10 +102,12 @@ class StoryScene extends Phaser.Scene {
     if (this.bg.alpha > 0 || data.bg === 'lab') {
       const isHero = data.speaker.includes('勇者');
       const isDoctor = data.speaker.includes('博士') || data.speaker === '？？？';
-      this.heroPortrait.setAlpha(isHero ? 1 : 0.5);
+      this.heroPortrait.setAlpha(isHero ? 1 : 0.4);
       this.heroPortrait.setStrokeStyle(isHero ? 4 : 0, 0xffffff);
-      this.doctorFrame.setAlpha(isDoctor ? 1 : 0.5);
+      this.heroLabel.setAlpha(isHero ? 1 : 0.4);
+      this.doctorFrame.setAlpha(isDoctor ? 1 : 0.4);
       this.doctorFrame.setStrokeStyle(isDoctor ? 4 : 0, 0xffffff);
+      this.doctorImage.setAlpha(isDoctor ? 1 : 0.4);
     }
 
     // Handle Choice
@@ -158,8 +171,10 @@ class StoryScene extends Phaser.Scene {
       
       this.doctorFrame.setAlpha(1);
       this.doctorFrame.setStrokeStyle(4, 0xffffff);
-      this.heroPortrait.setAlpha(0.5);
+      this.doctorImage.setAlpha(1);
+      this.heroPortrait.setAlpha(0.4);
       this.heroPortrait.setStrokeStyle(0);
+      this.heroLabel.setAlpha(0.4);
 
       this.time.delayedCall(3000, () => {
         this.cameras.main.fadeOut(1000);
@@ -173,8 +188,10 @@ class StoryScene extends Phaser.Scene {
 
       this.doctorFrame.setAlpha(1);
       this.doctorFrame.setStrokeStyle(4, 0xffffff);
-      this.heroPortrait.setAlpha(0.5);
+      this.doctorImage.setAlpha(1);
+      this.heroPortrait.setAlpha(0.4);
       this.heroPortrait.setStrokeStyle(0);
+      this.heroLabel.setAlpha(0.4);
 
       this.time.delayedCall(2000, () => {
         // Fade out over 3 seconds

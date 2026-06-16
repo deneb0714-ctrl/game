@@ -47,6 +47,9 @@ class BootScene extends Phaser.Scene {
     // 博士の顔アイコン
     this.load.image('doctor_face', window.DOCTOR_B64);
 
+    // 博士の立ち絵
+    this.load.image('doctor_stand', window.DOCTOR_STAND_B64);
+
     // Title background (Hello World)
     this.load.image('title_bg', window.TITLE_BG_B64);
   }
