@@ -38,20 +38,24 @@ class StoryScene extends Phaser.Scene {
     this.heroGroup = [this.heroPortrait, this.heroLabel];
 
     // Doctor portrait (right) - bust-up crop of full-body image
-    this.doctorFrame = this.add.rectangle(w - 300, h / 2, 400, 600, 0x1F2933).setAlpha(0);
-    this.doctorImage = this.add.image(w - 300, h / 2 - 40, 'doctor_stand').setAlpha(0);
-    // Scale to fit the frame width while showing bust-up (top portion)
+    this.doctorImage = this.add.image(w - 300, h / 2, 'doctor_stand').setAlpha(0);
     var imgW = this.textures.get('doctor_stand').getSourceImage().width;
     var imgH = this.textures.get('doctor_stand').getSourceImage().height;
-    var targetW = 380;
-    var scale = targetW / imgW;
+    
+    // Scale to fit width of 400
+    var scale = 400 / imgW;
     this.doctorImage.setScale(scale);
-    // Crop to show only bust-up (top ~55% of image)
-    var cropH = Math.floor(imgH * 0.55);
-    this.doctorImage.setCrop(0, 0, imgW, cropH);
-    // Adjust Y position so bust-up is centered in frame
-    this.doctorImage.setY(h / 2 - 60);
-    this.doctorGroup = [this.doctorFrame, this.doctorImage];
+    
+    // Align top of the image with the top of the original 400x600 box (box center was h/2, top is h/2 - 300)
+    this.doctorImage.setY(h / 2 - 300 + (imgH * scale) / 2);
+    
+    // Crop the bottom so it doesn't exceed 600px in scaled height
+    var cropH = 600 / scale;
+    if (cropH < imgH) {
+      this.doctorImage.setCrop(0, 0, imgW, cropH);
+    }
+    
+    this.doctorGroup = [this.doctorImage];
 
     // UI Layer - Dialog Box
     const boxH = 250;
@@ -105,8 +109,6 @@ class StoryScene extends Phaser.Scene {
       this.heroPortrait.setAlpha(isHero ? 1 : 0.4);
       this.heroPortrait.setStrokeStyle(isHero ? 4 : 0, 0xffffff);
       this.heroLabel.setAlpha(isHero ? 1 : 0.4);
-      this.doctorFrame.setAlpha(isDoctor ? 1 : 0.4);
-      this.doctorFrame.setStrokeStyle(isDoctor ? 4 : 0, 0xffffff);
       this.doctorImage.setAlpha(isDoctor ? 1 : 0.4);
     }
 
@@ -169,8 +171,6 @@ class StoryScene extends Phaser.Scene {
       this.nameText.setText('博士');
       this.messageText.setText('気のいい返事をもらえてうれしいよ。早速冒険に向かってもらうとしよう。');
       
-      this.doctorFrame.setAlpha(1);
-      this.doctorFrame.setStrokeStyle(4, 0xffffff);
       this.doctorImage.setAlpha(1);
       this.heroPortrait.setAlpha(0.4);
       this.heroPortrait.setStrokeStyle(0);
@@ -186,8 +186,6 @@ class StoryScene extends Phaser.Scene {
       this.nameText.setText('博士');
       this.messageText.setText('そうか、それは残念だ。無理なら君にもう用はない。');
 
-      this.doctorFrame.setAlpha(1);
-      this.doctorFrame.setStrokeStyle(4, 0xffffff);
       this.doctorImage.setAlpha(1);
       this.heroPortrait.setAlpha(0.4);
       this.heroPortrait.setStrokeStyle(0);
