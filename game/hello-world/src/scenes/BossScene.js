@@ -583,8 +583,17 @@ class BossScene extends Phaser.Scene {
             
             var w = 1920, h = 1080;
             var dimBg = this.add.rectangle(w/2, h/2, w, h, 0x000000, 0.6).setAlpha(0).setDepth(89);
-            var heroFrame = this.add.rectangle(300, h / 2, 400, 600, 0x3a3a5e).setAlpha(0).setDepth(90);
-            var heroLabel = this.add.text(300, h / 2, '勇者(仮)', { fontFamily: '"DotGothic16"', fontSize: '32px', color: '#ffffff' }).setOrigin(0.5).setAlpha(0).setDepth(90);
+            var heroImage = this.add.image(300, h / 2, 'hero_stand').setAlpha(0).setDepth(90);
+            this.textures.get('hero_stand').setFilter(Phaser.Textures.FilterMode.LINEAR);
+            var hImgW = this.textures.get('hero_stand').getSourceImage().width;
+            var hImgH = this.textures.get('hero_stand').getSourceImage().height;
+            var hScale = 400 / hImgW;
+            heroImage.setScale(hScale);
+            heroImage.setY(h / 2 - 300 + (hImgH * hScale) / 2);
+            var hCropH = 600 / hScale;
+            if (hCropH < hImgH) {
+              heroImage.setCrop(0, 0, hImgW, hCropH);
+            }
             var enemyFrame = this.add.rectangle(w - 300, h / 2, 400, 600, 0x1F2933).setAlpha(0).setDepth(90).setStrokeStyle(4, 0xffffff);
             var enemyLabel = this.add.text(w - 300, h / 2, '幹部1(仮)', { fontFamily: '"DotGothic16"', fontSize: '32px', color: '#ffffff' }).setOrigin(0.5).setAlpha(0).setDepth(90);
             
@@ -607,16 +616,16 @@ class BossScene extends Phaser.Scene {
                   onComplete: function () {
                     this.tweens.add({ targets: realBoss, y: realBoss.y - 30, yoyo: true, repeat: -1, duration: 1000, ease: 'Sine.easeInOut' });
                     
-                    // 幹部1のセリフ時に立ち絵を再表示
-                    this.tweens.add({ targets: [dimBg, heroFrame, heroLabel], alpha: 0.5, duration: 500 });
+                    // 幹部1のセリフ時に立ち絵を再表示 (勇者は喋らないので暗め)
+                    this.tweens.add({ targets: [dimBg, heroImage], alpha: 0.4, duration: 500 });
                     this.tweens.add({ targets: [enemyFrame, enemyLabel], alpha: 1, duration: 500 });
                     
                     this.showDialogue(this.getBossConfig('boss1').name, '「なんだ、お前が勇者か。そりゃラッキーなこった。王様から勇者を連れてこいって命じられてんだ。お前も戦う気満々って感じだしやるしかないな！！」', function () {
                       
                       // 立ち絵を消す
                       this.tweens.add({
-                        targets: [dimBg, heroFrame, heroLabel, enemyFrame, enemyLabel], alpha: 0, duration: 500,
-                        onComplete: function() { dimBg.destroy(); heroFrame.destroy(); heroLabel.destroy(); enemyFrame.destroy(); enemyLabel.destroy(); }
+                        targets: [dimBg, heroImage, enemyFrame, enemyLabel], alpha: 0, duration: 500,
+                        onComplete: function() { dimBg.destroy(); heroImage.destroy(); enemyFrame.destroy(); enemyLabel.destroy(); }
                       });
                       
                       this.showDeviceDialogue('「奴は○○、見かけ通りに己の力のみで戦うことを良しとする。近接攻撃には気を付けるんだ。」', function () {

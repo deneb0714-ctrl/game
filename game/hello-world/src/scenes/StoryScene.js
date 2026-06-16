@@ -32,13 +32,29 @@ class StoryScene extends Phaser.Scene {
     this.isWaitingForChoice = false;
 
     // Portraits Layer
-    // Hero portrait placeholder (left)
-    this.heroPortrait = this.add.rectangle(300, h / 2, 400, 600, 0x3a3a5e).setAlpha(0);
-    this.heroLabel = this.add.text(300, h / 2, '勇者(仮)', { fontFamily: '"DotGothic16"', fontSize: '32px', color: '#ffffff' }).setOrigin(0.5).setAlpha(0);
-    this.heroGroup = [this.heroPortrait, this.heroLabel];
+    // Hero portrait (left) - bust-up crop of full-body image
+    this.heroImage = this.add.image(300, h / 2, 'hero_stand').setAlpha(0);
+    this.textures.get('hero_stand').setFilter(Phaser.Textures.FilterMode.LINEAR);
+    var hImgW = this.textures.get('hero_stand').getSourceImage().width;
+    var hImgH = this.textures.get('hero_stand').getSourceImage().height;
+    
+    var hScale = 400 / hImgW;
+    this.heroImage.setScale(hScale);
+    
+    this.heroImage.setY(h / 2 - 300 + (hImgH * hScale) / 2);
+    
+    var hCropH = 600 / hScale;
+    if (hCropH < hImgH) {
+      this.heroImage.setCrop(0, 0, hImgW, hCropH);
+    }
+    
+    this.heroGroup = [this.heroImage];
 
     // Doctor portrait (right) - bust-up crop of full-body image
     this.doctorImage = this.add.image(w - 300, h / 2, 'doctor_stand').setAlpha(0);
+    // ガビガビ（ピクセルアート用ニアレストネイバー補間）を解除して滑らかにする
+    this.textures.get('doctor_stand').setFilter(Phaser.Textures.FilterMode.LINEAR);
+    
     var imgW = this.textures.get('doctor_stand').getSourceImage().width;
     var imgH = this.textures.get('doctor_stand').getSourceImage().height;
     
@@ -106,9 +122,7 @@ class StoryScene extends Phaser.Scene {
     if (this.bg.alpha > 0 || data.bg === 'lab') {
       const isHero = data.speaker.includes('勇者');
       const isDoctor = data.speaker.includes('博士') || data.speaker === '？？？';
-      this.heroPortrait.setAlpha(isHero ? 1 : 0.4);
-      this.heroPortrait.setStrokeStyle(isHero ? 4 : 0, 0xffffff);
-      this.heroLabel.setAlpha(isHero ? 1 : 0.4);
+      this.heroImage.setAlpha(isHero ? 1 : 0.4);
       this.doctorImage.setAlpha(isDoctor ? 1 : 0.4);
     }
 
@@ -172,9 +186,7 @@ class StoryScene extends Phaser.Scene {
       this.messageText.setText('気のいい返事をもらえてうれしいよ。早速冒険に向かってもらうとしよう。');
       
       this.doctorImage.setAlpha(1);
-      this.heroPortrait.setAlpha(0.4);
-      this.heroPortrait.setStrokeStyle(0);
-      this.heroLabel.setAlpha(0.4);
+      this.heroImage.setAlpha(0.4);
 
       this.time.delayedCall(3000, () => {
         this.cameras.main.fadeOut(1000);
@@ -187,9 +199,7 @@ class StoryScene extends Phaser.Scene {
       this.messageText.setText('そうか、それは残念だ。無理なら君にもう用はない。');
 
       this.doctorImage.setAlpha(1);
-      this.heroPortrait.setAlpha(0.4);
-      this.heroPortrait.setStrokeStyle(0);
-      this.heroLabel.setAlpha(0.4);
+      this.heroImage.setAlpha(0.4);
 
       this.time.delayedCall(2000, () => {
         // Fade out over 3 seconds
