@@ -55,6 +55,9 @@ class BootScene extends Phaser.Scene {
 
     // Title background (Hello World)
     this.load.image('title_bg', window.TITLE_BG_B64);
+    
+    // Title background (Glitch)
+    this.load.image('title_bg_glitch', window.TITLE_BG_GLITCH_B64);
   }
 
   create() {

@@ -11,7 +11,8 @@ class TitleScene extends Phaser.Scene {
     const h = this.cameras.main.height;
 
     // New Title Background
-    const bg = this.add.image(w / 2, h / 2, 'title_bg');
+    const bgKey = (window.MOT && window.MOT.flags && window.MOT.flags.useGlitchTitle) ? 'title_bg_glitch' : 'title_bg';
+    const bg = this.add.image(w / 2, h / 2, bgKey);
     bg.setDisplaySize(w, h);
 
     // Fade in camera

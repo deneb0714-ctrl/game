@@ -214,6 +214,8 @@ class StoryScene extends Phaser.Scene {
         this.time.delayedCall(3000, () => {
           if (window.MOT && MOT.Audio) MOT.Audio.playShutdown();
           this.time.delayedCall(1500, () => {
+            MOT.flags = MOT.flags || {};
+            MOT.flags.useGlitchTitle = true;
             this.scene.start('TitleScene');
           });
         });

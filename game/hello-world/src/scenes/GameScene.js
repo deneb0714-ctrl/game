@@ -879,11 +879,14 @@ class GameScene extends Phaser.Scene {
         this.tutorialPhase = 5.1;
         this.physics.pause();
         this.dialogActive = true;
-        this.showDeviceDialogue('「ゲージが溜まったな。それが溜まると必殺技を打つことができる。パソコンならエンター、スマホならダブルタップで打てる。試してみろ。」', () => {
-          this.dialogActive = false;
-          this.tutorialPhase = 6;
-          this.physics.resume();
-          this.tutorialWaitSpecial = true;
+        
+        this.showDeviceDialogue('「最初は私が代わりに必殺技ゲージを貯めてやろう。」', () => {
+          this.showDeviceDialogue('「ゲージが溜まったな。それが溜まると必殺技を打つことができる。パソコンならエンター、スマホならダブルタップで打てる。試してみろ。」', () => {
+            this.dialogActive = false;
+            this.tutorialPhase = 6;
+            this.physics.resume();
+            this.tutorialWaitSpecial = true;
+          });
         });
       }
     } else if (this.tutorialPhase === 6) {
