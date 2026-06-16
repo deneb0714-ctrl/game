@@ -263,7 +263,7 @@ class BossScene extends Phaser.Scene {
       if (b) {
         b.setVelocityX(600); b.setScale(2);
         MOT.Audio.playShot();
-        this.time.delayedCall(2000, function () { if (b.active) b.destroy(); });
+        this.time.delayedCall(4000, function () { if (b.active) b.destroy(); });
       }
     }
 
@@ -588,13 +588,16 @@ class BossScene extends Phaser.Scene {
             var enemyFrame = this.add.rectangle(w - 300, h / 2, 400, 600, 0x1F2933).setAlpha(0).setDepth(90).setStrokeStyle(4, 0xffffff);
             var enemyLabel = this.add.text(w - 300, h / 2, '幹部1(仮)', { fontFamily: '"DotGothic16"', fontSize: '32px', color: '#ffffff' }).setOrigin(0.5).setAlpha(0).setDepth(90);
             
+            // ???のセリフ時は敵側の立ち絵だけ表示
             this.tweens.add({ targets: [dimBg, enemyFrame, enemyLabel], alpha: 1, duration: 500 });
-            this.tweens.add({ targets: [heroFrame, heroLabel], alpha: 0.5, duration: 500 });
             
             this.showDialogue('???', '「おいおい、こんなところで何してんだ？今引き返すっていうなら見逃してやるぜ？」', function () {
+              // 博士のデバイスセリフ時は立ち絵を一旦消す
+              this.tweens.add({ targets: [dimBg, enemyFrame, enemyLabel], alpha: 0, duration: 300 });
+              
               this.showDeviceDialogue('「まずい。魔王軍のやつらに気付かれた。しかし、勇者の君なら倒せるだろう。」', function () {
                 
-                // 幹部1 登場
+                // 幹部1 登場演出（立ち絵なしでボスアイコンが登場）
                 var realBoss = this.currentBoss;
                 realBoss.setVisible(true);
                 realBoss.body.enable = true;
@@ -603,6 +606,11 @@ class BossScene extends Phaser.Scene {
                   targets: realBoss, x: 1400, duration: 1200, ease: 'Power2',
                   onComplete: function () {
                     this.tweens.add({ targets: realBoss, y: realBoss.y - 30, yoyo: true, repeat: -1, duration: 1000, ease: 'Sine.easeInOut' });
+                    
+                    // 幹部1のセリフ時に立ち絵を再表示
+                    this.tweens.add({ targets: [dimBg, heroFrame, heroLabel], alpha: 0.5, duration: 500 });
+                    this.tweens.add({ targets: [enemyFrame, enemyLabel], alpha: 1, duration: 500 });
+                    
                     this.showDialogue(this.getBossConfig('boss1').name, '「なんだ、お前が勇者か。そりゃラッキーなこった。王様から勇者を連れてこいって命じられてんだ。お前も戦う気満々って感じだしやるしかないな！！」', function () {
                       
                       // 立ち絵を消す

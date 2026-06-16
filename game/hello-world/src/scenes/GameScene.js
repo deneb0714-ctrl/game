@@ -80,7 +80,7 @@ class GameScene extends Phaser.Scene {
     this.createHUD();
 
     // Stage info text
-    const stageLabel = this.currentStage === 1 ? 'STAGE 1 – 研究所' : 'STAGE 2 – 魔王城への道';
+    const stageLabel = 'STAGE 1 – ○○';
     const stageText = this.add.text(w / 2, h / 2, stageLabel, {
       fontFamily: '"Press Start 2P"',
       fontSize: '28px',
@@ -219,7 +219,7 @@ class GameScene extends Phaser.Scene {
     if (bullet) {
       bullet.setVelocityX(800);
       bullet.setScale(2);
-      this.time.delayedCall(2000, function () {
+      this.time.delayedCall(4000, function () {
         if (bullet.active) bullet.destroy();
       });
     }
@@ -523,19 +523,11 @@ class GameScene extends Phaser.Scene {
   }
 
   endStage() {
-    if (this.currentStage === 1) {
-      this.cameras.main.fadeOut(800, 5, 8, 20);
-      this.time.delayedCall(800, function () {
-        this.scene.restart({ stage: 2 });
-      }, [], this);
-    } else {
-      // Go to boss fight after this stage
-      this.cameras.main.fadeOut(800, 5, 8, 20);
-      this.time.delayedCall(800, function () {
-        // Pass the next boss index (stage-1) to BossScene
-        this.scene.start('BossScene', { bossIndex: this.currentStage - 1 });
-      }, [], this);
-    }
+    // Go to boss fight after this stage
+    this.cameras.main.fadeOut(800, 5, 8, 20);
+    this.time.delayedCall(800, function () {
+      this.scene.start('BossScene', { bossIndex: 0 });
+    }, [], this);
   }
 
   onPlayerHit(player, obj) {
