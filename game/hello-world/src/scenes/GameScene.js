@@ -147,7 +147,9 @@ class GameScene extends Phaser.Scene {
 
     // 博士の指示システム update (チュートリアル中は出さない)
     if (this.currentStage !== 1) {
-      MOT.DoctorDirective.update(this, delta, this.player, this.dialogActive);
+      // ボス戦直前（残り5秒 = 20000ms以降）は指示を出さない
+      const suppressDirective = (this.stageTimer >= 20000);
+      MOT.DoctorDirective.update(this, delta, this.player, this.dialogActive || suppressDirective);
     }
 
     // Auto-shoot

@@ -861,7 +861,7 @@ class BossScene extends Phaser.Scene {
                     MOT.modifyFlag('favor.boss1', 1);
                     this.showDialogue(cfg.name, '「なんで殺さない…？」', function () {
                       this.showDeviceDialogue('「お前は一体何をしている？」', function () {
-                        this.proceedToNextArea(boss);
+                        this.proceedToNextArea(boss, true);
                       }.bind(this));
                     }.bind(this));
                   }.bind(this)
@@ -877,7 +877,8 @@ class BossScene extends Phaser.Scene {
                   callback: function () {
                     MOT.Audio.playSelect();
                     c.flag();
-                    this.proceedToNextArea(boss);
+                    var isSpared = (c.text === '見逃す' || c.text.includes('見逃す'));
+                    this.proceedToNextArea(boss, isSpared);
                   }.bind(this)
                 };
               }.bind(this)));
@@ -956,20 +957,34 @@ class BossScene extends Phaser.Scene {
   }
 
   // 撃破後の共通進行処理
-  proceedToNextArea(boss) {
-    this.showExplosion(boss.x, boss.y);
-    boss.destroy();
-    this.currentBoss = null;
-    this.currentBossIndex++;
-    this.dialogActive = false;
-    this.physics.resume();
-    // Item drop
-    MOT.spawnHealthItem(this, 960, 540);
-    // 次のボスが残っている場合は幕間（雑魚ウェーブ）を挟む
-    if (this.currentBossIndex < this.bossQueue.length) {
-      this.startIntermission();
+  proceedToNextArea(boss, isSpared = false) {
+    var resumeFn = function() {
+      this.currentBoss = null;
+      this.currentBossIndex++;
+      this.dialogActive = false;
+      this.physics.resume();
+      // Item drop
+      MOT.spawnHealthItem(this, 960, 540);
+      // 次のボスが残っている場合は幕間（雑魚ウェーブ）を挟む
+      if (this.currentBossIndex < this.bossQueue.length) {
+        this.startIntermission();
+      } else {
+        this.time.delayedCall(1500, function () { this.startBoss(); }, [], this);
+      }
+    }.bind(this);
+
+    if (isSpared) {
+      this.tweens.add({
+        targets: boss, x: 2200, duration: 1500, ease: 'Power2',
+        onComplete: function() {
+          boss.destroy();
+          resumeFn();
+        }
+      });
     } else {
-      this.time.delayedCall(1500, function () { this.startBoss(); }, [], this);
+      this.showExplosion(boss.x, boss.y);
+      boss.destroy();
+      resumeFn();
     }
   }
 
