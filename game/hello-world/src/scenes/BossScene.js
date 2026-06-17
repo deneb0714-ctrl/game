@@ -878,6 +878,34 @@ class BossScene extends Phaser.Scene {
                 }
               ]);
             }.bind(this));
+          } else if (key === 'boss2') {
+            // 幹部2の敗北後シナリオ
+            this.showDialogue(cfg.name, cfg.defeat, function () {
+              this.showChoice([
+                { text: '止めを刺す', callback: function () {
+                    MOT.Audio.playSelect();
+                    MOT.modifyFlag('brutality', 1);
+                    MOT.modifyFlag('favor.boss2', -1);
+                    this.showDialogue(cfg.name, '「ガハッ…！ まさか俺が…！」', function () {
+                      this.showDeviceDialogue('「よくやった。順調だな。次へ進め。」', function () {
+                        this.proceedToNextArea(boss, false);
+                      }.bind(this));
+                    }.bind(this));
+                  }.bind(this)
+                },
+                { text: '見逃す', callback: function () {
+                    MOT.Audio.playSelect();
+                    MOT.modifyFlag('showMercy', 1);
+                    MOT.modifyFlag('favor.boss2', 1);
+                    this.showDialogue(cfg.name, '「チッ…殺さねえのかよ。甘い奴だ、興ざめだぜ…」', function () {
+                      this.showDeviceDialogue('「また命令に背いたな！ 何を考えているんだ！」', function () {
+                        this.proceedToNextArea(boss, true);
+                      }.bind(this));
+                    }.bind(this));
+                  }.bind(this)
+                }
+              ]);
+            }.bind(this));
           } else {
             // 通常の敗北後
             this.showDialogue(cfg.name, cfg.defeat, function () {
