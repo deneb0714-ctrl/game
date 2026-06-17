@@ -222,25 +222,74 @@ class BossScene extends Phaser.Scene {
   }
 
   playTwinsIntro(onComplete) {
-    this.showDeviceDialogue('「次のエリアに着いたか。そこは、○○（エリア名）だ。そろそろ魔王のいるエリアになるだろう。気を付けてくれ」', () => {
-      this.showDialogue('男', '「…来たか」', () => {
-        this.showDialogue('女', '「来たわね。兄様」', () => {
-          this.showDeviceDialogue('「…？！お前たちは…」', () => {
-            this.showDialogue('主人公', '「？」', () => {
-              this.showDialogue('男', '「単刀直入に言うと、君は博士に騙されている。悪いことは言わないからこちらに寝返った方がいい」', () => {
-                this.showDeviceDialogue('「彼らの言葉に耳を傾けてはいけない。早く倒すんだ」', () => {
-                  this.showDialogue('主人公', '「…」', () => {
-                    this.showDialogue('女', '「…そう。意思は硬いのね。仕方ないわ兄様」', () => {
-                      this.showDialogue('男', '「君を彼女の元にはいかせない。ここで食い止めるよ」', onComplete);
-                    });
-                  });
-                });
-              });
-            });
-          });
-        });
-      });
+    var w = 1920, h = 1080;
+    var dimBg = this.add.rectangle(w/2, h/2, w, h, 0x000000, 0.6).setAlpha(0).setDepth(89);
+    
+    var heroImage = this.add.image(300, h / 2, 'hero_stand').setAlpha(0).setDepth(90);
+    if(this.textures.exists('hero_stand')) {
+        this.textures.get('hero_stand').setFilter(Phaser.Textures.FilterMode.LINEAR);
+        var hImgW = this.textures.get('hero_stand').getSourceImage().width;
+        var hImgH = this.textures.get('hero_stand').getSourceImage().height;
+        var hScale = 400 / hImgW;
+        heroImage.setScale(hScale);
+        heroImage.setY(h / 2 - 300 + (hImgH * hScale) / 2);
+        var hCropH = 600 / hScale;
+        if (hCropH < hImgH) heroImage.setCrop(0, 0, hImgW, hCropH);
+    }
+    
+    // Male Frame (Brother)
+    var maleFrame = this.add.rectangle(w - 300, h / 2 - 160, 300, 300, 0x1F2933).setAlpha(0).setDepth(90).setStrokeStyle(4, 0x4FD1FF);
+    var maleLabel = this.add.text(w - 300, h / 2 - 160, '男（兄）', { fontFamily: '"DotGothic16"', fontSize: '32px', color: '#ffffff' }).setOrigin(0.5).setAlpha(0).setDepth(90);
+    
+    // Female Frame (Sister)
+    var femaleFrame = this.add.rectangle(w - 300, h / 2 + 160, 300, 300, 0x1F2933).setAlpha(0).setDepth(90).setStrokeStyle(4, 0xFF4B6E);
+    var femaleLabel = this.add.text(w - 300, h / 2 + 160, '女（妹）', { fontFamily: '"DotGothic16"', fontSize: '32px', color: '#ffffff' }).setOrigin(0.5).setAlpha(0).setDepth(90);
+
+    const sayDevice = (text) => new Promise(res => {
+      this.tweens.add({ targets: [dimBg, heroImage, maleFrame, maleLabel, femaleFrame, femaleLabel], alpha: 0, duration: 300 });
+      this.showDeviceDialogue(text, res);
     });
+
+    const sayTwin = (speaker, text) => new Promise(res => {
+      this.tweens.add({ targets: dimBg, alpha: 0.6, duration: 300 });
+      this.tweens.add({ targets: heroImage, alpha: 0.4, duration: 300 });
+      if (speaker === '男') {
+        this.tweens.add({ targets: [maleFrame, maleLabel], alpha: 1, duration: 300 });
+        this.tweens.add({ targets: [femaleFrame, femaleLabel], alpha: 0.4, duration: 300 });
+      } else {
+        this.tweens.add({ targets: [maleFrame, maleLabel], alpha: 0.4, duration: 300 });
+        this.tweens.add({ targets: [femaleFrame, femaleLabel], alpha: 1, duration: 300 });
+      }
+      this.showDialogue(speaker, text, res);
+    });
+
+    const sayHero = (text) => new Promise(res => {
+      this.tweens.add({ targets: dimBg, alpha: 0.6, duration: 300 });
+      this.tweens.add({ targets: heroImage, alpha: 1, duration: 300 });
+      this.tweens.add({ targets: [maleFrame, maleLabel, femaleFrame, femaleLabel], alpha: 0.4, duration: 300 });
+      this.showDialogue('主人公', text, res);
+    });
+
+    (async () => {
+      await sayDevice('「次のエリアに着いたか。そこは、○○（エリア名）だ。そろそろ魔王のいるエリアになるだろう。気を付けてくれ」');
+      await sayTwin('男', '「…来たか」');
+      await sayTwin('女', '「来たわね。兄様」');
+      await sayDevice('「…？！お前たちは…」');
+      await sayHero('「？」');
+      await sayTwin('男', '「単刀直入に言うと、君は博士に騙されている。悪いことは言わないからこちらに寝返った方がいい」');
+      await sayDevice('「彼らの言葉に耳を傾けてはいけない。早く倒すんだ」');
+      await sayHero('「…」');
+      await sayTwin('女', '「…そう。意思は硬いのね。仕方ないわ兄様」');
+      await sayTwin('男', '「君を彼女の元にはいかせない。ここで食い止めるよ」');
+
+      this.tweens.add({
+        targets: [dimBg, heroImage, maleFrame, maleLabel, femaleFrame, femaleLabel], alpha: 0, duration: 500,
+        onComplete: () => {
+          dimBg.destroy(); heroImage.destroy(); maleFrame.destroy(); maleLabel.destroy(); femaleFrame.destroy(); femaleLabel.destroy();
+          onComplete();
+        }
+      });
+    })();
   }
 
   startSisterLaneMovement() {
@@ -1196,16 +1245,38 @@ class BossScene extends Phaser.Scene {
 
     // Boss HP
     this.bossHPBar.clear();
-    if (this.currentBoss && this.currentBoss.active && this.currentBoss.visible) {
-      var bpct = this.bossHP / this.bossMaxHP;
+    if (this.currentBoss && (this.currentBoss.active || this.currentBoss.configKey === 'boss3_twins')) {
       var key = this.currentBoss.configKey;
       var cfg = this.getBossConfig(key);
-      this.bossHPText.setText(cfg.name);
-      this.bossHPBar.fillStyle(0x1F2933, 1); this.bossHPBar.fillRect(560, 50, 800, 20);
-      this.bossHPBar.fillStyle(0xFF2E2E, 1); this.bossHPBar.fillRect(562, 52, 796 * bpct, 16);
-      this.bossHPBar.lineStyle(1, 0xFF2E2E, 0.6); this.bossHPBar.strokeRect(560, 50, 800, 20);
+      
+      if (key === 'boss3_twins') {
+        // 双子はHPバー2本
+        this.bossHPText.setText(cfg.name);
+        var bpct1 = (this.currentBoss.active && this.currentBoss.hp > 0) ? this.currentBoss.hp / cfg.hp : 0;
+        this.bossHPBar.fillStyle(0x1F2933, 1); this.bossHPBar.fillRect(560, 40, 800, 10);
+        this.bossHPBar.fillStyle(0x4FD1FF, 1); this.bossHPBar.fillRect(562, 42, 796 * bpct1, 6);
+        this.bossHPBar.lineStyle(1, 0x4FD1FF, 0.6); this.bossHPBar.strokeRect(560, 40, 800, 10);
+        
+        if (!this.sisterHPText) {
+          this.sisterHPText = this.add.text(960, 65, '', { fontFamily: '"Press Start 2P"', fontSize: '14px', color: '#FF4B6E' }).setOrigin(0.5, 0).setDepth(100);
+        }
+        this.sisterHPText.setText(cfg.name2);
+        this.sisterHPText.setVisible(true);
+        var bpct2 = (this.sisterBoss && this.sisterBoss.active && this.sisterBoss.hp > 0) ? this.sisterBoss.hp / cfg.hp2 : 0;
+        this.bossHPBar.fillStyle(0x1F2933, 1); this.bossHPBar.fillRect(560, 80, 800, 10);
+        this.bossHPBar.fillStyle(0xFF4B6E, 1); this.bossHPBar.fillRect(562, 82, 796 * bpct2, 6);
+        this.bossHPBar.lineStyle(1, 0xFF4B6E, 0.6); this.bossHPBar.strokeRect(560, 80, 800, 10);
+      } else {
+        if (this.sisterHPText) this.sisterHPText.setVisible(false);
+        this.bossHPText.setText(cfg.name);
+        var bpct = this.bossHP / this.bossMaxHP;
+        this.bossHPBar.fillStyle(0x1F2933, 1); this.bossHPBar.fillRect(560, 50, 800, 20);
+        this.bossHPBar.fillStyle(0xFF2E2E, 1); this.bossHPBar.fillRect(562, 52, 796 * bpct, 16);
+        this.bossHPBar.lineStyle(1, 0xFF2E2E, 0.6); this.bossHPBar.strokeRect(560, 50, 800, 20);
+      }
     } else {
       this.bossHPText.setText('');
+      if (this.sisterHPText) this.sisterHPText.setVisible(false);
     }
   }
 }
