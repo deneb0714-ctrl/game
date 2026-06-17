@@ -895,6 +895,19 @@ class GameScene extends Phaser.Scene {
         });
       }
     } else if (this.tutorialPhase === 6) {
+      if (!this.tutorialPhase6Timer) this.tutorialPhase6Timer = 0;
+      this.tutorialPhase6Timer += delta;
+
+      if (this.tutorialPhase6Timer > 10000 && !this.tutorialPhase6Prompted) {
+        this.tutorialPhase6Prompted = true;
+        this.physics.pause();
+        this.dialogActive = true;
+        this.showDeviceDialogue('「何をしている？早くenterを押すんだ」', () => {
+          this.dialogActive = false;
+          this.physics.resume();
+        });
+      }
+
       if (MOT.flags.energy < 100 && this.tutorialWaitSpecial) {
         // Special was used
         this.tutorialWaitSpecial = false;
