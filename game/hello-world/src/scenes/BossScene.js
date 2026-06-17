@@ -7,7 +7,7 @@ class BossScene extends Phaser.Scene {
   }
 
   init() {
-    this.bossQueue = ['boss1', 'boss2', 'boss3', 'wing_left', 'wing_right', 'demon_lord'];
+    this.bossQueue = ['boss1', 'boss2', 'boss3_twins', 'demon_lord'];
     this.currentBossIndex = 0;
     this.dialogActive = false;
     this.bossHP = 0;
@@ -92,32 +92,10 @@ class BossScene extends Phaser.Scene {
           { text: '見逃す', flag: function () { MOT.modifyFlag('showMercy', 1); MOT.modifyFlag('favor.boss2', 1); } }
         ]
       },
-      boss3: {
-        texture: 'boss3', name: '幹部3 – 三男', hp: 40, scale: 3,
-        intro: '「お前…本当に自分の意思で戦っているのか？\n博士の操り人形じゃないのか？」',
-        defeat: '「やはり…お前は普通の兵器じゃない。」',
-        choices: [
-          { text: '黙れ（止めを刺す）', flag: function () { MOT.modifyFlag('brutality', 1); MOT.modifyFlag('obeyDoctor', 1); } },
-          { text: '…話を聞く', flag: function () { MOT.modifyFlag('showMercy', 1); MOT.modifyFlag('favor.boss3', 1); } }
-        ]
-      },
-      wing_left: {
-        texture: 'wing_left', name: '魔王左翼 – 蒼氷のレイス', hp: 50, scale: 3.5,
-        intro: '「冷静に分析しよう。\nお前が本当に倒すべき相手は、ここにはいない。」',
-        defeat: '「…これを受け取れ。真実に辿り着くために。」',
-        choices: [
-          { text: '受け取らない（止めを刺す）', flag: function () { MOT.modifyFlag('brutality', 1); } },
-          { text: 'アイテムを受け取る', flag: function () { MOT.modifyFlag('favor.wingL', 1); MOT.addEnergy(20); } }
-        ]
-      },
-      wing_right: {
-        texture: 'wing_right', name: '魔王右翼 – 紅蓮のヴァルク', hp: 50, scale: 3.5,
-        intro: '「理屈なんかどうでもいい！\nお前が仲間を傷つけたなら、俺が叩き潰す！」',
-        defeat: '「ぐっ…だが、お前の目…憎しみじゃない。」',
-        choices: [
-          { text: '容赦なく倒す', flag: function () { MOT.modifyFlag('brutality', 1); } },
-          { text: '手を差し伸べる', flag: function () { MOT.modifyFlag('favor.wingR', 1); MOT.addEnergy(20); } }
-        ]
+      boss3_twins: {
+        texture: 'boss3', name: '男（兄）', hp: 50, scale: 3,
+        texture2: 'boss3_sister', name2: '女（妹）', hp2: 50, scale2: 3,
+        // Intro and defeat are handled custom via playTwinsIntro and post-battle logic
       },
       demon_lord: {
         texture: 'demon_lord', name: '魔王 – ヴェリタス', hp: 80, scale: 2,
@@ -189,6 +167,38 @@ class BossScene extends Phaser.Scene {
           }, [], this);
         }
       }.bind(this));
+    } else if (key === 'boss3_twins') {
+      this.cameras.main.shake(400, 0.015);
+      
+      var sister = this.physics.add.sprite(1920, 700, cfg.texture2);
+      sister.setScale(cfg.scale2);
+      sister.setDepth(8);
+      this.enemyGroup.add(sister);
+      this.sisterBoss = sister;
+      sister.hp = cfg.hp2;
+      sister.maxHp = cfg.hp2;
+      sister.configKey = 'boss3_twins';
+      boss.maxHp = cfg.hp;
+      boss.configKey = 'boss3_twins';
+      
+      this.tweens.add({
+        targets: [boss, sister],
+        x: 1400,
+        duration: 1200,
+        ease: 'Power2',
+        onComplete: function () {
+          this.tweens.add({ targets: boss, y: boss.y - 30, yoyo: true, repeat: -1, duration: 1000, ease: 'Sine.easeInOut' });
+          this.tweens.add({ targets: sister, y: sister.y + 30, yoyo: true, repeat: -1, duration: 1100, ease: 'Sine.easeInOut' });
+          
+          this.playTwinsIntro(function() {
+            this.dialogActive = false;
+            this.physics.resume();
+            this.startBossLaneMovement();
+            // Sister moves somewhat independently
+            this.startSisterLaneMovement();
+          }.bind(this));
+        }.bind(this)
+      });
     } else {
       // Entrance
       this.cameras.main.shake(400, 0.015);
@@ -209,6 +219,55 @@ class BossScene extends Phaser.Scene {
         }.bind(this)
       });
     }
+  }
+
+  playTwinsIntro(onComplete) {
+    this.showDeviceDialogue('「次のエリアに着いたか。そこは、○○（エリア名）だ。そろそろ魔王のいるエリアになるだろう。気を付けてくれ」', () => {
+      this.showDialogue('男', '「…来たか」', () => {
+        this.showDialogue('女', '「来たわね。兄様」', () => {
+          this.showDeviceDialogue('「…？！お前たちは…」', () => {
+            this.showDialogue('主人公', '「？」', () => {
+              this.showDialogue('男', '「単刀直入に言うと、君は博士に騙されている。悪いことは言わないからこちらに寝返った方がいい」', () => {
+                this.showDeviceDialogue('「彼らの言葉に耳を傾けてはいけない。早く倒すんだ」', () => {
+                  this.showDialogue('主人公', '「…」', () => {
+                    this.showDialogue('女', '「…そう。意思は硬いのね。仕方ないわ兄様」', () => {
+                      this.showDialogue('男', '「君を彼女の元にはいかせない。ここで食い止めるよ」', onComplete);
+                    });
+                  });
+                });
+              });
+            });
+          });
+        });
+      });
+    });
+  }
+
+  startSisterLaneMovement() {
+    if (this.sisterLaneTimer) this.sisterLaneTimer.destroy();
+    this.sisterLaneTimer = this.time.addEvent({
+      delay: 2500,
+      callback: function () {
+        if (this.sisterBoss && this.sisterBoss.active && !this.dialogActive && this.sisterBoss.hp > 0) {
+          var laneYs = [300, 540, 780];
+          var targetY = laneYs[Phaser.Math.Between(0, 2)];
+          this.tweens.killTweensOf(this.sisterBoss);
+          this.tweens.add({
+            targets: this.sisterBoss,
+            y: targetY,
+            duration: 800,
+            ease: 'Cubic.easeInOut',
+            onComplete: function () {
+              if (this.sisterBoss && this.sisterBoss.active && !this.dialogActive) {
+                this.tweens.add({ targets: this.sisterBoss, y: targetY + 15, yoyo: true, repeat: -1, duration: 1100, ease: 'Sine.easeInOut' });
+              }
+            }.bind(this)
+          });
+        }
+      },
+      callbackScope: this,
+      loop: true
+    });
   }
 
   startBossLaneMovement() {
@@ -287,9 +346,21 @@ class BossScene extends Phaser.Scene {
     if (this.currentBoss && this.currentBoss.active && this.currentBoss.visible) {
       this.bossAttackTimer += delta;
       var interval = this.bossHP < this.bossMaxHP * 0.5 ? 600 : 1000;
+      if (this.currentBoss.configKey === 'boss3_twins') interval = 3000; // Brother shoots less frequently
+      
       if (this.bossAttackTimer >= interval) {
         this.bossAttackTimer = 0;
         this.bossAttack();
+      }
+    }
+    
+    // Sister attacks
+    if (this.currentBoss && this.currentBoss.configKey === 'boss3_twins' && this.sisterBoss && this.sisterBoss.active && this.sisterBoss.visible && !this.dialogActive) {
+      if (!this.sisterAttackTimer) this.sisterAttackTimer = 0;
+      this.sisterAttackTimer += delta;
+      if (this.sisterAttackTimer >= 2000) {
+        this.sisterAttackTimer = 0;
+        MOT.fireCircle(this, this.sisterBoss.x, this.sisterBoss.y, 8, 200);
       }
     }
 
@@ -374,6 +445,12 @@ class BossScene extends Phaser.Scene {
     // boss2（戦闘狂）は双銃攻撃
     if (this.currentBoss.configKey === 'boss2') {
       this.attackDualGuns(x, y);
+      return;
+    }
+    
+    // boss3_twins（兄）は追尾弾
+    if (this.currentBoss.configKey === 'boss3_twins') {
+      MOT.fireHoming(this, x, y, 200, this.player);
       return;
     }
 
@@ -651,6 +728,40 @@ class BossScene extends Phaser.Scene {
     }
 
     // ── ボス敵への処理 ────────────────────────────────────────────
+    if (boss.configKey === 'boss3_twins') {
+      boss.hp -= dmg;
+      boss.setTint(0xffffff);
+      this.time.delayedCall(50, function () { if (boss.active) boss.clearTint(); });
+      if (Phaser.Math.Between(0, 100) < 50) MOT.spawnEnergyItem(this, boss.x, boss.y);
+      
+      if (boss.hp <= 0 && boss.active) {
+        boss.active = false;
+        boss.setVisible(false);
+        boss.body.enable = false;
+        
+        var other = (boss === this.currentBoss) ? this.sisterBoss : this.currentBoss;
+        if (!other.active || other.hp <= 0) {
+          // both defeated
+          if (this.twinReviveTimer) { this.twinReviveTimer.destroy(); this.twinReviveTimer = null; }
+          if (!this.bossDefeated) {
+            this.bossDefeated = true;
+            this.onTwinsDefeated();
+          }
+        } else {
+          // Start 10s revive timer
+          if (this.twinReviveTimer) this.twinReviveTimer.destroy();
+          this.twinReviveTimer = this.time.delayedCall(10000, () => {
+             boss.active = true;
+             boss.setVisible(true);
+             boss.body.enable = true;
+             boss.hp = boss.maxHp * 0.1;
+             this.showExplosion(boss.x, boss.y); // visual for revive
+          });
+        }
+      }
+      return;
+    }
+
     this.bossHP -= dmg;
     boss.hp = this.bossHP;
     boss.setTint(0xffffff);
@@ -726,6 +837,73 @@ class BossScene extends Phaser.Scene {
         }.bind(this)
       });
     }
+  }
+
+  // 双子撃破後の処理
+  onTwinsDefeated() {
+    this.dialogActive = true;
+    this.physics.pause();
+    if (this.bossLaneTimer) this.bossLaneTimer.destroy();
+    if (this.sisterLaneTimer) this.sisterLaneTimer.destroy();
+    this.enemyBullets.clear(true, true);
+    this.player.setVelocity(0, 0);
+
+    this.currentBoss.body.enable = false;
+    this.sisterBoss.body.enable = false;
+    
+    this.cameras.main.shake(300, 0.02);
+    
+    this.tweens.add({
+      targets: [this.currentBoss, this.sisterBoss], alpha: 0.3, yoyo: true, repeat: 2, duration: 150,
+      onComplete: function () {
+        this.showDeviceDialogue('「倒したか。さぁ早くとどめを！」', function () {
+          this.showChoice([
+            { text: '心臓を打ち抜く', callback: function () {
+                MOT.Audio.playSelect();
+                MOT.modifyFlag('brutality', 1);
+                this.showDialogue('女', '「兄さま…！」', function () {
+                  this.showDeviceDialogue('「まさか生きていたとはな…いや、なんでもない。そのまま進んでくれ」', function () {
+                    // 魔王戦への遷移 (スキップ対応)
+                    this.skipToDemonLord();
+                  }.bind(this));
+                }.bind(this));
+              }.bind(this)
+            },
+            { text: '見逃す', callback: function () {
+                MOT.Audio.playSelect();
+                MOT.modifyFlag('showMercy', 1);
+                this.showDeviceDialogue('「なぜ殺さない！」', function () {
+                  // 魔王戦への遷移
+                  this.skipToDemonLord();
+                }.bind(this));
+              }.bind(this)
+            }
+          ]);
+        }.bind(this));
+      }.bind(this)
+    });
+  }
+
+  skipToDemonLord() {
+    this.showExplosion(this.currentBoss.x, this.currentBoss.y);
+    this.showExplosion(this.sisterBoss.x, this.sisterBoss.y);
+    this.currentBoss.destroy();
+    this.sisterBoss.destroy();
+    this.currentBoss = null;
+    this.sisterBoss = null;
+    this.dialogActive = false;
+    this.physics.resume();
+    MOT.spawnHealthItem(this, 960, 540);
+    
+    // スキップ処理: wing_left, wing_right を飛ばして demon_lord (インデックス3) へ
+    this.currentBossIndex = 3; 
+    
+    // 画面暗転→ラスボス戦
+    this.cameras.main.fadeOut(1500, 0, 0, 0);
+    this.time.delayedCall(1500, function () { 
+      this.cameras.main.fadeIn(1000, 0, 0, 0);
+      this.startBoss(); 
+    }, [], this);
   }
 
   // 撃破後の共通進行処理

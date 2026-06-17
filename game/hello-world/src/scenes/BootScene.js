@@ -72,6 +72,7 @@ class BootScene extends Phaser.Scene {
     this.makeBoss1();
     this.makeBoss2();
     this.makeBoss3();
+    this.makeBoss3Sister();
     this.makeWingLeft();
     this.makeWingRight();
     this.makeDemonLord();
@@ -213,6 +214,28 @@ class BootScene extends Phaser.Scene {
     const colors = { 'I': 0x334466, 'D': 0x2a2a4a, 'W': 0x99ddff, '.': -1 };
     this.drawPixelArt(g, data, colors, s, 0, 0);
     g.generateTexture('boss3', 32, 40);
+    g.destroy();
+  }
+
+  // --- Boss 3 Sister (赤・ピンク系) ---
+  makeBoss3Sister() {
+    const g = this.make.graphics({ add: false });
+    const s = 4;
+    const data = [
+      '..IIII..',
+      '.IIIIII.',
+      'IIWIIIWI',
+      'IIIIIIII',
+      '.IIIIII.',
+      '.IIIIII.',
+      'IIDDDDII',
+      'IIDDDDII',
+      '.II..II.',
+      '.II..II.',
+    ];
+    const colors = { 'I': 0x663344, 'D': 0x4a2a2a, 'W': 0xff99dd, '.': -1 };
+    this.drawPixelArt(g, data, colors, s, 0, 0);
+    g.generateTexture('boss3_sister', 32, 40);
     g.destroy();
   }
 
