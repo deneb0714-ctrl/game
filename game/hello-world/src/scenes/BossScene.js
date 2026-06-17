@@ -427,6 +427,9 @@ class BossScene extends Phaser.Scene {
     this.enemyBullets.getChildren().forEach(function (b) {
       if (b.x < -50 || b.x > 2000 || b.y < -50 || b.y > 1130) b.destroy();
     });
+    this.playerBullets.getChildren().forEach(function (b) {
+      if (b.x > 1500) b.destroy();
+    });
 
     this.updateHUD();
   }
@@ -1151,7 +1154,7 @@ class BossScene extends Phaser.Scene {
     });
     this.dialogContainer.add(bodyText);
 
-    var contText = this.add.text(w - 160, boxY + boxH - 30, '▼ CLICK', {
+    var contText = this.add.text(w - 180, boxY + boxH - 30, '▶ [→] KEY', {
       fontFamily: '"Press Start 2P"', fontSize: '12px', color: '#9CA3AF'
     }).setAlpha(0);
     this.dialogContainer.add(contText);
@@ -1166,7 +1169,7 @@ class BossScene extends Phaser.Scene {
           typeTimer.destroy();
           contText.setAlpha(1);
           this.tweens.add({ targets: contText, alpha: 0.3, yoyo: true, repeat: -1, duration: 500 });
-          this.input.once('pointerdown', function () {
+          this.input.keyboard.once('keydown-RIGHT', function () {
             if (this.dialogContainer) this.dialogContainer.destroy();
             this.dialogContainer = null;
             if (onComplete) onComplete();
@@ -1201,7 +1204,7 @@ class BossScene extends Phaser.Scene {
     });
     this.dialogContainer.add(bodyText);
 
-    var contText = this.add.text(w - 160, boxY + boxH - 30, '▼ CLICK', {
+    var contText = this.add.text(w - 180, boxY + boxH - 30, '▶ [→] KEY', {
       fontFamily: '"Press Start 2P"', fontSize: '12px', color: '#9CA3AF'
     }).setAlpha(0);
     this.dialogContainer.add(contText);
@@ -1216,7 +1219,7 @@ class BossScene extends Phaser.Scene {
           typeTimer.destroy();
           contText.setAlpha(1);
           this.tweens.add({ targets: contText, alpha: 0.3, yoyo: true, repeat: -1, duration: 500 });
-          this.input.once('pointerdown', function () {
+          this.input.keyboard.once('keydown-RIGHT', function () {
             if (this.dialogContainer) this.dialogContainer.destroy();
             this.dialogContainer = null;
             if (onComplete) onComplete();

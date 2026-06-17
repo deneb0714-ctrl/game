@@ -444,13 +444,13 @@ class GameScene extends Phaser.Scene {
 
         if (charIndex >= text.length) {
           typeTimer.destroy();
-          // Click to continue
-          const contText = this.add.text(w - 160, boxY + boxH - 30, '▼ CLICK', {
+          // Right arrow to continue
+          const contText = this.add.text(w - 180, boxY + boxH - 30, '▶ [→] KEY', {
             fontFamily: '"Press Start 2P"', fontSize: '12px', color: '#9CA3AF'
           }).setDepth(51);
           this.tweens.add({ targets: contText, alpha: 0.3, yoyo: true, repeat: -1, duration: 500 });
 
-          this.input.once('pointerdown', function () {
+          this.input.keyboard.once('keydown-RIGHT', function () {
             box.destroy();
             nameText.destroy();
             bodyText.destroy();
@@ -656,6 +656,9 @@ class GameScene extends Phaser.Scene {
     this.enemyBullets.getChildren().forEach(function (b) {
       if (b.x < -50 || b.x > 2000 || b.y < -50 || b.y > 1130) b.destroy();
     });
+    this.playerBullets.getChildren().forEach(function (b) {
+      if (b.x > 1500) b.destroy();
+    });
     this.itemGroup.getChildren().forEach(function (i) {
       if (i.x < -50) i.destroy();
     });
@@ -754,7 +757,7 @@ class GameScene extends Phaser.Scene {
     });
     this.dialogContainer.add(bodyText);
 
-    var contText = this.add.text(w - 160, boxY + boxH - 30, '▼ CLICK', {
+    var contText = this.add.text(w - 180, boxY + boxH - 30, '▶ [→] KEY', {
       fontFamily: '"Press Start 2P"', fontSize: '12px', color: '#9CA3AF'
     }).setAlpha(0);
     this.dialogContainer.add(contText);
@@ -769,7 +772,7 @@ class GameScene extends Phaser.Scene {
           typeTimer.destroy();
           contText.setAlpha(1);
           this.tweens.add({ targets: contText, alpha: 0.3, yoyo: true, repeat: -1, duration: 500 });
-          this.input.once('pointerdown', function () {
+          this.input.keyboard.once('keydown-RIGHT', function () {
             if (this.dialogContainer) this.dialogContainer.destroy();
             this.dialogContainer = null;
             if (onComplete) onComplete();
