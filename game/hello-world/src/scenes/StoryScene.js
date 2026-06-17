@@ -146,11 +146,14 @@ class StoryScene extends Phaser.Scene {
     const w = this.cameras.main.width;
     const h = this.cameras.main.height;
 
-    this.choice1 = this.createChoiceButton(w / 2, h / 2 - 60, '1「わかった、協力する」', () => {
+    this.choice1 = this.createChoiceButton(w / 2, h / 2 - 100, '1「わかった、協力する」', () => {
       this.handleChoice(1);
     });
-    this.choice2 = this.createChoiceButton(w / 2, h / 2 + 60, '2「訳が分からない。いきなりそんなこと言われても困る」', () => {
+    this.choice2 = this.createChoiceButton(w / 2, h / 2, '2「訳が分からない。いきなりそんなこと言われても困る」', () => {
       this.handleChoice(2);
+    });
+    this.choice3 = this.createChoiceButton(w / 2, h / 2 + 100, '3「いいから早く魔王退治に行かせろ」', () => {
+      this.handleChoice(3);
     });
   }
 
@@ -170,6 +173,7 @@ class StoryScene extends Phaser.Scene {
       if (window.MOT && MOT.Audio) MOT.Audio.playSelect();
       this.choice1.btn.destroy(); this.choice1.txt.destroy();
       this.choice2.btn.destroy(); this.choice2.txt.destroy();
+      if (this.choice3) { this.choice3.btn.destroy(); this.choice3.txt.destroy(); }
       callback();
     });
 
@@ -184,6 +188,19 @@ class StoryScene extends Phaser.Scene {
     if (choiceIndex === 1) {
       this.nameText.setText('博士');
       this.messageText.setText('気のいい返事をもらえてうれしいよ。早速冒険に向かってもらうとしよう。');
+      
+      this.doctorImage.setAlpha(1);
+      this.heroImage.setAlpha(0.4);
+
+      this.time.delayedCall(3000, () => {
+        this.cameras.main.fadeOut(1000);
+        this.time.delayedCall(1000, () => {
+          this.scene.start('GameScene', { stage: 1 });
+        });
+      });
+    } else if (choiceIndex === 3) {
+      this.nameText.setText('博士');
+      this.messageText.setText('そ、そうか。やる気があるのはいいことだ。では行くと良い');
       
       this.doctorImage.setAlpha(1);
       this.heroImage.setAlpha(0.4);
