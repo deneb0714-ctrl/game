@@ -635,8 +635,13 @@ class GameScene extends Phaser.Scene {
       // Tutorial specific drop logic
       if (enemy.tutorialDrop) {
         MOT.spawnEnergyItem(this, enemy.x, enemy.y, enemy.tutorialRed);
-      } else if (Phaser.Math.Between(0, 100) < 40) {
-        MOT.spawnEnergyItem(this, enemy.x, enemy.y);
+      } else {
+        let dropRand = Phaser.Math.Between(0, 100);
+        if (dropRand < 15) {
+          MOT.spawnHealthItem(this, enemy.x, enemy.y); // 15%で回復アイテム
+        } else if (dropRand < 55) {
+          MOT.spawnEnergyItem(this, enemy.x, enemy.y); // 40%でエネルギー
+        }
       }
       enemy.destroy();
     }

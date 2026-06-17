@@ -152,7 +152,7 @@ class StoryScene extends Phaser.Scene {
     this.choice2 = this.createChoiceButton(w / 2, h / 2, '2「訳が分からない。いきなりそんなこと言われても困る」', () => {
       this.handleChoice(2);
     });
-    this.choice3 = this.createChoiceButton(w / 2, h / 2 + 100, '3「いいから早く魔王退治に行かせろ」', () => {
+    this.choice3 = this.createChoiceButton(w / 2, h / 2 + 100, '3「いいから早く魔王退治に行かせろ（チュートリアルスキップ）」', () => {
       this.handleChoice(3);
     });
   }
