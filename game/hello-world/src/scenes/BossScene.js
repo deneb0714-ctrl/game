@@ -882,26 +882,42 @@ class BossScene extends Phaser.Scene {
             // 幹部2の敗北後シナリオ
             this.showDialogue(cfg.name, cfg.defeat, function () {
               this.showChoice([
-                { text: '止めを刺す', callback: function () {
+                { text: '1. 心臓を打ち抜く', callback: function () {
                     MOT.Audio.playSelect();
                     MOT.modifyFlag('brutality', 1);
                     MOT.modifyFlag('favor.boss2', -1);
-                    this.showDialogue(cfg.name, '「ガハッ…！ まさか俺が…！」', function () {
-                      this.showDeviceDialogue('「よくやった。順調だな。次へ進め。」', function () {
-                        this.proceedToNextArea(boss, false);
-                      }.bind(this));
+                    var isBoss1Killed = !MOT.flags['favor.boss1'];
+                    this.showDialogue(cfg.name, '「はは…楽しんで死ねるならまあいいかな」', function () {
+                      if (isBoss1Killed) {
+                        this.showDeviceDialogue('「よくやった。また一歩平和に近づいたな。そのまま進んでいくといい」', function () {
+                          this.proceedToNextArea(boss, false);
+                        }.bind(this));
+                      } else {
+                        this.showDeviceDialogue('「それでいい。そのまま進んで魔王も倒すんだ」', function () {
+                          this.proceedToNextArea(boss, false);
+                        }.bind(this));
+                      }
                     }.bind(this));
                   }.bind(this)
                 },
-                { text: '見逃す', callback: function () {
+                { text: '2. 見逃す', callback: function () {
                     MOT.Audio.playSelect();
                     MOT.modifyFlag('showMercy', 1);
                     MOT.modifyFlag('favor.boss2', 1);
-                    this.showDialogue(cfg.name, '「チッ…殺さねえのかよ。甘い奴だ、興ざめだぜ…」', function () {
-                      this.showDeviceDialogue('「また命令に背いたな！ 何を考えているんだ！」', function () {
-                        this.proceedToNextArea(boss, true);
+                    var isBoss1Killed = !MOT.flags['favor.boss1'];
+                    if (isBoss1Killed) {
+                      this.showDialogue(cfg.name, '「なんで殺さない？殺す価値もないとでも言いたいのかい？ま、事実負けちゃったんだけどね。次戦うときはこうはいかないからね」', function () {
+                        this.showDeviceDialogue('「何をしている？なぜ止めを刺さなかった。」', function () {
+                          this.proceedToNextArea(boss, true);
+                        }.bind(this));
                       }.bind(this));
-                    }.bind(this));
+                    } else {
+                      this.showDialogue(cfg.name, '「はは、やっぱり殺さないんだ。舐めてるの？とはいえ、僕も今は限界だから引こうかな。次は負けない」', function () {
+                        this.showDeviceDialogue('「またか。お前は何がしたい？この世界を終わらせたいのか？」', function () {
+                          this.proceedToNextArea(boss, true);
+                        }.bind(this));
+                      }.bind(this));
+                    }
                   }.bind(this)
                 }
               ]);
