@@ -158,7 +158,7 @@ class StoryScene extends Phaser.Scene {
   }
 
   createChoiceButton(x, y, label, callback) {
-    const btn = this.add.rectangle(x, y, 900, 80, 0x1F2933).setStrokeStyle(2, 0x4FD1FF).setInteractive({ useHandCursor: true });
+    const btn = this.add.rectangle(x, y, 1100, 80, 0x1F2933).setStrokeStyle(2, 0x4FD1FF).setInteractive({ useHandCursor: true });
     const txt = this.add.text(x, y, label, { fontFamily: '"DotGothic16"', fontSize: '32px', color: '#4FD1FF' }).setOrigin(0.5);
 
     btn.on('pointerover', () => {

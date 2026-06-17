@@ -414,6 +414,16 @@ class BossScene extends Phaser.Scene {
     }
 
     // Cleanup
+    this.enemyGroup.getChildren().forEach(function (e) {
+      if (e.x < -100) {
+        if (e.isScenarioMinion || e.isIntermissionEnemy) {
+          this.onBossHit({ damage: 9999, destroy: function(){} }, e);
+        } else {
+          e.destroy();
+        }
+      }
+    }.bind(this));
+
     this.enemyBullets.getChildren().forEach(function (b) {
       if (b.x < -50 || b.x > 2000 || b.y < -50 || b.y > 1130) b.destroy();
     });
