@@ -15,13 +15,21 @@ class TitleScene extends Phaser.Scene {
     const bg = this.add.image(w / 2, h / 2, bgKey);
     bg.setDisplaySize(w, h);
 
+    if (bgKey !== 'title_bg_glitch') {
+      this.heroGif = this.add.dom(w / 2, h / 2 - 50, 'img', 'src="hero_title.gif" style="max-width: 600px;"');
+    }
+
     // Fade in camera
     this.cameras.main.fadeIn(600, 5, 8, 20);
 
     // START button
     this.createButton(w / 2, h * 0.85, 'START', 500, function () {
       this.cameras.main.fadeOut(500, 5, 8, 20);
+      if (this.heroGif) {
+        this.tweens.add({ targets: this.heroGif, alpha: 0, duration: 500 });
+      }
       this.time.delayedCall(500, function () {
+        if (this.heroGif) this.heroGif.destroy();
         MOT.resetFlags();
         this.scene.start('StoryScene');
       }, [], this);
