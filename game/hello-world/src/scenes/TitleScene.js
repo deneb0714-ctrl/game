@@ -15,8 +15,16 @@ class TitleScene extends Phaser.Scene {
     const bg = this.add.image(w / 2, h / 2, bgKey);
     bg.setDisplaySize(w, h);
 
-    if (bgKey !== 'title_bg_glitch') {
-      this.heroGif = this.add.dom(w / 2, h / 2 - 50, 'img', 'src="hero_title.gif" style="max-width: 600px;"');
+    if (bgKey !== 'title_bg_glitch' && this.textures.exists('hero_title_anim')) {
+      if (!this.anims.exists('play_hero_title')) {
+        this.anims.create({
+          key: 'play_hero_title',
+          frames: this.anims.generateFrameNumbers('hero_title_anim', { start: 0, end: 25 }),
+          frameRate: 8, // ~120ms per frame
+          repeat: 0
+        });
+      }
+      this.heroGif = this.add.sprite(w / 4, h / 2, 'hero_title_anim', 0);
     }
 
     // Fade in camera
@@ -24,15 +32,22 @@ class TitleScene extends Phaser.Scene {
 
     // START button
     this.createButton(w / 2, h * 0.85, 'START', 500, function () {
-      this.cameras.main.fadeOut(500, 5, 8, 20);
       if (this.heroGif) {
-        this.tweens.add({ targets: this.heroGif, alpha: 0, duration: 500 });
+        this.heroGif.play('play_hero_title');
+        this.heroGif.once('animationcomplete', function() {
+          this.cameras.main.fadeOut(500, 5, 8, 20);
+          this.time.delayedCall(500, function () {
+            MOT.resetFlags();
+            this.scene.start('StoryScene');
+          }, [], this);
+        }, this);
+      } else {
+        this.cameras.main.fadeOut(500, 5, 8, 20);
+        this.time.delayedCall(500, function () {
+          MOT.resetFlags();
+          this.scene.start('StoryScene');
+        }, [], this);
       }
-      this.time.delayedCall(500, function () {
-        if (this.heroGif) this.heroGif.destroy();
-        MOT.resetFlags();
-        this.scene.start('StoryScene');
-      }, [], this);
     }.bind(this));
 
     // Version text

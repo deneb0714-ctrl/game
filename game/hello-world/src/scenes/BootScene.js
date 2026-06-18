@@ -58,6 +58,14 @@ class BootScene extends Phaser.Scene {
     
     // Title background (Glitch)
     this.load.image('title_bg_glitch', window.TITLE_BG_GLITCH_B64);
+
+    // Hero Title GIF (SpriteSheet)
+    if (window.HERO_TITLE_SHEET_B64) {
+      this.load.spritesheet('hero_title_anim', window.HERO_TITLE_SHEET_B64, {
+        frameWidth: 960,
+        frameHeight: 540
+      });
+    }
   }
 
   create() {
