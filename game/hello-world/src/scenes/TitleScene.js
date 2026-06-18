@@ -24,7 +24,9 @@ class TitleScene extends Phaser.Scene {
           repeat: 0
         });
       }
-      this.heroGif = this.add.sprite(w / 4, h / 2, 'hero_title_anim', 0);
+      this.heroGif = this.add.sprite(w / 4, h, 'hero_title_anim', 0);
+      this.heroGif.setOrigin(0.5, 1);
+      this.heroGif.setScale(1.8);
     }
 
     // Fade in camera
