@@ -3,7 +3,7 @@ import json
 from PIL import Image
 
 def main():
-    gif_path = "hero_title.gif"
+    gif_path = "4-1.gif"
     try:
         im = Image.open(gif_path)
     except Exception as e:

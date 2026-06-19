@@ -19,8 +19,8 @@ class TitleScene extends Phaser.Scene {
       if (!this.anims.exists('play_hero_title')) {
         this.anims.create({
           key: 'play_hero_title',
-          frames: this.anims.generateFrameNumbers('hero_title_anim', { start: 0, end: 25 }),
-          frameRate: 8, // ~120ms per frame
+          frames: this.anims.generateFrameNumbers('hero_title_anim', { start: 0, end: 35 }),
+          frameRate: 12.5, // ~80ms per frame
           repeat: 0
         });
       }
