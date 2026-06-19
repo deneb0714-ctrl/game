@@ -199,6 +199,22 @@ class BossScene extends Phaser.Scene {
           }.bind(this));
         }.bind(this)
       });
+    } else if (key === 'demon_lord') {
+      this.cameras.main.shake(400, 0.015);
+      this.tweens.add({
+        targets: boss,
+        x: 1400,
+        duration: 1200,
+        ease: 'Power2',
+        onComplete: function () {
+          this.tweens.add({ targets: boss, y: boss.y - 30, yoyo: true, repeat: -1, duration: 1000, ease: 'Sine.easeInOut' });
+          this.playDemonLordIntro(function () {
+            this.dialogActive = false;
+            this.physics.resume();
+            this.startBossLaneMovement();
+          }.bind(this));
+        }.bind(this)
+      });
     } else {
       // Entrance
       this.cameras.main.shake(400, 0.015);
@@ -219,6 +235,55 @@ class BossScene extends Phaser.Scene {
         }.bind(this)
       });
     }
+  }
+
+  playDemonLordIntro(onComplete) {
+    var dimBg = this.add.rectangle(1920/2, 1080/2, 1920, 1080, 0x000000, 0.6).setAlpha(0).setDepth(89);
+    var heroImage = this.add.image(300, 1080 / 2, 'hero_stand').setAlpha(0).setDepth(90);
+    if(this.textures.exists('hero_stand')) {
+        this.textures.get('hero_stand').setFilter(Phaser.Textures.FilterMode.LINEAR);
+        var hImgW = this.textures.get('hero_stand').getSourceImage().width;
+        var hImgH = this.textures.get('hero_stand').getSourceImage().height;
+        var hScale = 400 / hImgW;
+        heroImage.setScale(hScale);
+        heroImage.setY(1080 / 2 - 300 + (hImgH * hScale) / 2);
+    }
+    
+    const sayDevice = (text) => new Promise(res => {
+      this.tweens.add({ targets: dimBg, alpha: 0, duration: 300 });
+      this.tweens.add({ targets: heroImage, alpha: 0, duration: 300 });
+      this.showDeviceDialogue(text, res);
+    });
+
+    const sayHero = (text) => new Promise(res => {
+      this.tweens.add({ targets: dimBg, alpha: 0.6, duration: 300 });
+      this.tweens.add({ targets: heroImage, alpha: 1, duration: 300 });
+      this.showDialogue('主人公', text, res);
+    });
+
+    const sayDemon = (text) => new Promise(res => {
+      this.tweens.add({ targets: dimBg, alpha: 0.6, duration: 300 });
+      this.tweens.add({ targets: heroImage, alpha: 0.4, duration: 300 });
+      this.showDialogue('魔王 – ヴェリタス', text, res);
+    });
+
+    (async () => {
+      await sayDevice('「とうとう最後のエリアに着いたか。そこには魔王がいるはずだ。警戒を怠らないように」');
+      await sayDemon('「－－－よくぞここまで来た！無謀な侵入者よ！」');
+      await sayHero('「！」');
+      await sayDevice('「魔王だ！」');
+      await sayDemon('「わらわの部下が世話になったな？王として、その返礼をくれてやろう」');
+      await sayDevice('「気をつけろ。奴はこれまでの敵とは比べ物にならない」');
+      await sayDemon('「しかし、勇者よ。戦う前に一つ聞こう。貴様は自分が何者か知っているのか？」');
+      await sayHero('「…？」');
+      await sayDevice('「奴の言葉に耳を貸す必要はない。お前はただ、与えられた使命をはたすのだ」');
+      await sayDemon('「……まあよい。今ここで話したところで、お前は信じぬだろう。だが覚えておけ。見えているものだけが真実とは限らぬ。」');
+      await sayHero('「僕は」');
+      await sayDemon('「来るがよい、勇者！」');
+      
+      this.tweens.add({ targets: [dimBg, heroImage], alpha: 0, duration: 300 });
+      onComplete();
+    })();
   }
 
   playTwinsIntro(onComplete) {
@@ -925,6 +990,72 @@ class BossScene extends Phaser.Scene {
                 }
               ]);
             }.bind(this));
+          } else if (key === 'demon_lord') {
+            var f = MOT.flags;
+            const sayDevice = (text) => new Promise(res => this.showDeviceDialogue(text, res));
+            const sayHero = (text) => new Promise(res => this.showDialogue('主人公', text, res));
+            const sayDemon = (text) => new Promise(res => this.showDialogue('魔王 – ヴェリタス', text, res));
+            const askChoice = (choices) => new Promise(res => {
+               this.showChoice(choices.map(c => ({
+                 text: c.text,
+                 callback: () => { MOT.Audio.playSelect(); res(c.id); }
+               })));
+            });
+
+            (async () => {
+              if (f.brutality === 0) {
+                // True Pacifist
+                await sayDemon('「我々を殺さず、お前は何がしたい？あの法螺吹きにでもけしかけられて倒しに来たんだろう？」');
+                await askChoice([
+                  { id: 1, text: '殺す必要がないと思った' },
+                  { id: 2, text: '博士を信じられない' }
+                ]);
+                await sayDemon('「そうか、良く正しい選択をしたな。ここから話すのは、信じるも信じないもお前の自由だ。きっとお前は、あいつに私が世界を滅ぼそうとでもしていると言われたのだろう？だが、私はそんなことを考えていない。むしろ世界にとっての悪はあいつだ。あいつはこの世界に人間以上の存在がいることが許せないのだ。わらわはやつに襲われていら魔族を保護し、あいつと長い間戦ってきた」');
+                await sayDevice('「…おやおや、すべて話されてしまったな」');
+                await sayHero('「！」');
+                await sayDevice('「だが、気づくのが遅かったみたいだな。お前たちがのんきに弾幕で遊んでいる間にこちらの準備は整った」');
+                await sayDemon('「なんだ？！」');
+                await sayDevice('「さぁ、最終決戦といこうじゃないか！」');
+                await sayDevice('「驚いた...まさかお前がここまでやるとはな」');
+                await sayHero('「…」');
+                await sayDevice('「なにをしている？早くとどめを刺せ」');
+                await sayHero('「できない...。あなたがやったことは許せないが、それでもあなたは僕の...」');
+                await sayDevice('「全く...本当にどうしようもない欠陥品だな」');
+                await sayDevice('「お前にやれぬというならこの命、自分で終わらせよう！」');
+                await sayHero('「！」');
+                
+                this.cameras.main.flash(2000, 255, 255, 255);
+                this.time.delayedCall(2000, () => { this.proceedToNextArea(boss, true); });
+              } else if (f.showMercy === 0) {
+                // Genocide
+                await sayDevice('「よくやった。さぁ早くとどめを！」');
+                await sayDemon('「ぐっ…ここまでか…」');
+                await askChoice([
+                  { id: 1, text: '心臓を打ち抜く' },
+                  { id: 2, text: '心臓を打ち抜く' }
+                ]);
+                await sayDemon('「博士の…傀儡め…！」');
+                this.proceedToNextArea(boss, false);
+              } else {
+                // Neutral
+                await sayDevice('「よくやった。さぁ早くとどめを！」');
+                await sayDemon('「ぐっ…ここまでか…」');
+                let choice = await askChoice([
+                  { id: 1, text: '心臓を打ち抜く' },
+                  { id: 2, text: '見逃す' }
+                ]);
+                if (choice === 1) {
+                  MOT.modifyFlag('brutality', 1);
+                  await sayDemon('「このわらわが...！すまない、我がしもべたち...」');
+                  this.proceedToNextArea(boss, false);
+                } else {
+                  MOT.modifyFlag('showMercy', 1);
+                  await sayDemon('「わらわを見逃して何が望みだ？しもべたちを殺しているんだ。和平を求めて居るわけではないのであろう？」');
+                  await sayDemon('「わらわは、しもべを殺された恨みを忘れることはできん。何が目的であれ、お前を許すことはできないだろう。」');
+                  this.proceedToNextArea(boss, true);
+                }
+              }
+            })();
           } else {
             // 通常の敗北後
             this.showDialogue(cfg.name, cfg.defeat, function () {
