@@ -939,14 +939,24 @@ class GameScene extends Phaser.Scene {
       if (!this.tutorialPhase6Timer) this.tutorialPhase6Timer = 0;
       this.tutorialPhase6Timer += delta;
 
-      if (this.tutorialPhase6Timer > 10000 && !this.tutorialPhase6Prompted) {
-        this.tutorialPhase6Prompted = true;
+      if (this.tutorialPhase6Timer > 5000 && !this.dialogActive) {
+        this.tutorialPhase6Timer = 0;
+        if (!this.promptCount) { this.promptCount = 0; }
+        this.promptCount++;
         this.physics.pause();
         this.dialogActive = true;
-        this.showDeviceDialogue('「何をしている？早くenterを押すんだ」', () => {
-          this.dialogActive = false;
-          this.physics.resume();
-        });
+        if (this.promptCount < 3) {
+          this.showDeviceDialogue('「何をしている？早くenterを押すんだ」', () => {
+            this.dialogActive = false;
+            this.physics.resume();
+          });
+        } else {
+          this.showDeviceDialogue('「もういい、俺が押してやる」', () => {
+            this.dialogActive = false;
+            this.physics.resume();
+            this.onSpecialAttack();
+          });
+        }
       }
 
       if (MOT.flags.energy < 100 && this.tutorialWaitSpecial) {
