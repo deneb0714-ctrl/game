@@ -1,4 +1,4 @@
-// =============================================
+﻿// =============================================
 // StoryScene.js – プロローグシーン
 // =============================================
 class StoryScene extends Phaser.Scene {
@@ -74,18 +74,18 @@ class StoryScene extends Phaser.Scene {
     this.doctorGroup = [this.doctorImage];
 
     // UI Layer - Dialog Box
-    const boxH = 250;
+    const boxH = 320;
     const boxY = h - boxH - 40;
     this.dialogBox = this.add.rectangle(w / 2, boxY + boxH / 2, w - 160, boxH, 0x000000, 0.85).setStrokeStyle(2, 0x4FD1FF);
     
     // Name Tag
     this.nameBox = this.add.rectangle(200, boxY, 240, 60, 0x1F2933).setStrokeStyle(2, 0x4FD1FF);
-    this.nameText = this.add.text(200, boxY, '', { fontFamily: '"DotGothic16"', fontSize: '32px', color: '#ffffff' }).setOrigin(0.5);
+    this.nameText = this.add.text(200, boxY, '', { fontFamily: '"DotGothic16"', fontSize: '44px', color: '#ffffff' }).setOrigin(0.5);
 
     // Message Text
     this.messageText = this.add.text(120, boxY + 40, '', {
       fontFamily: '"DotGothic16"',
-      fontSize: '36px',
+      fontSize: '48px',
       color: '#E5E7EB',
       wordWrap: { width: w - 240, useAdvancedWrap: true },
       lineSpacing: 10
@@ -142,42 +142,83 @@ class StoryScene extends Phaser.Scene {
     }
   }
 
-  showChoices() {
+    showChoices() {
     const w = this.cameras.main.width;
     const h = this.cameras.main.height;
 
-    this.choice1 = this.createChoiceButton(w / 2, h / 2 - 100, '1「わかった、協力する」', () => {
+    this.choice1 = this.createChoiceButton(w / 2, h / 2 - 120, '1「わかった、協力する」', () => {
       this.handleChoice(1);
     });
     this.choice2 = this.createChoiceButton(w / 2, h / 2, '2「訳が分からない。いきなりそんなこと言われても困る」', () => {
       this.handleChoice(2);
     });
-    this.choice3 = this.createChoiceButton(w / 2, h / 2 + 100, '3「いいから早く魔王退治に行かせろ（チュートリアルスキップ）」', () => {
+    this.choice3 = this.createChoiceButton(w / 2, h / 2 + 120, '3「いいから早く魔王退治に行かせろ（チュートリアルスキップ）」', () => {
       this.handleChoice(3);
+    });
+
+    this.choicesList = [this.choice1, this.choice2, this.choice3];
+    this.selectedChoiceIndex = 0;
+    this.updateChoiceSelection();
+
+    const self = this;
+    this.input.keyboard.on('keydown', function (event) {
+      if (!self.isWaitingForChoice) return;
+      if (event.code === 'KeyW' || event.code === 'ArrowUp') {
+        self.selectedChoiceIndex = (self.selectedChoiceIndex - 1 + self.choicesList.length) % self.choicesList.length;
+        self.updateChoiceSelection();
+      } else if (event.code === 'KeyS' || event.code === 'ArrowDown') {
+        self.selectedChoiceIndex = (self.selectedChoiceIndex + 1) % self.choicesList.length;
+        self.updateChoiceSelection();
+      } else if (event.code === 'Enter' || event.code === 'Space') {
+        self.input.keyboard.off('keydown');
+        self.choicesList[self.selectedChoiceIndex].callback();
+      }
+    });
+  }
+
+  updateChoiceSelection() {
+    const self = this;
+    this.choicesList.forEach(function (choice, idx) {
+      if (idx === self.selectedChoiceIndex) {
+        choice.btn.setFillStyle(0x3a3a5e);
+        choice.btn.setStrokeStyle(4, 0xffffff);
+        choice.txt.setColor('#ffffff');
+        choice.btn.setScale(1.08);
+        choice.txt.setScale(1.08);
+      } else {
+        choice.btn.setFillStyle(0x1F2933);
+        choice.btn.setStrokeStyle(2, 0x4FD1FF);
+        choice.txt.setColor('#4FD1FF');
+        choice.btn.setScale(1.0);
+        choice.txt.setScale(1.0);
+      }
     });
   }
 
   createChoiceButton(x, y, label, callback) {
-    const btn = this.add.rectangle(x, y, 1100, 80, 0x1F2933).setStrokeStyle(2, 0x4FD1FF).setInteractive({ useHandCursor: true });
-    const txt = this.add.text(x, y, label, { fontFamily: '"DotGothic16"', fontSize: '32px', color: '#4FD1FF' }).setOrigin(0.5);
+    const btn = this.add.rectangle(x, y, 1100, 90, 0x1F2933).setStrokeStyle(2, 0x4FD1FF).setInteractive({ useHandCursor: true });
+    const txt = this.add.text(x, y, label, { fontFamily: '"DotGothic16"', fontSize: '26px', color: '#4FD1FF' }).setOrigin(0.5);
 
+    const self = this;
     btn.on('pointerover', () => {
-      btn.setFillStyle(0x3a3a5e);
-      txt.setColor('#ffffff');
-    });
-    btn.on('pointerout', () => {
-      btn.setFillStyle(0x1F2933);
-      txt.setColor('#4FD1FF');
+      if (self.choicesList) {
+        const foundIdx = self.choicesList.findIndex(c => c.btn === btn);
+        if (foundIdx !== -1) {
+          self.selectedChoiceIndex = foundIdx;
+          self.updateChoiceSelection();
+        }
+      }
     });
     btn.on('pointerdown', () => {
+      self.input.keyboard.off('keydown');
       if (window.MOT && MOT.Audio) MOT.Audio.playSelect();
-      this.choice1.btn.destroy(); this.choice1.txt.destroy();
-      this.choice2.btn.destroy(); this.choice2.txt.destroy();
-      if (this.choice3) { this.choice3.btn.destroy(); this.choice3.txt.destroy(); }
+      self.choice1.btn.destroy(); self.choice1.txt.destroy();
+      self.choice2.btn.destroy(); self.choice2.txt.destroy();
+      if (self.choice3) { self.choice3.btn.destroy(); self.choice3.txt.destroy(); }
       callback();
     });
 
-    return { btn, txt };
+    return { btn: btn, txt: txt, callback: callback };
   }
 
   handleChoice(choiceIndex) {
@@ -242,3 +283,4 @@ class StoryScene extends Phaser.Scene {
 }
 
 window.StoryScene = StoryScene;
+

@@ -1,4 +1,4 @@
-// =============================================
+﻿// =============================================
 // GameScene.js – メインゲームプレイ
 // =============================================
 class GameScene extends Phaser.Scene {
@@ -405,7 +405,7 @@ class GameScene extends Phaser.Scene {
 
   showDialogue(speaker, text, onComplete) {
     const w = 1920, h = 1080;
-    const boxH = 180;
+    const boxH = 280;
     const boxY = h - boxH - 20;
 
     const box = this.add.graphics();
@@ -415,17 +415,17 @@ class GameScene extends Phaser.Scene {
     box.strokeRoundedRect(60, boxY, w - 120, boxH, 12);
     box.setDepth(50);
 
-    const nameText = this.add.text(100, boxY + 15, speaker, {
+    const nameText = this.add.text(100, boxY + 10, speaker, {
       fontFamily: '"DotGothic16"',
-      fontSize: '22px',
+      fontSize: '44px',
       color: '#4FD1FF'
     }).setDepth(51);
 
-    const bodyText = this.add.text(100, boxY + 50, '', {
+    const bodyText = this.add.text(100, boxY + 60, '', {
       fontFamily: '"DotGothic16"',
-      fontSize: '20px',
+      fontSize: '40px',
       color: '#E5E7EB',
-      wordWrap: { width: w - 220 },
+      wordWrap: { width: w - 220, useAdvancedWrap: true },
       lineSpacing: 8
     }).setDepth(51);
 
@@ -445,8 +445,8 @@ class GameScene extends Phaser.Scene {
         if (charIndex >= text.length) {
           typeTimer.destroy();
           // Right arrow to continue
-          const contText = this.add.text(w - 180, boxY + boxH - 30, '▶ [→] KEY', {
-            fontFamily: '"Press Start 2P"', fontSize: '12px', color: '#9CA3AF'
+          const contText = this.add.text(w - 240, boxY + boxH - 40, '▶ [→] KEY', {
+            fontFamily: '"Press Start 2P"', fontSize: '20px', color: '#9CA3AF'
           }).setDepth(51);
           this.tweens.add({ targets: contText, alpha: 0.3, yoyo: true, repeat: -1, duration: 500 });
 
@@ -464,9 +464,9 @@ class GameScene extends Phaser.Scene {
     });
   }
 
-  showChoice(choices) {
+    showChoice(choices) {
     const w = 1920, h = 1080;
-    const startY = h / 2 - (choices.length * 35);
+    const startY = h / 2 - (choices.length * 45);
     const elements = [];
 
     const overlay = this.add.graphics();
@@ -475,34 +475,70 @@ class GameScene extends Phaser.Scene {
     overlay.setDepth(49);
     elements.push(overlay);
 
+    const choicesList = [];
+    this.selectedChoiceIndex = 0;
+    const self = this;
+
     choices.forEach(function (choice, i) {
-      const y = startY + i * 70;
-      const btn = this.add.image(w / 2, y, 'ui_button_wide').setInteractive({ useHandCursor: true }).setDepth(50);
-      const txt = this.add.text(w / 2, y, choice.text, {
+      const y = startY + i * 110;
+      const btn = self.add.image(w / 2, y, 'ui_button_wide').setInteractive({ useHandCursor: true }).setDepth(50);
+      
+      const txt = self.add.text(w / 2, y, choice.text, {
         fontFamily: '"DotGothic16"',
-        fontSize: '22px',
+        fontSize: '26px',
         color: '#E5E7EB'
       }).setOrigin(0.5).setDepth(51);
 
       elements.push(btn, txt);
+      choicesList.push({ btn: btn, txt: txt, callback: choice.callback });
 
       btn.setAlpha(0);
       txt.setAlpha(0);
-      this.tweens.add({ targets: [btn, txt], alpha: 1, duration: 300, delay: i * 100 });
+      self.tweens.add({ targets: [btn, txt], alpha: 1, duration: 300, delay: i * 100 });
 
       btn.on('pointerover', function () {
-        this.tweens.add({ targets: [btn, txt], scale: 1.06, duration: 100 });
-        txt.setColor('#4FD1FF');
-      }, this);
-      btn.on('pointerout', function () {
-        this.tweens.add({ targets: [btn, txt], scale: 1.0, duration: 100 });
-        txt.setColor('#E5E7EB');
-      }, this);
+        self.selectedChoiceIndex = i;
+        self.updateChoiceSelection(choicesList);
+      });
+
       btn.on('pointerdown', function () {
+        self.input.keyboard.off('keydown');
         elements.forEach(function (el) { el.destroy(); });
         choice.callback();
-      }, this);
-    }, this);
+      });
+    });
+
+    this.updateChoiceSelection = function(list) {
+      list.forEach(function (choice, idx) {
+        if (idx === self.selectedChoiceIndex) {
+          choice.btn.setTint(0x4FD1FF);
+          choice.txt.setColor('#ffffff');
+          choice.btn.setScale(1.10);
+          choice.txt.setScale(1.10);
+        } else {
+          choice.btn.clearTint();
+          choice.txt.setColor('#E5E7EB');
+          choice.btn.setScale(1.0);
+          choice.txt.setScale(1.0);
+        }
+      });
+    };
+
+    this.updateChoiceSelection(choicesList);
+
+    this.input.keyboard.on('keydown', function (event) {
+      if (event.code === 'KeyW' || event.code === 'ArrowUp') {
+        self.selectedChoiceIndex = (self.selectedChoiceIndex - 1 + choicesList.length) % choicesList.length;
+        self.updateChoiceSelection(choicesList);
+      } else if (event.code === 'KeyS' || event.code === 'ArrowDown') {
+        self.selectedChoiceIndex = (self.selectedChoiceIndex + 1) % choicesList.length;
+        self.updateChoiceSelection(choicesList);
+      } else if (event.code === 'Enter' || event.code === 'Space') {
+        self.input.keyboard.off('keydown');
+        elements.forEach(function (el) { el.destroy(); });
+        choicesList[self.selectedChoiceIndex].callback();
+      }
+    });
   }
 
   showExplosion(x, y) {
@@ -657,7 +693,7 @@ class GameScene extends Phaser.Scene {
       if (b.x < -50 || b.x > 2000 || b.y < -50 || b.y > 1130) b.destroy();
     });
     this.playerBullets.getChildren().forEach(function (b) {
-      if (b.x > 1500) b.destroy();
+      if (b.x > 2000) b.destroy();
     });
     this.itemGroup.getChildren().forEach(function (i) {
       if (i.x < -50) i.destroy();
@@ -730,7 +766,7 @@ class GameScene extends Phaser.Scene {
     }
     this.dialogContainer = this.add.container(0, 0).setDepth(100);
 
-    var w = 1920, h = 1080, boxH = 180, boxY = h - boxH - 20;
+    var w = 1920, h = 1080, boxH = 280, boxY = h - boxH - 20;
     var box = this.add.graphics();
     box.fillStyle(0x0a0a1a, 0.92);
     box.fillRoundedRect(60, boxY, w - 120, boxH, 12);
@@ -746,19 +782,19 @@ class GameScene extends Phaser.Scene {
     var face = this.add.image(130, boxY + 90, 'doctor_face').setDisplaySize(96, 96);
     this.dialogContainer.add(face);
 
-    var nameText = this.add.text(210, boxY + 15, '博士 📡', {
-      fontFamily: '"DotGothic16"', fontSize: '22px', color: '#39FF14'
+    var nameText = this.add.text(210, boxY + 10, '博士 📡', {
+      fontFamily: '"DotGothic16"', fontSize: '44px', color: '#39FF14'
     });
     this.dialogContainer.add(nameText);
 
-    var bodyText = this.add.text(210, boxY + 50, '', {
-      fontFamily: '"DotGothic16"', fontSize: '20px', color: '#E5E7EB',
-      wordWrap: { width: w - 330 }, lineSpacing: 8
+    var bodyText = this.add.text(210, boxY + 60, '', {
+      fontFamily: '"DotGothic16"', fontSize: '40px', color: '#E5E7EB',
+      wordWrap: { width: w - 330, useAdvancedWrap: true }, lineSpacing: 8
     });
     this.dialogContainer.add(bodyText);
 
-    var contText = this.add.text(w - 180, boxY + boxH - 30, '▶ [→] KEY', {
-      fontFamily: '"Press Start 2P"', fontSize: '12px', color: '#9CA3AF'
+    var contText = this.add.text(w - 240, boxY + boxH - 40, '▶ [→] KEY', {
+      fontFamily: '"Press Start 2P"', fontSize: '20px', color: '#9CA3AF'
     }).setAlpha(0);
     this.dialogContainer.add(contText);
 
@@ -812,7 +848,7 @@ class GameScene extends Phaser.Scene {
           this.dialogActive = false;
           this.physics.resume();
           
-          let e = this.spawnTutorialEnemy(1, 150);
+          let e = this.spawnTutorialEnemy(1, 0);
           e.x = 1700;
           
           this.time.delayedCall(500, () => {
@@ -848,7 +884,7 @@ class GameScene extends Phaser.Scene {
       this.tutorialPhase = 3.1;
       
       for(let i=0; i<3; i++) {
-        let e = this.spawnTutorialEnemy(i, 180);
+        let e = this.spawnTutorialEnemy(i, 0);
         e.x = 1700 + Phaser.Math.Between(0, 100);
         e.tutorialDrop = true;
         e.tutorialRed = (i === 1);
@@ -934,3 +970,7 @@ class GameScene extends Phaser.Scene {
 }
 
 window.GameScene = GameScene;
+
+
+
+

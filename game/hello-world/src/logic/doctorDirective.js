@@ -1,4 +1,4 @@
-// =============================================
+﻿// =============================================
 // doctorDirective.js – 博士の戦闘中指示システム
 // =============================================
 window.MOT = window.MOT || {};
@@ -66,7 +66,7 @@ MOT.DoctorDirective = {
 
     // キャラクターのセリフと同じダイアログボックス
     var w = 1920, h = 1080;
-    var boxH = 180;
+    var boxH = 280;
     var boxY = h - boxH - 20;
 
     var container = scene.add.container(0, 0).setDepth(110);
@@ -92,17 +92,17 @@ MOT.DoctorDirective = {
     // 「博士」ラベル
     var nameText = scene.add.text(210, boxY + 15, '博士 📡', {
       fontFamily: '"DotGothic16"',
-      fontSize: '22px',
+      fontSize: '44px',
       color: '#39FF14'
     });
     container.add(nameText);
 
     // 指示テキスト
-    var txt = scene.add.text(210, boxY + 50, directive.text, {
+    var txt = scene.add.text(210, boxY + 60, directive.text, {
       fontFamily: '"DotGothic16"',
-      fontSize: '20px',
+      fontSize: '40px',
       color: '#FFFFFF',
-      wordWrap: { width: w - 330 },
+      wordWrap: { width: w - 330, useAdvancedWrap: true },
       lineSpacing: 8
     });
     this.directiveTextObj = txt;
@@ -218,3 +218,4 @@ MOT.DoctorDirective = {
     this.currentDirective = null;
   }
 };
+
