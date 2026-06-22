@@ -10,25 +10,31 @@ class TitleScene extends Phaser.Scene {
     const w = this.cameras.main.width;
     const h = this.cameras.main.height;
 
-    // New Title Background
-    const bgKey = (window.MOT && window.MOT.flags && window.MOT.flags.useGlitchTitle) ? 'title_bg_glitch' : 'title_bg';
-    const bg = this.add.image(w / 2, h / 2, bgKey);
-    bg.setDisplaySize(w, h);
+    const isGlitch = (window.MOT && window.MOT.flags && window.MOT.flags.useGlitchTitle);
 
-    if (bgKey !== 'title_bg_glitch' && this.textures.exists('hero_title_anim')) {
-      if (!this.anims.exists('play_hero_title')) {
-        this.anims.create({
-          key: 'play_hero_title',
-          frames: this.anims.generateFrameNumbers('hero_title_anim', { start: 0, end: 35 }),
-          frameRate: 12.5, // ~80ms per frame
-          repeat: 0
-        });
+    if (!isGlitch) {
+      this.add.image(w / 2, h / 2, 'title_1x_back').setDisplaySize(w, h).setDepth(0);
+      this.numberTile = this.add.tileSprite(w / 2, h / 2, w, h, 'title_1x_number').setDepth(1);
+      
+      if (this.textures.exists('hero_title_anim')) {
+        if (!this.anims.exists('play_hero_title')) {
+          this.anims.create({
+            key: 'play_hero_title',
+            frames: this.anims.generateFrameNumbers('hero_title_anim', { start: 0, end: 35 }),
+            frameRate: 12.5,
+            repeat: 0
+          });
+        }
+        this.heroGif = this.add.sprite(0, h, 'hero_title_anim', 0).setOrigin(0, 1).setScale(2.25).setDepth(2);
+      } else {
+        this.heroGif = null;
       }
-      this.heroGif = this.add.sprite(0, h, 'hero_title_anim', 0);
-      this.heroGif.setOrigin(0, 1);
-      this.heroGif.setScale(2.25);
+      
+      this.add.image(w / 2, h / 2, 'title_1x_artboard').setDisplaySize(w, h).setDepth(3);
     } else {
+      this.add.image(w / 2, h / 2, 'title_bg_glitch').setDisplaySize(w, h).setDepth(0);
       this.heroGif = null;
+      this.numberTile = null;
     }
 
     // Fade in camera
@@ -59,16 +65,23 @@ class TitleScene extends Phaser.Scene {
       fontFamily: '"Press Start 2P"',
       fontSize: '10px',
       color: '#ffffff'
-    }).setOrigin(1, 1);
+    }).setOrigin(1, 1).setDepth(10);
+  }
+
+  update(time, delta) {
+    if (this.numberTile) {
+      // スクロール速度（数字が上から下に落ちていくようにYをマイナス方向へ移動）
+      this.numberTile.tilePositionY -= 0.05 * delta;
+    }
   }
 
   createButton(x, y, label, delay, callback) {
-    const btn = this.add.image(x, y, 'ui_button').setInteractive({ useHandCursor: true });
+    const btn = this.add.image(x, y, 'ui_button').setInteractive({ useHandCursor: true }).setDepth(10);
     const txt = this.add.text(x, y, label, {
       fontFamily: '"Press Start 2P"',
       fontSize: '18px',
       color: '#4FD1FF'
-    }).setOrigin(0.5);
+    }).setOrigin(0.5).setDepth(10);
 
     btn.setAlpha(0);
     txt.setAlpha(0);
