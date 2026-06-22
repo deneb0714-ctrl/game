@@ -1,4 +1,4 @@
-﻿// =============================================
+// =============================================
 // StoryScene.js – プロローグシーン
 // =============================================
 class StoryScene extends Phaser.Scene {
@@ -95,6 +95,16 @@ class StoryScene extends Phaser.Scene {
     this.input.on('pointerdown', () => {
       if (!this.isWaitingForChoice) {
         this.nextDialogue();
+      }
+    });
+
+    // Advance on key press (矢印キー、Enter、Spaceなど)
+    this.input.keyboard.on('keydown', (event) => {
+      const k = event.key;
+      if (['ArrowRight', 'ArrowDown', 'ArrowLeft', 'ArrowUp', 'Enter', ' '].includes(k)) {
+        if (!this.isWaitingForChoice) {
+          this.nextDialogue();
+        }
       }
     });
 

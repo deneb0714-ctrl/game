@@ -1,4 +1,4 @@
-﻿// =============================================
+// =============================================
 // BossScene.js – ボス戦（幹部→両翼→魔王）
 // =============================================
 class BossScene extends Phaser.Scene {
@@ -1300,11 +1300,22 @@ class BossScene extends Phaser.Scene {
           typeTimer.destroy();
           contText.setAlpha(1);
           this.tweens.add({ targets: contText, alpha: 0.3, yoyo: true, repeat: -1, duration: 500 });
-          this.input.keyboard.once('keydown-RIGHT', function () {
+
+          const advance = () => {
+            this.input.off('pointerdown', advance);
+            this.input.keyboard.off('keydown', keyHandler);
             if (this.dialogContainer) this.dialogContainer.destroy();
             this.dialogContainer = null;
             if (onComplete) onComplete();
-          }, this);
+          };
+          const keyHandler = (event) => {
+            const k = event.key;
+            if (['ArrowRight', 'ArrowDown', 'ArrowLeft', 'ArrowUp', 'Enter', ' '].includes(k)) {
+              advance();
+            }
+          };
+          this.input.once('pointerdown', advance);
+          this.input.keyboard.on('keydown', keyHandler);
         }
       }, callbackScope: this, loop: true
     });
@@ -1350,11 +1361,22 @@ class BossScene extends Phaser.Scene {
           typeTimer.destroy();
           contText.setAlpha(1);
           this.tweens.add({ targets: contText, alpha: 0.3, yoyo: true, repeat: -1, duration: 500 });
-          this.input.keyboard.once('keydown-RIGHT', function () {
+
+          const advance = () => {
+            this.input.off('pointerdown', advance);
+            this.input.keyboard.off('keydown', keyHandler);
             if (this.dialogContainer) this.dialogContainer.destroy();
             this.dialogContainer = null;
             if (onComplete) onComplete();
-          }, this);
+          };
+          const keyHandler = (event) => {
+            const k = event.key;
+            if (['ArrowRight', 'ArrowDown', 'ArrowLeft', 'ArrowUp', 'Enter', ' '].includes(k)) {
+              advance();
+            }
+          };
+          this.input.once('pointerdown', advance);
+          this.input.keyboard.on('keydown', keyHandler);
         }
       }, callbackScope: this, loop: true
     });
