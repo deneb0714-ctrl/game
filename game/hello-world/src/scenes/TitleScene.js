@@ -16,6 +16,27 @@ class TitleScene extends Phaser.Scene {
       this.add.image(w / 2, h / 2, 'title_1x_back').setDisplaySize(w, h).setDepth(0);
       this.numberTile = this.add.tileSprite(w / 2, h / 2, w, h, 'title_1x_number').setDepth(1);
       
+      // --- ノイズ（チラつき）テクスチャの生成 ---
+      if (!this.textures.exists('digital_noise')) {
+        const noiseSize = 256;
+        const blockSize = 32; // 数字の大きさに合わせたブロックサイズ
+        const graphics = this.make.graphics({ x: 0, y: 0, add: false });
+        for (let x = 0; x < noiseSize; x += blockSize) {
+          for (let y = 0; y < noiseSize; y += blockSize) {
+            // ランダムに黒いブロックを配置して数字を隠す
+            if (Math.random() > 0.4) {
+              graphics.fillStyle(0x000000, 0.85);
+              graphics.fillRect(x, y, blockSize, blockSize);
+            }
+          }
+        }
+        graphics.generateTexture('digital_noise', noiseSize, noiseSize);
+        graphics.destroy();
+      }
+      this.noiseTile = this.add.tileSprite(w / 2, h / 2, w, h, 'digital_noise').setDepth(1.5);
+      this.noiseTimer = 0;
+      // ----------------------------------------
+      
       if (this.textures.exists('hero_title_anim')) {
         if (!this.anims.exists('play_hero_title')) {
           this.anims.create({
@@ -72,6 +93,17 @@ class TitleScene extends Phaser.Scene {
     if (this.numberTile) {
       // スクロール速度（数字が上から下に落ちていくようにYをマイナス方向へ移動）
       this.numberTile.tilePositionY -= 0.05 * delta;
+    }
+    
+    // ノイズのチラつきエフェクト
+    if (this.noiseTile) {
+      this.noiseTimer += delta;
+      // 約80msごとにノイズの配置をランダムにずらすことで、数字がランダムに消えたり現れたりする効果を出す
+      if (this.noiseTimer > 80) {
+        this.noiseTimer = 0;
+        this.noiseTile.tilePositionX = Phaser.Math.Between(0, 256);
+        this.noiseTile.tilePositionY = Phaser.Math.Between(0, 256);
+      }
     }
   }
 
