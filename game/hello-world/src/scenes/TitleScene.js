@@ -16,18 +16,6 @@ class TitleScene extends Phaser.Scene {
       this.add.image(w / 2, h / 2, 'title_1x_back').setDisplaySize(w, h).setDepth(0);
       this.numberTile = this.add.tileSprite(w / 2, h / 2, w, h, 'title_1x_number').setDepth(1);
       
-      // --- 控えめなノイズ（チラつき）エフェクトの生成 ---
-      // 画面全体に3〜5個の黒いブロック（ノイズ）を配置する
-      this.noiseBlocks = [];
-      const numNoises = 5;
-      for (let i = 0; i < numNoises; i++) {
-        // 初期位置は画面外
-        let block = this.add.rectangle(-100, -100, 64, 64, 0x000000, 0.85).setDepth(1.5);
-        this.noiseBlocks.push(block);
-      }
-      this.noiseTimer = 0;
-      // ----------------------------------------
-      
       if (this.textures.exists('hero_title_anim')) {
         if (!this.anims.exists('play_hero_title')) {
           this.anims.create({
@@ -84,21 +72,6 @@ class TitleScene extends Phaser.Scene {
     if (this.numberTile) {
       // スクロール速度（数字が上から下に落ちていくようにYをマイナス方向へ移動）
       this.numberTile.tilePositionY -= 0.05 * delta;
-    }
-    
-    // 控えめなノイズのチラつきエフェクト
-    if (this.noiseBlocks) {
-      this.noiseTimer += delta;
-      // 約150msごとにノイズブロックの配置をランダムにずらす
-      if (this.noiseTimer > 150) {
-        this.noiseTimer = 0;
-        this.noiseBlocks.forEach(block => {
-          block.x = Phaser.Math.Between(0, 1920);
-          block.y = Phaser.Math.Between(0, 1080);
-          block.width = Phaser.Math.Between(32, 128);
-          block.height = Phaser.Math.Between(32, 64);
-        });
-      }
     }
   }
 
