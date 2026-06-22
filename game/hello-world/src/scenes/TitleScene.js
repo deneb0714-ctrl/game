@@ -16,38 +16,15 @@ class TitleScene extends Phaser.Scene {
       this.add.image(w / 2, h / 2, 'title_1x_back').setDisplaySize(w, h).setDepth(0);
       this.add.image(w / 2, h / 2, 'title_1x_back').setDisplaySize(w, h).setDepth(0);
       
-      // プログラムによる動的なマトリックス風・文字降らしエフェクト
-      this.matrixColumns = [];
-      const sourceSeq = "01010100 01010010 01010101 01010011 01010100 00100000 01001110 01001111 00100000 01001111 01001110 01000101 00100000 01011001 01001111 01010101 00100000 01000001 01010010 01000101 00100000 01001110 01001111 01010100 00100000 01000001 00100000 01000100 01001111 01001100 01001100";
-      const seqLen = sourceSeq.length;
+      // 画像（number2.png）を使用したスクロール
+      this.numberTile = this.add.tileSprite(w / 2, h / 2, w, h, 'title_1x_number').setDepth(1);
       
-      const colWidth = 24;
-      const numCols = Math.ceil(w / colWidth);
-      const numRows = Math.ceil(h / 24) + 2; // 少しはみ出すように
-
-      for (let i = 0; i < numCols; i++) {
-        let colChars = [];
-        let seqIndex = Phaser.Math.Between(0, seqLen - 1);
-        for (let j = 0; j < numRows; j++) {
-          colChars.push(sourceSeq[seqIndex]);
-          seqIndex = (seqIndex + 1) % seqLen;
-        }
-        
-        let textObj = this.add.text(i * colWidth, 0, colChars.join('\n'), {
-          fontFamily: 'monospace',
-          fontSize: '20px',
-          color: '#ffffff',
-          alpha: 0.4
-        }).setOrigin(0, 0).setDepth(1);
-        
-        this.matrixColumns.push({
-          textObj: textObj,
-          chars: colChars,
-          seqIndex: seqIndex,
-          speed: Phaser.Math.FloatBetween(20, 60) // 落下速度
-        });
-      }
-      this.matrixTimer = 0;
+      // 文字単位でチカチカ消えたり現れたりする演出のためのマスク
+      this.numberMaskGraphics = this.add.graphics();
+      this.numberMaskGraphics.setVisible(false); // 画面に白く描画されるのを防ぐ
+      const mask = new Phaser.Display.Masks.GeometryMask(this, this.numberMaskGraphics);
+      this.numberTile.setMask(mask);
+      this.flickerTimer = 0;
       
       if (this.textures.exists('hero_title_anim')) {
         if (!this.anims.exists('play_hero_title')) {
@@ -102,44 +79,39 @@ class TitleScene extends Phaser.Scene {
   }
 
   update(time, delta) {
-    if (this.matrixColumns && this.matrixColumns.length > 0) {
-      this.matrixTimer += delta;
-      let doFlicker = false;
-      if (this.matrixTimer > 80) { // 約80msごとにチカチカを更新
-        this.matrixTimer = 0;
-        doFlicker = true;
-      }
+    if (this.numberTile) {
+      // スクロール速度（数字が上から下に落ちていくようにYをマイナス方向へ移動）
+      this.numberTile.tilePositionY -= 0.05 * delta;
       
-      const sourceSeq = "01010100 01010010 01010101 01010011 01010100 00100000 01001110 01001111 00100000 01001111 01001110 01000101 00100000 01011001 01001111 01010101 00100000 01000001 01010010 01000101 00100000 01001110 01001111 01010100 00100000 01000001 00100000 01000100 01001111 01001100 01001100";
-      const seqLen = sourceSeq.length;
-
-      this.matrixColumns.forEach(col => {
-        // スムーズな落下
-        col.textObj.y += (col.speed * delta) / 1000;
-        
-        // 1文字分（約24px）落下したら配列を更新してループさせる
-        if (col.textObj.y > 24) {
-          col.textObj.y -= 24;
-          col.seqIndex = (col.seqIndex - 1 + seqLen) % seqLen;
-          col.chars.unshift(sourceSeq[col.seqIndex]);
-          col.chars.pop();
-          doFlicker = true; // 文字がずれたら描画更新
-        }
-        
-        // 個別の数字をランダムでチカチカ（非表示）させる処理
-        if (doFlicker) {
-          let displayStr = "";
-          for (let i = 0; i < col.chars.length; i++) {
-            // 8%の確率でその瞬間の文字が消える（スペースになる）
-            if (Math.random() < 0.08) {
-              displayStr += " \n";
-            } else {
-              displayStr += col.chars[i] + "\n";
+      if (this.numberMaskGraphics) {
+        this.flickerTimer += delta;
+        // 約80msごとにマスクを更新
+        if (this.flickerTimer > 80) {
+          this.flickerTimer = 0;
+          this.numberMaskGraphics.clear();
+          this.numberMaskGraphics.fillStyle(0xffffff, 1);
+          
+          // ----------------------------------------------------
+          // ★ここで画像内の1文字のサイズ（推定）に合わせてマスクのグリッドを作ります
+          // もし文字が半分切れたりする場合は、この charW と charH の数値を
+          // 元の画像に合わせて微調整してください。
+          // （横80文字程度と仮定して、1920/80 = 24px幅、縦36pxとしています）
+          // ----------------------------------------------------
+          const charW = 24; // 1文字の横幅ピクセル
+          const charH = 36; // 1文字の縦幅ピクセル
+          
+          for (let x = 0; x < 1920; x += charW) {
+            for (let y = -64; y < 1080 + 64; y += charH) {
+              // 92%の確率は表示、8%の確率で非表示（消える）
+              if (Math.random() > 0.08) {
+                // スクロールに合わせてマスク自体も移動させることで文字に追従させる
+                const yOffset = this.numberTile.tilePositionY % charH;
+                this.numberMaskGraphics.fillRect(x, y - yOffset, charW, charH);
+              }
             }
           }
-          col.textObj.setText(displayStr);
         }
-      });
+      }
     }
   }
 
