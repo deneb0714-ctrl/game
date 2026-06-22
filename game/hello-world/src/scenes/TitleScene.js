@@ -90,49 +90,55 @@ class TitleScene extends Phaser.Scene {
   }
 
   update(time, delta) {
-    if (this.matrixTextObj) {
-      this.matrixTimer += delta;
-      let doFlicker = false;
-      if (this.matrixTimer > 80) { // 約80msごとにチカチカを更新
-        this.matrixTimer = 0;
-        doFlicker = true;
-      }
-      
-      // スクロール処理
-      this.matrixYOffset += 55 * delta / 1000;
-      const rowHeight = 68; // 60pxフォント + 8px行間
-      
-      if (this.matrixYOffset >= rowHeight) {
-        this.matrixYOffset -= rowHeight;
-        // 1行分スクロールしたら、開始文字のインデックスを1行分戻す（上に新しい行が追加されたように見せる）
-        this.matrixStartIdx = (this.matrixStartIdx - this.matrixCols) % this.sourceSeq.length;
-        if (this.matrixStartIdx < 0) {
-          this.matrixStartIdx += this.sourceSeq.length;
+    try {
+      if (this.matrixTextObj) {
+        this.matrixTimer += delta;
+        let doFlicker = false;
+        if (this.matrixTimer > 80 || this.matrixTextObj.text === "") { // ★初回フレームでも必ず描画する
+          this.matrixTimer = 0;
+          doFlicker = true;
         }
-        doFlicker = true;
-      }
-      
-      // 全体のY座標を少しずつ移動（画面外の見えない行からスタート）
-      this.matrixTextObj.y = this.matrixYOffset - rowHeight;
-
-      // チカチカ処理（個別の文字をランダムでスペースに置き換える）
-      if (doFlicker) {
-        let displayStr = "";
-        let currIdx = this.matrixStartIdx;
         
-        for (let r = 0; r < this.matrixRows; r++) {
-          for (let c = 0; c < this.matrixCols; c++) {
-            // 6%の確率でその瞬間の文字が消える（スペースになる）
-            if (Math.random() < 0.06) {
-              displayStr += " ";
-            } else {
-              displayStr += this.sourceSeq[currIdx];
-            }
-            currIdx = (currIdx + 1) % this.sourceSeq.length;
+        // スクロール処理
+        this.matrixYOffset += 55 * delta / 1000;
+        const rowHeight = 68; // 60pxフォント + 8px行間
+        
+        if (this.matrixYOffset >= rowHeight) {
+          this.matrixYOffset -= rowHeight;
+          // 1行分スクロールしたら、開始文字のインデックスを1行分戻す（上に新しい行が追加されたように見せる）
+          this.matrixStartIdx = (this.matrixStartIdx - this.matrixCols) % this.sourceSeq.length;
+          if (this.matrixStartIdx < 0) {
+            this.matrixStartIdx += this.sourceSeq.length;
           }
-          displayStr += "\n";
+          doFlicker = true;
         }
-        this.matrixTextObj.setText(displayStr);
+        
+        // 全体のY座標を少しずつ移動（画面外の見えない行からスタート）
+        this.matrixTextObj.y = this.matrixYOffset - rowHeight;
+
+        // チカチカ処理（個別の文字をランダムでスペースに置き換える）
+        if (doFlicker) {
+          let displayStr = "";
+          let currIdx = this.matrixStartIdx;
+          
+          for (let r = 0; r < this.matrixRows; r++) {
+            for (let c = 0; c < this.matrixCols; c++) {
+              // 6%の確率でその瞬間の文字が消える（スペースになる）
+              if (Math.random() < 0.06) {
+                displayStr += " ";
+              } else {
+                displayStr += this.sourceSeq[currIdx];
+              }
+              currIdx = (currIdx + 1) % this.sourceSeq.length;
+            }
+            displayStr += "\n";
+          }
+          this.matrixTextObj.setText(displayStr);
+        }
+      }
+    } catch (e) {
+      if (!this.debugErrTxt) {
+        this.debugErrTxt = this.add.text(50, 50, "ERROR: " + e.message, {color: '#ffff00', fontSize: '24px', backgroundColor: '#000000'}).setDepth(9999);
       }
     }
   }
