@@ -19,20 +19,21 @@ class TitleScene extends Phaser.Scene {
       // プログラムによる動的なマトリックス風・文字降らしエフェクト（単一テキスト・完全整列版）
       const sourceSeq = "01010100 01010010 01010101 01010011 01010100 00100000 01001110 01001111 00100000 01001111 01001110 01000101 00100000 01011001 01001111 01010101 00100000 01000001 01010010 01000101 00100000 01001110 01001111 01010100 00100000 01000001 00100000 01000100 01001111 01001100 01001100 ";
       this.sourceSeq = sourceSeq;
-      this.matrixCols = 63; // ★画面幅(1920)から見切れない最大の9の倍数（7単語分＝63文字）
-      this.matrixRows = Math.ceil(h / 68) + 3; // 行高さを約68pxと想定
+      // 左右に動かすため、画面幅より少し広く（72文字＝8単語分）確保して見切れを防ぐ
+      this.matrixCols = 72; 
+      this.matrixRows = Math.ceil(h / 68) + 3; 
 
       this.matrixTextObj = this.add.text(w / 2, 0, "", {
         fontFamily: '"HG 明朝B", "HG Mincho B", "MS Mincho", serif',
-        fontSize: '60px', // ★見切れない範囲で最大サイズに
+        fontSize: '60px', 
         fontWeight: 'bold',
-        color: '#044f60',
+        color: '#044f60', 
         align: 'center',
         lineSpacing: 8
       }).setOrigin(0.5, 0).setDepth(1);
 
       this.matrixTimer = 0;
-      this.matrixYOffset = 0;
+      this.matrixXOffset = 0; // Yの代わりにXオフセットを使用
       this.matrixStartIdx = 0;
       
       if (this.textures.exists('hero_title_anim')) {
@@ -89,33 +90,34 @@ class TitleScene extends Phaser.Scene {
   }
 
   update(time, delta) {
-    try {
-      if (this.matrixTextObj) {
-        this.matrixTimer += delta;
-        let doFlicker = false;
-        if (this.matrixTimer > 80 || this.matrixTextObj.text === "") { // ★初回フレームでも必ず描画する
-          this.matrixTimer = 0;
-          doFlicker = true;
+    if (this.matrixTextObj) {
+      this.matrixTimer += delta;
+      let doFlicker = false;
+      if (this.matrixTimer > 80 || this.matrixTextObj.text === "") { // ★初回フレームでも必ず描画する
+        this.matrixTimer = 0;
+        doFlicker = true;
+      }
+      
+      // スクロール処理 (左から右へ)
+      this.matrixXOffset += 45 * delta / 1000;
+      const charWidth = 30; // 60pxフォントの半角幅はおよそ30px
+      
+      if (this.matrixXOffset >= charWidth) {
+        this.matrixXOffset -= charWidth;
+        // 1文字分スクロールしたら、開始文字のインデックスを1つ戻す（左から新しい文字が追加されたように見せる）
+        this.matrixStartIdx = (this.matrixStartIdx - 1);
+        if (this.matrixStartIdx < 0) {
+          this.matrixStartIdx += this.sourceSeq.length;
         }
-        
-        // スクロール処理
-        this.matrixYOffset += 55 * delta / 1000;
-        const rowHeight = 68; // 60pxフォント + 8px行間
-        
-        if (this.matrixYOffset >= rowHeight) {
-          this.matrixYOffset -= rowHeight;
-          // 1行分スクロールしたら、開始文字のインデックスを1行分戻す（上に新しい行が追加されたように見せる）
-          this.matrixStartIdx = (this.matrixStartIdx - this.matrixCols) % this.sourceSeq.length;
-          if (this.matrixStartIdx < 0) {
-            this.matrixStartIdx += this.sourceSeq.length;
-          }
-          doFlicker = true;
-        }
-        
-        // 全体のY座標を少しずつ移動（画面外の見えない行からスタート）
-        this.matrixTextObj.y = this.matrixYOffset - rowHeight;
+        doFlicker = true;
+      }
+      
+      // 全体のX座標を少しずつ移動（左から右へ）
+      const w = this.cameras.main.width;
+      this.matrixTextObj.x = (w / 2) + this.matrixXOffset;
+      this.matrixTextObj.y = -20; // Y座標は固定
 
-        // チカチカ処理（個別の文字をランダムでスペースに置き換える）
+      // チカチカ処理（個別の文字をランダムでスペースに置き換える）
         if (doFlicker) {
           let displayStr = "";
           let currIdx = this.matrixStartIdx;
@@ -134,10 +136,6 @@ class TitleScene extends Phaser.Scene {
           }
           this.matrixTextObj.setText(displayStr);
         }
-      }
-    } catch (e) {
-      if (!this.debugErrTxt) {
-        this.debugErrTxt = this.add.text(50, 50, "ERROR: " + e.message, {color: '#ffff00', fontSize: '24px', backgroundColor: '#000000'}).setDepth(9999);
       }
     }
   }
