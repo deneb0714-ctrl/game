@@ -16,8 +16,9 @@ class TitleScene extends Phaser.Scene {
       this.add.image(w / 2, h / 2, 'title_1x_back').setDisplaySize(w, h).setDepth(0);
       this.numberTile = this.add.tileSprite(w / 2, h / 2, w, h, 'title_1x_number').setDepth(1);
       
-      // 個別の数字（行）がチカチカ消えたり現れたりする演出のためのマスク
+      // 個別の数字がチカチカ消えたり現れたりする演出のためのマスク
       this.numberMaskGraphics = this.add.graphics();
+      this.numberMaskGraphics.setVisible(false); // ★画面に白く描画されるのを防ぐ
       const mask = new Phaser.Display.Masks.GeometryMask(this, this.numberMaskGraphics);
       this.numberTile.setMask(mask);
       this.flickerTimer = 0;
@@ -88,12 +89,17 @@ class TitleScene extends Phaser.Scene {
           this.numberMaskGraphics.clear();
           this.numberMaskGraphics.fillStyle(0xffffff, 1);
           
-          // 画面を横長のストライプ（行）に分割し、ランダムに表示・非表示を切り替える
-          const rowHeight = 32; // 行の高さ
-          for (let y = 0; y < 1080; y += rowHeight) {
-            // 85%の確率は表示（fillRectする）、15%の確率で非表示（fillRectしない＝消える）
-            if (Math.random() > 0.15) {
-              this.numberMaskGraphics.fillRect(0, y, 1920, rowHeight);
+          // 画面を個別の文字サイズ（グリッド状）に分割し、ランダムに表示・非表示を切り替える
+          const charW = 20; // 1文字の幅（想定）
+          const charH = 32; // 1文字の高さ（想定）
+          for (let x = 0; x < 1920; x += charW) {
+            for (let y = -64; y < 1080 + 64; y += charH) {
+              // 90%の確率は表示、10%の確率で非表示（消える）
+              if (Math.random() > 0.1) {
+                // スクロールに合わせてマスク自体も少し移動させることで文字に追従させる
+                const yOffset = this.numberTile.tilePositionY % charH;
+                this.numberMaskGraphics.fillRect(x, y - yOffset, charW, charH);
+              }
             }
           }
         }
