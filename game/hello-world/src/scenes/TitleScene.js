@@ -19,12 +19,12 @@ class TitleScene extends Phaser.Scene {
       // プログラムによる動的なマトリックス風・文字降らしエフェクト（単一テキスト・完全整列版）
       const sourceSeq = "01010100 01010010 01010101 01010011 01010100 00100000 01001110 01001111 00100000 01001111 01001110 01000101 00100000 01011001 01001111 01010101 00100000 01000001 01010010 01000101 00100000 01001110 01001111 01010100 00100000 01000001 00100000 01000100 01001111 01001100 01001100 ";
       this.sourceSeq = sourceSeq;
-      this.matrixCols = 72; // ★8bit（8文字＋スペースの9文字）が途切れないように9の倍数（72）に設定
-      this.matrixRows = Math.ceil(h / 64) + 3; // 画面を覆う行数（行高さを約64pxと想定）
+      this.matrixCols = 63; // ★画面幅(1920)から見切れない最大の9の倍数（7単語分＝63文字）
+      this.matrixRows = Math.ceil(h / 68) + 3; // 行高さを約68pxと想定
 
       this.matrixTextObj = this.add.text(w / 2, 0, "", {
         fontFamily: '"HG 明朝B", "HG Mincho B", "MS Mincho", serif',
-        fontSize: '56px', // 限界まで大きく
+        fontSize: '60px', // ★見切れない範囲で最大サイズに
         fontWeight: 'bold',
         color: '#044f60',
         align: 'center',
@@ -97,8 +97,8 @@ class TitleScene extends Phaser.Scene {
       }
       
       // スクロール処理
-      this.matrixYOffset += 50 * delta / 1000;
-      const rowHeight = 64; // 56pxフォント + 8px行間
+      this.matrixYOffset += 55 * delta / 1000;
+      const rowHeight = 68; // 60pxフォント + 8px行間
       
       if (this.matrixYOffset >= rowHeight) {
         this.matrixYOffset -= rowHeight;
