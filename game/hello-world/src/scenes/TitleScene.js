@@ -72,7 +72,7 @@ class TitleScene extends Phaser.Scene {
         imgData.data[i] = val;     // R
         imgData.data[i+1] = val;   // G
         imgData.data[i+2] = val;   // B
-        imgData.data[i+3] = 120;   // A (半透明)
+        imgData.data[i+3] = 255;   // A (はっきりと見せるため不透明に)
       }
       ctx.putImageData(imgData, 0, 0);
       this.textures.addCanvas('tv_noise', canvas);
@@ -174,14 +174,31 @@ class TitleScene extends Phaser.Scene {
           this.noiseTimer = Phaser.Math.Between(50, 300); // ノイズが続く時間(ms)
         }
       } else {
-        // ノイズ表示中
-        this.noiseSprite.setAlpha(Phaser.Math.FloatBetween(0.1, 0.3));
+        // ノイズ表示中（アルファを上げてはっきりと見せる）
+        this.noiseSprite.setAlpha(Phaser.Math.FloatBetween(0.6, 1.0));
         this.noiseSprite.tilePositionX = Phaser.Math.Between(0, 256);
         this.noiseSprite.tilePositionY = Phaser.Math.Between(0, 256);
+
+        // さらにタイトル文字自体を物理的にブレさせる（グリッチ効果）
+        if (this.helloImg) {
+          const w = this.cameras.main.width;
+          const h = this.cameras.main.height;
+          this.helloImg.x = (w / 2) + Phaser.Math.Between(-8, 8);
+          this.helloImg.y = (h / 2) + Phaser.Math.Between(-4, 4);
+        }
+
         if (this.noiseTimer <= 0) {
           this.isNoisy = false;
           this.noiseSprite.setAlpha(0);
           this.noiseTimer = Phaser.Math.Between(2000, 6000); // 次にノイズが来るまでの時間(ms)
+          
+          // ブレを元の位置に戻す
+          if (this.helloImg) {
+            const w = this.cameras.main.width;
+            const h = this.cameras.main.height;
+            this.helloImg.x = w / 2;
+            this.helloImg.y = h / 2;
+          }
         }
       }
     }
