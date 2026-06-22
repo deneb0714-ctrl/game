@@ -16,38 +16,24 @@ class TitleScene extends Phaser.Scene {
       this.add.image(w / 2, h / 2, 'title_1x_back').setDisplaySize(w, h).setDepth(0);
       this.add.image(w / 2, h / 2, 'title_1x_back').setDisplaySize(w, h).setDepth(0);
       
-      // プログラムによる動的なマトリックス風・文字降らしエフェクト（指定フォント＆カラー版）
-      this.matrixColumns = [];
-      const sourceSeq = "01010100 01010010 01010101 01010011 01010100 00100000 01001110 01001111 00100000 01001111 01001110 01000101 00100000 01011001 01001111 01010101 00100000 01000001 01010010 01000101 00100000 01001110 01001111 01010100 00100000 01000001 00100000 01000100 01001111 01001100 01001100";
-      const seqLen = sourceSeq.length;
-      
-      const colWidth = 24;
-      const numCols = Math.ceil(w / colWidth);
-      const numRows = Math.ceil(h / 24) + 2;
+      // プログラムによる動的なマトリックス風・文字降らしエフェクト（単一テキスト・完全整列版）
+      const sourceSeq = "01010100 01010010 01010101 01010011 01010100 00100000 01001110 01001111 00100000 01001111 01001110 01000101 00100000 01011001 01001111 01010101 00100000 01000001 01010010 01000101 00100000 01001110 01001111 01010100 00100000 01000001 00100000 01000100 01001111 01001100 01001100 ";
+      this.sourceSeq = sourceSeq;
+      this.matrixCols = 100; // 1行あたりの文字数
+      this.matrixRows = Math.ceil(h / 32) + 3; // 画面を覆う行数
 
-      for (let i = 0; i < numCols; i++) {
-        let colChars = [];
-        let seqIndex = Phaser.Math.Between(0, seqLen - 1);
-        for (let j = 0; j < numRows; j++) {
-          colChars.push(sourceSeq[seqIndex]);
-          seqIndex = (seqIndex + 1) % seqLen;
-        }
-        
-        let textObj = this.add.text(i * colWidth, 0, colChars.join('\n'), {
-          fontFamily: '"HG 明朝B", "HG Mincho B", "MS Mincho", serif',
-          fontSize: '24px',
-          fontWeight: 'bold',
-          color: '#044f60'
-        }).setOrigin(0, 0).setDepth(1);
-        
-        this.matrixColumns.push({
-          textObj: textObj,
-          chars: colChars,
-          seqIndex: seqIndex,
-          speed: Phaser.Math.FloatBetween(20, 60)
-        });
-      }
+      this.matrixTextObj = this.add.text(w / 2, 0, "", {
+        fontFamily: '"HG 明朝B", "HG Mincho B", "MS Mincho", serif',
+        fontSize: '24px',
+        fontWeight: 'bold',
+        color: '#044f60',
+        align: 'center',
+        lineSpacing: 8
+      }).setOrigin(0.5, 0).setDepth(1);
+
       this.matrixTimer = 0;
+      this.matrixYOffset = 0;
+      this.matrixStartIdx = 0;
       
       if (this.textures.exists('hero_title_anim')) {
         if (!this.anims.exists('play_hero_title')) {
@@ -102,40 +88,50 @@ class TitleScene extends Phaser.Scene {
   }
 
   update(time, delta) {
-    if (this.matrixColumns && this.matrixColumns.length > 0) {
+    if (this.matrixTextObj) {
       this.matrixTimer += delta;
       let doFlicker = false;
-      if (this.matrixTimer > 80) {
+      if (this.matrixTimer > 80) { // 約80msごとにチカチカを更新
         this.matrixTimer = 0;
         doFlicker = true;
       }
       
-      const sourceSeq = "01010100 01010010 01010101 01010011 01010100 00100000 01001110 01001111 00100000 01001111 01001110 01000101 00100000 01011001 01001111 01010101 00100000 01000001 01010010 01000101 00100000 01001110 01001111 01010100 00100000 01000001 00100000 01000100 01001111 01001100 01001100";
-      const seqLen = sourceSeq.length;
+      // スクロール処理
+      this.matrixYOffset += 30 * delta / 1000;
+      const rowHeight = 32; // 24pxフォント + 8px行間
+      
+      if (this.matrixYOffset >= rowHeight) {
+        this.matrixYOffset -= rowHeight;
+        // 1行分スクロールしたら、開始文字のインデックスを1行分戻す（上に新しい行が追加されたように見せる）
+        this.matrixStartIdx = (this.matrixStartIdx - this.matrixCols) % this.sourceSeq.length;
+        if (this.matrixStartIdx < 0) {
+          this.matrixStartIdx += this.sourceSeq.length;
+        }
+        doFlicker = true;
+      }
+      
+      // 全体のY座標を少しずつ移動（画面外の見えない行からスタート）
+      this.matrixTextObj.y = this.matrixYOffset - rowHeight;
 
-      this.matrixColumns.forEach(col => {
-        col.textObj.y += (col.speed * delta) / 1000;
+      // チカチカ処理（個別の文字をランダムでスペースに置き換える）
+      if (doFlicker) {
+        let displayStr = "";
+        let currIdx = this.matrixStartIdx;
         
-        if (col.textObj.y > 24) {
-          col.textObj.y -= 24;
-          col.seqIndex = (col.seqIndex - 1 + seqLen) % seqLen;
-          col.chars.unshift(sourceSeq[col.seqIndex]);
-          col.chars.pop();
-          doFlicker = true;
-        }
-        
-        if (doFlicker) {
-          let displayStr = "";
-          for (let i = 0; i < col.chars.length; i++) {
-            if (Math.random() < 0.08) {
-              displayStr += " \n";
+        for (let r = 0; r < this.matrixRows; r++) {
+          for (let c = 0; c < this.matrixCols; c++) {
+            // 6%の確率でその瞬間の文字が消える（スペースになる）
+            if (Math.random() < 0.06) {
+              displayStr += " ";
             } else {
-              displayStr += col.chars[i] + "\n";
+              displayStr += this.sourceSeq[currIdx];
             }
+            currIdx = (currIdx + 1) % this.sourceSeq.length;
           }
-          col.textObj.setText(displayStr);
+          displayStr += "\n";
         }
-      });
+        this.matrixTextObj.setText(displayStr);
+      }
     }
   }
 
