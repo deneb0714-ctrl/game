@@ -137,7 +137,6 @@ class TitleScene extends Phaser.Scene {
           this.matrixTextObj.setText(displayStr);
         }
       }
-    }
   }
 
   createButton(x, y, label, delay, callback) {
