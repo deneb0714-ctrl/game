@@ -16,6 +16,12 @@ class TitleScene extends Phaser.Scene {
       this.add.image(w / 2, h / 2, 'title_1x_back').setDisplaySize(w, h).setDepth(0);
       this.numberTile = this.add.tileSprite(w / 2, h / 2, w, h, 'title_1x_number').setDepth(1);
       
+      // 個別の数字（行）がチカチカ消えたり現れたりする演出のためのマスク
+      this.numberMaskGraphics = this.add.graphics();
+      const mask = new Phaser.Display.Masks.GeometryMask(this, this.numberMaskGraphics);
+      this.numberTile.setMask(mask);
+      this.flickerTimer = 0;
+      
       if (this.textures.exists('hero_title_anim')) {
         if (!this.anims.exists('play_hero_title')) {
           this.anims.create({
@@ -72,6 +78,26 @@ class TitleScene extends Phaser.Scene {
     if (this.numberTile) {
       // スクロール速度（数字が上から下に落ちていくようにYをマイナス方向へ移動）
       this.numberTile.tilePositionY -= 0.05 * delta;
+      
+      // 行ごとのチカチカ（マスク）エフェクト
+      if (this.numberMaskGraphics) {
+        this.flickerTimer += delta;
+        // 約100msごとにマスクを更新
+        if (this.flickerTimer > 100) {
+          this.flickerTimer = 0;
+          this.numberMaskGraphics.clear();
+          this.numberMaskGraphics.fillStyle(0xffffff, 1);
+          
+          // 画面を横長のストライプ（行）に分割し、ランダムに表示・非表示を切り替える
+          const rowHeight = 32; // 行の高さ
+          for (let y = 0; y < 1080; y += rowHeight) {
+            // 85%の確率は表示（fillRectする）、15%の確率で非表示（fillRectしない＝消える）
+            if (Math.random() > 0.15) {
+              this.numberMaskGraphics.fillRect(0, y, 1920, rowHeight);
+            }
+          }
+        }
+      }
     }
   }
 
