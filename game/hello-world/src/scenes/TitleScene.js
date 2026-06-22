@@ -50,7 +50,8 @@ class TitleScene extends Phaser.Scene {
         this.heroGif = null;
       }
       
-      this.add.image(w / 2, h / 2, 'title_1x_artboard').setDisplaySize(w, h).setDepth(3);
+      this.helloImg = this.add.image(w / 2, h / 2, 'title_1x_hello_world').setDisplaySize(w, h).setDepth(3);
+      this.add.image(w / 2, h / 2, 'title_1x_baria').setDisplaySize(w, h).setDepth(3);
     } else {
       // エラータイトルの場合は静止画とSTARTボタンのみ
       this.add.image(w / 2, h / 2, 'title_bg_glitch').setDisplaySize(w, h).setDepth(0);
@@ -79,6 +80,11 @@ class TitleScene extends Phaser.Scene {
 
     // ノイズ用のTileSpriteを画面全体に配置
     this.noiseSprite = this.add.tileSprite(w / 2, h / 2, w, h, 'tv_noise').setDepth(8).setAlpha(0);
+    if (!isGlitch && this.helloImg) {
+      // 全体のノイズを消し、hello world.png のみにノイズを走らせるためのマスクを設定
+      const mask = this.helloImg.createBitmapMask();
+      this.noiseSprite.setMask(mask);
+    }
     this.isNoisy = false;
     this.noiseTimer = Phaser.Math.Between(2000, 5000); // 最初のノイズまでの時間
 
