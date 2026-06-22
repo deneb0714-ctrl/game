@@ -16,24 +16,15 @@ class TitleScene extends Phaser.Scene {
       this.add.image(w / 2, h / 2, 'title_1x_back').setDisplaySize(w, h).setDepth(0);
       this.numberTile = this.add.tileSprite(w / 2, h / 2, w, h, 'title_1x_number').setDepth(1);
       
-      // --- ノイズ（チラつき）テクスチャの生成 ---
-      if (!this.textures.exists('digital_noise')) {
-        const noiseSize = 256;
-        const blockSize = 32; // 数字の大きさに合わせたブロックサイズ
-        const graphics = this.make.graphics({ x: 0, y: 0, add: false });
-        for (let x = 0; x < noiseSize; x += blockSize) {
-          for (let y = 0; y < noiseSize; y += blockSize) {
-            // ランダムに黒いブロックを配置して数字を隠す
-            if (Math.random() > 0.4) {
-              graphics.fillStyle(0x000000, 0.85);
-              graphics.fillRect(x, y, blockSize, blockSize);
-            }
-          }
-        }
-        graphics.generateTexture('digital_noise', noiseSize, noiseSize);
-        graphics.destroy();
+      // --- 控えめなノイズ（チラつき）エフェクトの生成 ---
+      // 画面全体に3〜5個の黒いブロック（ノイズ）を配置する
+      this.noiseBlocks = [];
+      const numNoises = 5;
+      for (let i = 0; i < numNoises; i++) {
+        // 初期位置は画面外
+        let block = this.add.rectangle(-100, -100, 64, 64, 0x000000, 0.85).setDepth(1.5);
+        this.noiseBlocks.push(block);
       }
-      this.noiseTile = this.add.tileSprite(w / 2, h / 2, w, h, 'digital_noise').setDepth(1.5);
       this.noiseTimer = 0;
       // ----------------------------------------
       
@@ -95,14 +86,18 @@ class TitleScene extends Phaser.Scene {
       this.numberTile.tilePositionY -= 0.05 * delta;
     }
     
-    // ノイズのチラつきエフェクト
-    if (this.noiseTile) {
+    // 控えめなノイズのチラつきエフェクト
+    if (this.noiseBlocks) {
       this.noiseTimer += delta;
-      // 約80msごとにノイズの配置をランダムにずらすことで、数字がランダムに消えたり現れたりする効果を出す
-      if (this.noiseTimer > 80) {
+      // 約150msごとにノイズブロックの配置をランダムにずらす
+      if (this.noiseTimer > 150) {
         this.noiseTimer = 0;
-        this.noiseTile.tilePositionX = Phaser.Math.Between(0, 256);
-        this.noiseTile.tilePositionY = Phaser.Math.Between(0, 256);
+        this.noiseBlocks.forEach(block => {
+          block.x = Phaser.Math.Between(0, 1920);
+          block.y = Phaser.Math.Between(0, 1080);
+          block.width = Phaser.Math.Between(32, 128);
+          block.height = Phaser.Math.Between(32, 64);
+        });
       }
     }
   }
