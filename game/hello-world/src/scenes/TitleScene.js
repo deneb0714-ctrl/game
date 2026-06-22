@@ -58,6 +58,30 @@ class TitleScene extends Phaser.Scene {
       this.matrixTextObj = null;
     }
 
+    // 砂嵐（ノイズ）用のテクスチャを動的に生成
+    if (!this.textures.exists('tv_noise')) {
+      const size = 256;
+      const canvas = document.createElement('canvas');
+      canvas.width = size;
+      canvas.height = size;
+      const ctx = canvas.getContext('2d');
+      const imgData = ctx.createImageData(size, size);
+      for (let i = 0; i < imgData.data.length; i += 4) {
+        const val = Math.floor(Math.random() * 255);
+        imgData.data[i] = val;     // R
+        imgData.data[i+1] = val;   // G
+        imgData.data[i+2] = val;   // B
+        imgData.data[i+3] = 120;   // A (半透明)
+      }
+      ctx.putImageData(imgData, 0, 0);
+      this.textures.addCanvas('tv_noise', canvas);
+    }
+
+    // ノイズ用のTileSpriteを画面全体に配置
+    this.noiseSprite = this.add.tileSprite(w / 2, h / 2, w, h, 'tv_noise').setDepth(8).setAlpha(0);
+    this.isNoisy = false;
+    this.noiseTimer = Phaser.Math.Between(2000, 5000); // 最初のノイズまでの時間
+
     // Fade in camera
     this.cameras.main.fadeIn(600, 5, 8, 20);
 
@@ -93,18 +117,17 @@ class TitleScene extends Phaser.Scene {
     if (this.matrixTextObj) {
       this.matrixTimer += delta;
       let doFlicker = false;
-      if (this.matrixTimer > 80 || this.matrixTextObj.text === "") { // ★初回フレームでも必ず描画する
+      if (this.matrixTimer > 80 || this.matrixTextObj.text === "") { 
         this.matrixTimer = 0;
         doFlicker = true;
       }
       
       // スクロール処理 (左から右へ)
       this.matrixXOffset += 45 * delta / 1000;
-      const charWidth = 30; // 60pxフォントの半角幅はおよそ30px
+      const charWidth = 30; 
       
       if (this.matrixXOffset >= charWidth) {
         this.matrixXOffset -= charWidth;
-        // 1文字分スクロールしたら、開始文字のインデックスを1つ戻す（左から新しい文字が追加されたように見せる）
         this.matrixStartIdx = (this.matrixStartIdx - 1);
         if (this.matrixStartIdx < 0) {
           this.matrixStartIdx += this.sourceSeq.length;
@@ -112,31 +135,50 @@ class TitleScene extends Phaser.Scene {
         doFlicker = true;
       }
       
-      // 全体のX座標を少しずつ移動（左から右へ）
       const w = this.cameras.main.width;
       this.matrixTextObj.x = (w / 2) + this.matrixXOffset;
-      this.matrixTextObj.y = -20; // Y座標は固定
+      this.matrixTextObj.y = -20; 
 
-      // チカチカ処理（個別の文字をランダムでスペースに置き換える）
-        if (doFlicker) {
-          let displayStr = "";
-          let currIdx = this.matrixStartIdx;
-          
-          for (let r = 0; r < this.matrixRows; r++) {
-            for (let c = 0; c < this.matrixCols; c++) {
-              // 6%の確率でその瞬間の文字が消える（スペースになる）
-              if (Math.random() < 0.06) {
-                displayStr += " ";
-              } else {
-                displayStr += this.sourceSeq[currIdx];
-              }
-              currIdx = (currIdx + 1) % this.sourceSeq.length;
+      if (doFlicker) {
+        let displayStr = "";
+        let currIdx = this.matrixStartIdx;
+        
+        for (let r = 0; r < this.matrixRows; r++) {
+          for (let c = 0; c < this.matrixCols; c++) {
+            if (Math.random() < 0.06) {
+              displayStr += " ";
+            } else {
+              displayStr += this.sourceSeq[currIdx];
             }
-            displayStr += "\n";
+            currIdx = (currIdx + 1) % this.sourceSeq.length;
           }
-          this.matrixTextObj.setText(displayStr);
+          displayStr += "\n";
+        }
+        this.matrixTextObj.setText(displayStr);
+      }
+    }
+
+    // 不定期な砂嵐ノイズ処理
+    if (this.noiseSprite) {
+      this.noiseTimer -= delta;
+      if (!this.isNoisy) {
+        // ノイズ発生待機中
+        if (this.noiseTimer <= 0) {
+          this.isNoisy = true;
+          this.noiseTimer = Phaser.Math.Between(50, 300); // ノイズが続く時間(ms)
+        }
+      } else {
+        // ノイズ表示中
+        this.noiseSprite.setAlpha(Phaser.Math.FloatBetween(0.1, 0.3));
+        this.noiseSprite.tilePositionX = Phaser.Math.Between(0, 256);
+        this.noiseSprite.tilePositionY = Phaser.Math.Between(0, 256);
+        if (this.noiseTimer <= 0) {
+          this.isNoisy = false;
+          this.noiseSprite.setAlpha(0);
+          this.noiseTimer = Phaser.Math.Between(2000, 6000); // 次にノイズが来るまでの時間(ms)
         }
       }
+    }
   }
 
   createButton(x, y, label, delay, callback) {
