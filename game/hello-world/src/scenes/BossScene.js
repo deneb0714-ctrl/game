@@ -240,40 +240,31 @@ class BossScene extends Phaser.Scene {
 
   playDemonLordIntro(onComplete) {
     var dimBg = this.add.rectangle(1920/2, 1080/2, 1920, 1080, 0x000000, 0.6).setAlpha(0).setDepth(89);
-    var heroImage = this.add.image(300, 1080 / 2, 'hero_stand_combat').setAlpha(0).setDepth(90);
+    this.heroImage = this.add.image(300, 1080 / 2, 'hero_stand_combat').setAlpha(0).setDepth(90);
     if(this.textures.exists('hero_stand_combat')) {
         this.textures.get('hero_stand_combat').setFilter(Phaser.Textures.FilterMode.LINEAR);
         var hImgW = this.textures.get('hero_stand_combat').getSourceImage().width;
         var hImgH = this.textures.get('hero_stand_combat').getSourceImage().height;
         var hScale = 400 / hImgW;
-        heroImage.setScale(hScale);
-        heroImage.setY(1080 / 2 - 300 + (hImgH * hScale) / 2);
+        this.heroImage.setScale(hScale);
+        this.heroImage.setY(1080 / 2 - 300 + (hImgH * hScale) / 2);
     }
     
     const sayDevice = (text) => new Promise(res => {
       this.tweens.add({ targets: dimBg, alpha: 0, duration: 300 });
-      this.tweens.add({ targets: heroImage, alpha: 0, duration: 300 });
+      this.tweens.add({ targets: this.heroImage, alpha: 0, duration: 300 });
       this.showDeviceDialogue(text, res);
     });
 
     const sayHero = (text) => new Promise(res => {
       this.tweens.add({ targets: dimBg, alpha: 0.6, duration: 300 });
-      this.tweens.add({ targets: heroImage, alpha: 1, duration: 300 });
-      // まばたき演出
-      if (heroImage && heroImage.active) {
-        heroImage.setTexture('hero_stand_blink');
-        this.time.delayedCall(150, () => {
-          if (heroImage && heroImage.active) {
-            heroImage.setTexture('hero_stand_combat');
-          }
-        });
-      }
+      this.tweens.add({ targets: this.heroImage, alpha: 1, duration: 300 });
       this.showDialogue('勇者', text, res);
     });
 
     const sayDemon = (text) => new Promise(res => {
       this.tweens.add({ targets: dimBg, alpha: 0.6, duration: 300 });
-      this.tweens.add({ targets: heroImage, alpha: 0.4, duration: 300 });
+      this.tweens.add({ targets: this.heroImage, alpha: 0.4, duration: 300 });
       this.showDialogue('魔王 – ヴェリタス', text, res);
     });
 
@@ -291,7 +282,7 @@ class BossScene extends Phaser.Scene {
       await sayHero('「僕は」');
       await sayDemon('「来るがよい、勇者！」');
       
-      this.tweens.add({ targets: [dimBg, heroImage], alpha: 0, duration: 300 });
+      this.tweens.add({ targets: [dimBg, this.heroImage], alpha: 0, duration: 300 });
       onComplete();
     })();
   }
@@ -300,16 +291,16 @@ class BossScene extends Phaser.Scene {
     var w = 1920, h = 1080;
     var dimBg = this.add.rectangle(w/2, h/2, w, h, 0x000000, 0.6).setAlpha(0).setDepth(89);
     
-    var heroImage = this.add.image(300, h / 2, 'hero_stand_combat').setAlpha(0).setDepth(90);
+    this.heroImage = this.add.image(300, h / 2, 'hero_stand_combat').setAlpha(0).setDepth(90);
     if(this.textures.exists('hero_stand_combat')) {
         this.textures.get('hero_stand_combat').setFilter(Phaser.Textures.FilterMode.LINEAR);
         var hImgW = this.textures.get('hero_stand_combat').getSourceImage().width;
         var hImgH = this.textures.get('hero_stand_combat').getSourceImage().height;
         var hScale = 400 / hImgW;
-        heroImage.setScale(hScale);
-        heroImage.setY(h / 2 - 300 + (hImgH * hScale) / 2);
+        this.heroImage.setScale(hScale);
+        this.heroImage.setY(h / 2 - 300 + (hImgH * hScale) / 2);
         var hCropH = 600 / hScale;
-        if (hCropH < hImgH) heroImage.setCrop(0, 0, hImgW, hCropH);
+        if (hCropH < hImgH) this.heroImage.setCrop(0, 0, hImgW, hCropH);
     }
     
     // Male Frame (Brother)
@@ -321,13 +312,13 @@ class BossScene extends Phaser.Scene {
     var femaleLabel = this.add.text(w - 300, h / 2 + 160, '女（妹）', { fontFamily: '"DotGothic16"', fontSize: '40px', color: '#ffffff' }).setOrigin(0.5).setAlpha(0).setDepth(90);
 
     const sayDevice = (text) => new Promise(res => {
-      this.tweens.add({ targets: [dimBg, heroImage, maleFrame, maleLabel, femaleFrame, femaleLabel], alpha: 0, duration: 300 });
+      this.tweens.add({ targets: [dimBg, this.heroImage, maleFrame, maleLabel, femaleFrame, femaleLabel], alpha: 0, duration: 300 });
       this.showDeviceDialogue(text, res);
     });
 
     const sayTwin = (speaker, text) => new Promise(res => {
       this.tweens.add({ targets: dimBg, alpha: 0.6, duration: 300 });
-      this.tweens.add({ targets: heroImage, alpha: 0.4, duration: 300 });
+      this.tweens.add({ targets: this.heroImage, alpha: 0.4, duration: 300 });
       if (speaker === '男') {
         this.tweens.add({ targets: [maleFrame, maleLabel], alpha: 1, duration: 300 });
         this.tweens.add({ targets: [femaleFrame, femaleLabel], alpha: 0.4, duration: 300 });
@@ -340,17 +331,8 @@ class BossScene extends Phaser.Scene {
 
     const sayHero = (text) => new Promise(res => {
       this.tweens.add({ targets: dimBg, alpha: 0.6, duration: 300 });
-      this.tweens.add({ targets: heroImage, alpha: 1, duration: 300 });
+      this.tweens.add({ targets: this.heroImage, alpha: 1, duration: 300 });
       this.tweens.add({ targets: [maleFrame, maleLabel, femaleFrame, femaleLabel], alpha: 0.4, duration: 300 });
-      // まばたき演出
-      if (heroImage && heroImage.active) {
-        heroImage.setTexture('hero_stand_blink');
-        this.time.delayedCall(150, () => {
-          if (heroImage && heroImage.active) {
-            heroImage.setTexture('hero_stand_combat');
-          }
-        });
-      }
       this.showDialogue('勇者', text, res);
     });
 
@@ -367,9 +349,9 @@ class BossScene extends Phaser.Scene {
       await sayTwin('男', '「君を彼女の元にはいかせない。ここで食い止めるよ」');
 
       this.tweens.add({
-        targets: [dimBg, heroImage, maleFrame, maleLabel, femaleFrame, femaleLabel], alpha: 0, duration: 500,
+        targets: [dimBg, this.heroImage, maleFrame, maleLabel, femaleFrame, femaleLabel], alpha: 0, duration: 500,
         onComplete: () => {
-          dimBg.destroy(); heroImage.destroy(); maleFrame.destroy(); maleLabel.destroy(); femaleFrame.destroy(); femaleLabel.destroy();
+          dimBg.destroy(); this.heroImage.destroy(); maleFrame.destroy(); maleLabel.destroy(); femaleFrame.destroy(); femaleLabel.destroy();
           onComplete();
         }
       });
@@ -1404,6 +1386,17 @@ class BossScene extends Phaser.Scene {
         charIndex++;
         bodyText.setText(text.substring(0, charIndex));
         if (text[charIndex - 1] !== ' ') MOT.Audio.playBleep();
+        
+        // まばたき演出 (勇者のセリフが切り替わるときのみ)
+        const isHero = speaker && speaker.includes('勇者');
+        if (isHero && this.heroImage && this.heroImage.active) {
+          if (charIndex % 15 === 0 && text[charIndex - 1] !== ' ') {
+            this.heroImage.setTexture('hero_stand_blink');
+          } else if (charIndex % 15 === 5) {
+            this.heroImage.setTexture('hero_stand_combat');
+          }
+        }
+
         if (charIndex >= text.length) {
           typeTimer.destroy();
           contText.setAlpha(1);
