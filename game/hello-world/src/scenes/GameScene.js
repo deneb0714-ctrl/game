@@ -41,8 +41,16 @@ class GameScene extends Phaser.Scene {
     this.itemGroup = this.physics.add.group();
 
     // Player
-    this.player = this.physics.add.sprite(200, 460, 'player');
-    this.player.setCollideWorldBounds(true);
+    this.player = this.physics.add.sprite(-100, 460, 'player');
+    this.tweens.add({ 
+      targets: this.player, 
+      x: 200, 
+      duration: 1000, 
+      ease: 'Power2',
+      onComplete: () => {
+        this.player.setCollideWorldBounds(true);
+      }
+    });
     this.player.setDrag(800, 800);
     this.player.setMaxVelocity(400, 400);
     this.player.setDepth(10);
@@ -588,6 +596,9 @@ class GameScene extends Phaser.Scene {
 
   endStage() {
     // Go to boss fight after this stage
+    this.physics.pause();
+    this.player.setCollideWorldBounds(false);
+    this.tweens.add({ targets: this.player, x: 2100, duration: 800, ease: 'Power2' });
     this.cameras.main.fadeOut(800, 5, 8, 20);
     this.time.delayedCall(800, function () {
       this.scene.start('BossScene', { bossIndex: 0 });
@@ -1010,6 +1021,9 @@ class GameScene extends Phaser.Scene {
           this.dialogActive = true;
           this.showDeviceDialogue('「使えたな。戦闘中、上手く使ってこのまま敵を倒していくといい。」', () => {
             this.dialogActive = false;
+            this.physics.pause(); // 物理演算を止める
+            this.player.setCollideWorldBounds(false);
+            this.tweens.add({ targets: this.player, x: 2100, duration: 1000, ease: 'Power2' });
             this.cameras.main.fadeOut(1000, 0,0,0);
             this.time.delayedCall(1000, () => {
               this.scene.start('GameScene', { stage: 2 });

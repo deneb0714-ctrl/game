@@ -38,8 +38,16 @@ class BossScene extends Phaser.Scene {
     this.itemGroup = this.physics.add.group();
 
     // Player
-    this.player = this.physics.add.sprite(300, 460, 'player').setScale(2).setDepth(10);
-    this.player.setCollideWorldBounds(true);
+    this.player = this.physics.add.sprite(-100, 460, 'player').setScale(2).setDepth(10);
+    this.tweens.add({ 
+      targets: this.player, 
+      x: 300, 
+      duration: 1000, 
+      ease: 'Power2',
+      onComplete: () => {
+        this.player.setCollideWorldBounds(true);
+      }
+    });
     this.player.setDrag(800, 800);
     this.player.setMaxVelocity(400, 400);
 
@@ -1137,8 +1145,21 @@ class BossScene extends Phaser.Scene {
     this.currentBossIndex = 3; 
     
     // 画面暗転→ラスボス戦
+    this.physics.pause();
+    this.player.setCollideWorldBounds(false);
+    this.tweens.add({ targets: this.player, x: 2100, duration: 1500, ease: 'Power2' });
     this.cameras.main.fadeOut(1500, 0, 0, 0);
     this.time.delayedCall(1500, function () { 
+      this.player.x = -100;
+      this.tweens.add({ 
+        targets: this.player, 
+        x: 300, 
+        duration: 1000, 
+        ease: 'Power2',
+        onComplete: () => {
+          this.player.setCollideWorldBounds(true);
+        }
+      });
       this.cameras.main.fadeIn(1000, 0, 0, 0);
       this.startBoss(); 
     }, [], this);
