@@ -128,10 +128,10 @@ class GameScene extends Phaser.Scene {
   }
 
   update(time, delta) {
-    // 会話が終わった瞬間（dialogActive が true から false に変わった時）に、バリアのクールタイムを挟む
+    // 会話が終わった瞬間（dialogActive が true から false に変わった時）に、バリアのクールタイムを最大（0%からチャージ）にする
     if (!this.dialogActive && this.lastDialogActive) {
-      // 1.5秒（1500ms）のクールタイムをセット（連打によるバリア暴発防止）
-      this.barrierCooldown = 1500;
+      // 2秒（2000ms）のフルクールタイムをセットし、戦闘開始直後のバリアを完全に防ぐ
+      this.barrierCooldown = 2000;
     }
     this.lastDialogActive = this.dialogActive;
 
