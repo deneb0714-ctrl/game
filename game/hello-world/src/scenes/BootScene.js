@@ -49,6 +49,9 @@ class BootScene extends Phaser.Scene {
 
     // 博士の立ち絵
     this.load.image('doctor_stand', window.DOCTOR_STAND_B64);
+    if (typeof window.DOCTOR_STAND_OPEN_B64 !== 'undefined') {
+      this.load.image('doctor_stand_open', window.DOCTOR_STAND_OPEN_B64);
+    }
     
     // 主人公の立ち絵
     this.load.image('hero_stand', window.HERO_STAND_B64);

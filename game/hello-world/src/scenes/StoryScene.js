@@ -310,6 +310,9 @@ class StoryScene extends Phaser.Scene {
       this.messageText.setText('そうか、それは残念だ。無理なら君にもう用はない。');
 
       this.doctorImage.setAlpha(1);
+      if (this.textures.exists('doctor_stand_open')) {
+        this.doctorImage.setTexture('doctor_stand_open');
+      }
       this.heroImage.setAlpha(0.4);
 
       this.time.delayedCall(2000, () => {
