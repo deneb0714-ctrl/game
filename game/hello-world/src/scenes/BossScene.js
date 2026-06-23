@@ -10,6 +10,7 @@ class BossScene extends Phaser.Scene {
     this.bossQueue = ['boss1', 'boss2', 'boss3_twins', 'demon_lord'];
     this.currentBossIndex = 0;
     this.dialogActive = false;
+    this.lastDialogActive = false; // 会話終了時のクールタイム検出用
     this.bossHP = 0;
     this.bossMaxHP = 0;
     this.currentBoss = null;
@@ -239,11 +240,11 @@ class BossScene extends Phaser.Scene {
 
   playDemonLordIntro(onComplete) {
     var dimBg = this.add.rectangle(1920/2, 1080/2, 1920, 1080, 0x000000, 0.6).setAlpha(0).setDepth(89);
-    var heroImage = this.add.image(300, 1080 / 2, 'hero_stand').setAlpha(0).setDepth(90);
-    if(this.textures.exists('hero_stand')) {
-        this.textures.get('hero_stand').setFilter(Phaser.Textures.FilterMode.LINEAR);
-        var hImgW = this.textures.get('hero_stand').getSourceImage().width;
-        var hImgH = this.textures.get('hero_stand').getSourceImage().height;
+    var heroImage = this.add.image(300, 1080 / 2, 'hero_stand_combat').setAlpha(0).setDepth(90);
+    if(this.textures.exists('hero_stand_combat')) {
+        this.textures.get('hero_stand_combat').setFilter(Phaser.Textures.FilterMode.LINEAR);
+        var hImgW = this.textures.get('hero_stand_combat').getSourceImage().width;
+        var hImgH = this.textures.get('hero_stand_combat').getSourceImage().height;
         var hScale = 400 / hImgW;
         heroImage.setScale(hScale);
         heroImage.setY(1080 / 2 - 300 + (hImgH * hScale) / 2);
@@ -258,7 +259,16 @@ class BossScene extends Phaser.Scene {
     const sayHero = (text) => new Promise(res => {
       this.tweens.add({ targets: dimBg, alpha: 0.6, duration: 300 });
       this.tweens.add({ targets: heroImage, alpha: 1, duration: 300 });
-      this.showDialogue('主人公', text, res);
+      // まばたき演出
+      if (heroImage && heroImage.active) {
+        heroImage.setTexture('hero_stand_blink');
+        this.time.delayedCall(150, () => {
+          if (heroImage && heroImage.active) {
+            heroImage.setTexture('hero_stand_combat');
+          }
+        });
+      }
+      this.showDialogue('勇者', text, res);
     });
 
     const sayDemon = (text) => new Promise(res => {
@@ -290,11 +300,11 @@ class BossScene extends Phaser.Scene {
     var w = 1920, h = 1080;
     var dimBg = this.add.rectangle(w/2, h/2, w, h, 0x000000, 0.6).setAlpha(0).setDepth(89);
     
-    var heroImage = this.add.image(300, h / 2, 'hero_stand').setAlpha(0).setDepth(90);
-    if(this.textures.exists('hero_stand')) {
-        this.textures.get('hero_stand').setFilter(Phaser.Textures.FilterMode.LINEAR);
-        var hImgW = this.textures.get('hero_stand').getSourceImage().width;
-        var hImgH = this.textures.get('hero_stand').getSourceImage().height;
+    var heroImage = this.add.image(300, h / 2, 'hero_stand_combat').setAlpha(0).setDepth(90);
+    if(this.textures.exists('hero_stand_combat')) {
+        this.textures.get('hero_stand_combat').setFilter(Phaser.Textures.FilterMode.LINEAR);
+        var hImgW = this.textures.get('hero_stand_combat').getSourceImage().width;
+        var hImgH = this.textures.get('hero_stand_combat').getSourceImage().height;
         var hScale = 400 / hImgW;
         heroImage.setScale(hScale);
         heroImage.setY(h / 2 - 300 + (hImgH * hScale) / 2);
@@ -332,7 +342,16 @@ class BossScene extends Phaser.Scene {
       this.tweens.add({ targets: dimBg, alpha: 0.6, duration: 300 });
       this.tweens.add({ targets: heroImage, alpha: 1, duration: 300 });
       this.tweens.add({ targets: [maleFrame, maleLabel, femaleFrame, femaleLabel], alpha: 0.4, duration: 300 });
-      this.showDialogue('主人公', text, res);
+      // まばたき演出
+      if (heroImage && heroImage.active) {
+        heroImage.setTexture('hero_stand_blink');
+        this.time.delayedCall(150, () => {
+          if (heroImage && heroImage.active) {
+            heroImage.setTexture('hero_stand_combat');
+          }
+        });
+      }
+      this.showDialogue('勇者', text, res);
     });
 
     (async () => {
@@ -423,6 +442,13 @@ class BossScene extends Phaser.Scene {
   update(time, delta) {
     // 博士の指示システム update（ダイアログ判定より先に実行して、表示非表示を管理する）
     MOT.DoctorDirective.update(this, delta, this.player, this.dialogActive);
+
+    // 会話が終わった瞬間（dialogActive が true から false に変わった時）に、バリアのクールタイムを挟む
+    if (!this.dialogActive && this.lastDialogActive) {
+      // 1.5秒（1500ms）のクールタイムをセット（連打によるバリア暴発防止）
+      this.barrierCooldown = 1500;
+    }
+    this.lastDialogActive = this.dialogActive;
 
     if (this.dialogActive) return;
 
@@ -760,6 +786,11 @@ class BossScene extends Phaser.Scene {
   }
 
   onBossHit(bullet, boss) {
+    // 画面外 (x > 1920) にいる敵はダメージを受けない (弾は消去されるが敵はノーダメージ)
+    if (boss.x > 1920) {
+      bullet.destroy();
+      return;
+    }
     bullet.destroy(); // 弾を消す
     const dmg = bullet.damage || 1;
 
@@ -787,10 +818,10 @@ class BossScene extends Phaser.Scene {
             
             var w = 1920, h = 1080;
             var dimBg = this.add.rectangle(w/2, h/2, w, h, 0x000000, 0.6).setAlpha(0).setDepth(89);
-            var heroImage = this.add.image(300, h / 2, 'hero_stand').setAlpha(0).setDepth(90);
-            this.textures.get('hero_stand').setFilter(Phaser.Textures.FilterMode.LINEAR);
-            var hImgW = this.textures.get('hero_stand').getSourceImage().width;
-            var hImgH = this.textures.get('hero_stand').getSourceImage().height;
+            var heroImage = this.add.image(300, h / 2, 'hero_stand_combat').setAlpha(0).setDepth(90);
+            this.textures.get('hero_stand_combat').setFilter(Phaser.Textures.FilterMode.LINEAR);
+            var hImgW = this.textures.get('hero_stand_combat').getSourceImage().width;
+            var hImgH = this.textures.get('hero_stand_combat').getSourceImage().height;
             var hScale = 400 / hImgW;
             heroImage.setScale(hScale);
             heroImage.setY(h / 2 - 300 + (hImgH * hScale) / 2);
@@ -993,7 +1024,7 @@ class BossScene extends Phaser.Scene {
           } else if (key === 'demon_lord') {
             var f = MOT.flags;
             const sayDevice = (text) => new Promise(res => this.showDeviceDialogue(text, res));
-            const sayHero = (text) => new Promise(res => this.showDialogue('主人公', text, res));
+            const sayHero = (text) => new Promise(res => this.showDialogue('勇者', text, res));
             const sayDemon = (text) => new Promise(res => this.showDialogue('魔王 – ヴェリタス', text, res));
             const askChoice = (choices) => new Promise(res => {
                this.showChoice(choices.map(c => ({
@@ -1258,6 +1289,23 @@ class BossScene extends Phaser.Scene {
     this.dialogContainer = this.add.container(0, 0).setDepth(100);
 
     var w = 1920, h = 1080, boxH = 280, boxY = h - boxH - 20;
+
+    // 勇者のトランシーバー立ち絵（左側）を表示
+    var heroImg = this.add.image(300, h / 2, 'hero_stand');
+    this.textures.get('hero_stand').setFilter(Phaser.Textures.FilterMode.LINEAR);
+    var hImgW = this.textures.get('hero_stand').getSourceImage().width;
+    var hImgH = this.textures.get('hero_stand').getSourceImage().height;
+    var hScale = 400 / hImgW;
+    heroImg.setScale(hScale);
+    heroImg.setY(h / 2 - 300 + (hImgH * hScale) / 2);
+    var hCropH = 600 / hScale;
+    if (hCropH < hImgH) {
+      heroImg.setCrop(0, 0, hImgW, hCropH);
+    }
+    this.dialogContainer.add(heroImg);
+
+
+
     var box = this.add.graphics();
     box.fillStyle(0x0a0a1a, 0.92);
     box.fillRoundedRect(60, boxY, w - 120, boxH, 12);
@@ -1309,8 +1357,7 @@ class BossScene extends Phaser.Scene {
             if (onComplete) onComplete();
           };
           const keyHandler = (event) => {
-            const k = event.key;
-            if (['ArrowRight', 'ArrowDown', 'ArrowLeft', 'ArrowUp', 'Enter', ' '].includes(k)) {
+            if (event.key === ' ' || event.code === 'Space') {
               advance();
             }
           };
@@ -1346,7 +1393,7 @@ class BossScene extends Phaser.Scene {
     });
     this.dialogContainer.add(bodyText);
 
-    var contText = this.add.text(w - 240, boxY + boxH - 40, '▶ [→] KEY', {
+    var contText = this.add.text(w - 240, boxY + boxH - 40, '▶ [SPACE] KEY', {
       fontFamily: '"Press Start 2P"', fontSize: '20px', color: '#9CA3AF'
     }).setAlpha(0);
     this.dialogContainer.add(contText);
@@ -1370,8 +1417,7 @@ class BossScene extends Phaser.Scene {
             if (onComplete) onComplete();
           };
           const keyHandler = (event) => {
-            const k = event.key;
-            if (['ArrowRight', 'ArrowDown', 'ArrowLeft', 'ArrowUp', 'Enter', ' '].includes(k)) {
+            if (event.key === ' ' || event.code === 'Space') {
               advance();
             }
           };
@@ -1392,6 +1438,15 @@ class BossScene extends Phaser.Scene {
     overlay.fillRect(0, 0, w, h);
     overlay.setDepth(49);
     elements.push(overlay);
+
+    // [ENTER] KEY ガイドテキストを右下に追加
+    const contText = this.add.text(w - 240, h - 60, '▶ [ENTER] KEY', {
+      fontFamily: '"Press Start 2P"',
+      fontSize: '20px',
+      color: '#9CA3AF'
+    }).setDepth(51);
+    this.tweens.add({ targets: contText, alpha: 0.3, yoyo: true, repeat: -1, duration: 500 });
+    elements.push(contText);
 
     const choicesList = [];
     this.selectedChoiceIndex = 0;
@@ -1451,7 +1506,7 @@ class BossScene extends Phaser.Scene {
       } else if (event.code === 'KeyS' || event.code === 'ArrowDown') {
         self.selectedChoiceIndex = (self.selectedChoiceIndex + 1) % choicesList.length;
         self.updateChoiceSelection(choicesList);
-      } else if (event.code === 'Enter' || event.code === 'Space') {
+      } else if (event.code === 'Enter') {
         self.input.keyboard.off('keydown');
         elements.forEach(function (el) { el.destroy(); });
         choicesList[self.selectedChoiceIndex].callback();

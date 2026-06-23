@@ -1,4 +1,4 @@
-﻿// =============================================
+// =============================================
 // GameScene.js – メインゲームプレイ
 // =============================================
 class GameScene extends Phaser.Scene {
@@ -13,6 +13,7 @@ class GameScene extends Phaser.Scene {
     this.waveIndex = 0;
     this.eventTriggered = {};
     this.dialogActive = false;
+    this.lastDialogActive = false; // 会話終了時のクールタイム検出用
     this.minionBattleActive = false;
     this.minion1 = null;
     this.playerInvincible = false;
@@ -127,6 +128,13 @@ class GameScene extends Phaser.Scene {
   }
 
   update(time, delta) {
+    // 会話が終わった瞬間（dialogActive が true から false に変わった時）に、バリアのクールタイムを挟む
+    if (!this.dialogActive && this.lastDialogActive) {
+      // 1.5秒（1500ms）のクールタイムをセット（連打によるバリア暴発防止）
+      this.barrierCooldown = 1500;
+    }
+    this.lastDialogActive = this.dialogActive;
+
     if (this.currentStage === 1 && this.tutorialPhase) {
       this.updateTutorial(delta);
     }
@@ -227,7 +235,10 @@ class GameScene extends Phaser.Scene {
     if (bullet) {
       bullet.setVelocityX(800);
       bullet.setScale(2);
-      this.time.delayedCall(4000, function () {
+      // 寿命は2.2秒（射程1760px）にする。
+      // チュートリアル中の絶対範囲制限は cleanupOffscreen で行う。
+      const lifespan = 2200;
+      this.time.delayedCall(lifespan, function () {
         if (bullet.active) bullet.destroy();
       });
     }
@@ -444,13 +455,13 @@ class GameScene extends Phaser.Scene {
 
         if (charIndex >= text.length) {
           typeTimer.destroy();
-          // Right arrow to continue
-          const contText = this.add.text(w - 240, boxY + boxH - 40, '▶ [→] KEY', {
+          // Space to continue
+          const contText = this.add.text(w - 240, boxY + boxH - 40, '▶ [SPACE] KEY', {
             fontFamily: '"Press Start 2P"', fontSize: '20px', color: '#9CA3AF'
           }).setDepth(51);
           this.tweens.add({ targets: contText, alpha: 0.3, yoyo: true, repeat: -1, duration: 500 });
 
-          this.input.keyboard.once('keydown-RIGHT', function () {
+          this.input.keyboard.once('keydown-SPACE', function () {
             box.destroy();
             nameText.destroy();
             bodyText.destroy();
@@ -474,6 +485,15 @@ class GameScene extends Phaser.Scene {
     overlay.fillRect(0, 0, w, h);
     overlay.setDepth(49);
     elements.push(overlay);
+
+    // [ENTER] KEY ガイドテキストを右下に追加
+    const contText = this.add.text(w - 240, h - 60, '▶ [ENTER] KEY', {
+      fontFamily: '"Press Start 2P"',
+      fontSize: '20px',
+      color: '#9CA3AF'
+    }).setDepth(51);
+    this.tweens.add({ targets: contText, alpha: 0.3, yoyo: true, repeat: -1, duration: 500 });
+    elements.push(contText);
 
     const choicesList = [];
     this.selectedChoiceIndex = 0;
@@ -533,7 +553,7 @@ class GameScene extends Phaser.Scene {
       } else if (event.code === 'KeyS' || event.code === 'ArrowDown') {
         self.selectedChoiceIndex = (self.selectedChoiceIndex + 1) % choicesList.length;
         self.updateChoiceSelection(choicesList);
-      } else if (event.code === 'Enter' || event.code === 'Space') {
+      } else if (event.code === 'Enter') {
         self.input.keyboard.off('keydown');
         elements.forEach(function (el) { el.destroy(); });
         choicesList[self.selectedChoiceIndex].callback();
@@ -606,7 +626,9 @@ class GameScene extends Phaser.Scene {
           reflectBullet.setScale(3);
           reflectBullet.setTint(0xFFD700); // ゴールドに光る
           reflectBullet.damage = 3; // ダメージ3倍
-          this.time.delayedCall(2000, function () {
+          // 寿命は2.0秒にする。
+          const lifespan = 2000;
+          this.time.delayedCall(lifespan, function () {
             if (reflectBullet.active) reflectBullet.destroy();
           });
         }
@@ -658,6 +680,11 @@ class GameScene extends Phaser.Scene {
   }
 
   onEnemyHit(bullet, enemy) {
+    // 画面外 (x > 1920) にいる敵はダメージを受けない (弾は消去されるが敵はノーダメージ)
+    if (enemy.x > 1920) {
+      bullet.destroy();
+      return;
+    }
     const dmg = bullet.damage || 1;
     bullet.destroy();
     enemy.hp = (enemy.hp || 1) - dmg;
@@ -712,6 +739,7 @@ class GameScene extends Phaser.Scene {
     this.energyBar = this.add.graphics().setDepth(100).setScrollFactor(0);
     this.barrierIconBg = this.add.graphics().setDepth(100).setScrollFactor(0);
     this.barrierIconFg = this.add.graphics().setDepth(100).setScrollFactor(0);
+    this.isEnergyHighlighted = false;
   }
 
   updateHUD() {
@@ -732,6 +760,13 @@ class GameScene extends Phaser.Scene {
     this.energyBar.fillRect(32, 82, 196 * pct, 12);
     this.energyBar.lineStyle(1, 0x4FD1FF, 0.6);
     this.energyBar.strokeRect(30, 80, 200, 16);
+
+    // 必殺技ゲージのハイライト
+    if (this.isEnergyHighlighted) {
+      const flash = (Math.sin(Date.now() / 150) + 1) / 2;
+      this.energyBar.lineStyle(4, 0xFFFF00, 0.4 + 0.6 * flash); // 太めの点滅する黄色枠
+      this.energyBar.strokeRect(26, 76, 208, 24);
+    }
 
     this.energyText.setText('EN: ' + MOT.flags.energy + '/' + MOT.flags.maxEnergyThreshold);
 
@@ -767,6 +802,9 @@ class GameScene extends Phaser.Scene {
     this.dialogContainer = this.add.container(0, 0).setDepth(100);
 
     var w = 1920, h = 1080, boxH = 280, boxY = h - boxH - 20;
+
+
+
     var box = this.add.graphics();
     box.fillStyle(0x0a0a1a, 0.92);
     box.fillRoundedRect(60, boxY, w - 120, boxH, 12);
@@ -793,7 +831,7 @@ class GameScene extends Phaser.Scene {
     });
     this.dialogContainer.add(bodyText);
 
-    var contText = this.add.text(w - 240, boxY + boxH - 40, '▶ [→] KEY', {
+    var contText = this.add.text(w - 240, boxY + boxH - 40, '▶ [SPACE] KEY', {
       fontFamily: '"Press Start 2P"', fontSize: '20px', color: '#9CA3AF'
     }).setAlpha(0);
     this.dialogContainer.add(contText);
@@ -808,7 +846,7 @@ class GameScene extends Phaser.Scene {
           typeTimer.destroy();
           contText.setAlpha(1);
           this.tweens.add({ targets: contText, alpha: 0.3, yoyo: true, repeat: -1, duration: 500 });
-          this.input.keyboard.once('keydown-RIGHT', function () {
+          this.input.keyboard.once('keydown-SPACE', function () {
             if (this.dialogContainer) this.dialogContainer.destroy();
             this.dialogContainer = null;
             if (onComplete) onComplete();
@@ -917,21 +955,25 @@ class GameScene extends Phaser.Scene {
       this.tutorialPhase5Timer += delta;
 
       if (MOT.flags.energy >= 100 || this.tutorialPhase5Timer >= 3000) {
-        if (MOT.flags.energy < 100) {
-          MOT.flags.energy = 100;
-          MOT.flags.maxEnergy = true;
-        }
-        
         this.tutorialPhase = 5.1;
         this.physics.pause();
         this.dialogActive = true;
+
+        // ハイライトを有効にする（まだエネルギーは満タンにしない）
+        this.isEnergyHighlighted = true;
         
         this.showDeviceDialogue('「最初は私が代わりに必殺技ゲージを貯めてやろう。」', () => {
+          // 「ゲージが溜まったな」のセリフの直前に、エネルギーを満タンにする
+          MOT.flags.energy = 100;
+          MOT.flags.maxEnergy = true;
+
           this.showDeviceDialogue('「ゲージが溜まったな。それが溜まると必殺技を打つことができる。パソコンならエンター、スマホならダブルタップで打てる。試してみろ。」', () => {
             this.dialogActive = false;
             this.tutorialPhase = 6;
             this.physics.resume();
             this.tutorialWaitSpecial = true;
+            // 博士のセリフが終わったのでハイライトを無効にする
+            this.isEnergyHighlighted = false;
           });
         });
       }

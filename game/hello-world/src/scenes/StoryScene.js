@@ -13,7 +13,7 @@ class StoryScene extends Phaser.Scene {
     // Dark background initially
     this.cameras.main.setBackgroundColor('#000000');
     // Lab background (invisible at first)
-    this.bg = this.add.image(w / 2, h / 2, 'bg_stage1').setAlpha(0);
+    this.bg = this.add.image(w / 2, h / 2, 'bg_lab').setAlpha(0);
 
     // Dialogue Data
     this.dialogue = [
@@ -33,10 +33,10 @@ class StoryScene extends Phaser.Scene {
 
     // Portraits Layer
     // Hero portrait (left) - bust-up crop of full-body image
-    this.heroImage = this.add.image(300, h / 2, 'hero_stand').setAlpha(0);
-    this.textures.get('hero_stand').setFilter(Phaser.Textures.FilterMode.LINEAR);
-    var hImgW = this.textures.get('hero_stand').getSourceImage().width;
-    var hImgH = this.textures.get('hero_stand').getSourceImage().height;
+    this.heroImage = this.add.image(300, h / 2, 'hero_stand_combat').setAlpha(0);
+    this.textures.get('hero_stand_combat').setFilter(Phaser.Textures.FilterMode.LINEAR);
+    var hImgW = this.textures.get('hero_stand_combat').getSourceImage().width;
+    var hImgH = this.textures.get('hero_stand_combat').getSourceImage().height;
     
     var hScale = 400 / hImgW;
     this.heroImage.setScale(hScale);
@@ -91,6 +91,14 @@ class StoryScene extends Phaser.Scene {
       lineSpacing: 10
     });
 
+    // Advance Guide text
+    this.contText = this.add.text(w - 240, boxY + boxH - 40, '▶ [SPACE] KEY', {
+      fontFamily: '"Press Start 2P"',
+      fontSize: '20px',
+      color: '#9CA3AF'
+    }).setAlpha(0);
+    this.tweens.add({ targets: this.contText, alpha: 0.3, yoyo: true, repeat: -1, duration: 500 });
+
     // Advance on click
     this.input.on('pointerdown', () => {
       if (!this.isWaitingForChoice) {
@@ -98,10 +106,9 @@ class StoryScene extends Phaser.Scene {
       }
     });
 
-    // Advance on key press (矢印キー、Enter、Spaceなど)
+    // Advance on key press (Spaceのみ)
     this.input.keyboard.on('keydown', (event) => {
-      const k = event.key;
-      if (['ArrowRight', 'ArrowDown', 'ArrowLeft', 'ArrowUp', 'Enter', ' '].includes(k)) {
+      if (event.key === ' ' || event.code === 'Space') {
         if (!this.isWaitingForChoice) {
           this.nextDialogue();
         }
@@ -127,6 +134,26 @@ class StoryScene extends Phaser.Scene {
     // Set Text
     this.nameText.setText(data.speaker);
     this.messageText.setText(data.text);
+
+    // ガイドの表示制御
+    if (data.choice) {
+      this.contText.setText('▶ [ENTER] KEY');
+      this.contText.setAlpha(1);
+    } else {
+      this.contText.setText('▶ [SPACE] KEY');
+      this.contText.setAlpha(1);
+    }
+
+    // まばたき演出 (勇者のセリフが切り替わるときのみ)
+    const isHero = data.speaker && data.speaker.includes('勇者');
+    if (isHero && this.heroImage && this.heroImage.active) {
+      this.heroImage.setTexture('hero_stand_blink');
+      this.time.delayedCall(150, () => {
+        if (this.heroImage && this.heroImage.active) {
+          this.heroImage.setTexture('hero_stand_combat');
+        }
+      });
+    }
 
     // Portrait highlighting
     if (this.bg.alpha > 0 || data.bg === 'lab') {
@@ -179,8 +206,10 @@ class StoryScene extends Phaser.Scene {
       } else if (event.code === 'KeyS' || event.code === 'ArrowDown') {
         self.selectedChoiceIndex = (self.selectedChoiceIndex + 1) % self.choicesList.length;
         self.updateChoiceSelection();
-      } else if (event.code === 'Enter' || event.code === 'Space') {
+      } else if (event.code === 'Enter') {
         self.input.keyboard.off('keydown');
+        if (window.MOT && MOT.Audio) MOT.Audio.playSelect();
+        self.destroyChoices();
         self.choicesList[self.selectedChoiceIndex].callback();
       }
     });
@@ -205,6 +234,21 @@ class StoryScene extends Phaser.Scene {
     });
   }
 
+  destroyChoices() {
+    if (this.choice1) {
+      if (this.choice1.btn) this.choice1.btn.destroy();
+      if (this.choice1.txt) this.choice1.txt.destroy();
+    }
+    if (this.choice2) {
+      if (this.choice2.btn) this.choice2.btn.destroy();
+      if (this.choice2.txt) this.choice2.txt.destroy();
+    }
+    if (this.choice3) {
+      if (this.choice3.btn) this.choice3.btn.destroy();
+      if (this.choice3.txt) this.choice3.txt.destroy();
+    }
+  }
+
   createChoiceButton(x, y, label, callback) {
     const btn = this.add.rectangle(x, y, 1100, 90, 0x1F2933).setStrokeStyle(2, 0x4FD1FF).setInteractive({ useHandCursor: true });
     const txt = this.add.text(x, y, label, { fontFamily: '"DotGothic16"', fontSize: '26px', color: '#4FD1FF' }).setOrigin(0.5);
@@ -222,9 +266,7 @@ class StoryScene extends Phaser.Scene {
     btn.on('pointerdown', () => {
       self.input.keyboard.off('keydown');
       if (window.MOT && MOT.Audio) MOT.Audio.playSelect();
-      self.choice1.btn.destroy(); self.choice1.txt.destroy();
-      self.choice2.btn.destroy(); self.choice2.txt.destroy();
-      if (self.choice3) { self.choice3.btn.destroy(); self.choice3.txt.destroy(); }
+      self.destroyChoices();
       callback();
     });
 
@@ -235,6 +277,7 @@ class StoryScene extends Phaser.Scene {
     this.isWaitingForChoice = false; // Block further clicks just in case
     // Prevent normal advancing
     this.input.removeAllListeners('pointerdown');
+    if (this.contText) this.contText.setAlpha(0);
 
     if (choiceIndex === 1) {
       this.nameText.setText('博士');

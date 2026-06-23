@@ -43,3 +43,17 @@ MOT.GAME_CONFIG = {
     EndingScene
   ]
 };
+
+// =============================================
+// ユーティリティ関数: 表情切り替え（瞬きを挟む）
+// =============================================
+MOT.changeHeroExpression = function(scene, heroImage, newTextureKey) {
+  if (!heroImage || !heroImage.active || heroImage.texture.key === newTextureKey) return;
+  // 瞬きの画像を挟む
+  heroImage.setTexture('hero_stand_blink');
+  scene.time.delayedCall(150, function() {
+    if (heroImage && heroImage.active) {
+      heroImage.setTexture(newTextureKey);
+    }
+  });
+};

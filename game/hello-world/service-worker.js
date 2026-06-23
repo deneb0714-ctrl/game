@@ -1,5 +1,5 @@
 // Service Worker for 真理のマリオネット
-const CACHE_NAME = 'marionette-v1';
+const CACHE_NAME = 'marionette-v21';
 const ASSETS_TO_CACHE = [
   '/',
   '/index.html',
@@ -13,9 +13,11 @@ const ASSETS_TO_CACHE = [
   '/src/logic/items.js',
   '/src/scenes/BootScene.js',
   '/src/scenes/TitleScene.js',
+  '/src/scenes/StoryScene.js',
   '/src/scenes/GameScene.js',
   '/src/scenes/BossScene.js',
-  '/src/scenes/EndingScene.js'
+  '/src/scenes/EndingScene.js',
+  '/assets/bg_lab.png'
 ];
 
 // Install: cache core assets

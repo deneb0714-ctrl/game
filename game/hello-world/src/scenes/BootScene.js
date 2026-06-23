@@ -52,6 +52,12 @@ class BootScene extends Phaser.Scene {
     
     // 主人公の立ち絵
     this.load.image('hero_stand', window.HERO_STAND_B64);
+    
+    // 主人公の戦闘時・他者との会話時の立ち絵
+    this.load.image('hero_stand_combat', window.HERO_STAND_COMBAT_B64);
+
+    // 主人公の瞬き（表情切り替え用）
+    this.load.image('hero_stand_blink', window.HERO_STAND_BLINK_B64);
 
     // Title background (Hello World)
     this.load.image('title_bg', window.TITLE_BG_B64);
@@ -72,6 +78,7 @@ class BootScene extends Phaser.Scene {
         frameHeight: 540
       });
     }
+    this.load.image('bg_lab', 'assets/bg_lab.png');
   }
 
   create() {
