@@ -464,12 +464,12 @@ class GameScene extends Phaser.Scene {
         if (charIndex >= text.length) {
           typeTimer.destroy();
           // Space to continue
-          const contText = this.add.text(w - 240, boxY + boxH - 40, '▶ [ENTER]', {
+          const contText = this.add.text(w - 240, boxY + boxH - 40, '▶ [SPACE] KEY', {
             fontFamily: '"Press Start 2P"', fontSize: '20px', color: '#9CA3AF'
           }).setDepth(51);
           this.tweens.add({ targets: contText, alpha: 0.3, yoyo: true, repeat: -1, duration: 500 });
 
-          this.input.keyboard.once('keydown-ENTER', function () {
+          this.input.keyboard.once('keydown-SPACE', function () {
             box.destroy();
             nameText.destroy();
             bodyText.destroy();
@@ -494,8 +494,8 @@ class GameScene extends Phaser.Scene {
     overlay.setDepth(49);
     elements.push(overlay);
 
-    // [ENTER] ガイドテキストを右下に追加
-    const contText = this.add.text(w - 240, h - 60, '▶ [ENTER]', {
+    // [ENTER] KEY ガイドテキストを右下に追加
+    const contText = this.add.text(w - 240, h - 60, '▶ [ENTER] KEY', {
       fontFamily: '"Press Start 2P"',
       fontSize: '20px',
       color: '#9CA3AF'
@@ -842,7 +842,7 @@ class GameScene extends Phaser.Scene {
     });
     this.dialogContainer.add(bodyText);
 
-    var contText = this.add.text(w - 240, boxY + boxH - 40, '▶ [ENTER]', {
+    var contText = this.add.text(w - 240, boxY + boxH - 40, '▶ [SPACE] KEY', {
       fontFamily: '"Press Start 2P"', fontSize: '20px', color: '#9CA3AF'
     }).setAlpha(0);
     this.dialogContainer.add(contText);
@@ -857,7 +857,7 @@ class GameScene extends Phaser.Scene {
           typeTimer.destroy();
           contText.setAlpha(1);
           this.tweens.add({ targets: contText, alpha: 0.3, yoyo: true, repeat: -1, duration: 500 });
-          this.input.keyboard.once('keydown-ENTER', function () {
+          this.input.keyboard.once('keydown-SPACE', function () {
             if (this.dialogContainer) this.dialogContainer.destroy();
             this.dialogContainer = null;
             if (onComplete) onComplete();

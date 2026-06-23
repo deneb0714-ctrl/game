@@ -1307,7 +1307,7 @@ class BossScene extends Phaser.Scene {
     });
     this.dialogContainer.add(bodyText);
 
-    var contText = this.add.text(w - 240, boxY + boxH - 40, '▶ [ENTER]', {
+    var contText = this.add.text(w - 240, boxY + boxH - 40, '▶ [→] KEY', {
       fontFamily: '"Press Start 2P"', fontSize: '20px', color: '#9CA3AF'
     }).setAlpha(0);
     this.dialogContainer.add(contText);
@@ -1331,7 +1331,7 @@ class BossScene extends Phaser.Scene {
             if (onComplete) onComplete();
           };
           const keyHandler = (event) => {
-            if (event.key === 'Enter' || event.code === 'Enter') {
+            if (event.key === ' ' || event.code === 'Space') {
               advance();
             }
           };
@@ -1367,7 +1367,7 @@ class BossScene extends Phaser.Scene {
     });
     this.dialogContainer.add(bodyText);
 
-    var contText = this.add.text(w - 240, boxY + boxH - 40, '▶ [ENTER]', {
+    var contText = this.add.text(w - 240, boxY + boxH - 40, '▶ [SPACE] KEY', {
       fontFamily: '"Press Start 2P"', fontSize: '20px', color: '#9CA3AF'
     }).setAlpha(0);
     this.dialogContainer.add(contText);
@@ -1402,7 +1402,7 @@ class BossScene extends Phaser.Scene {
             if (onComplete) onComplete();
           };
           const keyHandler = (event) => {
-            if (event.key === 'Enter' || event.code === 'Enter') {
+            if (event.key === ' ' || event.code === 'Space') {
               advance();
             }
           };
@@ -1424,8 +1424,8 @@ class BossScene extends Phaser.Scene {
     overlay.setDepth(49);
     elements.push(overlay);
 
-    // [ENTER] ガイドテキストを右下に追加
-    const contText = this.add.text(w - 240, h - 60, '▶ [ENTER]', {
+    // [ENTER] KEY ガイドテキストを右下に追加
+    const contText = this.add.text(w - 240, h - 60, '▶ [ENTER] KEY', {
       fontFamily: '"Press Start 2P"',
       fontSize: '20px',
       color: '#9CA3AF'
