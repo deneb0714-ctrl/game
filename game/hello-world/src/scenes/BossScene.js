@@ -264,7 +264,7 @@ class BossScene extends Phaser.Scene {
 
     const sayDemon = (text) => new Promise(res => {
       this.tweens.add({ targets: dimBg, alpha: 0.6, duration: 300 });
-      this.tweens.add({ targets: this.heroImage, alpha: 0.4, duration: 300 });
+      this.tweens.add({ targets: this.heroImage, alpha: 0, duration: 300 });
       this.showDialogue('魔王 – ヴェリタス', text, res);
     });
 
@@ -317,7 +317,7 @@ class BossScene extends Phaser.Scene {
 
     const sayTwin = (speaker, text) => new Promise(res => {
       this.tweens.add({ targets: dimBg, alpha: 0.6, duration: 300 });
-      this.tweens.add({ targets: this.heroImage, alpha: 0.4, duration: 300 });
+      this.tweens.add({ targets: this.heroImage, alpha: 0, duration: 300 });
       if (speaker === '男') {
         this.tweens.add({ targets: [maleFrame, maleLabel], alpha: 1, duration: 300 });
         this.tweens.add({ targets: [femaleFrame, femaleLabel], alpha: 0.4, duration: 300 });
@@ -829,8 +829,9 @@ class BossScene extends Phaser.Scene {
                   onComplete: function () {
                     this.tweens.add({ targets: realBoss, y: realBoss.y - 30, yoyo: true, repeat: -1, duration: 1000, ease: 'Sine.easeInOut' });
                     
-                    // 幹部1のセリフ時に立ち絵を再表示 (勇者は喋らないので暗め)
-                    this.tweens.add({ targets: [dimBg, heroImage], alpha: 0.4, duration: 500 });
+                    // 幹部1のセリフ時に立ち絵を再表示 (勇者は喋らないので非表示)
+                    this.tweens.add({ targets: dimBg, alpha: 0.4, duration: 500 });
+                    this.tweens.add({ targets: heroImage, alpha: 0, duration: 500 });
                     this.tweens.add({ targets: [enemyFrame, enemyLabel], alpha: 1, duration: 500 });
                     
                     this.showDialogue(this.getBossConfig('boss1').name, '「なんだ、お前が勇者か。そりゃラッキーなこった。王様から勇者を連れてこいって命じられてんだ。お前も戦う気満々って感じだしやるしかないな！！」', function () {
