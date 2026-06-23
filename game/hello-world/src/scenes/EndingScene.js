@@ -164,12 +164,8 @@ class EndingScene extends Phaser.Scene {
         this.noiseSprite.tilePositionX = Phaser.Math.Between(0, 256);
         this.noiseSprite.tilePositionY = Phaser.Math.Between(0, 256);
         
-        // ランダムでたまにノイズを激しくする
-        if (Math.random() < 0.05) {
-            this.noiseSprite.setAlpha(Phaser.Math.FloatBetween(0.3, 0.6));
-        } else {
-            this.noiseSprite.setAlpha(0.15);
-        }
+        // ランダムな激しい点滅を無くし、一定のアルファ値で目に優しくする
+        this.noiseSprite.setAlpha(0.15);
     }
   }
 }
