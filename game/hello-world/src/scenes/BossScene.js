@@ -373,6 +373,18 @@ class BossScene extends Phaser.Scene {
         if (this.sisterBoss && this.sisterBoss.active && !this.dialogActive && this.sisterBoss.hp > 0) {
           var laneYs = [220, 460, 700];
           var targetY = laneYs[Phaser.Math.Between(0, 2)];
+          
+          // 兄(currentBoss)と重ならないようにする
+          if (this.currentBoss && this.currentBoss.active) {
+            var brotherTarget = this.currentBoss.targetLaneY || this.currentBoss.y;
+            var brotherBaseY = laneYs.reduce((prev, curr) => Math.abs(curr - brotherTarget) < Math.abs(prev - brotherTarget) ? curr : prev);
+            var available = laneYs.filter(y => y !== brotherBaseY);
+            if (available.length > 0) {
+              targetY = available[Phaser.Math.Between(0, available.length - 1)];
+            }
+          }
+          this.sisterBoss.targetLaneY = targetY;
+
           this.tweens.killTweensOf(this.sisterBoss);
           this.tweens.add({
             targets: this.sisterBoss,
@@ -402,6 +414,18 @@ class BossScene extends Phaser.Scene {
         if (this.currentBoss && this.currentBoss.active && !this.dialogActive) {
           var laneYs = [220, 460, 700];
           var targetY = laneYs[Phaser.Math.Between(0, 2)];
+          
+          // 妹(sisterBoss)と重ならないようにする
+          if (this.currentBoss.configKey === 'boss3_twins' && this.sisterBoss && this.sisterBoss.active) {
+            var sisterTarget = this.sisterBoss.targetLaneY || this.sisterBoss.y;
+            var sisterBaseY = laneYs.reduce((prev, curr) => Math.abs(curr - sisterTarget) < Math.abs(prev - sisterTarget) ? curr : prev);
+            var available = laneYs.filter(y => y !== sisterBaseY);
+            if (available.length > 0) {
+              targetY = available[Phaser.Math.Between(0, available.length - 1)];
+            }
+          }
+          this.currentBoss.targetLaneY = targetY;
+
           this.tweens.killTweensOf(this.currentBoss);
           this.tweens.add({
             targets: this.currentBoss,
