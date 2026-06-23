@@ -245,9 +245,9 @@ class BossScene extends Phaser.Scene {
         this.textures.get('hero_stand_combat').setFilter(Phaser.Textures.FilterMode.LINEAR);
         var hImgW = this.textures.get('hero_stand_combat').getSourceImage().width;
         var hImgH = this.textures.get('hero_stand_combat').getSourceImage().height;
-        var hScale = 400 / hImgW;
+        var hScale = 750 / hImgW;
         this.heroImage.setScale(hScale);
-        this.heroImage.setY(1080 / 2 - 300 + (hImgH * hScale) / 2);
+        this.heroImage.setY(100 + (hImgH * hScale) / 2);
     }
     
     const sayDevice = (text) => new Promise(res => {
@@ -296,11 +296,10 @@ class BossScene extends Phaser.Scene {
         this.textures.get('hero_stand_combat').setFilter(Phaser.Textures.FilterMode.LINEAR);
         var hImgW = this.textures.get('hero_stand_combat').getSourceImage().width;
         var hImgH = this.textures.get('hero_stand_combat').getSourceImage().height;
-        var hScale = 400 / hImgW;
+        var hScale = 750 / hImgW;
         this.heroImage.setScale(hScale);
-        this.heroImage.setY(h / 2 - 300 + (hImgH * hScale) / 2);
-        var hCropH = 600 / hScale;
-        if (hCropH < hImgH) this.heroImage.setCrop(0, 0, hImgW, hCropH);
+        this.heroImage.setY(100 + (hImgH * hScale) / 2);
+        // クロップ処理は不要なため削除
     }
     
     // Male Frame (Brother)
@@ -804,13 +803,10 @@ class BossScene extends Phaser.Scene {
             this.textures.get('hero_stand_combat').setFilter(Phaser.Textures.FilterMode.LINEAR);
             var hImgW = this.textures.get('hero_stand_combat').getSourceImage().width;
             var hImgH = this.textures.get('hero_stand_combat').getSourceImage().height;
-            var hScale = 400 / hImgW;
+            var hScale = 750 / hImgW;
             heroImage.setScale(hScale);
-            heroImage.setY(h / 2 - 300 + (hImgH * hScale) / 2);
-            var hCropH = 600 / hScale;
-            if (hCropH < hImgH) {
-              heroImage.setCrop(0, 0, hImgW, hCropH);
-            }
+            heroImage.setY(100 + (hImgH * hScale) / 2);
+            // クロップ処理は不要なため削除
             var enemyFrame = this.add.rectangle(w - 300, h / 2, 400, 600, 0x1F2933).setAlpha(0).setDepth(90).setStrokeStyle(4, 0xffffff);
             var enemyLabel = this.add.text(w - 300, h / 2, '幹部1(仮)', { fontFamily: '"DotGothic16"', fontSize: '40px', color: '#ffffff' }).setOrigin(0.5).setAlpha(0).setDepth(90);
             
@@ -1277,13 +1273,10 @@ class BossScene extends Phaser.Scene {
     this.textures.get('hero_stand').setFilter(Phaser.Textures.FilterMode.LINEAR);
     var hImgW = this.textures.get('hero_stand').getSourceImage().width;
     var hImgH = this.textures.get('hero_stand').getSourceImage().height;
-    var hScale = 400 / hImgW;
+    var hScale = 750 / hImgW;
     heroImg.setScale(hScale);
-    heroImg.setY(h / 2 - 300 + (hImgH * hScale) / 2);
-    var hCropH = 600 / hScale;
-    if (hCropH < hImgH) {
-      heroImg.setCrop(0, 0, hImgW, hCropH);
-    }
+    heroImg.setY(100 + (hImgH * hScale) / 2);
+    // クロップ処理は不要なため削除
     this.dialogContainer.add(heroImg);
 
 

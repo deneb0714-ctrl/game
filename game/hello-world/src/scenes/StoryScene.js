@@ -38,15 +38,11 @@ class StoryScene extends Phaser.Scene {
     var hImgW = this.textures.get('hero_stand_combat').getSourceImage().width;
     var hImgH = this.textures.get('hero_stand_combat').getSourceImage().height;
     
-    var hScale = 400 / hImgW;
+    // ターゲット幅を広げてアップにする
+    var hScale = 750 / hImgW;
     this.heroImage.setScale(hScale);
-    
-    this.heroImage.setY(h / 2 - 300 + (hImgH * hScale) / 2);
-    
-    var hCropH = 600 / hScale;
-    if (hCropH < hImgH) {
-      this.heroImage.setCrop(0, 0, hImgW, hCropH);
-    }
+    // 顔が上部に来るように調整し、下半身は吹き出しの後ろに隠れるようにする
+    this.heroImage.setY(100 + (hImgH * hScale) / 2);
     
     this.heroGroup = [this.heroImage];
 
@@ -58,18 +54,11 @@ class StoryScene extends Phaser.Scene {
     var imgW = this.textures.get('doctor_stand').getSourceImage().width;
     var imgH = this.textures.get('doctor_stand').getSourceImage().height;
     
-    // Scale to fit width of 400
-    var scale = 400 / imgW;
+    // ターゲット幅を広げてアップにする
+    var scale = 750 / imgW;
     this.doctorImage.setScale(scale);
-    
-    // Align top of the image with the top of the original 400x600 box (box center was h/2, top is h/2 - 300)
-    this.doctorImage.setY(h / 2 - 300 + (imgH * scale) / 2);
-    
-    // Crop the bottom so it doesn't exceed 600px in scaled height
-    var cropH = 600 / scale;
-    if (cropH < imgH) {
-      this.doctorImage.setCrop(0, 0, imgW, cropH);
-    }
+    // 顔が上部に来るように調整し、下半身は吹き出しの後ろに隠れるようにする
+    this.doctorImage.setY(100 + (imgH * scale) / 2);
     
     this.doctorGroup = [this.doctorImage];
 
