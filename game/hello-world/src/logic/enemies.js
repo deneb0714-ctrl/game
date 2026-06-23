@@ -30,7 +30,7 @@ MOT.spawnBasicEnemy = function (scene, x, y, texture) {
  */
 MOT.spawnWave = function (scene, count, ySpread, speed) {
   const startX = 1950;
-  const laneYs = [300, 540, 780];
+  const laneYs = [220, 460, 700];
   for (let i = 0; i < count; i++) {
     const laneY = laneYs[Phaser.Math.Between(0, 2)];
     const enemy = scene.enemyGroup.create(startX + i * 60, laneY, 'enemy_basic');
