@@ -81,7 +81,7 @@ class StoryScene extends Phaser.Scene {
     });
 
     // Advance Guide text
-    this.contText = this.add.text(w - 240, boxY + boxH - 40, '▶ [SPACE] KEY', {
+    this.contText = this.add.text(w - 240, boxY + boxH - 40, '▶ [ENTER]', {
       fontFamily: '"Press Start 2P"',
       fontSize: '20px',
       color: '#9CA3AF'
@@ -95,9 +95,9 @@ class StoryScene extends Phaser.Scene {
       }
     });
 
-    // Advance on key press (Spaceのみ)
+    // Advance on key press (Enterのみ)
     this.input.keyboard.on('keydown', (event) => {
-      if (event.key === ' ' || event.code === 'Space') {
+      if (event.key === 'Enter' || event.code === 'Enter') {
         if (!this.isWaitingForChoice) {
           this.nextDialogue();
         }
@@ -126,10 +126,10 @@ class StoryScene extends Phaser.Scene {
 
     // ガイドの表示制御
     if (data.choice) {
-      this.contText.setText('▶ [ENTER] KEY');
+      this.contText.setText('▶ [ENTER]');
       this.contText.setAlpha(1);
     } else {
-      this.contText.setText('▶ [SPACE] KEY');
+      this.contText.setText('▶ [ENTER]');
       this.contText.setAlpha(1);
     }
 
