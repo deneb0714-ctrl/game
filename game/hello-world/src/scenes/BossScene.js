@@ -1588,7 +1588,7 @@ class BossScene extends Phaser.Scene {
 
     // Boss HP
     this.bossHPBar.clear();
-    if (this.currentBoss && (this.currentBoss.active || this.currentBoss.configKey === 'boss3_twins')) {
+    if (this.currentBoss && this.currentBoss.visible !== false && (this.currentBoss.active || this.currentBoss.configKey === 'boss3_twins')) {
       var key = this.currentBoss.configKey;
       var cfg = this.getBossConfig(key);
       
