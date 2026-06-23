@@ -1307,7 +1307,7 @@ class BossScene extends Phaser.Scene {
     });
     this.dialogContainer.add(bodyText);
 
-    var contText = this.add.text(w - 240, boxY + boxH - 40, '▶ [→] KEY', {
+    var contText = this.add.text(w - 240, boxY + boxH - 40, '▶ [SPACE] KEY', {
       fontFamily: '"Press Start 2P"', fontSize: '20px', color: '#9CA3AF'
     }).setAlpha(0);
     this.dialogContainer.add(contText);
