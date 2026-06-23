@@ -32,10 +32,8 @@ class EndingScene extends Phaser.Scene {
         this.textures.addCanvas('tv_noise', canvas);
       }
       
-      // 背景全体に砂嵐を配置
       this.noiseSprite = this.add.tileSprite(w / 2, h / 2, w, h, 'tv_noise').setDepth(0).setAlpha(0.2);
       
-      // ゲームオーバー画像の表示
       if (this.textures.exists('game_over_img')) {
         this.add.image(w / 2, h / 2, 'game_over_img').setDisplaySize(w, h).setDepth(1);
       }
@@ -43,7 +41,7 @@ class EndingScene extends Phaser.Scene {
 
     this.cameras.main.fadeIn(1500, 0, 0, 0);
 
-    // Background particles themed to ending (BAD_GAMEOVER以外で表示)
+    // Background particles themed to ending
     if (ending.key !== 'BAD_GAMEOVER') {
       for (var i = 0; i < 40; i++) {
       var p = this.add.circle(
@@ -62,9 +60,10 @@ class EndingScene extends Phaser.Scene {
         yoyo: true,
         ease: 'Sine.easeInOut'
       });
+      }
     }
 
-    // Ending title (BAD_GAMEOVERの場合は画像を使うのでテキストのタイトル・サブタイトルは非表示)
+    // Ending title
     var titleColor = '#' + ending.color.toString(16).padStart(6, '0');
     var title = this.add.text(w / 2, h * 0.2, ending.title, {
       fontFamily: '"Press Start 2P"',
