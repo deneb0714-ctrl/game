@@ -1,0 +1,22 @@
+{
+  "name": "真理のマリオネット – Marionette of Truth",
+  "short_name": "マリオネット",
+  "description": "ドット絵2D回避シューティング。マルチエンディング分岐型アクションゲーム。",
+  "start_url": "/index.html",
+  "display": "standalone",
+  "orientation": "landscape",
+  "background_color": "#050814",
+  "theme_color": "#050814",
+  "icons": [
+    {
+      "src": "assets/images/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "assets/images/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
