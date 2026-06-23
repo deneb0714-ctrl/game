@@ -806,11 +806,19 @@ class GameScene extends Phaser.Scene {
       this.barrierIconFg.fillPath();
     }
   }
-  showDeviceDialogue(text, onComplete) {
+  showDeviceDialogue(text, onComplete, highlightConfig) {
     if (this.dialogContainer) {
       this.dialogContainer.destroy();
     }
     this.dialogContainer = this.add.container(0, 0).setDepth(100);
+
+    if (highlightConfig) {
+      var highlight = this.add.graphics();
+      highlight.lineStyle(6, 0x39FF14, 1);
+      highlight.strokeCircle(highlightConfig.x, highlightConfig.y, highlightConfig.radius);
+      this.tweens.add({ targets: highlight, alpha: 0.2, yoyo: true, repeat: -1, duration: 400 });
+      this.dialogContainer.add(highlight);
+    }
 
     var w = 1920, h = 1080, boxH = 280, boxY = h - boxH - 20;
 
@@ -909,7 +917,7 @@ class GameScene extends Phaser.Scene {
                 this.tutorialPhase = 2;
                 this.physics.resume();
               });
-            });
+            }, { x: 1700, y: 460, radius: 80 });
           });
         });
       });
@@ -924,7 +932,7 @@ class GameScene extends Phaser.Scene {
               this.showDeviceDialogue('「気を付けないといけないのは、シールドはすぐに何度も貼り直しはできない。左上の緑の円がクールタイムだ。それが溜まりきれば貼れる状態になっている。」', () => {
                 this.dialogActive = false;
                 this.tutorialPhase = 3;
-              });
+              }, { x: 260, y: 88, radius: 30 });
             });
           });
         });
@@ -958,7 +966,7 @@ class GameScene extends Phaser.Scene {
             this.dialogActive = false;
             this.tutorialPhase = 5;
             this.physics.resume();
-          });
+          }, { x: 130, y: 70, radius: 60 });
         });
       }
     } else if (this.tutorialPhase === 5) {
