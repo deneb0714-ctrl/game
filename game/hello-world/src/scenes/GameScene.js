@@ -814,7 +814,8 @@ class GameScene extends Phaser.Scene {
 
     if (highlightConfig) {
       var highlight = this.add.graphics();
-      highlight.lineStyle(6, 0x39FF14, 1);
+      var hColor = highlightConfig.color || 0x39FF14;
+      highlight.lineStyle(6, hColor, 1);
       highlight.strokeCircle(highlightConfig.x, highlightConfig.y, highlightConfig.radius);
       this.tweens.add({ targets: highlight, alpha: 0.2, yoyo: true, repeat: -1, duration: 400 });
       this.dialogContainer.add(highlight);
@@ -905,7 +906,7 @@ class GameScene extends Phaser.Scene {
           this.dialogActive = false;
           this.physics.resume();
           
-          let e = this.spawnTutorialEnemy(1, 0);
+          let e = this.spawnTutorialEnemy(0, 0);
           e.x = 1700;
           
           this.time.delayedCall(500, () => {
@@ -917,7 +918,7 @@ class GameScene extends Phaser.Scene {
                 this.tutorialPhase = 2;
                 this.physics.resume();
               });
-            }, { x: 1700, y: 460, radius: 80 });
+            }, { x: 200, y: 220, radius: 60, color: 0x4FD1FF });
           });
         });
       });
