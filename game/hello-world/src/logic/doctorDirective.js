@@ -1,4 +1,4 @@
-﻿// =============================================
+// =============================================
 // doctorDirective.js – 博士の戦闘中指示システム
 // =============================================
 window.MOT = window.MOT || {};
@@ -107,6 +107,20 @@ MOT.DoctorDirective = {
     });
     this.directiveTextObj = txt;
     container.add(txt);
+
+    // プレイヤーの移動先ハイライト表示
+    var targetCol = player.currentCol + directive.dx;
+    var targetLane = player.currentLane + directive.dy;
+    var targetX = [150, 300, 450][targetCol];
+    var targetY = [220, 460, 700][targetLane];
+
+    if (targetX !== undefined && targetY !== undefined) {
+      var highlight = scene.add.graphics();
+      highlight.lineStyle(6, 0x4FD1FF, 1);
+      highlight.strokeCircle(targetX, targetY, 60);
+      scene.tweens.add({ targets: highlight, alpha: 0.2, yoyo: true, repeat: -1, duration: 400 });
+      container.add(highlight);
+    }
 
     // フェードイン
     container.setAlpha(0);
