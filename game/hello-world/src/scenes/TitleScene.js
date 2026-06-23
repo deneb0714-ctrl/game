@@ -117,27 +117,6 @@ class TitleScene extends Phaser.Scene {
       fontSize: '10px',
       color: '#ffffff'
     }).setOrigin(1, 1).setDepth(10);
-
-    // デバッグ用: 数字キーでエンディング直接遷移
-    this.input.keyboard.on('keydown', (event) => {
-      const keyMap = {
-        '1': 'TRUE_PACIFIST',
-        '2': 'PUPPET_BAD',
-        '3': 'NORMAL_EVERYDAY',
-        '4': 'HIDDEN_BRAINWASH',
-        '5': 'HAPPY_FRIEND',
-        '6': 'NORMAL_USELESS',
-        '7': 'BAD_GAMEOVER'
-      };
-      if (keyMap[event.key]) {
-        // テスト用に強制的にエンディングを上書き
-        MOT.decideEnding = () => MOT.ENDINGS[keyMap[event.key]];
-        this.cameras.main.fadeOut(500, 0, 0, 0);
-        this.time.delayedCall(500, () => {
-          this.scene.start('EndingScene');
-        });
-      }
-    });
   }
 
   update(time, delta) {
