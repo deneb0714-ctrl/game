@@ -116,9 +116,13 @@ MOT.DoctorDirective = {
 
     if (targetX !== undefined && targetY !== undefined) {
       var highlight = scene.add.graphics();
-      highlight.lineStyle(6, 0x4FD1FF, 1);
-      highlight.strokeCircle(targetX, targetY, 60);
-      scene.tweens.add({ targets: highlight, alpha: 0.2, yoyo: true, repeat: -1, duration: 400 });
+      var size = 100;
+      highlight.lineStyle(4, 0xFFFFAA, 1);
+      highlight.fillStyle(0xFFFF00, 0.2);
+      highlight.fillRect(targetX - size/2, targetY - size/2, size, size);
+      highlight.strokeRect(targetX - size/2, targetY - size/2, size, size);
+      scene.tweens.add({ targets: highlight, alpha: 0.3, yoyo: true, repeat: -1, duration: 500 });
+      this.currentHighlight = highlight;
       container.add(highlight);
     }
 
@@ -157,6 +161,10 @@ MOT.DoctorDirective = {
         if (this.directiveTextObj) {
           this.directiveTextObj.setText('「よくやった」');
         }
+        if (this.currentHighlight) {
+          this.currentHighlight.destroy();
+          this.currentHighlight = null;
+        }
       }
       return;
     }
@@ -171,6 +179,10 @@ MOT.DoctorDirective = {
       // 従った場合は「よくやった」に表示を変更
       if (this.directiveTextObj) {
         this.directiveTextObj.setText('「よくやった」');
+      }
+      if (this.currentHighlight) {
+        this.currentHighlight.destroy();
+        this.currentHighlight = null;
       }
     }
   },
