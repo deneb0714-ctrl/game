@@ -41,7 +41,7 @@ class GameScene extends Phaser.Scene {
     this.itemGroup = this.physics.add.group();
 
     // Player
-    this.player = this.physics.add.sprite(200, h / 2, 'player');
+    this.player = this.physics.add.sprite(200, 460, 'player');
     this.player.setCollideWorldBounds(true);
     this.player.setDrag(800, 800);
     this.player.setMaxVelocity(400, 400);
@@ -60,7 +60,7 @@ class GameScene extends Phaser.Scene {
     });
 
     // Draw 3 lanes visually
-    const laneYs = [300, 540, 780];
+    const laneYs = [220, 460, 700];
     const laneGraphics = this.add.graphics().setDepth(1);
     laneGraphics.lineStyle(2, 0x4FD1FF, 0.25); // faint blue glow
     laneYs.forEach(y => {
@@ -196,7 +196,7 @@ class GameScene extends Phaser.Scene {
       this.minion1.laneChangeTimer = (this.minion1.laneChangeTimer || 0) + delta;
       if (this.minion1.laneChangeTimer >= 3000) {
         this.minion1.laneChangeTimer = 0;
-        const laneYs = [300, 540, 780];
+        const laneYs = [220, 460, 700];
         const targetY = laneYs[Phaser.Math.Between(0, 2)];
         this.tweens.killTweensOf(this.minion1);
         this.tweens.add({
@@ -317,7 +317,7 @@ class GameScene extends Phaser.Scene {
           break;
         case 'items':
           {
-            const laneYs = [300, 540, 780];
+            const laneYs = [220, 460, 700];
             for (let i = 0; i < 3; i++) {
               const laneY = laneYs[Phaser.Math.Between(0, 2)];
               MOT.spawnEnergyItem(this, 1900 + i * 100, laneY);
@@ -346,7 +346,7 @@ class GameScene extends Phaser.Scene {
     this.enemyBullets.clear(true, true);
 
     // Spawn minion1
-    const minion = this.physics.add.sprite(1400, 540, 'minion1').setScale(3);
+    const minion = this.physics.add.sprite(1400, 460, 'minion1').setScale(3);
     minion.setAlpha(0);
     minion.hp = 15;
     this.minion1 = minion;
@@ -857,7 +857,7 @@ class GameScene extends Phaser.Scene {
   }
 
   spawnTutorialEnemy(laneIndex, speed) {
-    const laneYs = [300, 540, 780];
+    const laneYs = [220, 460, 700];
     const enemy = this.enemyGroup.create(1920, laneYs[laneIndex], 'enemy_basic');
     enemy.setVelocityX(-speed);
     enemy.hp = 1;

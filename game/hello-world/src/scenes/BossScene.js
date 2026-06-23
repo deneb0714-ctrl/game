@@ -38,7 +38,7 @@ class BossScene extends Phaser.Scene {
     this.itemGroup = this.physics.add.group();
 
     // Player
-    this.player = this.physics.add.sprite(300, h / 2, 'player').setScale(2).setDepth(10);
+    this.player = this.physics.add.sprite(300, 460, 'player').setScale(2).setDepth(10);
     this.player.setCollideWorldBounds(true);
     this.player.setDrag(800, 800);
     this.player.setMaxVelocity(400, 400);
@@ -51,7 +51,7 @@ class BossScene extends Phaser.Scene {
     });
 
     // Draw 3 lanes visually
-    const laneYs = [300, 540, 780];
+    const laneYs = [220, 460, 700];
     const laneGraphics = this.add.graphics().setDepth(1);
     laneGraphics.lineStyle(2, 0x4FD1FF, 0.25);
 
@@ -128,7 +128,7 @@ class BossScene extends Phaser.Scene {
     this.bossDefeated = false;
 
     // Spawn boss
-    var boss = this.physics.add.sprite(1920, 540, cfg.texture);
+    var boss = this.physics.add.sprite(1920, 460, cfg.texture);
     boss.setScale(cfg.scale);
     boss.setDepth(8);
     this.enemyGroup.add(boss);
@@ -150,7 +150,7 @@ class BossScene extends Phaser.Scene {
         // 雑魚戦闘
         this.minionBattleActive = true;
         this.minionsToKill = 3;
-        var laneYs = [300, 540, 780];
+        var laneYs = [220, 460, 700];
         for(let i = 0; i < 3; i++) {
           this.time.delayedCall(1000 + i * 800, function() {
             var e = this.enemyGroup.create(1920 + 50, laneYs[Phaser.Math.Between(0, 2)], 'enemy_basic');
@@ -363,7 +363,7 @@ class BossScene extends Phaser.Scene {
       delay: 2500,
       callback: function () {
         if (this.sisterBoss && this.sisterBoss.active && !this.dialogActive && this.sisterBoss.hp > 0) {
-          var laneYs = [300, 540, 780];
+          var laneYs = [220, 460, 700];
           var targetY = laneYs[Phaser.Math.Between(0, 2)];
           this.tweens.killTweensOf(this.sisterBoss);
           this.tweens.add({
@@ -392,7 +392,7 @@ class BossScene extends Phaser.Scene {
       delay: 3000,
       callback: function () {
         if (this.currentBoss && this.currentBoss.active && !this.dialogActive) {
-          var laneYs = [300, 540, 780];
+          var laneYs = [220, 460, 700];
           var targetY = laneYs[Phaser.Math.Between(0, 2)];
           this.tweens.killTweensOf(this.currentBoss);
           this.tweens.add({
@@ -608,7 +608,7 @@ class BossScene extends Phaser.Scene {
   // 斬撃攻撃（幹部1筋肉用）
   attackSlash(bx, by) {
     var self = this;
-    var laneYs = [300, 540, 780];
+    var laneYs = [220, 460, 700];
     var pattern = Phaser.Math.Between(0, 2);
 
     if (pattern === 0) {
@@ -658,7 +658,7 @@ class BossScene extends Phaser.Scene {
   // 双銃攻撃（幹部2 戦闘狂用）
   attackDualGuns(bx, by) {
     var self = this;
-    var laneYs = [300, 540, 780];
+    var laneYs = [220, 460, 700];
     var p = Phaser.Math.Between(0, 2);
 
     if (p === 0) {
@@ -1131,7 +1131,7 @@ class BossScene extends Phaser.Scene {
     this.sisterBoss = null;
     this.dialogActive = false;
     this.physics.resume();
-    MOT.spawnHealthItem(this, 960, 540);
+    MOT.spawnHealthItem(this, 960, 460);
     
     // スキップ処理: wing_left, wing_right を飛ばして demon_lord (インデックス3) へ
     this.currentBossIndex = 3; 
@@ -1152,7 +1152,7 @@ class BossScene extends Phaser.Scene {
       this.dialogActive = false;
       this.physics.resume();
       // Item drop
-      MOT.spawnHealthItem(this, 960, 540);
+      MOT.spawnHealthItem(this, 960, 460);
       // 次のボスが残っている場合は幕間（雑魚ウェーブ）を挟む
       if (this.currentBossIndex < this.bossQueue.length) {
         this.startIntermission();
@@ -1203,7 +1203,7 @@ class BossScene extends Phaser.Scene {
 
     // 1.5秒後に雑魚スポーン開始
     this.time.delayedCall(1500, function () {
-      var laneYs = [300, 540, 780];
+      var laneYs = [220, 460, 700];
       for (var i = 0; i < self.intermissionTotal; i++) {
         self.time.delayedCall(i * 600, function () {
           if (!self.intermissionActive) return;
