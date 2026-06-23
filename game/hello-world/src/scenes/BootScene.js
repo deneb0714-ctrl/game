@@ -65,8 +65,15 @@ class BootScene extends Phaser.Scene {
     // Title 1X assets
     this.load.image('title_1x_back', window.TITLE_1X_BACK_B64);
     this.load.image('title_1x_number', window.TITLE_1X_NUMBER_B64);
-    this.load.image('title_1x_hello_world', window.TITLE_1X_HELLO_WORLD_B64);
-    this.load.image('title_1x_baria', window.TITLE_1X_BARIA_B64);
+    if (typeof window.TITLE_1X_HELLO_WORLD_B64 !== 'undefined') {
+      this.load.image('title_1x_hello_world', window.TITLE_1X_HELLO_WORLD_B64);
+    }
+    if (typeof window.TITLE_1X_BARIA_B64 !== 'undefined') {
+      this.load.image('title_1x_baria', window.TITLE_1X_BARIA_B64);
+    }
+    if (typeof window.GAME_OVER_IMG_B64 !== 'undefined') {
+      this.load.image('game_over_img', window.GAME_OVER_IMG_B64);
+    }
     
     // Title background (Glitch)
     this.load.image('title_bg_glitch', window.TITLE_BG_GLITCH_B64);

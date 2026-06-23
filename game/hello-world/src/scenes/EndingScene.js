@@ -11,10 +11,41 @@ class EndingScene extends Phaser.Scene {
     var ending = MOT.decideEnding();
 
     this.cameras.main.setBackgroundColor(ending.bgColor);
+
+    if (ending.key === 'BAD_GAMEOVER') {
+      // 砂嵐（ノイズ）用のテクスチャ生成
+      if (!this.textures.exists('tv_noise')) {
+        const size = 256;
+        const canvas = document.createElement('canvas');
+        canvas.width = size;
+        canvas.height = size;
+        const ctx = canvas.getContext('2d');
+        const imgData = ctx.createImageData(size, size);
+        for (let i = 0; i < imgData.data.length; i += 4) {
+          const val = Math.floor(Math.random() * 255);
+          imgData.data[i] = val;
+          imgData.data[i+1] = val;
+          imgData.data[i+2] = val;
+          imgData.data[i+3] = 255;
+        }
+        ctx.putImageData(imgData, 0, 0);
+        this.textures.addCanvas('tv_noise', canvas);
+      }
+      
+      // 背景全体に砂嵐を配置
+      this.noiseSprite = this.add.tileSprite(w / 2, h / 2, w, h, 'tv_noise').setDepth(0).setAlpha(0.2);
+      
+      // ゲームオーバー画像の表示
+      if (this.textures.exists('game_over_img')) {
+        this.add.image(w / 2, h / 2, 'game_over_img').setDisplaySize(w, h).setDepth(1);
+      }
+    }
+
     this.cameras.main.fadeIn(1500, 0, 0, 0);
 
-    // Background particles themed to ending
-    for (var i = 0; i < 40; i++) {
+    // Background particles themed to ending (BAD_GAMEOVER以外で表示)
+    if (ending.key !== 'BAD_GAMEOVER') {
+      for (var i = 0; i < 40; i++) {
       var p = this.add.circle(
         Phaser.Math.Between(0, w),
         Phaser.Math.Between(0, h),
@@ -33,7 +64,7 @@ class EndingScene extends Phaser.Scene {
       });
     }
 
-    // Ending title
+    // Ending title (BAD_GAMEOVERの場合は画像を使うのでテキストのタイトル・サブタイトルは非表示)
     var titleColor = '#' + ending.color.toString(16).padStart(6, '0');
     var title = this.add.text(w / 2, h * 0.2, ending.title, {
       fontFamily: '"Press Start 2P"',
@@ -49,6 +80,11 @@ class EndingScene extends Phaser.Scene {
       fontSize: '28px',
       color: '#9CA3AF'
     }).setOrigin(0.5).setAlpha(0);
+
+    if (ending.key === 'BAD_GAMEOVER') {
+        title.setVisible(false);
+        subtitle.setVisible(false);
+    }
 
     // Description
     var desc = this.add.text(w / 2, h * 0.50, ending.description, {
@@ -121,6 +157,21 @@ class EndingScene extends Phaser.Scene {
         this.scene.start('TitleScene');
       }, [], this);
     }, this);
+  }
+
+  update(time, delta) {
+    if (this.noiseSprite) {
+        // 砂嵐のノイズアニメーション
+        this.noiseSprite.tilePositionX = Phaser.Math.Between(0, 256);
+        this.noiseSprite.tilePositionY = Phaser.Math.Between(0, 256);
+        
+        // ランダムでたまにノイズを激しくする
+        if (Math.random() < 0.05) {
+            this.noiseSprite.setAlpha(Phaser.Math.FloatBetween(0.3, 0.6));
+        } else {
+            this.noiseSprite.setAlpha(0.15);
+        }
+    }
   }
 }
 
