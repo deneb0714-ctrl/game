@@ -148,7 +148,7 @@ class StoryScene extends Phaser.Scene {
     if (this.bg.alpha > 0 || data.bg === 'lab') {
       const isHero = data.speaker.includes('勇者');
       const isDoctor = data.speaker.includes('博士') || data.speaker === '？？？';
-      this.heroImage.setAlpha(isHero ? 1 : 0);
+      this.heroImage.setAlpha(isHero ? 1 : 0.4);
       this.doctorImage.setAlpha(isDoctor ? 1 : 0.4);
     }
 
@@ -273,7 +273,7 @@ class StoryScene extends Phaser.Scene {
       this.messageText.setText('気のいい返事をもらえてうれしいよ。早速冒険に向かってもらうとしよう。');
       
       this.doctorImage.setAlpha(1);
-      this.heroImage.setAlpha(0);
+      this.heroImage.setAlpha(0.4);
 
       this.time.delayedCall(3000, () => {
         this.cameras.main.fadeOut(1000);
@@ -286,7 +286,7 @@ class StoryScene extends Phaser.Scene {
       this.messageText.setText('そ、そうか。やる気があるのはいいことだ。では行くと良い');
       
       this.doctorImage.setAlpha(1);
-      this.heroImage.setAlpha(0);
+      this.heroImage.setAlpha(0.4);
 
       this.time.delayedCall(3000, () => {
         this.cameras.main.fadeOut(1000);
@@ -302,7 +302,7 @@ class StoryScene extends Phaser.Scene {
       if (this.textures.exists('doctor_stand_open')) {
         this.doctorImage.setTexture('doctor_stand_open');
       }
-      this.heroImage.setAlpha(0);
+      this.heroImage.setAlpha(0.4);
 
       this.time.delayedCall(2000, () => {
         // Fade out over 3 seconds

@@ -264,7 +264,7 @@ class BossScene extends Phaser.Scene {
 
     const sayDemon = (text) => new Promise(res => {
       this.tweens.add({ targets: dimBg, alpha: 0.6, duration: 300 });
-      this.tweens.add({ targets: this.heroImage, alpha: 0, duration: 300 });
+      this.tweens.add({ targets: this.heroImage, alpha: 0.4, duration: 300 });
       this.showDialogue('魔王 – ヴェリタス', text, res);
     });
 
@@ -317,7 +317,7 @@ class BossScene extends Phaser.Scene {
 
     const sayTwin = (speaker, text) => new Promise(res => {
       this.tweens.add({ targets: dimBg, alpha: 0.6, duration: 300 });
-      this.tweens.add({ targets: this.heroImage, alpha: 0, duration: 300 });
+      this.tweens.add({ targets: this.heroImage, alpha: 0.4, duration: 300 });
       if (speaker === '男') {
         this.tweens.add({ targets: [maleFrame, maleLabel], alpha: 1, duration: 300 });
         this.tweens.add({ targets: [femaleFrame, femaleLabel], alpha: 0.4, duration: 300 });
@@ -799,14 +799,6 @@ class BossScene extends Phaser.Scene {
             
             var w = 1920, h = 1080;
             var dimBg = this.add.rectangle(w/2, h/2, w, h, 0x000000, 0.6).setAlpha(0).setDepth(89);
-            var heroImage = this.add.image(300, h / 2, 'hero_stand_combat').setAlpha(0).setDepth(90);
-            this.textures.get('hero_stand_combat').setFilter(Phaser.Textures.FilterMode.LINEAR);
-            var hImgW = this.textures.get('hero_stand_combat').getSourceImage().width;
-            var hImgH = this.textures.get('hero_stand_combat').getSourceImage().height;
-            var hScale = 750 / hImgW;
-            heroImage.setScale(hScale);
-            heroImage.setY(100 + (hImgH * hScale) / 2);
-            // クロップ処理は不要なため削除
             var enemyFrame = this.add.rectangle(w - 300, h / 2, 400, 600, 0x1F2933).setAlpha(0).setDepth(90).setStrokeStyle(4, 0xffffff);
             var enemyLabel = this.add.text(w - 300, h / 2, '幹部1(仮)', { fontFamily: '"DotGothic16"', fontSize: '40px', color: '#ffffff' }).setOrigin(0.5).setAlpha(0).setDepth(90);
             
@@ -829,17 +821,15 @@ class BossScene extends Phaser.Scene {
                   onComplete: function () {
                     this.tweens.add({ targets: realBoss, y: realBoss.y - 30, yoyo: true, repeat: -1, duration: 1000, ease: 'Sine.easeInOut' });
                     
-                    // 幹部1のセリフ時に立ち絵を再表示 (勇者は喋らないので非表示)
-                    this.tweens.add({ targets: dimBg, alpha: 0.4, duration: 500 });
-                    this.tweens.add({ targets: heroImage, alpha: 0, duration: 500 });
+                    this.tweens.add({ targets: dimBg, alpha: 0.6, duration: 500 });
                     this.tweens.add({ targets: [enemyFrame, enemyLabel], alpha: 1, duration: 500 });
                     
                     this.showDialogue(this.getBossConfig('boss1').name, '「なんだ、お前が勇者か。そりゃラッキーなこった。王様から勇者を連れてこいって命じられてんだ。お前も戦う気満々って感じだしやるしかないな！！」', function () {
                       
                       // 立ち絵を消す
                       this.tweens.add({
-                        targets: [dimBg, heroImage, enemyFrame, enemyLabel], alpha: 0, duration: 500,
-                        onComplete: function() { dimBg.destroy(); heroImage.destroy(); enemyFrame.destroy(); enemyLabel.destroy(); }
+                        targets: [dimBg, enemyFrame, enemyLabel], alpha: 0, duration: 500,
+                        onComplete: function() { dimBg.destroy(); enemyFrame.destroy(); enemyLabel.destroy(); }
                       });
                       
                       this.showDeviceDialogue('「奴は○○、見かけ通りに己の力のみで戦うことを良しとする。近接攻撃には気を付けるんだ。」', function () {
@@ -1268,19 +1258,6 @@ class BossScene extends Phaser.Scene {
     this.dialogContainer = this.add.container(0, 0).setDepth(100);
 
     var w = 1920, h = 1080, boxH = 280, boxY = h - boxH - 20;
-
-    // 勇者のトランシーバー立ち絵（左側）を表示
-    var heroImg = this.add.image(300, h / 2, 'hero_stand');
-    this.textures.get('hero_stand').setFilter(Phaser.Textures.FilterMode.LINEAR);
-    var hImgW = this.textures.get('hero_stand').getSourceImage().width;
-    var hImgH = this.textures.get('hero_stand').getSourceImage().height;
-    var hScale = 750 / hImgW;
-    heroImg.setScale(hScale);
-    heroImg.setY(100 + (hImgH * hScale) / 2);
-    // クロップ処理は不要なため削除
-    this.dialogContainer.add(heroImg);
-
-
 
     var box = this.add.graphics();
     box.fillStyle(0x0a0a1a, 0.92);
