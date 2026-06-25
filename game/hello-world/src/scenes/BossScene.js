@@ -949,79 +949,87 @@ class BossScene extends Phaser.Scene {
       // Boss defeat flash
       this.tweens.add({
         targets: boss, alpha: 0.3, yoyo: true, repeat: 2, duration: 150,
-        onComplete: function () {
+        onComplete: () => {
+          var w = 1920, h = 1080;
+          var dimBg = this.add.rectangle(w/2, h/2, w, h, 0x000000, 0.6).setAlpha(0).setDepth(89);
+          this.heroImage = this.add.image(300, h / 2, 'hero_stand_combat').setAlpha(0).setDepth(90);
+          if(this.textures.exists('hero_stand_combat')) {
+              this.textures.get('hero_stand_combat').setFilter(Phaser.Textures.FilterMode.LINEAR);
+              var hImgW = this.textures.get('hero_stand_combat').getSourceImage().width;
+              var hImgH = this.textures.get('hero_stand_combat').getSourceImage().height;
+              var hScale = 750 / hImgW;
+              this.heroImage.setScale(hScale);
+              this.heroImage.setY(100 + (hImgH * hScale) / 2);
+          }
+          
+          const askChoice = (label1, label2) => new Promise(res => {
+            this.showChoice([
+              { text: label1, callback: () => { MOT.Audio.playSelect(); res(1); } },
+              { text: label2, callback: () => { MOT.Audio.playSelect(); res(2); } }
+            ]);
+          });
+          const sayDevice = (text) => new Promise(res => { this.tweens.add({ targets: dimBg, alpha: 0.6, duration: 300 }); this.tweens.add({targets: this.heroImage, alpha: 0.4, duration: 300}); this.showDeviceDialogue(text, res); });
+          const sayHero = (text) => new Promise(res => { this.tweens.add({ targets: dimBg, alpha: 0.6, duration: 300 }); this.tweens.add({targets: this.heroImage, alpha: 1, duration: 300}); this.showDialogue('勇者', text, res); });
+
           if (key === 'boss1') {
-            // 幹部1の敗北後シナリオ
-            this.showDeviceDialogue('「よくやった。このまま止めを刺すんだ。魔物も人間と変わらず心臓を打ち抜けば死ぬ。」', function () {
-              this.showChoice([
-                { text: '心臓を打ち抜く', callback: function () {
-                    MOT.Audio.playSelect();
-                    MOT.modifyFlag('brutality', 1);
-                    MOT.modifyFlag('obeyDoctor', 1); // 人形ポイント+1
-                    this.showDialogue(cfg.name, '「(死にボイスなんかほしい)」', function () {
-                      this.showDeviceDialogue('「よくやった。まずは一歩平和に近づいたな。そのまま進んでいくといい」', function () {
-                        this.proceedToNextArea(boss);
-                      }.bind(this));
-                    }.bind(this));
-                  }.bind(this)
-                },
-                { text: '見逃す', callback: function () {
-                    MOT.Audio.playSelect();
-                    MOT.modifyFlag('showMercy', 1);
-                    MOT.modifyFlag('favor.boss1', 1);
-                    this.showDialogue(cfg.name, '「なんで殺さない…？」', function () {
-                      this.showDeviceDialogue('「お前は一体何をしている？」', function () {
-                        this.proceedToNextArea(boss, true);
-                      }.bind(this));
-                    }.bind(this));
-                  }.bind(this)
-                }
-              ]);
-            }.bind(this));
+            const sayEnemy = (text) => new Promise(res => { this.tweens.add({ targets: dimBg, alpha: 0.6, duration: 300 }); this.tweens.add({targets: this.heroImage, alpha: 0.4, duration: 300}); this.showDialogue('敵幹部1', text, res); });
+            (async () => {
+              await sayDevice('「よくやった。このまま止めを刺すんだ。魔物も人間と変わらず心臓を打ち抜けば死ぬ。」');
+              let c = await askChoice('1. 心臓を打ち抜く', '2. 見逃す');
+              if (c === 1) {
+                MOT.flags.dollPoints++; MOT.flags.killedBoss1 = true;
+                await sayEnemy('「くそっ…！俺もここまでか…」');
+                MOT.Audio.playSelect(); // SE (Gunshot placeholder)
+                await sayDevice('「よくやった。まずは一歩平和に近づいたな。そのまま進んでいくといい」');
+                this.proceedToNextArea(boss, false);
+              } else {
+                MOT.flags.killedBoss1 = false;
+                await sayEnemy('「なんで殺さない…？お前はあいつの指示に従ってるんじゃないのか？」');
+                await sayEnemy('「お前が魔王様に従うなら、協力する」');
+                this.showExplosion(boss.x, boss.y); boss.setVisible(false);
+                await sayDevice('「君は一体何をしている？」');
+                await sayDevice('「奴らを倒さないと、世界が救われないんだ。何がしたいのかさっぱりだが、次はちゃんと止めを刺せ。」');
+                await sayHero('「……」');
+                this.proceedToNextArea(boss, true);
+              }
+            })();
           } else if (key === 'boss2') {
-            // 幹部2の敗北後シナリオ
-            this.showDialogue(cfg.name, cfg.defeat, function () {
-              this.showChoice([
-                { text: '1. 心臓を打ち抜く', callback: function () {
-                    MOT.Audio.playSelect();
-                    MOT.modifyFlag('brutality', 1);
-                    MOT.modifyFlag('favor.boss2', -1);
-                    var isBoss1Killed = !MOT.flags['favor.boss1'];
-                    this.showDialogue(cfg.name, '「はは…楽しんで死ねるならまあいいかな」', function () {
-                      if (isBoss1Killed) {
-                        this.showDeviceDialogue('「よくやった。また一歩平和に近づいたな。そのまま進んでいくといい」', function () {
-                          this.proceedToNextArea(boss, false);
-                        }.bind(this));
-                      } else {
-                        this.showDeviceDialogue('「それでいい。そのまま進んで魔王も倒すんだ」', function () {
-                          this.proceedToNextArea(boss, false);
-                        }.bind(this));
-                      }
-                    }.bind(this));
-                  }.bind(this)
-                },
-                { text: '2. 見逃す', callback: function () {
-                    MOT.Audio.playSelect();
-                    MOT.modifyFlag('showMercy', 1);
-                    MOT.modifyFlag('favor.boss2', 1);
-                    var isBoss1Killed = !MOT.flags['favor.boss1'];
-                    if (isBoss1Killed) {
-                      this.showDialogue(cfg.name, '「なんで殺さない？殺す価値もないとでも言いたいのかい？ま、事実負けちゃったんだけどね。次戦うときはこうはいかないからね」', function () {
-                        this.showDeviceDialogue('「何をしている？なぜ止めを刺さなかった。」', function () {
-                          this.proceedToNextArea(boss, true);
-                        }.bind(this));
-                      }.bind(this));
-                    } else {
-                      this.showDialogue(cfg.name, '「はは、やっぱり殺さないんだ。舐めてるの？とはいえ、僕も今は限界だから引こうかな。次は負けない」', function () {
-                        this.showDeviceDialogue('「またか。お前は何がしたい？この世界を終わらせたいのか？」', function () {
-                          this.proceedToNextArea(boss, true);
-                        }.bind(this));
-                      }.bind(this));
-                    }
-                  }.bind(this)
+            const sayEnemy = (text) => new Promise(res => { this.tweens.add({ targets: dimBg, alpha: 0.6, duration: 300 }); this.tweens.add({targets: this.heroImage, alpha: 0.4, duration: 300}); this.showDialogue('敵幹部2', text, res); });
+            (async () => {
+              if (MOT.flags.killedBoss1) {
+                await sayDevice('「先ほどと同じように、止めを刺すんだ。こいつを倒せば幹部は残り半分になる。」');
+              } else {
+                await sayDevice('「今回はわかっているな？世界のために、逃がさないで止めを刺せ。」');
+              }
+              let c = await askChoice('1. 心臓を打ち抜く', '2. 見逃す');
+              if (c === 1) {
+                MOT.flags.dollPoints++; MOT.flags.killedBoss2 = true;
+                if (MOT.flags.killedBoss1) {
+                  await sayEnemy('「はは…あいつと同じで負けるのはむかつくけど、戦いは楽しかったしまあいいかな」');
+                  MOT.Audio.playSelect();
+                  await sayDevice('「よくやった。また一歩平和に近づいたな。幹部は残り二人だ。気を抜かずそのまま進んでいくといい」');
+                } else {
+                  await sayEnemy('「はは…負けたのはむかつくけど、戦いは楽しかったしまあいいかな」');
+                  MOT.Audio.playSelect();
+                  await sayDevice('「それでいい。そのまま進んで残りの幹部も魔王も倒すんだ」');
                 }
-              ]);
-            }.bind(this));
+                this.proceedToNextArea(boss, false);
+              } else {
+                MOT.flags.killedBoss2 = false;
+                if (MOT.flags.killedBoss1) {
+                  await sayEnemy('「なんで殺さない？あの脳筋野郎にしたように僕も殺せばいい。それとも、僕には殺す価値すらもないって言いたいの？ま、事実負けちゃったからどうこう言う資格なんてないんだけど……ね。」');
+                  this.showExplosion(boss.x, boss.y); boss.setVisible(false);
+                  await sayDevice('「おい、何をしている？なぜ止めを刺さなかった。」');
+                } else {
+                  await sayEnemy('「はは、君はやっぱり殺さないんだ。舐めてるの？とはいえ、僕も今は限界だから引こうかな。次は負けないから！」');
+                  this.showExplosion(boss.x, boss.y); boss.setVisible(false);
+                  await sayDevice('「またか。お前は何がしたい？この世界を終わらせたいのか？」');
+                  await sayDevice('「それとも、役立たずとして処分でもされたいのか？」');
+                  await sayHero('「……。」');
+                }
+                this.proceedToNextArea(boss, true);
+              }
+            })();
           } else if (key === 'demon_lord') {
             var f = MOT.flags;
             const sayDevice = (text) => new Promise(res => this.showDeviceDialogue(text, res));
