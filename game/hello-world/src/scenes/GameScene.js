@@ -930,7 +930,7 @@ class GameScene extends Phaser.Scene {
         this.showDeviceDialogue('「よくやった。」', () => {
           this.showDeviceDialogue('「それと、今くらいの敵なら問題ないと思うが、魔王城に近づくにつれて敵の攻撃も強くなる。」', () => {
             this.showDeviceDialogue('「よけきれないときはシールドを貼るんだ。パソコンはスペース、スマホは長押しだ。タイミング良く敵の攻撃にシールドを貼れた場合、反撃することもできるだろう。」', () => {
-              this.showDeviceDialogue('「気を付けないといけないのは、シールドはすぐに何度も貼り直しはできない。左上の緑の円がクールタイムだ。それが溜まりきれば貼れる状態になっている。」', () => {
+              this.showDeviceDialogue('「気を付けないといけないのは、シールドはすぐに何度も張り直しはできない。左上の緑の円がクールタイムだ。それが溜まりきれば貼れる状態になっている。」', () => {
                 this.dialogActive = false;
                 this.tutorialPhase = 3;
               }, { x: 260, y: 88, radius: 30 });
@@ -1029,13 +1029,15 @@ class GameScene extends Phaser.Scene {
           this.physics.pause();
           this.dialogActive = true;
           this.showDeviceDialogue('「使えたな。戦闘中、上手く使ってこのまま敵を倒していくといい。」', () => {
-            this.dialogActive = false;
-            this.physics.pause(); // 物理演算を止める
-            this.player.setCollideWorldBounds(false);
-            this.tweens.add({ targets: this.player, x: 2100, duration: 1000, ease: 'Power2' });
-            this.cameras.main.fadeOut(1000, 0,0,0);
-            this.time.delayedCall(1000, () => {
-              this.scene.start('GameScene', { stage: 2 });
+            this.showDeviceDialogue('「ああそうだ。戦闘中に進むべき道の指示を出す。ちゃんと従うんだ。」', () => {
+              this.dialogActive = false;
+              this.physics.pause(); // 物理演算を止める
+              this.player.setCollideWorldBounds(false);
+              this.tweens.add({ targets: this.player, x: 2100, duration: 1000, ease: 'Power2' });
+              this.cameras.main.fadeOut(1000, 0,0,0);
+              this.time.delayedCall(1000, () => {
+                this.scene.start('GameScene', { stage: 2 });
+              });
             });
           });
         });

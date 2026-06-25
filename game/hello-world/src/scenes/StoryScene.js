@@ -10,6 +10,13 @@ class StoryScene extends Phaser.Scene {
     const w = this.cameras.main.width;
     const h = this.cameras.main.height;
 
+    // Initialize global flags
+    window.MOT = window.MOT || {};
+    MOT.flags = MOT.flags || {};
+    MOT.flags.dollPoints = 0;
+    MOT.flags.killedBoss1 = false;
+    MOT.flags.killedBoss2 = false;
+
     // Dark background initially
     this.cameras.main.setBackgroundColor('#000000');
     // Lab background (invisible at first)
@@ -18,12 +25,12 @@ class StoryScene extends Phaser.Scene {
     // Dialogue Data
     this.dialogue = [
       { speaker: '誰かの声', text: 'さぁ、起きるのだ。勇者よ。', bg: 'black' },
-      { speaker: '誰かの声', text: 'そして魔王を倒し、この世界を救う宿命を背負え。', bg: 'black' },
+      { speaker: '誰かの声', text: 'そして悪を倒し、この世界を救う宿命を背負え。', bg: 'black' },
       { speaker: '？？？', text: 'おお、ようやく成功したぞ！目覚めたか！！勇者よ。', bg: 'lab' },
       { speaker: '勇者？', text: '……あなたは、誰ですか', bg: 'lab' },
       { speaker: '博士', text: '私か？私はしがない博士だ。そして君を呼んだ人間だ。', bg: 'lab' },
       { speaker: '博士', text: '遥か昔、この世界は平和だった。しかし突如現れた魔王によって蹂躙され、今はもう平和とは程遠い世界になってしまった。', bg: 'lab' },
-      { speaker: '博士', text: '目覚めてすぐで悪いが、君にはまず、その魔王を倒してきてほしいのだ。', bg: 'lab' },
+      { speaker: '博士', text: '目覚めてすぐで悪いが、君にはまず、その魔王を倒してきてほしい。', bg: 'lab' },
       { speaker: '勇者', text: '倒す……？', bg: 'lab' },
       { speaker: '博士', text: '君にはそれだけの力がある。', bg: 'lab', choice: true }
     ];
@@ -178,7 +185,7 @@ class StoryScene extends Phaser.Scene {
     this.choice2 = this.createChoiceButton(w / 2, h / 2, '2「訳が分からない。いきなりそんなこと言われても困る」', () => {
       this.handleChoice(2);
     });
-    this.choice3 = this.createChoiceButton(w / 2, h / 2 + 120, '3「いいから早く魔王退治に行かせろ（チュートリアルスキップ）」', () => {
+    this.choice3 = this.createChoiceButton(w / 2, h / 2 + 120, '3「説明はいらない。早く冒険に行かせて」', () => {
       this.handleChoice(3);
     });
 
@@ -283,7 +290,7 @@ class StoryScene extends Phaser.Scene {
       });
     } else if (choiceIndex === 3) {
       this.nameText.setText('博士');
-      this.messageText.setText('そ、そうか。やる気があるのはいいことだ。では行くと良い');
+      this.messageText.setText('そうか。やる気は十分のようで嬉しいよ。');
       
       this.doctorImage.setAlpha(1);
       this.heroImage.setAlpha(0.4);

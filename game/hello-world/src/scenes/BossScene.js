@@ -135,7 +135,7 @@ class BossScene extends Phaser.Scene {
     this.bossAttackTimer = 0;
     this.bossDefeated = false;
 
-    // Spawn boss
+    // Spawn boss (hidden initially)
     var boss = this.physics.add.sprite(1920, 460, cfg.texture);
     boss.setScale(cfg.scale);
     boss.setDepth(8);
@@ -143,42 +143,10 @@ class BossScene extends Phaser.Scene {
     this.currentBoss = boss;
     boss.hp = cfg.hp;
     boss.configKey = key;
+    boss.setVisible(false);
+    boss.body.enable = false;
 
-    this.dialogActive = true;
-    this.physics.pause();
-
-    if (key === 'boss1') {
-      // 幹部1の専用シナリオ（ボスはまだ見せない）
-      boss.setVisible(false);
-      boss.body.enable = false;
-      this.showDeviceDialogue('「最初のエリアに着いたか。そこは、○○だ。魔王城までまだ距離があるからそこまで敵は強くないが気は抜くなよ。」', function () {
-        this.dialogActive = false;
-        this.physics.resume();
-        
-        // 雑魚戦闘
-        this.minionBattleActive = true;
-        this.minionsToKill = 3;
-        var laneYs = [220, 460, 700];
-        for(let i = 0; i < 3; i++) {
-          this.time.delayedCall(1000 + i * 800, function() {
-            var e = this.enemyGroup.create(1920 + 50, laneYs[Phaser.Math.Between(0, 2)], 'enemy_basic');
-            e.setVelocityX(-200);
-            e.hp = 3;
-            e.isScenarioMinion = true;
-            this.tweens.add({
-              targets: e, y: e.y + Phaser.Math.Between(-40, 40),
-              yoyo: true, repeat: -1, duration: 900, ease: 'Sine.easeInOut'
-            });
-            e.fireTimer = this.time.addEvent({
-              delay: 1500, callback: function () { if (e.active) MOT.fireLinear(this, e.x, e.y, -300, 0); }, loop: true, callbackScope: this
-            });
-            e.on('destroy', function () { if (e.fireTimer) e.fireTimer.destroy(); });
-          }, [], this);
-        }
-      }.bind(this));
-    } else if (key === 'boss3_twins') {
-      this.cameras.main.shake(400, 0.015);
-      
+    if (key === 'boss3_twins') {
       var sister = this.physics.add.sprite(1920, 700, cfg.texture2);
       sister.setScale(cfg.scale2);
       sister.setDepth(8);
@@ -187,65 +155,62 @@ class BossScene extends Phaser.Scene {
       sister.hp = cfg.hp2;
       sister.maxHp = cfg.hp2;
       sister.configKey = 'boss3_twins';
+      sister.setVisible(false);
+      sister.body.enable = false;
       boss.maxHp = cfg.hp;
-      boss.configKey = 'boss3_twins';
-      
-      this.tweens.add({
-        targets: [boss, sister],
-        x: 1400,
-        duration: 1200,
-        ease: 'Power2',
-        onComplete: function () {
-          this.tweens.add({ targets: boss, y: boss.y - 30, yoyo: true, repeat: -1, duration: 1000, ease: 'Sine.easeInOut' });
-          this.tweens.add({ targets: sister, y: sister.y + 30, yoyo: true, repeat: -1, duration: 1100, ease: 'Sine.easeInOut' });
-          
-          this.playTwinsIntro(function() {
-            this.dialogActive = false;
-            this.physics.resume();
-            this.startBossLaneMovement();
-            // Sister moves somewhat independently
-            this.startSisterLaneMovement();
-          }.bind(this));
-        }.bind(this)
-      });
-    } else if (key === 'demon_lord') {
-      this.cameras.main.shake(400, 0.015);
-      this.tweens.add({
-        targets: boss,
-        x: 1400,
-        duration: 1200,
-        ease: 'Power2',
-        onComplete: function () {
-          this.tweens.add({ targets: boss, y: boss.y - 30, yoyo: true, repeat: -1, duration: 1000, ease: 'Sine.easeInOut' });
-          this.playDemonLordIntro(function () {
-            this.dialogActive = false;
-            this.physics.resume();
-            this.startBossLaneMovement();
-          }.bind(this));
-        }.bind(this)
-      });
-    } else {
-      // Entrance
-      this.cameras.main.shake(400, 0.015);
-      this.tweens.add({
-        targets: boss,
-        x: 1400,
-        duration: 1200,
-        ease: 'Power2',
-        onComplete: function () {
-          // Boss floating
-          this.tweens.add({ targets: boss, y: boss.y - 30, yoyo: true, repeat: -1, duration: 1000, ease: 'Sine.easeInOut' });
-          // Intro dialogue
-          this.showDialogue(cfg.name, cfg.intro, function () {
-            this.dialogActive = false;
-            this.physics.resume();
-            this.startBossLaneMovement();
-          }.bind(this));
-        }.bind(this)
-      });
     }
-  }
 
+    this.dialogActive = true;
+    this.physics.pause();
+
+    let areaText = '';
+    if (key === 'boss1') areaText = '「次のエリアに着いたか。そこは、黄昏の荒野だ。魔王城までまだ距離があるからそこまで敵は強くないが気は抜くなよ。」';
+    else if (key === 'boss2') areaText = '「次のエリアに着いたか。そこは、宵闇の森だ。」';
+    else if (key === 'boss3_twins') areaText = '「次のエリアに着いたか。そこは、子夜の城塞 だ。そろそろ魔王城に着くだろう。敵も強くなっている。気を付けてくれ」';
+    else if (key === 'demon_lord') areaText = '「とうとう魔王城に着いたか。そこには魔王がいるはずだ。警戒を怠らないように」';
+
+    this.showDeviceDialogue(areaText, () => {
+      this.dialogActive = false;
+      this.physics.resume();
+      
+      if (key === 'demon_lord') {
+         boss.setVisible(true); boss.body.enable = true;
+         this.cameras.main.shake(400, 0.015);
+         this.tweens.add({
+           targets: boss, x: 1400, duration: 1200, ease: 'Power2',
+           onComplete: () => {
+             this.tweens.add({ targets: boss, y: boss.y - 30, yoyo: true, repeat: -1, duration: 1000, ease: 'Sine.easeInOut' });
+             this.playDemonLordIntro(() => {
+               this.dialogActive = false;
+               this.physics.resume();
+               this.startBossLaneMovement();
+             });
+           }
+         });
+      } else {
+         // Minion phase
+         this.minionBattleActive = true;
+         this.minionsToKill = 3;
+         var laneYs = [220, 460, 700];
+         for(let i = 0; i < 3; i++) {
+           this.time.delayedCall(1000 + i * 800, () => {
+             var e = this.enemyGroup.create(1920 + 50, laneYs[Phaser.Math.Between(0, 2)], 'enemy_basic');
+             e.setVelocityX(-200);
+             e.hp = (key === 'boss3_twins') ? 2 : 3;
+             e.isScenarioMinion = true;
+             this.tweens.add({
+               targets: e, y: e.y + Phaser.Math.Between(-40, 40),
+               yoyo: true, repeat: -1, duration: 900, ease: 'Sine.easeInOut'
+             });
+             e.fireTimer = this.time.addEvent({
+               delay: 1500, callback: () => { if (e.active) MOT.fireLinear(this, e.x, e.y, -300, 0); }, loop: true, callbackScope: this
+             });
+             e.on('destroy', () => { if (e.fireTimer) e.fireTimer.destroy(); });
+           }, [], this);
+         }
+      }
+    });
+  }
   playDemonLordIntro(onComplete) {
     var dimBg = this.add.rectangle(1920/2, 1080/2, 1920, 1080, 0x000000, 0.6).setAlpha(0).setDepth(89);
     this.heroImage = this.add.image(300, 1080 / 2, 'hero_stand_combat').setAlpha(0).setDepth(90);
@@ -823,7 +788,6 @@ class BossScene extends Phaser.Scene {
           this.minionsToKill--;
           if (this.minionsToKill <= 0 && this.minionBattleActive) {
             this.minionBattleActive = false;
-            // 雑魚戦終了後のシナリオ続行
             this.dialogActive = true;
             this.physics.pause();
             this.enemyBullets.clear(true, true);
@@ -832,50 +796,76 @@ class BossScene extends Phaser.Scene {
             var w = 1920, h = 1080;
             var dimBg = this.add.rectangle(w/2, h/2, w, h, 0x000000, 0.6).setAlpha(0).setDepth(89);
             var enemyFrame = this.add.rectangle(w - 300, h / 2, 400, 600, 0x1F2933).setAlpha(0).setDepth(90).setStrokeStyle(4, 0xffffff);
-            var enemyLabel = this.add.text(w - 300, h / 2, '幹部1(仮)', { fontFamily: '"DotGothic16"', fontSize: '40px', color: '#ffffff' }).setOrigin(0.5).setAlpha(0).setDepth(90);
+            var enemyLabel = this.add.text(w - 300, h / 2, '???', { fontFamily: '"DotGothic16"', fontSize: '40px', color: '#ffffff' }).setOrigin(0.5).setAlpha(0).setDepth(90);
             
-            // ???のセリフ時は敵側の立ち絵だけ表示
             this.tweens.add({ targets: [dimBg, enemyFrame, enemyLabel], alpha: 1, duration: 500 });
             
-            this.showDialogue('???', '「おいおい、こんなところで何してんだ？今引き返すっていうなら見逃してやるぜ？」', function () {
-              // 博士のデバイスセリフ時は立ち絵を一旦消す
-              this.tweens.add({ targets: [dimBg, enemyFrame, enemyLabel], alpha: 0, duration: 300 });
-              
-              this.showDeviceDialogue('「まずい。魔王軍のやつらに気付かれた。しかし、勇者の君なら倒せるだろう。」', function () {
+            const sayDevice = (text) => new Promise(res => { this.tweens.add({ targets: [dimBg, enemyFrame, enemyLabel], alpha: 0, duration: 300 }); this.showDeviceDialogue(text, res); });
+            const sayEnemyUnknown = (text) => new Promise(res => { this.tweens.add({ targets: [dimBg, enemyFrame, enemyLabel], alpha: 1, duration: 300 }); enemyLabel.setText('???'); this.showDialogue('???', text, res); });
+            const sayEnemyName = (name, text) => new Promise(res => { this.tweens.add({ targets: [dimBg, enemyFrame, enemyLabel], alpha: 1, duration: 300 }); enemyLabel.setText(name); this.showDialogue(name, text, res); });
+            const sayHero = (text) => new Promise(res => { this.tweens.add({ targets: [dimBg, enemyFrame, enemyLabel], alpha: 0, duration: 300 }); this.showDialogue('勇者', text, res); });
+
+            var key = this.currentBoss.configKey;
+            
+            (async () => {
+              if (key === 'boss1') {
+                await sayEnemyUnknown('「おいおい、こんなところで何してんだ？今引き返すっていうなら見逃してやるぜ？」');
+                await sayDevice('「まずい。魔王軍のやつらに気付かれた。だが、勇者の君なら倒せるだろう。」');
                 
-                // 幹部1 登場演出（立ち絵なしでボスアイコンが登場）
-                var realBoss = this.currentBoss;
-                realBoss.setVisible(true);
-                realBoss.body.enable = true;
+                // Show boss
+                this.currentBoss.setVisible(true); this.currentBoss.body.enable = true;
                 this.cameras.main.shake(400, 0.015);
-                this.tweens.add({
-                  targets: realBoss, x: 1400, duration: 1200, ease: 'Power2',
-                  onComplete: function () {
-                    this.tweens.add({ targets: realBoss, y: realBoss.y - 30, yoyo: true, repeat: -1, duration: 1000, ease: 'Sine.easeInOut' });
-                    
-                    this.tweens.add({ targets: dimBg, alpha: 0.6, duration: 500 });
-                    this.tweens.add({ targets: [enemyFrame, enemyLabel], alpha: 1, duration: 500 });
-                    
-                    this.showDialogue(this.getBossConfig('boss1').name, '「なんだ、お前が勇者か。そりゃラッキーなこった。王様から勇者を連れてこいって命じられてんだ。お前も戦う気満々って感じだしやるしかないな！！」', function () {
-                      
-                      // 立ち絵を消す
-                      this.tweens.add({
-                        targets: [dimBg, enemyFrame, enemyLabel], alpha: 0, duration: 500,
-                        onComplete: function() { dimBg.destroy(); enemyFrame.destroy(); enemyLabel.destroy(); }
-                      });
-                      
-                      this.showDeviceDialogue('「奴は○○、見かけ通りに己の力のみで戦うことを良しとする。近接攻撃には気を付けるんだ。」', function () {
-                        this.dialogActive = false;
-                        this.physics.resume();
-                        this.startBossLaneMovement();
-                      }.bind(this));
-                    }.bind(this));
-                  }.bind(this)
-                });
-              }.bind(this));
-            }.bind(this));
+                await new Promise(r => this.tweens.add({ targets: this.currentBoss, x: 1400, duration: 1200, ease: 'Power2', onComplete: r }));
+                this.tweens.add({ targets: this.currentBoss, y: this.currentBoss.y - 30, yoyo: true, repeat: -1, duration: 1000, ease: 'Sine.easeInOut' });
+                
+                await sayEnemyName('敵幹部1', '「なんだ、お前が勇者か。そりゃラッキーなこった。王様から勇者を連れてこいって命じられてんだ。お前も戦う気満々って感じだしやるしかないな！！」');
+                await sayHero('「……初対面なはずなのに失礼だな。」');
+                await sayDevice('「奴は○○（敵幹部1名）、見かけ通りに己の力のみで戦うことを良しとする。近接攻撃には気を付けるんだ。」');
+                await sayHero('「つまり、脳ｋ……」');
+                
+              } else if (key === 'boss2') {
+                await sayEnemyUnknown('「あは、お客さんだ！」');
+                await sayDevice('「やはり来たか。奴は○○。魔王の狂犬だ。若くして魔王軍に入ったが、魔王の言うこと以外は聞かない。奴は2丁の拳銃を使って戦う。片方だけに気を取られるなよ」');
+                
+                this.currentBoss.setVisible(true); this.currentBoss.body.enable = true;
+                this.cameras.main.shake(400, 0.015);
+                await new Promise(r => this.tweens.add({ targets: this.currentBoss, x: 1400, duration: 1200, ease: 'Power2', onComplete: r }));
+                this.tweens.add({ targets: this.currentBoss, y: this.currentBoss.y - 30, yoyo: true, repeat: -1, duration: 1000, ease: 'Sine.easeInOut' });
+                
+                await sayEnemyName('敵幹部2', '「××（敵幹部１）はやられたみたいだね。あいつ力はあるくせに馬鹿だから負けるんだよ。まぁいいや。さっさと君を倒して魔王様に褒めてもらおう」');
+                await sayHero('「（……やっぱり脳筋だったのか）」');
+                
+              } else if (key === 'boss3_twins') {
+                await sayEnemyUnknown('「…来たか」');
+                await sayEnemyUnknown('「来たわね。兄様」');
+                await sayDevice('「…!?お前たちは…」');
+                await sayHero('「？」');
+                
+                this.currentBoss.setVisible(true); this.currentBoss.body.enable = true;
+                this.sisterBoss.setVisible(true); this.sisterBoss.body.enable = true;
+                this.cameras.main.shake(400, 0.015);
+                await new Promise(r => this.tweens.add({ targets: [this.currentBoss, this.sisterBoss], x: 1400, duration: 1200, ease: 'Power2', onComplete: r }));
+                this.tweens.add({ targets: this.currentBoss, y: this.currentBoss.y - 30, yoyo: true, repeat: -1, duration: 1000, ease: 'Sine.easeInOut' });
+                this.tweens.add({ targets: this.sisterBoss, y: this.sisterBoss.y + 30, yoyo: true, repeat: -1, duration: 1100, ease: 'Sine.easeInOut' });
+                
+                await sayEnemyName('男', '「君は博士に騙されている。悪いことは言わないからこちらの味方になった方がいい」');
+                await sayDevice('「彼らの言葉に耳を傾けてはいけない。早く倒すんだ。」');
+                await sayHero('「…」');
+                await sayEnemyName('女', '「…そう。意思は硬いのね。仕方ないわ兄様」');
+                await sayEnemyName('男', '「君を彼女（魔王）の元にはいかせない。ここで食い止めるよ」');
+              }
+              
+              this.tweens.add({
+                targets: [dimBg, enemyFrame, enemyLabel], alpha: 0, duration: 500,
+                onComplete: () => { dimBg.destroy(); enemyFrame.destroy(); enemyLabel.destroy(); }
+              });
+              this.dialogActive = false;
+              this.physics.resume();
+              this.startBossLaneMovement();
+              if (key === 'boss3_twins') this.startSisterLaneMovement();
+            })();
           }
-        } else {
+} else {
           // 全体が倒されたら幕間終了
           this.intermissionKills = (this.intermissionKills || 0) + 1;
           if (this.intermissionKills >= this.intermissionTotal) {
@@ -1125,32 +1115,53 @@ class BossScene extends Phaser.Scene {
     
     this.tweens.add({
       targets: [this.currentBoss, this.sisterBoss], alpha: 0.3, yoyo: true, repeat: 2, duration: 150,
-      onComplete: function () {
-        this.showDeviceDialogue('「倒したか。さぁ早くとどめを！」', function () {
+      onComplete: () => {
+        const askChoice = (label1, label2) => new Promise(res => {
           this.showChoice([
-            { text: '心臓を打ち抜く', callback: function () {
-                MOT.Audio.playSelect();
-                MOT.modifyFlag('brutality', 1);
-                this.showDialogue('女', '「兄さま…！」', function () {
-                  this.showDeviceDialogue('「まさか生きていたとはな…いや、なんでもない。そのまま進んでくれ」', function () {
-                    // 魔王戦への遷移 (スキップ対応)
-                    this.skipToDemonLord();
-                  }.bind(this));
-                }.bind(this));
-              }.bind(this)
-            },
-            { text: '見逃す', callback: function () {
-                MOT.Audio.playSelect();
-                MOT.modifyFlag('showMercy', 1);
-                this.showDeviceDialogue('「なぜ殺さない！」', function () {
-                  // 魔王戦への遷移
-                  this.skipToDemonLord();
-                }.bind(this));
-              }.bind(this)
-            }
+            { text: label1, callback: () => { MOT.Audio.playSelect(); res(1); } },
+            { text: label2, callback: () => { MOT.Audio.playSelect(); res(2); } }
           ]);
-        }.bind(this));
-      }.bind(this)
+        });
+        const sayDevice = (text) => new Promise(res => this.showDeviceDialogue(text, res));
+        const sayMan = (text) => new Promise(res => this.showDialogue('男', text, res));
+        const sayWoman = (text) => new Promise(res => this.showDialogue('女', text, res));
+
+        (async () => {
+          await sayDevice('「さぁ早くとどめを刺せ！」');
+          let c = await askChoice('1. 心臓を打ち抜く', '2. 見逃す');
+          if (c === 1) {
+            MOT.flags.dollPoints++;
+            await sayMan('「死にボイスなんかほしい」');
+            await sayWoman('「死にボイスなんかほしい」');
+            MOT.Audio.playSelect(); MOT.Audio.playSelect(); // Gunshot x2
+            if (MOT.flags.killedBoss1 || MOT.flags.killedBoss2) {
+              await sayDevice('「まさか生きていたとはな…いや、なんでもない。そのまま進んでくれ」');
+            } else {
+              await sayDevice('「よくやった。君は役に立つじゃないか。こいつらとは違うな…いや、なんでもない。そのまま進んでくれ」');
+            }
+            this.skipToDemonLord();
+          } else {
+            if (MOT.flags.killedBoss1 || MOT.flags.killedBoss2) {
+              await sayMan('「君も何かおかしいって気が付いて来ただろう？博士の言うことなんて聞くべきじゃない」');
+              await sayWoman('「兄さまの言う通りよ。そんな奴、従う価値もない。」');
+              this.showExplosion(this.currentBoss.x, this.currentBoss.y);
+              this.showExplosion(this.sisterBoss.x, this.sisterBoss.y);
+              this.currentBoss.setVisible(false); this.sisterBoss.setVisible(false);
+              await sayDevice('「なぜ殺さない！そいつらの言うことはでたらめだ。魔王軍の言うことを聞く意味なんてないんだ。」');
+            } else {
+              await sayMan('「君は、最初から気が付いてるんじゃないか？博士がおかしいって。」');
+              await sayWoman('「あなたは誰も殺してない。だから、こっち側に来なさい。魔王様も許してくれる。」');
+              this.showExplosion(this.currentBoss.x, this.currentBoss.y);
+              this.showExplosion(this.sisterBoss.x, this.sisterBoss.y);
+              this.currentBoss.setVisible(false); this.sisterBoss.setVisible(false);
+              await sayDevice('「…」');
+              await sayDevice('「お前は何をしたい？魔王のやつらは生かしておく価値もない。早く殺すのが世界のためだ。」');
+              await sayDevice('「魔王さえ倒せば、トップがいなくなり奴らはどうしようもなくなる。必ず倒すんだ。」');
+            }
+            this.skipToDemonLord();
+          }
+        })();
+      }
     });
   }
 
@@ -1364,6 +1375,78 @@ class BossScene extends Phaser.Scene {
         }
       }, callbackScope: this, loop: true
     });
+  }
+
+
+  showChoices(choicesData) {
+    const w = this.cameras.main.width;
+    const h = this.cameras.main.height;
+    
+    this.choicesList = [];
+    let startY = h / 2 - (choicesData.length - 1) * 60;
+    
+    choicesData.forEach((data, index) => {
+      let btn = this.add.rectangle(w / 2, startY + index * 120, 600, 90, 0x1F2933).setStrokeStyle(2, 0x4FD1FF).setInteractive({ useHandCursor: true }).setDepth(200);
+      let txt = this.add.text(w / 2, startY + index * 120, data.label, { fontFamily: '"DotGothic16"', fontSize: '26px', color: '#4FD1FF' }).setOrigin(0.5).setDepth(200);
+      
+      this.choicesList.push({ btn: btn, txt: txt, callback: data.callback });
+      
+      btn.on('pointerover', () => {
+        this.selectedChoiceIndex = index;
+        this.updateChoiceSelection();
+      });
+      btn.on('pointerdown', () => {
+        this.input.keyboard.off('keydown');
+        if (window.MOT && MOT.Audio) MOT.Audio.playSelect();
+        this.destroyChoices();
+        data.callback();
+      });
+    });
+
+    this.selectedChoiceIndex = 0;
+    this.updateChoiceSelection();
+
+    const self = this;
+    this.input.keyboard.on('keydown', function (event) {
+      if (event.code === 'KeyW' || event.code === 'ArrowUp') {
+        self.selectedChoiceIndex = (self.selectedChoiceIndex - 1 + self.choicesList.length) % self.choicesList.length;
+        self.updateChoiceSelection();
+      } else if (event.code === 'KeyS' || event.code === 'ArrowDown') {
+        self.selectedChoiceIndex = (self.selectedChoiceIndex + 1) % self.choicesList.length;
+        self.updateChoiceSelection();
+      } else if (event.code === 'Enter') {
+        self.input.keyboard.off('keydown');
+        if (window.MOT && MOT.Audio) MOT.Audio.playSelect();
+        self.destroyChoices();
+        self.choicesList[self.selectedChoiceIndex].callback();
+      }
+    });
+  }
+
+  updateChoiceSelection() {
+    this.choicesList.forEach((choice, idx) => {
+      if (idx === this.selectedChoiceIndex) {
+        choice.btn.setFillStyle(0x3a3a5e);
+        choice.btn.setStrokeStyle(4, 0xffffff);
+        choice.txt.setColor('#ffffff');
+        choice.btn.setScale(1.08);
+        choice.txt.setScale(1.08);
+      } else {
+        choice.btn.setFillStyle(0x1F2933);
+        choice.btn.setStrokeStyle(2, 0x4FD1FF);
+        choice.txt.setColor('#4FD1FF');
+        choice.btn.setScale(1.0);
+        choice.txt.setScale(1.0);
+      }
+    });
+  }
+
+  destroyChoices() {
+    this.choicesList.forEach(choice => {
+      choice.btn.destroy();
+      choice.txt.destroy();
+    });
+    this.choicesList = [];
   }
 
   showDialogue(speaker, text, onComplete) {
