@@ -810,10 +810,10 @@ class BossScene extends Phaser.Scene {
             
             this.tweens.add({ targets: [dimBg, enemyFrame, enemyLabel], alpha: 1, duration: 500 });
             
-            const sayDevice = (text) => new Promise(res => { this.tweens.add({ targets: [dimBg, enemyFrame, enemyLabel, this.heroImage], alpha: 0, duration: 300 }); this.showDeviceDialogue(text, res); });
-            const sayEnemyUnknown = (text) => new Promise(res => { this.tweens.add({ targets: [dimBg, enemyFrame, enemyLabel], alpha: 1, duration: 300 }); this.tweens.add({targets: this.heroImage, alpha: 0, duration: 300}); enemyLabel.setText('???'); this.showDialogue('???', text, res); });
-            const sayEnemyName = (name, text) => new Promise(res => { this.tweens.add({ targets: [dimBg, enemyFrame, enemyLabel], alpha: 1, duration: 300 }); this.tweens.add({targets: this.heroImage, alpha: 0, duration: 300}); enemyLabel.setText(name); this.showDialogue(name, text, res); });
-            const sayHero = (text) => new Promise(res => { this.tweens.add({ targets: [dimBg, enemyFrame, enemyLabel], alpha: 0, duration: 300 }); this.tweens.add({targets: this.heroImage, alpha: 1, duration: 300}); this.showDialogue('勇者', text, res); });
+            const sayDevice = (text) => new Promise(res => { this.tweens.add({ targets: dimBg, alpha: 0.6, duration: 300 }); this.tweens.add({ targets: [enemyFrame, enemyLabel, this.heroImage], alpha: 0.4, duration: 300 }); this.showDeviceDialogue(text, res); });
+            const sayEnemyUnknown = (text) => new Promise(res => { this.tweens.add({ targets: dimBg, alpha: 0.6, duration: 300 }); this.tweens.add({ targets: [enemyFrame, enemyLabel], alpha: 1, duration: 300 }); this.tweens.add({targets: this.heroImage, alpha: 0.4, duration: 300}); enemyLabel.setText('???'); this.showDialogue('???', text, res); });
+            const sayEnemyName = (name, text) => new Promise(res => { this.tweens.add({ targets: dimBg, alpha: 0.6, duration: 300 }); this.tweens.add({ targets: [enemyFrame, enemyLabel], alpha: 1, duration: 300 }); this.tweens.add({targets: this.heroImage, alpha: 0.4, duration: 300}); enemyLabel.setText(name); this.showDialogue(name, text, res); });
+            const sayHero = (text) => new Promise(res => { this.tweens.add({ targets: dimBg, alpha: 0.6, duration: 300 }); this.tweens.add({ targets: [enemyFrame, enemyLabel], alpha: 0.4, duration: 300 }); this.tweens.add({targets: this.heroImage, alpha: 1, duration: 300}); this.showDialogue('勇者', text, res); });
 
             var key = this.currentBoss.configKey;
             
