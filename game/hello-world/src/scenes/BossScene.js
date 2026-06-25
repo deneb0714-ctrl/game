@@ -1667,16 +1667,18 @@ class BossScene extends Phaser.Scene {
     this.bossHPText = this.add.text(960, 20, '', { fontFamily: '"Press Start 2P"', fontSize: '14px', color: '#FF2E2E' }).setOrigin(0.5, 0).setDepth(100);
     this.bossHPBar = this.add.graphics().setDepth(100);
 
-    let areaText = '';
-    if (this.currentBossIndex === 0) areaText = '黄昏の荒野';
-    else if (this.currentBossIndex === 1) areaText = '宵闇の森';
-    else if (this.currentBossIndex === 2) areaText = '子夜の城塞';
-    else if (this.currentBossIndex === 3) areaText = '魔王城';
-    this.areaNameText = this.add.text(1920 / 2, 20, areaText, { fontFamily: '"DotGothic16"', fontSize: '32px', color: '#FFFFFF', backgroundColor: 'rgba(0,0,0,0.5)', padding: { x: 10, y: 5 } }).setOrigin(0.5, 0).setDepth(100);
+    this.areaNameText = this.add.text(1920 - 30, 20, '', { fontFamily: '"DotGothic16"', fontSize: '32px', color: '#FFFFFF', backgroundColor: 'rgba(0,0,0,0.5)', padding: { x: 10, y: 5 } }).setOrigin(1, 0).setDepth(100);
 
   }
 
   updateHUD() {
+    let areaText = '';
+    if (this.currentBossIndex === 0) areaText = '黄昏の荒野';
+    else if (this.currentBossIndex === 1) areaText = '宵闇の森';
+    else if (this.currentBossIndex === 2) areaText = '子夜の城塞';
+    else if (this.currentBossIndex >= 3) areaText = '魔王城';
+    if (this.areaNameText) this.areaNameText.setText(areaText);
+
     var hearts = '';
     for (var i = 0; i < MOT.flags.playerMaxHP; i++) hearts += i < MOT.flags.playerHP ? '♥ ' : '♡ ';
     this.hpText.setText(hearts);
