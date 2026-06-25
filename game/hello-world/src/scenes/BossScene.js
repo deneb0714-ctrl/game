@@ -1112,7 +1112,7 @@ class BossScene extends Phaser.Scene {
               }.bind(this)));
             }.bind(this));
           }
-        }.bind(this)
+        }
       });
     }
   }
