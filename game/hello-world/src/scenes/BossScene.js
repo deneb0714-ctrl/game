@@ -987,7 +987,7 @@ class BossScene extends Phaser.Scene {
                 MOT.flags.killedBoss1 = false;
                 await sayEnemy('「なんで殺さない…？お前はあいつの指示に従ってるんじゃないのか？」');
                 await sayEnemy('「お前が魔王様に従うなら、協力する」');
-                this.showExplosion(boss.x, boss.y); boss.setVisible(false);
+                await new Promise(r => this.tweens.add({ targets: boss, x: 2200, duration: 1500, ease: 'Power2', onComplete: r }));
                 await sayDevice('「君は一体何をしている？」');
                 await sayDevice('「奴らを倒さないと、世界が救われないんだ。何がしたいのかさっぱりだが、次はちゃんと止めを刺せ。」');
                 await sayHero('「……」');
@@ -1019,11 +1019,11 @@ class BossScene extends Phaser.Scene {
                 MOT.flags.killedBoss2 = false;
                 if (MOT.flags.killedBoss1) {
                   await sayEnemy('「なんで殺さない？あの脳筋野郎にしたように僕も殺せばいい。それとも、僕には殺す価値すらもないって言いたいの？ま、事実負けちゃったからどうこう言う資格なんてないんだけど……ね。」');
-                  this.showExplosion(boss.x, boss.y); boss.setVisible(false);
+                  await new Promise(r => this.tweens.add({ targets: boss, x: 2200, duration: 1500, ease: 'Power2', onComplete: r }));
                   await sayDevice('「おい、何をしている？なぜ止めを刺さなかった。」');
                 } else {
                   await sayEnemy('「はは、君はやっぱり殺さないんだ。舐めてるの？とはいえ、僕も今は限界だから引こうかな。次は負けないから！」');
-                  this.showExplosion(boss.x, boss.y); boss.setVisible(false);
+                  await new Promise(r => this.tweens.add({ targets: boss, x: 2200, duration: 1500, ease: 'Power2', onComplete: r }));
                   await sayDevice('「またか。お前は何がしたい？この世界を終わらせたいのか？」');
                   await sayDevice('「それとも、役立たずとして処分でもされたいのか？」');
                   await sayHero('「……。」');
@@ -1172,35 +1172,34 @@ class BossScene extends Phaser.Scene {
             } else {
               await sayDevice('「よくやった。君は役に立つじゃないか。こいつらとは違うな…いや、なんでもない。そのまま進んでくれ」');
             }
-            this.skipToDemonLord();
+            this.skipToDemonLord(false);
           } else {
             if (MOT.flags.killedBoss1 || MOT.flags.killedBoss2) {
               await sayMan('「君も何かおかしいって気が付いて来ただろう？博士の言うことなんて聞くべきじゃない」');
               await sayWoman('「兄さまの言う通りよ。そんな奴、従う価値もない。」');
-              this.showExplosion(this.currentBoss.x, this.currentBoss.y);
-              this.showExplosion(this.sisterBoss.x, this.sisterBoss.y);
-              this.currentBoss.setVisible(false); this.sisterBoss.setVisible(false);
+              await new Promise(r => this.tweens.add({ targets: [this.currentBoss, this.sisterBoss], x: 2200, duration: 1500, ease: 'Power2', onComplete: r }));
               await sayDevice('「なぜ殺さない！そいつらの言うことはでたらめだ。魔王軍の言うことを聞く意味なんてないんだ。」');
             } else {
               await sayMan('「君は、最初から気が付いてるんじゃないか？博士がおかしいって。」');
               await sayWoman('「あなたは誰も殺してない。だから、こっち側に来なさい。魔王様も許してくれる。」');
-              this.showExplosion(this.currentBoss.x, this.currentBoss.y);
-              this.showExplosion(this.sisterBoss.x, this.sisterBoss.y);
-              this.currentBoss.setVisible(false); this.sisterBoss.setVisible(false);
+              await new Promise(r => this.tweens.add({ targets: [this.currentBoss, this.sisterBoss], x: 2200, duration: 1500, ease: 'Power2', onComplete: r }));
               await sayDevice('「…」');
               await sayDevice('「お前は何をしたい？魔王のやつらは生かしておく価値もない。早く殺すのが世界のためだ。」');
               await sayDevice('「魔王さえ倒せば、トップがいなくなり奴らはどうしようもなくなる。必ず倒すんだ。」');
             }
-            this.skipToDemonLord();
+            this.skipToDemonLord(true);
           }
         })();
       }
     });
   }
 
-  skipToDemonLord() {
-    this.showExplosion(this.currentBoss.x, this.currentBoss.y);
-    this.showExplosion(this.sisterBoss.x, this.sisterBoss.y);
+  skipToDemonLord(isSpared = false) {
+    this.clearConversationUI();
+    if (!isSpared) {
+      if (this.currentBoss) this.showExplosion(this.currentBoss.x, this.currentBoss.y);
+      if (this.sisterBoss) this.showExplosion(this.sisterBoss.x, this.sisterBoss.y);
+    }
     this.currentBoss.destroy();
     this.sisterBoss.destroy();
     this.currentBoss = null;
