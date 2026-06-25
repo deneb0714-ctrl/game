@@ -952,6 +952,7 @@ class BossScene extends Phaser.Scene {
         onComplete: () => {
           var w = 1920, h = 1080;
           var dimBg = this.add.rectangle(w/2, h/2, w, h, 0x000000, 0.6).setAlpha(0).setDepth(89);
+          this.dimBg = dimBg;
           this.heroImage = this.add.image(300, h / 2, 'hero_stand_combat').setAlpha(0).setDepth(90);
           if(this.textures.exists('hero_stand_combat')) {
               this.textures.get('hero_stand_combat').setFilter(Phaser.Textures.FilterMode.LINEAR);
@@ -1134,15 +1135,29 @@ class BossScene extends Phaser.Scene {
     this.tweens.add({
       targets: [this.currentBoss, this.sisterBoss], alpha: 0.3, yoyo: true, repeat: 2, duration: 150,
       onComplete: () => {
+        var w = 1920, h = 1080;
+        var dimBg = this.add.rectangle(w/2, h/2, w, h, 0x000000, 0.6).setAlpha(0).setDepth(89);
+        this.dimBg = dimBg;
+        this.heroImage = this.add.image(300, h / 2, 'hero_stand_combat').setAlpha(0).setDepth(90);
+        if(this.textures.exists('hero_stand_combat')) {
+            this.textures.get('hero_stand_combat').setFilter(Phaser.Textures.FilterMode.LINEAR);
+            var hImgW = this.textures.get('hero_stand_combat').getSourceImage().width;
+            var hImgH = this.textures.get('hero_stand_combat').getSourceImage().height;
+            var hScale = 750 / hImgW;
+            this.heroImage.setScale(hScale);
+            this.heroImage.setY(100 + (hImgH * hScale) / 2);
+        }
+
         const askChoice = (label1, label2) => new Promise(res => {
           this.showChoice([
             { text: label1, callback: () => { MOT.Audio.playSelect(); res(1); } },
             { text: label2, callback: () => { MOT.Audio.playSelect(); res(2); } }
           ]);
         });
-        const sayDevice = (text) => new Promise(res => this.showDeviceDialogue(text, res));
-        const sayMan = (text) => new Promise(res => this.showDialogue('男', text, res));
-        const sayWoman = (text) => new Promise(res => this.showDialogue('女', text, res));
+        const sayDevice = (text) => new Promise(res => { this.tweens.add({ targets: dimBg, alpha: 0.6, duration: 300 }); this.tweens.add({targets: this.heroImage, alpha: 0.4, duration: 300}); this.showDeviceDialogue(text, res); });
+        const sayHero = (text) => new Promise(res => { this.tweens.add({ targets: dimBg, alpha: 0.6, duration: 300 }); this.tweens.add({targets: this.heroImage, alpha: 1, duration: 300}); this.showDialogue('勇者', text, res); });
+        const sayMan = (text) => new Promise(res => { this.tweens.add({ targets: dimBg, alpha: 0.6, duration: 300 }); this.tweens.add({targets: this.heroImage, alpha: 0.4, duration: 300}); this.showDialogue('男', text, res); });
+        const sayWoman = (text) => new Promise(res => { this.tweens.add({ targets: dimBg, alpha: 0.6, duration: 300 }); this.tweens.add({targets: this.heroImage, alpha: 0.4, duration: 300}); this.showDialogue('女', text, res); });
 
         (async () => {
           await sayDevice('「さぁ早くとどめを刺せ！」');
@@ -1219,7 +1234,13 @@ class BossScene extends Phaser.Scene {
   }
 
   // 撃破後の共通進行処理
+  clearConversationUI() {
+    if (this.dimBg) { this.dimBg.destroy(); this.dimBg = null; }
+    if (this.heroImage) { this.heroImage.destroy(); this.heroImage = null; }
+  }
+
   proceedToNextArea(boss, isSpared = false) {
+    this.clearConversationUI();
     var resumeFn = function() {
       this.currentBoss = null;
       this.currentBossIndex++;
