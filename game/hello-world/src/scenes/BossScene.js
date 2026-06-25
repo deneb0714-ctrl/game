@@ -795,15 +795,25 @@ class BossScene extends Phaser.Scene {
             
             var w = 1920, h = 1080;
             var dimBg = this.add.rectangle(w/2, h/2, w, h, 0x000000, 0.6).setAlpha(0).setDepth(89);
+            this.heroImage = this.add.image(300, h / 2, 'hero_stand_combat').setAlpha(0).setDepth(90);
+            if(this.textures.exists('hero_stand_combat')) {
+                this.textures.get('hero_stand_combat').setFilter(Phaser.Textures.FilterMode.LINEAR);
+                var hImgW = this.textures.get('hero_stand_combat').getSourceImage().width;
+                var hImgH = this.textures.get('hero_stand_combat').getSourceImage().height;
+                var hScale = 750 / hImgW;
+                this.heroImage.setScale(hScale);
+                this.heroImage.setY(100 + (hImgH * hScale) / 2);
+            }
+            
             var enemyFrame = this.add.rectangle(w - 300, h / 2, 400, 600, 0x1F2933).setAlpha(0).setDepth(90).setStrokeStyle(4, 0xffffff);
             var enemyLabel = this.add.text(w - 300, h / 2, '???', { fontFamily: '"DotGothic16"', fontSize: '40px', color: '#ffffff' }).setOrigin(0.5).setAlpha(0).setDepth(90);
             
             this.tweens.add({ targets: [dimBg, enemyFrame, enemyLabel], alpha: 1, duration: 500 });
             
-            const sayDevice = (text) => new Promise(res => { this.tweens.add({ targets: [dimBg, enemyFrame, enemyLabel], alpha: 0, duration: 300 }); this.showDeviceDialogue(text, res); });
-            const sayEnemyUnknown = (text) => new Promise(res => { this.tweens.add({ targets: [dimBg, enemyFrame, enemyLabel], alpha: 1, duration: 300 }); enemyLabel.setText('???'); this.showDialogue('???', text, res); });
-            const sayEnemyName = (name, text) => new Promise(res => { this.tweens.add({ targets: [dimBg, enemyFrame, enemyLabel], alpha: 1, duration: 300 }); enemyLabel.setText(name); this.showDialogue(name, text, res); });
-            const sayHero = (text) => new Promise(res => { this.tweens.add({ targets: [dimBg, enemyFrame, enemyLabel], alpha: 0, duration: 300 }); this.showDialogue('勇者', text, res); });
+            const sayDevice = (text) => new Promise(res => { this.tweens.add({ targets: [dimBg, enemyFrame, enemyLabel, this.heroImage], alpha: 0, duration: 300 }); this.showDeviceDialogue(text, res); });
+            const sayEnemyUnknown = (text) => new Promise(res => { this.tweens.add({ targets: [dimBg, enemyFrame, enemyLabel], alpha: 1, duration: 300 }); this.tweens.add({targets: this.heroImage, alpha: 0, duration: 300}); enemyLabel.setText('???'); this.showDialogue('???', text, res); });
+            const sayEnemyName = (name, text) => new Promise(res => { this.tweens.add({ targets: [dimBg, enemyFrame, enemyLabel], alpha: 1, duration: 300 }); this.tweens.add({targets: this.heroImage, alpha: 0, duration: 300}); enemyLabel.setText(name); this.showDialogue(name, text, res); });
+            const sayHero = (text) => new Promise(res => { this.tweens.add({ targets: [dimBg, enemyFrame, enemyLabel], alpha: 0, duration: 300 }); this.tweens.add({targets: this.heroImage, alpha: 1, duration: 300}); this.showDialogue('勇者', text, res); });
 
             var key = this.currentBoss.configKey;
             
@@ -856,8 +866,8 @@ class BossScene extends Phaser.Scene {
               }
               
               this.tweens.add({
-                targets: [dimBg, enemyFrame, enemyLabel], alpha: 0, duration: 500,
-                onComplete: () => { dimBg.destroy(); enemyFrame.destroy(); enemyLabel.destroy(); }
+                targets: [dimBg, enemyFrame, enemyLabel, this.heroImage], alpha: 0, duration: 500,
+                onComplete: () => { dimBg.destroy(); enemyFrame.destroy(); enemyLabel.destroy(); if(this.heroImage) this.heroImage.destroy(); }
               });
               this.dialogActive = false;
               this.physics.resume();
@@ -1627,6 +1637,14 @@ class BossScene extends Phaser.Scene {
     this.barrierIconFg = this.add.graphics().setDepth(100);
     this.bossHPText = this.add.text(960, 20, '', { fontFamily: '"Press Start 2P"', fontSize: '14px', color: '#FF2E2E' }).setOrigin(0.5, 0).setDepth(100);
     this.bossHPBar = this.add.graphics().setDepth(100);
+
+    let areaText = '';
+    if (this.currentBossIndex === 0) areaText = '黄昏の荒野';
+    else if (this.currentBossIndex === 1) areaText = '宵闇の森';
+    else if (this.currentBossIndex === 2) areaText = '子夜の城塞';
+    else if (this.currentBossIndex === 3) areaText = '魔王城';
+    this.areaNameText = this.add.text(1920 / 2, 20, areaText, { fontFamily: '"DotGothic16"', fontSize: '32px', color: '#FFFFFF', backgroundColor: 'rgba(0,0,0,0.5)', padding: { x: 10, y: 5 } }).setOrigin(0.5, 0).setDepth(100);
+
   }
 
   updateHUD() {
