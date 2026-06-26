@@ -126,6 +126,11 @@ class EndingScene extends Phaser.Scene {
       ease: 'Power2'
     });
 
+    if (ending.key === 'BAD_GAMEOVER') {
+      desc.setVisible(false);
+      endSprite.setVisible(false);
+    }
+
     // Title button (appears after a delay)
     this.time.delayedCall(6000, function () {
       this.createReturnButton(w / 2, h * 0.92);
