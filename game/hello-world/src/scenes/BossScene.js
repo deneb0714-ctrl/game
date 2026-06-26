@@ -181,8 +181,13 @@ class BossScene extends Phaser.Scene {
   }
 
   startBossIntro(key, boss) {
-    this.dialogActive = false;
-    this.physics.resume();
+    if (key !== 'demon_lord' && key !== 'doctor') {
+      this.dialogActive = false;
+      this.physics.resume();
+    } else {
+      this.dialogActive = true;
+      this.physics.pause();
+    }
     
     if (key === 'demon_lord' || key === 'doctor') {
        boss.setVisible(true); boss.body.enable = true;
@@ -200,8 +205,6 @@ class BossScene extends Phaser.Scene {
              });
            } else {
              // Doctor intro
-             this.dialogActive = true;
-             this.physics.pause();
              var w = 1920, h = 1080;
              var dimBg = this.add.rectangle(w/2, h/2, w, h, 0x000000, 0.6).setAlpha(0).setDepth(89);
              this.heroImage = this.add.image(300, h / 2, 'hero_stand_combat').setAlpha(0).setDepth(90);
