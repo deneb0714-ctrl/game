@@ -751,7 +751,6 @@ class GameScene extends Phaser.Scene {
     this.barrierIconBg = this.add.graphics().setDepth(100).setScrollFactor(0);
     this.barrierIconFg = this.add.graphics().setDepth(100).setScrollFactor(0);
     this.isEnergyHighlighted = false;
-    this.areaNameText = this.add.text(1920 - 30, 20, '曙光技研', { fontFamily: '"DotGothic16"', fontSize: '32px', color: '#FFFFFF', backgroundColor: 'rgba(0,0,0,0.5)', padding: { x: 10, y: 5 } }).setOrigin(1, 0).setDepth(100).setScrollFactor(0);
   }
 
   updateHUD() {
@@ -927,7 +926,7 @@ class GameScene extends Phaser.Scene {
                 this.tutorialPhase = 2;
                 this.physics.resume();
               });
-            }, { x: 300, y: 460, radius: 60, color: 0x4FD1FF });
+            }, { x: 300, y: 260, radius: 60, color: 0x4FD1FF });
           });
         });
       });
