@@ -256,7 +256,6 @@ class BossScene extends Phaser.Scene {
            }, [], this);
          }
       }
-    });
   }
   playDemonLordIntro(onComplete) {
     var dimBg = this.add.rectangle(1920/2, 1080/2, 1920, 1080, 0x000000, 0.6).setAlpha(0).setDepth(89);
@@ -1078,30 +1077,157 @@ class BossScene extends Phaser.Scene {
             })();
           } else if (key === 'demon_lord') {
             var f = MOT.flags;
-            const sayDevice = (text) => new Promise(res => this.showDeviceDialogue(text, res));
-            const sayHero = (text) => new Promise(res => this.showDialogue('勇者', text, res));
-            const sayDemon = (text) => new Promise(res => this.showDialogue('魔王 – ヴェリタス', text, res));
-            const askChoice = (choices) => new Promise(res => {
-               this.showChoice(choices.map(c => ({
-                 text: c.text,
-                 callback: () => { MOT.Audio.playSelect(); res(c.id); }
-               })));
+            const sayDevice = (text) => new Promise(res => { this.tweens.add({ targets: dimBg, alpha: 0.6, duration: 300 }); this.tweens.add({targets: this.heroImage, alpha: 0.4, duration: 300}); this.showDeviceDialogue(text, res); });
+            const sayHero = (text) => new Promise(res => { this.tweens.add({ targets: dimBg, alpha: 0.6, duration: 300 }); this.tweens.add({targets: this.heroImage, alpha: 1, duration: 300}); this.showDialogue('勇者', text, res); });
+            const sayDemon = (text) => new Promise(res => { this.tweens.add({ targets: dimBg, alpha: 0.6, duration: 300 }); this.tweens.add({targets: this.heroImage, alpha: 0.4, duration: 300}); this.showDialogue('魔王', text, res); });
+            
+            const askShatterChoice = (label1, label2, canShatter) => new Promise(res => {
+              if (this.choiceContainer) this.choiceContainer.destroy();
+              this.choiceContainer = this.add.container(0, 0).setDepth(200);
+              var w = 1920, h = 1080;
+              var bg = this.add.rectangle(w / 2, h / 2, w, h, 0x000000, 0.4).setInteractive();
+              this.choiceContainer.add(bg);
+              var title = this.add.text(w / 2, h / 2 - 120, '選択してください', { fontFamily: '"DotGothic16"', fontSize: '40px', color: '#ffffff' }).setOrigin(0.5);
+              this.choiceContainer.add(title);
+              var y1 = h / 2 - 20;
+              var y2 = h / 2 + 80;
+              var box1 = this.add.rectangle(w / 2, y1, 500, 80, 0x1F2933, 0.8).setStrokeStyle(2, 0x4FD1FF);
+              var txt1 = this.add.text(w / 2, y1, label1, { fontFamily: '"DotGothic16"', fontSize: '32px', color: '#ffffff' }).setOrigin(0.5);
+              var box2 = this.add.rectangle(w / 2, y2, 500, 80, 0x1F2933, 0.8).setStrokeStyle(2, 0x4FD1FF);
+              var txt2 = this.add.text(w / 2, y2, label2, { fontFamily: '"DotGothic16"', fontSize: '32px', color: '#ffffff' }).setOrigin(0.5);
+              this.choiceContainer.add([box1, txt1, box2, txt2]);
+              var cursor = this.add.text(w / 2 - 280, y1, '▶', { fontFamily: '"DotGothic16"', fontSize: '32px', color: '#39FF14' }).setOrigin(0.5);
+              this.choiceContainer.add(cursor);
+              
+              var currentIndex = 1;
+              var downPresses = 0;
+              var shattered = false;
+              
+              const keyHandler = (event) => {
+                if (event.key === 'ArrowUp' || event.key === 'w') handleInput('UP');
+                else if (event.key === 'ArrowDown' || event.key === 's') handleInput('DOWN');
+                else if (event.key === 'Enter' || event.key === ' ') handleInput('ENTER');
+              };
+
+              const handleInput = async (dir) => {
+                if (shattered) {
+                  if (dir === 'ENTER') {
+                    this.input.keyboard.off('keydown', keyHandler);
+                    this.choiceContainer.destroy();
+                    res(2);
+                  }
+                  return;
+                }
+                if (dir === 'DOWN') {
+                  if (canShatter) {
+                    downPresses++;
+                    if (downPresses === 1) {
+                      this.input.keyboard.off('keydown', keyHandler);
+                      await sayDevice('「お前はさっきから、ろくな選択をしない。だから必ず殺すよう制御させてもらった。」');
+                      await sayDevice('「魔王を生かすことなんてさせないからな。」');
+                      this.input.keyboard.on('keydown', keyHandler);
+                    } else if (downPresses >= 10) {
+                      shattered = true;
+                      this.cameras.main.shake(500, 0.05);
+                      MOT.Audio.playSelect();
+                      this.tweens.add({ targets: [box1, txt1], y: y1 + 100, alpha: 0, rotation: 0.5, duration: 1000, ease: 'Power2' });
+                      currentIndex = 2;
+                      cursor.setY(y2);
+                      this.input.keyboard.off('keydown', keyHandler);
+                      await sayHero('「……それでも僕は、殺したくない……！！」');
+                      this.input.keyboard.on('keydown', keyHandler);
+                    }
+                  } else {
+                    currentIndex = 2;
+                    cursor.setY(y2);
+                  }
+                } else if (dir === 'UP') {
+                  if (!shattered) {
+                    currentIndex = 1;
+                    cursor.setY(y1);
+                  }
+                } else if (dir === 'ENTER') {
+                  this.input.keyboard.off('keydown', keyHandler);
+                  this.choiceContainer.destroy();
+                  res(currentIndex);
+                }
+              };
+              this.input.keyboard.on('keydown', keyHandler);
             });
 
             (async () => {
-              if (f.brutality === 0) {
-                // True Pacifist
-                await sayDemon('「我々を殺さず、お前は何がしたい？あの法螺吹きにでもけしかけられて倒しに来たんだろう？」');
-                await askChoice([
-                  { id: 1, text: '殺す必要がないと思った' },
-                  { id: 2, text: '博士を信じられない' }
-                ]);
-                await sayDemon('「そうか、良く正しい選択をしたな。ここから話すのは、信じるも信じないもお前の自由だ。きっとお前は、あいつに私が世界を滅ぼそうとでもしていると言われたのだろう？だが、私はそんなことを考えていない。むしろ世界にとっての悪はあいつだ。あいつはこの世界に人間以上の存在がいることが許せないのだ。わらわはやつに襲われていら魔族を保護し、あいつと長い間戦ってきた」');
-                await sayDevice('「…おやおや、すべて話されてしまったな」');
+              var anyoneKilled = f.killedBoss1 || f.killedBoss2 || f.killedTwins;
+              await sayDevice('「早くとどめをさせ！」');
+              
+              if (anyoneKilled) {
+                // Killed someone previously
+                let c = await askShatterChoice('1. 殺す', '2. 見逃す', false);
+                if (c === 1) {
+                  await sayDemon('「このわらわが...！すまない、我がしもべたち...」');
+                  MOT.flags.finalEnding = 'NORMAL_EVERYDAY';
+                  this.proceedToNextArea(boss, false);
+                } else {
+                  await sayDemon('「わらわを見逃して何が望みだ？しもべたちを殺しているんだ。和平を求めて居るわけではないのであろう？」');
+                  await sayDemon('「わらわは、しもべを殺された恨みを忘れることはできん。何が目的であれ、お前を許すことはできないだろう。」');
+                  MOT.flags.finalEnding = 'NORMAL_USELESS';
+                  this.proceedToNextArea(boss, true);
+                }
+              } else {
+                // Spared everyone previously
+                let c = await askShatterChoice('1. 殺す', '2. 殺さない', true);
+                if (c === 1) {
+                  // 抗えないエンド
+                  MOT.Audio.playSelect();
+                  await sayHero('「！」');
+                  await sayHero('「なんで、今勝手に手が…！」');
+                  await sayDevice('「ろくでもない生物を生かしておく必要はないだろう。無駄な命乞いを聞く前にさっさと始末させたに過ぎない。」');
+                  await sayDevice('「いいか。お前はこれから逃がした幹部を殺しに行くんだ。逃がすなんてことをしたらわかっているな？」');
+                  MOT.flags.finalEnding = 'NORMAL_INESCAPABLE';
+                  this.proceedToNextArea(boss, false);
+                } else {
+                  // 選択肢粉砕 (c === 2)
+                  await sayDemon('「我々を殺さず、お前は何がしたい？あの法螺吹きにけしかけられて倒しに来たんだろう？」');
+                  
+                  const askNormalChoice = (label1, label2) => new Promise(res => {
+                    this.showChoice([
+                      { text: label1, callback: () => { MOT.Audio.playSelect(); res(1); } },
+                      { text: label2, callback: () => { MOT.Audio.playSelect(); res(2); } }
+                    ]);
+                  });
+                  await askNormalChoice('1. 殺す必要がないと思った', '2. 博士を信じられない');
+                  
+                  await sayDemon('「そうか、良く正しい選択をした。ここから話すのは、信じるも信じないもお前の自由だ。きっとお前は、あいつに私が世界を滅ぼそうとでもしていると言われたのだろう？だが、私はそんなことを考えていない。むしろ世界にとっての悪はあいつだ。あいつはこの世界に人間以上の存在がいることが許せないのだ。わらわはやつに襲われていら魔族を保護し、あいつと長い間戦ってきた」');
+                  await sayDevice('「…なんだ、すべて話されてしまったみたいだな」');
+                  await sayHero('「！」');
+                  await sayDevice('「だが、気づくのが遅い。お前たちがのんきに弾幕で遊んでいる間にこちらの準備は整った」');
+                  await sayDemon('「なんだ？！」');
+                  await sayDevice('「さぁ、最終決戦といこうじゃないか！」');
+                  
+                  // Start Doctor Boss
+                  this.bossQueue.push('doctor');
+                  this.proceedToNextArea(boss, true);
+                }
+              }
+            })();
+          } else if (key === 'doctor') {
+            const sayDevice = (text) => new Promise(res => { this.tweens.add({ targets: dimBg, alpha: 0.6, duration: 300 }); this.tweens.add({targets: this.heroImage, alpha: 0.4, duration: 300}); this.showDeviceDialogue(text, res); });
+            const sayHero = (text) => new Promise(res => { this.tweens.add({ targets: dimBg, alpha: 0.6, duration: 300 }); this.tweens.add({targets: this.heroImage, alpha: 1, duration: 300}); this.showDialogue('勇者', text, res); });
+            const askChoice = (label1, label2) => new Promise(res => {
+              this.showChoice([
+                { text: label1, callback: () => { MOT.Audio.playSelect(); res(1); } },
+                { text: label2, callback: () => { MOT.Audio.playSelect(); res(2); } }
+              ]);
+            });
+
+            (async () => {
+              let c = await askChoice('1. 殺さない', '2. 殺せない');
+              if (c === 1) {
+                await sayDevice('「なんだ、ここでも殺さないのか。わかっているのか？その女の言う通り、私はお前を騙していたんだ。」');
+                await sayHero('「あなたがやったことは許せない。だけど、ここであなたを殺したら同じになる。」');
+                await sayDevice('「ずいぶんな言いようだな。だがそうだな、お前が殺せぬというなら自分で終わらせようじゃないか！」');
                 await sayHero('「！」');
-                await sayDevice('「だが、気づくのが遅かったみたいだな。お前たちがのんきに弾幕で遊んでいる間にこちらの準備は整った」');
-                await sayDemon('「なんだ？！」');
-                await sayDevice('「さぁ、最終決戦といこうじゃないか！」');
+                MOT.Audio.playSelect();
+              } else {
                 await sayDevice('「驚いた...まさかお前がここまでやるとはな」');
                 await sayHero('「…」');
                 await sayDevice('「なにをしている？早くとどめを刺せ」');
@@ -1109,38 +1235,11 @@ class BossScene extends Phaser.Scene {
                 await sayDevice('「全く...本当にどうしようもない欠陥品だな」');
                 await sayDevice('「お前にやれぬというならこの命、自分で終わらせよう！」');
                 await sayHero('「！」');
-                
-                this.cameras.main.flash(2000, 255, 255, 255);
-                this.time.delayedCall(2000, () => { this.proceedToNextArea(boss, true); });
-              } else if (f.showMercy === 0) {
-                // Genocide
-                await sayDevice('「よくやった。さぁ早くとどめを！」');
-                await sayDemon('「ぐっ…ここまでか…」');
-                await askChoice([
-                  { id: 1, text: '心臓を打ち抜く' },
-                  { id: 2, text: '心臓を打ち抜く' }
-                ]);
-                await sayDemon('「博士の…傀儡め…！」');
-                this.proceedToNextArea(boss, false);
-              } else {
-                // Neutral
-                await sayDevice('「よくやった。さぁ早くとどめを！」');
-                await sayDemon('「ぐっ…ここまでか…」');
-                let choice = await askChoice([
-                  { id: 1, text: '心臓を打ち抜く' },
-                  { id: 2, text: '見逃す' }
-                ]);
-                if (choice === 1) {
-                  MOT.modifyFlag('brutality', 1);
-                  await sayDemon('「このわらわが...！すまない、我がしもべたち...」');
-                  this.proceedToNextArea(boss, false);
-                } else {
-                  MOT.modifyFlag('showMercy', 1);
-                  await sayDemon('「わらわを見逃して何が望みだ？しもべたちを殺しているんだ。和平を求めて居るわけではないのであろう？」');
-                  await sayDemon('「わらわは、しもべを殺された恨みを忘れることはできん。何が目的であれ、お前を許すことはできないだろう。」');
-                  this.proceedToNextArea(boss, true);
-                }
+                MOT.Audio.playSelect();
               }
+              
+              MOT.flags.finalEnding = 'END_ORPHAN';
+              this.proceedToNextArea(boss, false);
             })();
           } else {
             // 通常の敗北後
