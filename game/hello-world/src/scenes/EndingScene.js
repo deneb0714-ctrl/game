@@ -8,7 +8,8 @@ class EndingScene extends Phaser.Scene {
 
   create() {
     var w = 1920, h = 1080;
-    var ending = MOT.decideEnding();
+    var endingKey = MOT.flags.finalEnding || MOT.decideEnding().key;
+    var ending = MOT.ENDINGS[endingKey] || MOT.ENDINGS.NORMAL_EVERYDAY;
 
     this.cameras.main.setBackgroundColor(ending.bgColor);
 
@@ -117,8 +118,10 @@ class EndingScene extends Phaser.Scene {
 
     // Show ending-specific sprite
     var spriteKey = 'player';
-    if (ending.key === 'HIDDEN_BRAINWASH') spriteKey = 'demon_lord';
-    if (ending.key === 'HAPPY_FRIEND') spriteKey = 'minion1';
+    if (ending.key === 'END_ORPHAN') spriteKey = 'demon_lord'; // 魔王に拾われる
+    if (ending.key === 'NORMAL_EVERYDAY') spriteKey = 'player';
+    if (ending.key === 'NORMAL_USELESS') spriteKey = 'player';
+    if (ending.key === 'NORMAL_INESCAPABLE') spriteKey = 'player';
 
     var endSprite = this.add.image(w / 2, h * 0.78, spriteKey).setScale(4).setAlpha(0);
     this.tweens.add({

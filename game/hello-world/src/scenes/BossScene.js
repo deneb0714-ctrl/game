@@ -110,11 +110,13 @@ class BossScene extends Phaser.Scene {
         texture: 'demon_lord', name: '魔王 – ヴェリタス', hp: 80, scale: 2,
         intro: '「…来たか、博士の人形よ。\nお前に真実を伝えなければならない。」',
         defeat: '「聞いてくれ。博士こそが…この世界を壊そうとしている。\n俺は…それを止めたかっただけだ。」',
-        choices: [
-          { text: '最後まで話を聞く', flag: function () { MOT.flags.heardDemonLord = true; } },
-          { text: '任務を遂行する（倒す）', flag: function () { MOT.modifyFlag('obeyDoctor', 1); } },
-          { text: '力を吸収する', flag: function () { MOT.modifyFlag('brutality', 1); MOT.addEnergy(50); } }
-        ]
+        choices: []
+      },
+      doctor: {
+        texture: 'doctor_stand', name: '博士', hp: 120, scale: 1.5,
+        intro: '「さぁ、最終決戦といこうじゃないか！」',
+        defeat: '「驚いた...まさかお前がここまでやるとはな」',
+        choices: []
       }
     };
     return configs[key];
@@ -169,25 +171,70 @@ class BossScene extends Phaser.Scene {
     else if (key === 'boss3_twins') areaText = '「次のエリアに着いたか。そこは、子夜の城塞 だ。そろそろ魔王城に着くだろう。敵も強くなっている。気を付けてくれ」';
     else if (key === 'demon_lord') areaText = '「とうとう魔王城に着いたか。そこには魔王がいるはずだ。警戒を怠らないように」';
 
-    this.showDeviceDialogue(areaText, () => {
-      this.dialogActive = false;
-      this.physics.resume();
-      
-      if (key === 'demon_lord') {
-         boss.setVisible(true); boss.body.enable = true;
-         this.cameras.main.shake(400, 0.015);
-         this.tweens.add({
-           targets: boss, x: 1400, duration: 1200, ease: 'Power2',
-           onComplete: () => {
-             this.tweens.add({ targets: boss, y: boss.y - 30, yoyo: true, repeat: -1, duration: 1000, ease: 'Sine.easeInOut' });
+    if (areaText !== '') {
+      this.showDeviceDialogue(areaText, () => {
+        this.startBossIntro(key, boss);
+      });
+    } else {
+      this.startBossIntro(key, boss);
+    }
+  }
+
+  startBossIntro(key, boss) {
+    this.dialogActive = false;
+    this.physics.resume();
+    
+    if (key === 'demon_lord' || key === 'doctor') {
+       boss.setVisible(true); boss.body.enable = true;
+       this.cameras.main.shake(400, 0.015);
+       this.tweens.add({
+         targets: boss, x: 1400, duration: 1200, ease: 'Power2',
+         onComplete: () => {
+           this.tweens.add({ targets: boss, y: boss.y - 30, yoyo: true, repeat: -1, duration: 1000, ease: 'Sine.easeInOut' });
+           
+           if (key === 'demon_lord') {
              this.playDemonLordIntro(() => {
                this.dialogActive = false;
                this.physics.resume();
                this.startBossLaneMovement();
              });
+           } else {
+             // Doctor intro
+             this.dialogActive = true;
+             this.physics.pause();
+             var w = 1920, h = 1080;
+             var dimBg = this.add.rectangle(w/2, h/2, w, h, 0x000000, 0.6).setAlpha(0).setDepth(89);
+             this.heroImage = this.add.image(300, h / 2, 'hero_stand_combat').setAlpha(0).setDepth(90);
+             if(this.textures.exists('hero_stand_combat')) {
+                 this.textures.get('hero_stand_combat').setFilter(Phaser.Textures.FilterMode.LINEAR);
+                 var hImgW = this.textures.get('hero_stand_combat').getSourceImage().width;
+                 var hImgH = this.textures.get('hero_stand_combat').getSourceImage().height;
+                 var hScale = 750 / hImgW;
+                 this.heroImage.setScale(hScale);
+                 this.heroImage.setY(100 + (hImgH * hScale) / 2);
+             }
+             var enemyFrame = this.add.rectangle(w - 300, h / 2, 400, 600, 0x1F2933).setAlpha(0).setDepth(90).setStrokeStyle(4, 0xffffff);
+             var enemyLabel = this.add.text(w - 300, h / 2, '博士', { fontFamily: '"DotGothic16"', fontSize: '40px', color: '#ffffff' }).setOrigin(0.5).setAlpha(0).setDepth(90);
+             this.tweens.add({ targets: [dimBg, enemyFrame, enemyLabel], alpha: 1, duration: 500 });
+             
+             const sayDevice = (text) => new Promise(res => { this.tweens.add({ targets: dimBg, alpha: 0.6, duration: 300 }); this.tweens.add({ targets: [enemyFrame, enemyLabel, this.heroImage], alpha: 0.4, duration: 300 }); this.showDeviceDialogue(text, res); });
+             const sayDoctor = (text) => new Promise(res => { this.tweens.add({ targets: dimBg, alpha: 0.6, duration: 300 }); this.tweens.add({ targets: [enemyFrame, enemyLabel], alpha: 1, duration: 300 }); this.tweens.add({targets: this.heroImage, alpha: 0.4, duration: 300}); this.showDialogue('博士', text, res); });
+             
+             (async () => {
+               await sayDoctor('「さぁ、最終決戦といこうじゃないか！」');
+               this.tweens.add({
+                 targets: [dimBg, enemyFrame, enemyLabel, this.heroImage], alpha: 0, duration: 500,
+                 onComplete: () => { dimBg.destroy(); enemyFrame.destroy(); enemyLabel.destroy(); if(this.heroImage) this.heroImage.destroy(); }
+               });
+               this.dialogActive = false;
+               this.physics.resume();
+               this.startBossLaneMovement();
+             })();
            }
-         });
-      } else {
+         }
+       });
+
+    } else {
          // Minion phase
          this.minionBattleActive = true;
          this.minionsToKill = 3;
@@ -977,8 +1024,7 @@ class BossScene extends Phaser.Scene {
             (async () => {
               await sayDevice('「よくやった。このまま止めを刺すんだ。魔物も人間と変わらず心臓を打ち抜けば死ぬ。」');
               let c = await askChoice('1. 心臓を打ち抜く', '2. 見逃す');
-              if (c === 1) {
-                MOT.flags.dollPoints++; MOT.flags.killedBoss1 = true;
+              if (c === 1) { MOT.flags.dollPoints++; MOT.flags.killedTwins = true; MOT.flags.killedBoss1 = true;
                 await sayEnemy('「くそっ…！俺もここまでか…」');
                 MOT.Audio.playSelect(); // SE (Gunshot placeholder)
                 await sayDevice('「よくやった。まずは一歩平和に近づいたな。そのまま進んでいくといい」');
@@ -1003,8 +1049,7 @@ class BossScene extends Phaser.Scene {
                 await sayDevice('「今回はわかっているな？世界のために、逃がさないで止めを刺せ。」');
               }
               let c = await askChoice('1. 心臓を打ち抜く', '2. 見逃す');
-              if (c === 1) {
-                MOT.flags.dollPoints++; MOT.flags.killedBoss2 = true;
+              if (c === 1) { MOT.flags.dollPoints++; MOT.flags.killedTwins = true; MOT.flags.killedBoss2 = true;
                 if (MOT.flags.killedBoss1) {
                   await sayEnemy('「はは…あいつと同じで負けるのはむかつくけど、戦いは楽しかったしまあいいかな」');
                   MOT.Audio.playSelect();
@@ -1162,8 +1207,7 @@ class BossScene extends Phaser.Scene {
         (async () => {
           await sayDevice('「さぁ早くとどめを刺せ！」');
           let c = await askChoice('1. 心臓を打ち抜く', '2. 見逃す');
-          if (c === 1) {
-            MOT.flags.dollPoints++;
+          if (c === 1) { MOT.flags.dollPoints++; MOT.flags.killedTwins = true;
             await sayMan('「死にボイスなんかほしい」');
             await sayWoman('「死にボイスなんかほしい」');
             MOT.Audio.playSelect(); MOT.Audio.playSelect(); // Gunshot x2
