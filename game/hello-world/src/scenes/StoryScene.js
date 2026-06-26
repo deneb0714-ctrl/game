@@ -74,6 +74,9 @@ class StoryScene extends Phaser.Scene {
     const boxY = h - boxH - 40;
     this.dialogBox = this.add.rectangle(w / 2, boxY + boxH / 2, w - 160, boxH, 0x000000, 0.85).setStrokeStyle(2, 0x4FD1FF);
     
+    // Area Name
+    this.areaNameText = this.add.text(1920 - 30, 20, '曙光技研', { fontFamily: '"DotGothic16"', fontSize: '32px', color: '#FFFFFF', backgroundColor: 'rgba(0,0,0,0.5)', padding: { x: 10, y: 5 } }).setOrigin(1, 0).setDepth(100).setAlpha(0);
+    
     // Name Tag
     this.nameBox = this.add.rectangle(200, boxY, 240, 60, 0x1F2933).setStrokeStyle(2, 0x4FD1FF);
     this.nameText = this.add.text(200, boxY, '', { fontFamily: '"DotGothic16"', fontSize: '44px', color: '#ffffff' }).setOrigin(0.5);
@@ -125,6 +128,7 @@ class StoryScene extends Phaser.Scene {
       this.tweens.add({ targets: this.bg, alpha: 1, duration: 1000 });
       this.tweens.add({ targets: this.heroGroup, alpha: 1, duration: 1000 });
       this.tweens.add({ targets: this.doctorGroup, alpha: 1, duration: 1000 });
+      this.tweens.add({ targets: this.areaNameText, alpha: 1, duration: 1000 });
     }
 
     // Set Text
