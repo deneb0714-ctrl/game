@@ -376,6 +376,22 @@ class BootScene extends Phaser.Scene {
     g3.fillCircle(6, 6, 2);
     g3.generateTexture('bullet_homing', 16, 16);
     g3.destroy();
+
+    // White base bullet for tinting
+    const gw = this.make.graphics({ add: false });
+    gw.fillStyle(0xffffff, 1);
+    gw.fillCircle(6, 6, 6);
+    gw.generateTexture('bullet_enemy_white', 12, 12);
+    gw.destroy();
+
+    // White homing bullet for tinting
+    const gh = this.make.graphics({ add: false });
+    gh.fillStyle(0xffffff, 0.4);
+    gh.fillCircle(8, 8, 8);
+    gh.fillStyle(0xffffff, 1);
+    gh.fillCircle(8, 8, 5);
+    gh.generateTexture('bullet_homing_white', 16, 16);
+    gh.destroy();
   }
 
   // --- Slash attack texture (斬撃弾) ---

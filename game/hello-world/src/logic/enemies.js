@@ -51,11 +51,13 @@ MOT.spawnWave = function (scene, count, ySpread, speed) {
 /**
  * Fire a linear bullet from position.
  */
-MOT.fireLinear = function (scene, x, y, vx, vy) {
-  const bullet = scene.enemyBullets.create(x, y, 'bullet_enemy');
+MOT.fireLinear = function (scene, x, y, vx, vy, color) {
+  const texture = (color !== undefined) ? 'bullet_enemy_white' : 'bullet_enemy';
+  const bullet = scene.enemyBullets.create(x, y, texture);
   if (bullet) {
     bullet.setVelocity(vx, vy);
     bullet.setScale(1);
+    if (color !== undefined) bullet.setTint(color);
     // Auto-destroy when off-screen
     scene.time.delayedCall(5000, function () {
       if (bullet.active) bullet.destroy();
@@ -81,7 +83,8 @@ MOT.fireFan = function (scene, x, y, count, speed, angleCenter, angleSpread) {
  * Fire a homing bullet that tracks the player.
  */
 MOT.fireHoming = function (scene, x, y, speed, player, color) {
-  const bullet = scene.enemyBullets.create(x, y, 'bullet_homing');
+  const texture = (color !== undefined) ? 'bullet_homing_white' : 'bullet_homing';
+  const bullet = scene.enemyBullets.create(x, y, texture);
   if (bullet && player && player.active) {
     const angle = Phaser.Math.Angle.Between(x, y, player.x, player.y);
     bullet.setVelocity(Math.cos(angle) * speed, Math.sin(angle) * speed);
@@ -95,11 +98,11 @@ MOT.fireHoming = function (scene, x, y, speed, player, color) {
 /**
  * Fire a circular burst of bullets.
  */
-MOT.fireCircle = function (scene, x, y, count, speed) {
+MOT.fireCircle = function (scene, x, y, count, speed, color) {
   for (let i = 0; i < count; i++) {
     const angle = (Math.PI * 2 / count) * i;
     const vx = Math.cos(angle) * speed;
     const vy = Math.sin(angle) * speed;
-    MOT.fireLinear(scene, x, y, vx, vy);
+    MOT.fireLinear(scene, x, y, vx, vy, color);
   }
 };
