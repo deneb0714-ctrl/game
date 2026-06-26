@@ -957,19 +957,6 @@ class BossScene extends Phaser.Scene {
           }
         } else {
           // One defeated, other still alive
-          // Border Glitch Effect when defeated
-          this.cameras.main.shake(800, 0.015);
-          var w = 1920, h = 1080;
-          var glitchCont = this.add.container(0, 0).setDepth(150);
-          var b = 40;
-          var g1 = this.add.graphics().lineStyle(b, 0xff0000, 0.6).strokeRect(b/2, b/2, w-b, h-b).setBlendMode(Phaser.BlendModes.ADD);
-          var g2 = this.add.graphics().lineStyle(b, 0x00ff00, 0.6).strokeRect(b/2, b/2, w-b, h-b).setBlendMode(Phaser.BlendModes.ADD);
-          var g3 = this.add.graphics().lineStyle(b, 0x0000ff, 0.6).strokeRect(b/2, b/2, w-b, h-b).setBlendMode(Phaser.BlendModes.ADD);
-          glitchCont.add([g1, g2, g3]);
-          this.tweens.add({ targets: g1, x: {min: -30, max: 30}, y: {min: -30, max: 30}, alpha: {min: 0.3, max: 0.9}, duration: 40, repeat: 15, yoyo: true });
-          this.tweens.add({ targets: g2, x: {min: -30, max: 30}, y: {min: -30, max: 30}, alpha: {min: 0.3, max: 0.9}, duration: 50, repeat: 15, yoyo: true });
-          this.tweens.add({ targets: g3, x: {min: -30, max: 30}, y: {min: -30, max: 30}, alpha: {min: 0.3, max: 0.9}, duration: 60, repeat: 15, yoyo: true, onComplete: () => glitchCont.destroy() });
-
           let isBrotherDefeated = (boss === this.currentBoss);
 
           // Start 10s revive timer
@@ -987,17 +974,18 @@ class BossScene extends Phaser.Scene {
              let floatText = this.add.text(other.x, other.y - 80, speakerText, { fontFamily: '"DotGothic16"', fontSize: '28px', color: speakerColor }).setOrigin(0.5).setDepth(200);
              this.tweens.add({ targets: floatText, y: floatText.y - 40, alpha: 0, duration: 2500, ease: 'Power1', onComplete: () => floatText.destroy() });
              
-             // Revive Glitch Effect
+             // Revive Glitch Effect (Color Separation without pure white blowout)
              this.cameras.main.shake(500, 0.01);
+             var w = 1920, h = 1080;
              var revCont = this.add.container(0, 0).setDepth(150);
              var b2 = 30;
-             var r1 = this.add.graphics().lineStyle(b2, 0xff0000, 0.6).strokeRect(b2/2, b2/2, w-b2, h-b2).setBlendMode(Phaser.BlendModes.ADD);
-             var r2 = this.add.graphics().lineStyle(b2, 0x00ff00, 0.6).strokeRect(b2/2, b2/2, w-b2, h-b2).setBlendMode(Phaser.BlendModes.ADD);
-             var r3 = this.add.graphics().lineStyle(b2, 0x0000ff, 0.6).strokeRect(b2/2, b2/2, w-b2, h-b2).setBlendMode(Phaser.BlendModes.ADD);
+             var r1 = this.add.graphics().lineStyle(b2, 0xff0000, 0.5).strokeRect(b2/2, b2/2, w-b2, h-b2);
+             var r2 = this.add.graphics().lineStyle(b2, 0x00ff00, 0.5).strokeRect(b2/2, b2/2, w-b2, h-b2);
+             var r3 = this.add.graphics().lineStyle(b2, 0x0000ff, 0.5).strokeRect(b2/2, b2/2, w-b2, h-b2);
              revCont.add([r1, r2, r3]);
-             this.tweens.add({ targets: r1, x: {min: -20, max: 20}, y: {min: -20, max: 20}, alpha: {min: 0, max: 0.8}, duration: 40, repeat: 10, yoyo: true });
-             this.tweens.add({ targets: r2, x: {min: -20, max: 20}, y: {min: -20, max: 20}, alpha: {min: 0, max: 0.8}, duration: 50, repeat: 10, yoyo: true });
-             this.tweens.add({ targets: r3, x: {min: -20, max: 20}, y: {min: -20, max: 20}, alpha: {min: 0, max: 0.8}, duration: 60, repeat: 10, yoyo: true, onComplete: () => revCont.destroy() });
+             this.tweens.add({ targets: r1, x: {min: -20, max: 20}, y: {min: -20, max: 20}, alpha: {min: 0.1, max: 0.7}, duration: 40, repeat: 10, yoyo: true });
+             this.tweens.add({ targets: r2, x: {min: -20, max: 20}, y: {min: -20, max: 20}, alpha: {min: 0.1, max: 0.7}, duration: 50, repeat: 10, yoyo: true });
+             this.tweens.add({ targets: r3, x: {min: -20, max: 20}, y: {min: -20, max: 20}, alpha: {min: 0.1, max: 0.7}, duration: 60, repeat: 10, yoyo: true, onComplete: () => revCont.destroy() });
           });
         }
       }
