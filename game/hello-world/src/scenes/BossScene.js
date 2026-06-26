@@ -527,7 +527,7 @@ class BossScene extends Phaser.Scene {
       this.sisterAttackTimer += delta;
       if (this.sisterAttackTimer >= 2000) {
         this.sisterAttackTimer = 0;
-        MOT.fireCircle(this, this.sisterBoss.x, this.sisterBoss.y, 8, 200);
+        MOT.fireCircle(this, this.sisterBoss.x, this.sisterBoss.y, 8, 200, 0x7CFF00);
       }
     }
 
@@ -957,14 +957,7 @@ class BossScene extends Phaser.Scene {
           }
         } else {
           // One defeated, other still alive
-          // Dialog and Glitch effect
-          let isBrotherDefeated = (boss === this.currentBoss);
-          let speakerText = isBrotherDefeated ? '「エラー...兄様！応答して！」' : '「…サブシステム、強制駆動」';
-          let speakerColor = isBrotherDefeated ? '#FF4B6E' : '#4FD1FF';
-          let floatText = this.add.text(other.x, other.y - 80, speakerText, { fontFamily: '"DotGothic16"', fontSize: '28px', color: speakerColor }).setOrigin(0.5).setDepth(200);
-          this.tweens.add({ targets: floatText, y: floatText.y - 40, alpha: 0, duration: 2500, ease: 'Power1', onComplete: () => floatText.destroy() });
-          
-          // Border Glitch Effect
+          // Border Glitch Effect when defeated
           this.cameras.main.shake(500, 0.01);
           var w = 1920, h = 1080;
           var glitchCont = this.add.container(0, 0).setDepth(150);
@@ -974,6 +967,8 @@ class BossScene extends Phaser.Scene {
           this.tweens.add({ targets: g1, x: {min: -15, max: 15}, y: {min: -15, max: 15}, alpha: {min: 0.2, max: 0.8}, duration: 50, repeat: 10, yoyo: true });
           this.tweens.add({ targets: g2, x: {min: -15, max: 15}, y: {min: -15, max: 15}, alpha: {min: 0.2, max: 0.8}, duration: 50, repeat: 10, yoyo: true, onComplete: () => glitchCont.destroy() });
 
+          let isBrotherDefeated = (boss === this.currentBoss);
+
           // Start 10s revive timer
           if (this.twinReviveTimer) this.twinReviveTimer.destroy();
           this.twinReviveTimer = this.time.delayedCall(10000, () => {
@@ -982,6 +977,12 @@ class BossScene extends Phaser.Scene {
              boss.body.enable = true;
              boss.hp = boss.maxHp * 0.1;
              this.showExplosion(boss.x, boss.y); // visual for revive
+             
+             // Dialog on revive
+             let speakerText = isBrotherDefeated ? '「エラー...兄様！応答して！」' : '「…サブシステム、強制駆動」';
+             let speakerColor = isBrotherDefeated ? '#FF4B6E' : '#4FD1FF';
+             let floatText = this.add.text(other.x, other.y - 80, speakerText, { fontFamily: '"DotGothic16"', fontSize: '28px', color: speakerColor }).setOrigin(0.5).setDepth(200);
+             this.tweens.add({ targets: floatText, y: floatText.y - 40, alpha: 0, duration: 2500, ease: 'Power1', onComplete: () => floatText.destroy() });
              
              // Revive Glitch Effect
              this.cameras.main.shake(300, 0.01);
