@@ -816,9 +816,17 @@ class GameScene extends Phaser.Scene {
     if (highlightConfig) {
       var highlight = this.add.graphics();
       var hColor = highlightConfig.color || 0x39FF14;
-      highlight.lineStyle(6, hColor, 1);
-      highlight.strokeCircle(highlightConfig.x, highlightConfig.y, highlightConfig.radius);
-      this.tweens.add({ targets: highlight, alpha: 0.2, yoyo: true, repeat: -1, duration: 400 });
+      highlight.fillStyle(hColor, 0.25);
+      highlight.lineStyle(4, hColor, 0.8);
+      
+      if (highlightConfig.width && highlightConfig.height) {
+        highlight.fillRoundedRect(highlightConfig.x - highlightConfig.width/2, highlightConfig.y - highlightConfig.height/2, highlightConfig.width, highlightConfig.height, 8);
+        highlight.strokeRoundedRect(highlightConfig.x - highlightConfig.width/2, highlightConfig.y - highlightConfig.height/2, highlightConfig.width, highlightConfig.height, 8);
+      } else {
+        highlight.fillCircle(highlightConfig.x, highlightConfig.y, highlightConfig.radius);
+        highlight.strokeCircle(highlightConfig.x, highlightConfig.y, highlightConfig.radius);
+      }
+      this.tweens.add({ targets: highlight, alpha: 0.1, yoyo: true, repeat: -1, duration: 500 });
       this.dialogContainer.add(highlight);
     }
 
@@ -919,7 +927,7 @@ class GameScene extends Phaser.Scene {
                 this.tutorialPhase = 2;
                 this.physics.resume();
               });
-            }, { x: 200, y: 220, radius: 60, color: 0x4FD1FF });
+            }, { x: 300, y: 460, radius: 60, color: 0x4FD1FF });
           });
         });
       });
@@ -934,7 +942,7 @@ class GameScene extends Phaser.Scene {
               this.showDeviceDialogue('「気を付けないといけないのは、シールドはすぐに何度も張り直しはできない。左上の緑の円がクールタイムだ。それが溜まりきれば貼れる状態になっている。」', () => {
                 this.dialogActive = false;
                 this.tutorialPhase = 3;
-              }, { x: 260, y: 88, radius: 30 });
+              }, { x: 260, y: 88, width: 44, height: 44 });
             });
           });
         });
@@ -968,7 +976,7 @@ class GameScene extends Phaser.Scene {
             this.dialogActive = false;
             this.tutorialPhase = 5;
             this.physics.resume();
-          }, { x: 130, y: 70, radius: 60 });
+          }, { x: 130, y: 70, width: 220, height: 70 });
         });
       }
     } else if (this.tutorialPhase === 5) {
