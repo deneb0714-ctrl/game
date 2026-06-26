@@ -630,7 +630,7 @@ class BossScene extends Phaser.Scene {
     
     // boss3_twins（兄）は追尾弾
     if (this.currentBoss.configKey === 'boss3_twins') {
-      MOT.fireHoming(this, x, y, 200, this.player);
+      MOT.fireHoming(this, x, y, 200, this.player, 0x4FD1FF);
       return;
     }
 
@@ -956,6 +956,24 @@ class BossScene extends Phaser.Scene {
             this.onTwinsDefeated();
           }
         } else {
+          // One defeated, other still alive
+          // Dialog and Glitch effect
+          let isBrotherDefeated = (boss === this.currentBoss);
+          let speakerText = isBrotherDefeated ? '「エラー...兄様！応答して！」' : '「…サブシステム、強制駆動」';
+          let speakerColor = isBrotherDefeated ? '#FF4B6E' : '#4FD1FF';
+          let floatText = this.add.text(other.x, other.y - 80, speakerText, { fontFamily: '"DotGothic16"', fontSize: '28px', color: speakerColor }).setOrigin(0.5).setDepth(200);
+          this.tweens.add({ targets: floatText, y: floatText.y - 40, alpha: 0, duration: 2500, ease: 'Power1', onComplete: () => floatText.destroy() });
+          
+          // Border Glitch Effect
+          this.cameras.main.shake(500, 0.01);
+          var w = 1920, h = 1080;
+          var glitchCont = this.add.container(0, 0).setDepth(150);
+          var g1 = this.add.graphics().lineStyle(20, 0xff0000, 0.5).strokeRect(0, 0, w, h);
+          var g2 = this.add.graphics().lineStyle(20, 0x00ffff, 0.5).strokeRect(0, 0, w, h);
+          glitchCont.add([g1, g2]);
+          this.tweens.add({ targets: g1, x: {min: -15, max: 15}, y: {min: -15, max: 15}, alpha: {min: 0.2, max: 0.8}, duration: 50, repeat: 10, yoyo: true });
+          this.tweens.add({ targets: g2, x: {min: -15, max: 15}, y: {min: -15, max: 15}, alpha: {min: 0.2, max: 0.8}, duration: 50, repeat: 10, yoyo: true, onComplete: () => glitchCont.destroy() });
+
           // Start 10s revive timer
           if (this.twinReviveTimer) this.twinReviveTimer.destroy();
           this.twinReviveTimer = this.time.delayedCall(10000, () => {
@@ -964,6 +982,13 @@ class BossScene extends Phaser.Scene {
              boss.body.enable = true;
              boss.hp = boss.maxHp * 0.1;
              this.showExplosion(boss.x, boss.y); // visual for revive
+             
+             // Revive Glitch Effect
+             this.cameras.main.shake(300, 0.01);
+             var revCont = this.add.container(0, 0).setDepth(150);
+             var r1 = this.add.graphics().lineStyle(15, 0x39FF14, 0.5).strokeRect(0, 0, w, h);
+             revCont.add(r1);
+             this.tweens.add({ targets: r1, alpha: {min: 0, max: 0.8}, duration: 40, repeat: 10, yoyo: true, onComplete: () => revCont.destroy() });
           });
         }
       }

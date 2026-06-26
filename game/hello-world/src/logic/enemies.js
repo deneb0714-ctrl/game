@@ -80,12 +80,12 @@ MOT.fireFan = function (scene, x, y, count, speed, angleCenter, angleSpread) {
 /**
  * Fire a homing bullet that tracks the player.
  */
-MOT.fireHoming = function (scene, x, y, speed, player) {
+MOT.fireHoming = function (scene, x, y, speed, player, color) {
   const bullet = scene.enemyBullets.create(x, y, 'bullet_homing');
   if (bullet && player && player.active) {
     const angle = Phaser.Math.Angle.Between(x, y, player.x, player.y);
     bullet.setVelocity(Math.cos(angle) * speed, Math.sin(angle) * speed);
-    bullet.setTint(0xFF4B6E);
+    bullet.setTint(color !== undefined ? color : 0xFF4B6E);
     scene.time.delayedCall(4000, function () {
       if (bullet.active) bullet.destroy();
     });
