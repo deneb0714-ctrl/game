@@ -211,9 +211,7 @@ class BossScene extends Phaser.Scene {
              this.heroImage = this.add.image(300, h / 2, 'hero_stand').setAlpha(0).setDepth(90);
              var hScale = 750 / this.heroImage.height;
              this.heroImage.setScale(hScale);
-             this.heroImage.setY(100 + (this.heroImage.height * hScale) / 2); else {
-                 console.log("DEBUG: hero_stand_combat texture does not exist!");
-             }
+             this.heroImage.setY(100 + (this.heroImage.height * hScale) / 2);
              var enemyFrame = this.add.rectangle(w - 300, h / 2, 400, 600, 0x1F2933).setAlpha(0).setDepth(90).setStrokeStyle(4, 0xffffff);
              var enemyLabel = this.add.text(w - 300, h / 2, '博士', { fontFamily: '"DotGothic16"', fontSize: '40px', color: '#ffffff' }).setOrigin(0.5).setAlpha(0).setDepth(90);
              this.tweens.add({ targets: [dimBg, enemyFrame, enemyLabel], alpha: 1, duration: 500 });
