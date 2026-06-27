@@ -208,16 +208,10 @@ class BossScene extends Phaser.Scene {
              // Doctor intro
              var w = 1920, h = 1080;
              var dimBg = this.add.rectangle(w/2, h/2, w, h, 0x000000, 0.6).setAlpha(0).setDepth(89);
-             this.heroImage = this.add.image(300, h / 2, 'hero_stand_combat').play('hero_combat_anim').setAlpha(0).setDepth(90);
-             if(this.textures.exists('hero_stand_combat')) {
-                 this.textures.get('hero_stand_combat').setFilter(Phaser.Textures.FilterMode.NEAREST);
-                 var hImgW = window.HERO_COMBAT_FRAME_WIDTH;
-                 var hImgH = window.HERO_COMBAT_FRAME_HEIGHT;
-                 var hScale = 750 / hImgW;
-                 this.heroImage.setScale(hScale);
-                 this.heroImage.setY(100 + (hImgH * hScale) / 2);
-                 console.log("DEBUG: hImgW=" + hImgW + ", hScale=" + hScale + ", spriteW=" + this.heroImage.width + ", textureW=" + this.textures.get('hero_stand_combat').getSourceImage().width);
-             } else {
+             this.heroImage = this.add.image(300, h / 2, 'hero_stand').setAlpha(0).setDepth(90);
+             var hScale = 750 / this.heroImage.height;
+             this.heroImage.setScale(hScale);
+             this.heroImage.setY(100 + (this.heroImage.height * hScale) / 2); else {
                  console.log("DEBUG: hero_stand_combat texture does not exist!");
              }
              var enemyFrame = this.add.rectangle(w - 300, h / 2, 400, 600, 0x1F2933).setAlpha(0).setDepth(90).setStrokeStyle(4, 0xffffff);
@@ -266,10 +260,10 @@ class BossScene extends Phaser.Scene {
   }
   playDemonLordIntro(onComplete) {
     var dimBg = this.add.rectangle(1920/2, 1080/2, 1920, 1080, 0x000000, 0.6).setAlpha(0).setDepth(89);
-    this.heroImage = this.add.sprite(300, 1080 / 2, 'hero_stand').setAlpha(0).setDepth(90);
-            var hScale = 750 / this.heroImage.height;
-            this.heroImage.setScale(hScale);
-            this.heroImage.setY(100 + (this.heroImage.height * hScale) / 2);
+    this.heroImage = this.add.image(300, 1080 / 2, 'hero_stand').setAlpha(0).setDepth(90);
+    var hScale = 750 / this.heroImage.height;
+    this.heroImage.setScale(hScale);
+    this.heroImage.setY(100 + (this.heroImage.height * hScale) / 2);
     
     const sayDevice = (text) => new Promise(res => {
       this.tweens.add({ targets: dimBg, alpha: 0, duration: 300 });
@@ -312,16 +306,10 @@ class BossScene extends Phaser.Scene {
     var w = 1920, h = 1080;
     var dimBg = this.add.rectangle(w/2, h/2, w, h, 0x000000, 0.6).setAlpha(0).setDepth(89);
     
-    this.heroImage = this.add.image(300, h / 2, 'hero_stand_combat').play('hero_combat_anim').setAlpha(0).setDepth(90);
-    if(this.textures.exists('hero_stand_combat')) {
-        this.textures.get('hero_stand_combat').setFilter(Phaser.Textures.FilterMode.NEAREST);
-        var hImgW = window.HERO_COMBAT_FRAME_WIDTH;
-        var hImgH = window.HERO_COMBAT_FRAME_HEIGHT;
-        var hScale = 750 / hImgW;
-        this.heroImage.setScale(hScale);
-        this.heroImage.setY(100 + (hImgH * hScale) / 2);
-        // クロップ処理は不要なため削除
-    }
+    this.heroImage = this.add.image(300, h / 2, 'hero_stand').setAlpha(0).setDepth(90);
+    var hScale = 750 / this.heroImage.height;
+    this.heroImage.setScale(hScale);
+    this.heroImage.setY(100 + (this.heroImage.height * hScale) / 2);
     
     // Male Frame (Brother)
     var maleFrame = this.add.rectangle(w - 300, h / 2 - 160, 300, 300, 0x1F2933).setAlpha(0).setDepth(90).setStrokeStyle(4, 0x4FD1FF);
@@ -843,7 +831,7 @@ class BossScene extends Phaser.Scene {
             
             var w = 1920, h = 1080;
             var dimBg = this.add.rectangle(w/2, h/2, w, h, 0x000000, 0.6).setAlpha(0).setDepth(89);
-            this.heroImage = this.add.sprite(300, h / 2, 'hero_stand').setAlpha(0).setDepth(90);
+            this.heroImage = this.add.image(300, h / 2, 'hero_stand').setAlpha(0).setDepth(90);
             var hScale = 750 / this.heroImage.height;
             this.heroImage.setScale(hScale);
             this.heroImage.setY(100 + (this.heroImage.height * hScale) / 2);
@@ -1019,9 +1007,9 @@ class BossScene extends Phaser.Scene {
           var dimBg = this.add.rectangle(w/2, h/2, w, h, 0x000000, 0.6).setAlpha(0).setDepth(89);
           this.dimBg = dimBg;
           this.heroImage = this.add.image(300, h / 2, 'hero_stand').setAlpha(0).setDepth(90);
-            var hScale = 750 / this.heroImage.height;
-            this.heroImage.setScale(hScale);
-            this.heroImage.setY(100 + (this.heroImage.height * hScale) / 2);
+          var hScale = 750 / this.heroImage.height;
+          this.heroImage.setScale(hScale);
+          this.heroImage.setY(100 + (this.heroImage.height * hScale) / 2);
           
           const askChoice = (label1, label2) => new Promise(res => {
             this.showChoice([
@@ -1297,9 +1285,9 @@ class BossScene extends Phaser.Scene {
         var dimBg = this.add.rectangle(w/2, h/2, w, h, 0x000000, 0.6).setAlpha(0).setDepth(89);
         this.dimBg = dimBg;
         this.heroImage = this.add.image(300, h / 2, 'hero_stand').setAlpha(0).setDepth(90);
-            var hScale = 750 / this.heroImage.height;
-            this.heroImage.setScale(hScale);
-            this.heroImage.setY(100 + (this.heroImage.height * hScale) / 2);
+        var hScale = 750 / this.heroImage.height;
+        this.heroImage.setScale(hScale);
+        this.heroImage.setY(100 + (this.heroImage.height * hScale) / 2);
 
         const askChoice = (label1, label2) => new Promise(res => {
           this.showChoice([

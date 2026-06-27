@@ -40,16 +40,13 @@ class StoryScene extends Phaser.Scene {
 
     // Portraits Layer
     // Hero portrait (left) - bust-up crop of full-body image
-    this.heroImage = this.add.sprite(300, h / 2, 'hero_stand_combat').play('hero_combat_anim').setAlpha(0);
-    this.textures.get('hero_stand_combat').setFilter(Phaser.Textures.FilterMode.NEAREST);
-    var hImgW = window.HERO_COMBAT_FRAME_WIDTH;
-    var hImgH = window.HERO_COMBAT_FRAME_HEIGHT;
+    this.heroImage = this.add.image(300, h / 2, 'hero_stand').setAlpha(0);
     
     // ターゲット幅を広げてアップにする
-    var hScale = 750 / hImgW;
+    var hScale = 750 / this.heroImage.height;
     this.heroImage.setScale(hScale);
     // 顔が上部に来るように調整し、下半身は吹き出しの後ろに隠れるようにする
-    this.heroImage.setY(100 + (hImgH * hScale) / 2);
+    this.heroImage.setY(100 + (this.heroImage.height * hScale) / 2);
     
     this.heroGroup = [this.heroImage];
 
@@ -144,7 +141,7 @@ class StoryScene extends Phaser.Scene {
       this.contText.setAlpha(1);
     }
 
-    // まばたき演出
+    // まばたき演出 (勇者のセリフが切り替わるときのみ)
     const isHero = data.speaker && data.speaker.includes('勇者');
     if (isHero && this.heroImage && this.heroImage.active) {
       this.heroImage.setTexture('hero_stand_blink');
