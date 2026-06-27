@@ -473,51 +473,51 @@ class BootScene extends Phaser.Scene {
     g1.generateTexture('bg_stage1', 1920, 1080);
     g1.destroy();
 
-    // Stages 2-5: Different colored backgrounds
-    const stageColors = [
-      { key: 'bg_stage2', sky: 0x1a1500, mountain: 0x332600 }, // 黄昏の荒野 (Yellow/Orange)
-      { key: 'bg_stage3', sky: 0x220505, mountain: 0x330a0a }, // 宵闇の森 (Red)
-      { key: 'bg_stage4', sky: 0x051122, mountain: 0x0a2233 }, // 子夜の城塞 (Blue)
-      { key: 'bg_stage5', sky: 0x0a0514, mountain: 0x150a28 }  // 魔王城 (Purple)
+    // Stage 2: Road to Demon Castle (Yellow/Orange) - Outside
+    const g2 = this.make.graphics({ add: false });
+    g2.fillStyle(0x1a1500, 1);
+    g2.fillRect(0, 0, 1920, 1080);
+    // Mountains silhouette
+    g2.fillStyle(0x332600, 1);
+    for (let x = 0; x < 1920; x += 120) {
+      const h = Phaser.Math.Between(200, 500);
+      g2.fillTriangle(x, 1080, x + 60, 1080 - h, x + 120, 1080);
+    }
+    // Stars
+    g2.fillStyle(0xE5E7EB, 0.6);
+    for (let i = 0; i < 50; i++) {
+      g2.fillCircle(Phaser.Math.Between(0, 1920), Phaser.Math.Between(0, 600), 1);
+    }
+    g2.generateTexture('bg_stage2', 1920, 1080);
+    g2.destroy();
+
+    // Boss stages: Inside Demon Castle (Throne room style with different colors)
+    const bossColors = [
+      { key: 'bg_boss_stage2', bg: 0x1a1500, column: 0x332600, vortex: 0xFFaa2E }, // 黄昏の荒野 (Yellow/Orange)
+      { key: 'bg_boss_stage3', bg: 0x220505, column: 0x330a0a, vortex: 0xFF2E2E }, // 宵闇の森 (Red)
+      { key: 'bg_boss_stage4', bg: 0x051122, column: 0x0a2233, vortex: 0x2E88FF }, // 子夜の城塞 (Blue)
+      { key: 'bg_boss_stage5', bg: 0x0a0514, column: 0x150a28, vortex: 0xaa2EFF }  // 魔王城 (Purple)
     ];
 
-    stageColors.forEach(sc => {
-      const g2 = this.make.graphics({ add: false });
-      g2.fillStyle(sc.sky, 1);
-      g2.fillRect(0, 0, 1920, 1080);
-      // Mountains silhouette
-      g2.fillStyle(sc.mountain, 1);
-      for (let x = 0; x < 1920; x += 120) {
-        const h = Phaser.Math.Between(200, 500);
-        g2.fillTriangle(x, 1080, x + 60, 1080 - h, x + 120, 1080);
+    bossColors.forEach(bc => {
+      const g3 = this.make.graphics({ add: false });
+      g3.fillStyle(bc.bg, 1);
+      g3.fillRect(0, 0, 1920, 1080);
+      // Columns
+      g3.fillStyle(bc.column, 1);
+      for (let x = 200; x < 1920; x += 400) {
+        g3.fillRect(x, 100, 40, 880);
+        g3.fillRect(x - 10, 80, 60, 30);
+        g3.fillRect(x - 10, 980, 60, 30);
       }
-      // Stars
-      g2.fillStyle(0xE5E7EB, 0.6);
-      for (let i = 0; i < 50; i++) {
-        g2.fillCircle(Phaser.Math.Between(0, 1920), Phaser.Math.Between(0, 600), 1);
-      }
-      g2.generateTexture(sc.key, 1920, 1080);
-      g2.destroy();
+      // Dark vortex center
+      g3.fillStyle(bc.vortex, 0.08);
+      g3.fillCircle(960, 540, 300);
+      g3.fillStyle(bc.vortex, 0.05);
+      g3.fillCircle(960, 540, 450);
+      g3.generateTexture(bc.key, 1920, 1080);
+      g3.destroy();
     });
-
-    // Boss: Throne room
-    const g3 = this.make.graphics({ add: false });
-    g3.fillStyle(0x0a0008, 1);
-    g3.fillRect(0, 0, 1920, 1080);
-    // Columns
-    g3.fillStyle(0x220011, 1);
-    for (let x = 200; x < 1920; x += 400) {
-      g3.fillRect(x, 100, 40, 880);
-      g3.fillRect(x - 10, 80, 60, 30);
-      g3.fillRect(x - 10, 980, 60, 30);
-    }
-    // Dark vortex center
-    g3.fillStyle(0xFF2E2E, 0.08);
-    g3.fillCircle(960, 540, 300);
-    g3.fillStyle(0xFF2E2E, 0.05);
-    g3.fillCircle(960, 540, 450);
-    g3.generateTexture('bg_boss', 1920, 1080);
-    g3.destroy();
   }
 
   // --- UI Button ---
