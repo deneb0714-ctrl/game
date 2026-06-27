@@ -207,11 +207,11 @@ class BossScene extends Phaser.Scene {
              // Doctor intro
              var w = 1920, h = 1080;
              var dimBg = this.add.rectangle(w/2, h/2, w, h, 0x000000, 0.6).setAlpha(0).setDepth(89);
-             this.heroImage = this.add.image(300, h / 2, 'hero_stand_combat').setAlpha(0).setDepth(90);
+             this.heroImage = this.add.sprite(300, h / 2, 'hero_stand_combat').play('hero_combat_anim').setAlpha(0).setDepth(90);
              if(this.textures.exists('hero_stand_combat')) {
                  this.textures.get('hero_stand_combat').setFilter(Phaser.Textures.FilterMode.LINEAR);
-                 var hImgW = this.textures.get('hero_stand_combat').getSourceImage().width;
-                 var hImgH = this.textures.get('hero_stand_combat').getSourceImage().height;
+                 var hImgW = this.heroImage.width;
+                 var hImgH = this.heroImage.height;
                  var hScale = 750 / hImgW;
                  this.heroImage.setScale(hScale);
                  this.heroImage.setY(100 + (hImgH * hScale) / 2);
@@ -262,11 +262,11 @@ class BossScene extends Phaser.Scene {
   }
   playDemonLordIntro(onComplete) {
     var dimBg = this.add.rectangle(1920/2, 1080/2, 1920, 1080, 0x000000, 0.6).setAlpha(0).setDepth(89);
-    this.heroImage = this.add.image(300, 1080 / 2, 'hero_stand_combat').setAlpha(0).setDepth(90);
+    this.heroImage = this.add.sprite(300, 1080 / 2, 'hero_stand_combat').play('hero_combat_anim').setAlpha(0).setDepth(90);
     if(this.textures.exists('hero_stand_combat')) {
         this.textures.get('hero_stand_combat').setFilter(Phaser.Textures.FilterMode.LINEAR);
-        var hImgW = this.textures.get('hero_stand_combat').getSourceImage().width;
-        var hImgH = this.textures.get('hero_stand_combat').getSourceImage().height;
+        var hImgW = this.heroImage.width;
+        var hImgH = this.heroImage.height;
         var hScale = 750 / hImgW;
         this.heroImage.setScale(hScale);
         this.heroImage.setY(100 + (hImgH * hScale) / 2);
@@ -313,11 +313,11 @@ class BossScene extends Phaser.Scene {
     var w = 1920, h = 1080;
     var dimBg = this.add.rectangle(w/2, h/2, w, h, 0x000000, 0.6).setAlpha(0).setDepth(89);
     
-    this.heroImage = this.add.image(300, h / 2, 'hero_stand_combat').setAlpha(0).setDepth(90);
+    this.heroImage = this.add.sprite(300, h / 2, 'hero_stand_combat').play('hero_combat_anim').setAlpha(0).setDepth(90);
     if(this.textures.exists('hero_stand_combat')) {
         this.textures.get('hero_stand_combat').setFilter(Phaser.Textures.FilterMode.LINEAR);
-        var hImgW = this.textures.get('hero_stand_combat').getSourceImage().width;
-        var hImgH = this.textures.get('hero_stand_combat').getSourceImage().height;
+        var hImgW = this.heroImage.width;
+        var hImgH = this.heroImage.height;
         var hScale = 750 / hImgW;
         this.heroImage.setScale(hScale);
         this.heroImage.setY(100 + (hImgH * hScale) / 2);
@@ -844,11 +844,11 @@ class BossScene extends Phaser.Scene {
             
             var w = 1920, h = 1080;
             var dimBg = this.add.rectangle(w/2, h/2, w, h, 0x000000, 0.6).setAlpha(0).setDepth(89);
-            this.heroImage = this.add.image(300, h / 2, 'hero_stand_combat').setAlpha(0).setDepth(90);
+            this.heroImage = this.add.sprite(300, h / 2, 'hero_stand_combat').play('hero_combat_anim').setAlpha(0).setDepth(90);
             if(this.textures.exists('hero_stand_combat')) {
                 this.textures.get('hero_stand_combat').setFilter(Phaser.Textures.FilterMode.LINEAR);
-                var hImgW = this.textures.get('hero_stand_combat').getSourceImage().width;
-                var hImgH = this.textures.get('hero_stand_combat').getSourceImage().height;
+                var hImgW = this.heroImage.width;
+                var hImgH = this.heroImage.height;
                 var hScale = 750 / hImgW;
                 this.heroImage.setScale(hScale);
                 this.heroImage.setY(100 + (hImgH * hScale) / 2);
@@ -1024,11 +1024,11 @@ class BossScene extends Phaser.Scene {
           var w = 1920, h = 1080;
           var dimBg = this.add.rectangle(w/2, h/2, w, h, 0x000000, 0.6).setAlpha(0).setDepth(89);
           this.dimBg = dimBg;
-          this.heroImage = this.add.image(300, h / 2, 'hero_stand_combat').setAlpha(0).setDepth(90);
+          this.heroImage = this.add.sprite(300, h / 2, 'hero_stand_combat').play('hero_combat_anim').setAlpha(0).setDepth(90);
           if(this.textures.exists('hero_stand_combat')) {
               this.textures.get('hero_stand_combat').setFilter(Phaser.Textures.FilterMode.LINEAR);
-              var hImgW = this.textures.get('hero_stand_combat').getSourceImage().width;
-              var hImgH = this.textures.get('hero_stand_combat').getSourceImage().height;
+              var hImgW = this.heroImage.width;
+              var hImgH = this.heroImage.height;
               var hScale = 750 / hImgW;
               this.heroImage.setScale(hScale);
               this.heroImage.setY(100 + (hImgH * hScale) / 2);
@@ -1307,11 +1307,11 @@ class BossScene extends Phaser.Scene {
         var w = 1920, h = 1080;
         var dimBg = this.add.rectangle(w/2, h/2, w, h, 0x000000, 0.6).setAlpha(0).setDepth(89);
         this.dimBg = dimBg;
-        this.heroImage = this.add.image(300, h / 2, 'hero_stand_combat').setAlpha(0).setDepth(90);
+        this.heroImage = this.add.sprite(300, h / 2, 'hero_stand_combat').play('hero_combat_anim').setAlpha(0).setDepth(90);
         if(this.textures.exists('hero_stand_combat')) {
             this.textures.get('hero_stand_combat').setFilter(Phaser.Textures.FilterMode.LINEAR);
-            var hImgW = this.textures.get('hero_stand_combat').getSourceImage().width;
-            var hImgH = this.textures.get('hero_stand_combat').getSourceImage().height;
+            var hImgW = this.heroImage.width;
+            var hImgH = this.heroImage.height;
             var hScale = 750 / hImgW;
             this.heroImage.setScale(hScale);
             this.heroImage.setY(100 + (hImgH * hScale) / 2);
@@ -1696,9 +1696,10 @@ class BossScene extends Phaser.Scene {
         const isHero = speaker && speaker.includes('勇者');
         if (isHero && this.heroImage && this.heroImage.active) {
           if (charIndex % 15 === 0 && text[charIndex - 1] !== ' ') {
+            this.heroImage.stop();
             this.heroImage.setTexture('hero_stand_blink');
           } else if (charIndex % 15 === 5) {
-            this.heroImage.setTexture('hero_stand_combat');
+            this.heroImage.play('hero_combat_anim');
           }
         }
 

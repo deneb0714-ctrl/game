@@ -57,7 +57,10 @@ class BootScene extends Phaser.Scene {
     this.load.image('hero_stand', window.HERO_STAND_B64);
     
     // 主人公の戦闘時・他者との会話時の立ち絵
-    this.load.image('hero_stand_combat', window.HERO_STAND_COMBAT_B64);
+    this.load.spritesheet('hero_stand_combat', window.HERO_COMBAT_SHEET_B64, {
+      frameWidth: window.HERO_COMBAT_FRAME_WIDTH,
+      frameHeight: window.HERO_COMBAT_FRAME_HEIGHT
+    });
 
     // 主人公の瞬き（表情切り替え用）
     this.load.image('hero_stand_blink', window.HERO_STAND_BLINK_B64);
@@ -93,6 +96,15 @@ class BootScene extends Phaser.Scene {
 
   create() {
     this.generateAllTextures();
+    
+    // アニメーションの作成
+    this.anims.create({
+      key: 'hero_combat_anim',
+      frames: this.anims.generateFrameNumbers('hero_stand_combat'),
+      frameRate: 15,
+      repeat: -1
+    });
+
     this.scene.start('TitleScene');
   }
 
