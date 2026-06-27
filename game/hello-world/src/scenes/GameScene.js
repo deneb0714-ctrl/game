@@ -55,7 +55,7 @@ class GameScene extends Phaser.Scene {
     this.player.setDrag(800, 800);
     this.player.setMaxVelocity(400, 400);
     this.player.setDepth(10);
-    this.player.setScale(1.5);
+    this.player.setScale(2);
 
     // Player trail effect
     this.playerTrail = this.add.particles(0, 0, 'particle', {

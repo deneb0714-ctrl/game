@@ -38,7 +38,7 @@ class BossScene extends Phaser.Scene {
     this.itemGroup = this.physics.add.group();
 
     // Player
-    this.player = this.physics.add.sprite(-100, 460, 'hero_stand_combat').setScale(1.5).setDepth(10);
+    this.player = this.physics.add.sprite(-100, 460, 'hero_stand_combat').setScale(2).setDepth(10);
     this.player.play('hero_combat_anim');
     this.tweens.add({ 
       targets: this.player, 
