@@ -12,19 +12,18 @@ frames = []
 
 try:
     while True:
-        # Some gifs have transparency handling that requires converting to RGBA
-        # For GIFs with disposal methods, we need to composite them
+        # Convert to RGBA and resize down by 5x using NEAREST to recover original pixel art
         frame = gif.convert('RGBA')
+        frame = frame.resize((63, 112), Image.NEAREST)
         frames.append(frame)
         gif.seek(len(frames))
 except EOFError:
     pass
 
-width, height = frames[0].size
+width, height = frames[0].size  # should be 63, 112
 total_frames = len(frames)
 
-# Pack into a grid to avoid exceeding WebGL MAX_TEXTURE_SIZE (e.g., 8192 or 16384)
-# Let's aim for a roughly square texture.
+# Pack into a grid
 columns = int(math.ceil(math.sqrt(total_frames)))
 rows = int(math.ceil(total_frames / columns))
 
