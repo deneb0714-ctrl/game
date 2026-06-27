@@ -439,13 +439,50 @@ class BootScene extends Phaser.Scene {
     g1.generateTexture('item_energy', 20, 20);
     g1.destroy();
 
+    // Red Diamond Item
+    const grd = this.make.graphics({ add: false });
+    grd.fillStyle(0xFF0000, 1);
+    grd.lineStyle(2, 0xFFaaaa, 1);
+    // Draw a diamond shape
+    grd.beginPath();
+    grd.moveTo(10, 0);
+    grd.lineTo(20, 10);
+    grd.lineTo(10, 20);
+    grd.lineTo(0, 10);
+    grd.closePath();
+    grd.fillPath();
+    grd.strokePath();
+    grd.generateTexture('item_red_diamond', 20, 20);
+    grd.destroy();
+
     // Health item (green cross)
     const g2 = this.make.graphics({ add: false });
     g2.fillStyle(0x4FFF7F, 1);
-    g2.fillRect(6, 0, 8, 20);
-    g2.fillRect(0, 6, 20, 8);
+    g2.fillRect(8, 2, 4, 16);
+    g2.fillRect(2, 8, 16, 4);
     g2.generateTexture('item_health', 20, 20);
     g2.destroy();
+
+    // UI: Person Icon (Doll Points)
+    const gPerson = this.make.graphics({ add: false });
+    gPerson.fillStyle(0xFFFFFF, 1);
+    gPerson.fillCircle(16, 8, 8); // head
+    gPerson.fillRect(8, 18, 16, 20); // body
+    gPerson.fillRect(2, 18, 4, 18); // left arm
+    gPerson.fillRect(26, 18, 4, 18); // right arm
+    gPerson.fillRect(10, 40, 4, 20); // left leg
+    gPerson.fillRect(18, 40, 4, 20); // right leg
+    gPerson.generateTexture('icon_person', 32, 64);
+    gPerson.destroy();
+
+    // UI: Battery Icon (Killing Intent)
+    const gBattery = this.make.graphics({ add: false });
+    gBattery.lineStyle(4, 0xFFFFFF, 1);
+    gBattery.strokeRect(4, 8, 24, 48); // battery body
+    gBattery.fillStyle(0xFFFFFF, 1);
+    gBattery.fillRect(10, 2, 12, 6); // battery top
+    gBattery.generateTexture('icon_battery', 32, 64);
+    gBattery.destroy();
   }
 
   // --- Scrolling backgrounds ---

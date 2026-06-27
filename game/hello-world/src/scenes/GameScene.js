@@ -785,6 +785,25 @@ class GameScene extends Phaser.Scene {
 
     this.energyText.setText('EN: ' + MOT.flags.energy + '/' + MOT.flags.maxEnergyThreshold);
 
+    // Doll Points UI
+    if (!this.iconPersonBg) {
+      this.iconPersonBg = this.add.image(30, 110, 'icon_person').setOrigin(0, 0).setTint(0x555555).setDepth(100).setScrollFactor(0);
+      this.iconPersonFill = this.add.image(30, 110, 'icon_person').setOrigin(0, 0).setTint(0xFFFF00).setDepth(100).setScrollFactor(0);
+      this.dollText = this.add.text(70, 130, '', { fontFamily: '"Press Start 2P"', fontSize: '12px', color: '#FFFF00' }).setDepth(100).setScrollFactor(0);
+      
+      this.iconBatteryBg = this.add.image(130, 110, 'icon_battery').setOrigin(0, 0).setTint(0x555555).setDepth(100).setScrollFactor(0);
+      this.iconBatteryFill = this.add.image(130, 110, 'icon_battery').setOrigin(0, 0).setTint(0xFF0000).setDepth(100).setScrollFactor(0);
+      this.intentText = this.add.text(170, 130, '', { fontFamily: '"Press Start 2P"', fontSize: '12px', color: '#FF0000' }).setDepth(100).setScrollFactor(0);
+    }
+
+    const dollPct = Phaser.Math.Clamp(MOT.flags.dollPoints / 100, 0, 1);
+    this.iconPersonFill.setCrop(0, 64 - 64 * dollPct, 32, 64 * dollPct);
+    this.dollText.setText('DP:' + MOT.flags.dollPoints);
+
+    const intentPct = Phaser.Math.Clamp(MOT.flags.killingIntent / 100, 0, 1);
+    this.iconBatteryFill.setCrop(0, 64 - 64 * intentPct, 32, 64 * intentPct);
+    this.intentText.setText('KI:' + MOT.flags.killingIntent);
+
     const iconX = 260;
     const iconY = 88;
     const iconRadius = 12;

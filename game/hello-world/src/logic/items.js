@@ -4,21 +4,23 @@
 window.MOT = window.MOT || {};
 
 /**
- * Spawn an energy item at position.
+ * Spawn an energy item (or Red Diamond) at position.
  */
 MOT.spawnEnergyItem = function (scene, x, y, forceRed = false) {
-  const isMurderous = forceRed || Phaser.Math.Between(0, 100) < 8; // 8% chance for red‑black orb
-  const item = scene.itemGroup.create(x, y, 'item_energy');
-  item.setVelocityX(Phaser.Math.Between(-400, -200));
+  const isMurderous = forceRed || Phaser.Math.Between(0, 100) < 15; // 15% chance for Red Diamond
   
+  let item;
   if (isMurderous) {
-    item.itemType = 'energy_murderous';
-    item.value = 30;
-    item.setTint(0xFF0000);
+    item = scene.itemGroup.create(x, y, 'item_red_diamond');
+    item.itemType = 'red_diamond';
+    item.value = 10;
   } else {
+    item = scene.itemGroup.create(x, y, 'item_energy');
     item.itemType = 'energy';
-    item.value = 12; // slightly more energy for regular orb
+    item.value = 12;
   }
+  
+  item.setVelocityX(Phaser.Math.Between(-400, -200));
 
   // Floating animation
   scene.tweens.add({
@@ -55,6 +57,27 @@ MOT.spawnHealthItem = function (scene, x, y) {
 };
 
 /**
+ * Spawn a Red Diamond item.
+ */
+MOT.spawnRedDiamond = function (scene, x, y) {
+  const item = scene.itemGroup.create(x, y, 'item_red_diamond');
+  item.setVelocityX(Phaser.Math.Between(-400, -200));
+  item.itemType = 'red_diamond';
+  item.value = 10;
+
+  scene.tweens.add({
+    targets: item,
+    y: item.y + 15,
+    yoyo: true,
+    repeat: -1,
+    duration: 400,
+    ease: 'Sine.easeInOut'
+  });
+
+  return item;
+};
+
+/**
  * Handle item pickup.
  */
 MOT.collectItem = function (scene, player, item) {
@@ -70,6 +93,9 @@ MOT.collectItem = function (scene, player, item) {
   } else if (item.itemType === 'health') {
     MOT.flags.playerHP = Math.min(MOT.flags.playerHP + item.value, MOT.flags.playerMaxHP);
     MOT.showPickupText(scene, item.x, item.y, '+' + item.value + ' HP', 0x4FFF7F);
+  } else if (item.itemType === 'red_diamond') {
+    MOT.flags.killingIntent = Math.min(100, MOT.flags.killingIntent + item.value);
+    MOT.showPickupText(scene, item.x, item.y, '殺意 +' + item.value, 0xFF0000);
   }
   item.destroy();
 };

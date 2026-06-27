@@ -23,7 +23,9 @@ MOT.flags = {
   energy: 0,
   maxEnergyThreshold: 100,
   playerHP: 5,
-  playerMaxHP: 5
+  playerMaxHP: 5,
+  dollPoints: 0,
+  killingIntent: 0
 };
 
 MOT.resetFlags = function () {
@@ -39,6 +41,8 @@ MOT.resetFlags = function () {
   MOT.flags.energy = 0;
   MOT.flags.playerHP = 5;
   MOT.flags.playerMaxHP = 5;
+  MOT.flags.dollPoints = 0;
+  MOT.flags.killingIntent = 0;
 };
 
 MOT.modifyFlag = function (key, value) {
@@ -72,5 +76,6 @@ MOT.incrementMurderousOrb = function () {
 // 博士の指示に従った回数をインクリメントする関数
 MOT.incrementDoctorObeyCount = function () {
   MOT.flags.doctorObeyCount++;
+  MOT.flags.dollPoints = Math.min(100, MOT.flags.dollPoints + 10);
   console.log('[MOT] doctorObeyCount:', MOT.flags.doctorObeyCount);
 };
