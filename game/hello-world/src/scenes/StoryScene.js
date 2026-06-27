@@ -43,7 +43,7 @@ class StoryScene extends Phaser.Scene {
     this.heroImage = this.add.image(300, h / 2, 'hero_stand').setAlpha(0);
     
     // ターゲット幅を広げてアップにする
-    var hScale = 750 / this.heroImage.height;
+    var hScale = 750 / this.heroImage.width;
     this.heroImage.setScale(hScale);
     // 顔が上部に来るように調整し、下半身は吹き出しの後ろに隠れるようにする
     this.heroImage.setY(100 + (this.heroImage.height * hScale) / 2);

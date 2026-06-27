@@ -100,7 +100,7 @@ class BootScene extends Phaser.Scene {
     // アニメーションの作成
     this.anims.create({
       key: 'hero_combat_anim',
-      frames: this.anims.generateFrameNumbers('hero_stand_combat'),
+      frames: this.anims.generateFrameNumbers('hero_stand_combat', { start: 0, end: 59 }),
       frameRate: 15,
       repeat: -1
     });

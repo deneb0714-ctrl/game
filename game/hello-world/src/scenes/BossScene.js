@@ -209,7 +209,7 @@ class BossScene extends Phaser.Scene {
              var w = 1920, h = 1080;
              var dimBg = this.add.rectangle(w/2, h/2, w, h, 0x000000, 0.6).setAlpha(0).setDepth(89);
              this.heroImage = this.add.image(300, h / 2, 'hero_stand').setAlpha(0).setDepth(90);
-             var hScale = 750 / this.heroImage.height;
+             var hScale = 750 / this.heroImage.width;
              this.heroImage.setScale(hScale);
              this.heroImage.setY(100 + (this.heroImage.height * hScale) / 2);
              var enemyFrame = this.add.rectangle(w - 300, h / 2, 400, 600, 0x1F2933).setAlpha(0).setDepth(90).setStrokeStyle(4, 0xffffff);
@@ -259,7 +259,7 @@ class BossScene extends Phaser.Scene {
   playDemonLordIntro(onComplete) {
     var dimBg = this.add.rectangle(1920/2, 1080/2, 1920, 1080, 0x000000, 0.6).setAlpha(0).setDepth(89);
     this.heroImage = this.add.image(300, 1080 / 2, 'hero_stand').setAlpha(0).setDepth(90);
-    var hScale = 750 / this.heroImage.height;
+    var hScale = 750 / this.heroImage.width;
     this.heroImage.setScale(hScale);
     this.heroImage.setY(100 + (this.heroImage.height * hScale) / 2);
     
@@ -305,7 +305,7 @@ class BossScene extends Phaser.Scene {
     var dimBg = this.add.rectangle(w/2, h/2, w, h, 0x000000, 0.6).setAlpha(0).setDepth(89);
     
     this.heroImage = this.add.image(300, h / 2, 'hero_stand').setAlpha(0).setDepth(90);
-    var hScale = 750 / this.heroImage.height;
+    var hScale = 750 / this.heroImage.width;
     this.heroImage.setScale(hScale);
     this.heroImage.setY(100 + (this.heroImage.height * hScale) / 2);
     
@@ -830,7 +830,7 @@ class BossScene extends Phaser.Scene {
             var w = 1920, h = 1080;
             var dimBg = this.add.rectangle(w/2, h/2, w, h, 0x000000, 0.6).setAlpha(0).setDepth(89);
             this.heroImage = this.add.image(300, h / 2, 'hero_stand').setAlpha(0).setDepth(90);
-            var hScale = 750 / this.heroImage.height;
+            var hScale = 750 / this.heroImage.width;
             this.heroImage.setScale(hScale);
             this.heroImage.setY(100 + (this.heroImage.height * hScale) / 2);
             
@@ -1005,7 +1005,7 @@ class BossScene extends Phaser.Scene {
           var dimBg = this.add.rectangle(w/2, h/2, w, h, 0x000000, 0.6).setAlpha(0).setDepth(89);
           this.dimBg = dimBg;
           this.heroImage = this.add.image(300, h / 2, 'hero_stand').setAlpha(0).setDepth(90);
-          var hScale = 750 / this.heroImage.height;
+          var hScale = 750 / this.heroImage.width;
           this.heroImage.setScale(hScale);
           this.heroImage.setY(100 + (this.heroImage.height * hScale) / 2);
           
@@ -1283,7 +1283,7 @@ class BossScene extends Phaser.Scene {
         var dimBg = this.add.rectangle(w/2, h/2, w, h, 0x000000, 0.6).setAlpha(0).setDepth(89);
         this.dimBg = dimBg;
         this.heroImage = this.add.image(300, h / 2, 'hero_stand').setAlpha(0).setDepth(90);
-        var hScale = 750 / this.heroImage.height;
+        var hScale = 750 / this.heroImage.width;
         this.heroImage.setScale(hScale);
         this.heroImage.setY(100 + (this.heroImage.height * hScale) / 2);
 
