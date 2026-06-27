@@ -40,10 +40,10 @@ class StoryScene extends Phaser.Scene {
 
     // Portraits Layer
     // Hero portrait (left) - bust-up crop of full-body image
-    this.heroImage = this.add.image(300, h / 2, 'hero_stand_combat').setAlpha(0);
-    this.textures.get('hero_stand_combat').setFilter(Phaser.Textures.FilterMode.LINEAR);
-    var hImgW = this.textures.get('hero_stand_combat').getSourceImage().width;
-    var hImgH = this.textures.get('hero_stand_combat').getSourceImage().height;
+    this.heroImage = this.add.sprite(300, h / 2, 'hero_stand_combat').play('hero_combat_anim').setAlpha(0);
+    this.textures.get('hero_stand_combat').setFilter(Phaser.Textures.FilterMode.NEAREST);
+    var hImgW = window.HERO_COMBAT_FRAME_WIDTH;
+    var hImgH = window.HERO_COMBAT_FRAME_HEIGHT;
     
     // ターゲット幅を広げてアップにする
     var hScale = 750 / hImgW;
@@ -144,7 +144,8 @@ class StoryScene extends Phaser.Scene {
       this.contText.setAlpha(1);
     }
 
-    // まばたき演出 (勇者のセリフが切り替わるときのみ)
+    // まばたき演出 (GIFアニメーション側に含まれているため削除)
+    /*
     const isHero = data.speaker && data.speaker.includes('勇者');
     if (isHero && this.heroImage && this.heroImage.active) {
       this.heroImage.setTexture('hero_stand_blink');
@@ -154,6 +155,7 @@ class StoryScene extends Phaser.Scene {
         }
       });
     }
+    */
 
     // Portrait highlighting
     if (this.bg.alpha > 0 || data.bg === 'lab') {

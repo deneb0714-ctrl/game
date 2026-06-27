@@ -41,7 +41,8 @@ class GameScene extends Phaser.Scene {
     this.itemGroup = this.physics.add.group();
 
     // Player
-    this.player = this.physics.add.sprite(-100, 460, 'player');
+    this.player = this.physics.add.sprite(-100, 460, 'hero_stand_combat');
+    this.player.play('hero_combat_anim');
     this.tweens.add({ 
       targets: this.player, 
       x: 200, 
@@ -54,7 +55,7 @@ class GameScene extends Phaser.Scene {
     this.player.setDrag(800, 800);
     this.player.setMaxVelocity(400, 400);
     this.player.setDepth(10);
-    this.player.setScale(2);
+    this.player.setScale(1);
 
     // Player trail effect
     this.playerTrail = this.add.particles(0, 0, 'particle', {
