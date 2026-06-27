@@ -144,18 +144,16 @@ class StoryScene extends Phaser.Scene {
       this.contText.setAlpha(1);
     }
 
-    // まばたき演出 (GIFアニメーション側に含まれているため削除)
-    /*
+    // まばたき演出
     const isHero = data.speaker && data.speaker.includes('勇者');
     if (isHero && this.heroImage && this.heroImage.active) {
       this.heroImage.setTexture('hero_stand_blink');
       this.time.delayedCall(150, () => {
         if (this.heroImage && this.heroImage.active) {
-          this.heroImage.setTexture('hero_stand_combat');
+          this.heroImage.setTexture('hero_stand');
         }
       });
     }
-    */
 
     // Portrait highlighting
     if (this.bg.alpha > 0 || data.bg === 'lab') {

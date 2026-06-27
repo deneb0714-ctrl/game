@@ -117,18 +117,13 @@ class EndingScene extends Phaser.Scene {
     }, [], this);
 
     // Show ending-specific sprite
-    var spriteKey = 'hero_stand_combat';
+    var spriteKey = 'player';
     if (ending.key === 'END_ORPHAN') spriteKey = 'demon_lord'; // 魔王に拾われる
-    if (ending.key === 'NORMAL_EVERYDAY') spriteKey = 'hero_stand_combat';
-    if (ending.key === 'NORMAL_USELESS') spriteKey = 'hero_stand_combat';
-    if (ending.key === 'NORMAL_INESCAPABLE') spriteKey = 'hero_stand_combat';
+    if (ending.key === 'NORMAL_EVERYDAY') spriteKey = 'player';
+    if (ending.key === 'NORMAL_USELESS') spriteKey = 'player';
+    if (ending.key === 'NORMAL_INESCAPABLE') spriteKey = 'player';
 
-    var endSprite;
-    if (spriteKey === 'hero_stand_combat') {
-      endSprite = this.add.sprite(w / 2, h * 0.78, spriteKey).play('hero_combat_anim').setScale(4).setAlpha(0);
-    } else {
-      endSprite = this.add.image(w / 2, h * 0.78, spriteKey).setScale(4).setAlpha(0);
-    }
+    var endSprite = this.add.image(w / 2, h * 0.78, spriteKey).setScale(4).setAlpha(0);
     this.tweens.add({
       targets: endSprite, alpha: 0.6, duration: 2000, delay: 3000,
       ease: 'Power2'
