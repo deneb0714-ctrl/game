@@ -30,7 +30,10 @@ class GameScene extends Phaser.Scene {
     const w = 1920, h = 1080;
 
     // Background (scrolling)
-    const bgKey = this.currentStage === 1 ? 'bg_stage1' : 'bg_stage2';
+    let bgKey = 'bg_stage1';
+    if (this.currentStage >= 2 && this.currentStage <= 5) {
+      bgKey = 'bg_stage' + this.currentStage;
+    }
     this.bg1 = this.add.image(0, 0, bgKey).setOrigin(0, 0);
     this.bg2 = this.add.image(w, 0, bgKey).setOrigin(0, 0);
 

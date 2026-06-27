@@ -473,23 +473,32 @@ class BootScene extends Phaser.Scene {
     g1.generateTexture('bg_stage1', 1920, 1080);
     g1.destroy();
 
-    // Stage 2: Road to Demon Castle (purple/dark)
-    const g2 = this.make.graphics({ add: false });
-    g2.fillStyle(0x0a0514, 1);
-    g2.fillRect(0, 0, 1920, 1080);
-    // Mountains silhouette
-    g2.fillStyle(0x150a28, 1);
-    for (let x = 0; x < 1920; x += 120) {
-      const h = Phaser.Math.Between(200, 500);
-      g2.fillTriangle(x, 1080, x + 60, 1080 - h, x + 120, 1080);
-    }
-    // Stars
-    g2.fillStyle(0xE5E7EB, 0.6);
-    for (let i = 0; i < 50; i++) {
-      g2.fillCircle(Phaser.Math.Between(0, 1920), Phaser.Math.Between(0, 600), 1);
-    }
-    g2.generateTexture('bg_stage2', 1920, 1080);
-    g2.destroy();
+    // Stages 2-5: Different colored backgrounds
+    const stageColors = [
+      { key: 'bg_stage2', sky: 0x1a1500, mountain: 0x332600 }, // 黄昏の荒野 (Yellow/Orange)
+      { key: 'bg_stage3', sky: 0x220505, mountain: 0x330a0a }, // 宵闇の森 (Red)
+      { key: 'bg_stage4', sky: 0x051122, mountain: 0x0a2233 }, // 子夜の城塞 (Blue)
+      { key: 'bg_stage5', sky: 0x0a0514, mountain: 0x150a28 }  // 魔王城 (Purple)
+    ];
+
+    stageColors.forEach(sc => {
+      const g2 = this.make.graphics({ add: false });
+      g2.fillStyle(sc.sky, 1);
+      g2.fillRect(0, 0, 1920, 1080);
+      // Mountains silhouette
+      g2.fillStyle(sc.mountain, 1);
+      for (let x = 0; x < 1920; x += 120) {
+        const h = Phaser.Math.Between(200, 500);
+        g2.fillTriangle(x, 1080, x + 60, 1080 - h, x + 120, 1080);
+      }
+      // Stars
+      g2.fillStyle(0xE5E7EB, 0.6);
+      for (let i = 0; i < 50; i++) {
+        g2.fillCircle(Phaser.Math.Between(0, 1920), Phaser.Math.Between(0, 600), 1);
+      }
+      g2.generateTexture(sc.key, 1920, 1080);
+      g2.destroy();
+    });
 
     // Boss: Throne room
     const g3 = this.make.graphics({ add: false });
