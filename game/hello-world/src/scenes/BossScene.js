@@ -210,8 +210,8 @@ class BossScene extends Phaser.Scene {
              this.heroImage = this.add.sprite(300, h / 2, 'hero_stand_combat').play('hero_combat_anim').setAlpha(0).setDepth(90);
              if(this.textures.exists('hero_stand_combat')) {
                  this.textures.get('hero_stand_combat').setFilter(Phaser.Textures.FilterMode.LINEAR);
-                 var hImgW = this.heroImage.width;
-                 var hImgH = this.heroImage.height;
+                 var hImgW = window.HERO_COMBAT_FRAME_WIDTH;
+                 var hImgH = window.HERO_COMBAT_FRAME_HEIGHT;
                  var hScale = 750 / hImgW;
                  this.heroImage.setScale(hScale);
                  this.heroImage.setY(100 + (hImgH * hScale) / 2);
@@ -265,8 +265,8 @@ class BossScene extends Phaser.Scene {
     this.heroImage = this.add.sprite(300, 1080 / 2, 'hero_stand_combat').play('hero_combat_anim').setAlpha(0).setDepth(90);
     if(this.textures.exists('hero_stand_combat')) {
         this.textures.get('hero_stand_combat').setFilter(Phaser.Textures.FilterMode.LINEAR);
-        var hImgW = this.heroImage.width;
-        var hImgH = this.heroImage.height;
+        var hImgW = window.HERO_COMBAT_FRAME_WIDTH;
+        var hImgH = window.HERO_COMBAT_FRAME_HEIGHT;
         var hScale = 750 / hImgW;
         this.heroImage.setScale(hScale);
         this.heroImage.setY(100 + (hImgH * hScale) / 2);
@@ -316,8 +316,8 @@ class BossScene extends Phaser.Scene {
     this.heroImage = this.add.sprite(300, h / 2, 'hero_stand_combat').play('hero_combat_anim').setAlpha(0).setDepth(90);
     if(this.textures.exists('hero_stand_combat')) {
         this.textures.get('hero_stand_combat').setFilter(Phaser.Textures.FilterMode.LINEAR);
-        var hImgW = this.heroImage.width;
-        var hImgH = this.heroImage.height;
+        var hImgW = window.HERO_COMBAT_FRAME_WIDTH;
+        var hImgH = window.HERO_COMBAT_FRAME_HEIGHT;
         var hScale = 750 / hImgW;
         this.heroImage.setScale(hScale);
         this.heroImage.setY(100 + (hImgH * hScale) / 2);
@@ -847,8 +847,8 @@ class BossScene extends Phaser.Scene {
             this.heroImage = this.add.sprite(300, h / 2, 'hero_stand_combat').play('hero_combat_anim').setAlpha(0).setDepth(90);
             if(this.textures.exists('hero_stand_combat')) {
                 this.textures.get('hero_stand_combat').setFilter(Phaser.Textures.FilterMode.LINEAR);
-                var hImgW = this.heroImage.width;
-                var hImgH = this.heroImage.height;
+                var hImgW = window.HERO_COMBAT_FRAME_WIDTH;
+                var hImgH = window.HERO_COMBAT_FRAME_HEIGHT;
                 var hScale = 750 / hImgW;
                 this.heroImage.setScale(hScale);
                 this.heroImage.setY(100 + (hImgH * hScale) / 2);
@@ -1027,8 +1027,8 @@ class BossScene extends Phaser.Scene {
           this.heroImage = this.add.sprite(300, h / 2, 'hero_stand_combat').play('hero_combat_anim').setAlpha(0).setDepth(90);
           if(this.textures.exists('hero_stand_combat')) {
               this.textures.get('hero_stand_combat').setFilter(Phaser.Textures.FilterMode.LINEAR);
-              var hImgW = this.heroImage.width;
-              var hImgH = this.heroImage.height;
+              var hImgW = window.HERO_COMBAT_FRAME_WIDTH;
+              var hImgH = window.HERO_COMBAT_FRAME_HEIGHT;
               var hScale = 750 / hImgW;
               this.heroImage.setScale(hScale);
               this.heroImage.setY(100 + (hImgH * hScale) / 2);
@@ -1310,8 +1310,8 @@ class BossScene extends Phaser.Scene {
         this.heroImage = this.add.sprite(300, h / 2, 'hero_stand_combat').play('hero_combat_anim').setAlpha(0).setDepth(90);
         if(this.textures.exists('hero_stand_combat')) {
             this.textures.get('hero_stand_combat').setFilter(Phaser.Textures.FilterMode.LINEAR);
-            var hImgW = this.heroImage.width;
-            var hImgH = this.heroImage.height;
+            var hImgW = window.HERO_COMBAT_FRAME_WIDTH;
+            var hImgH = window.HERO_COMBAT_FRAME_HEIGHT;
             var hScale = 750 / hImgW;
             this.heroImage.setScale(hScale);
             this.heroImage.setY(100 + (hImgH * hScale) / 2);
@@ -1692,16 +1692,7 @@ class BossScene extends Phaser.Scene {
         bodyText.setText(text.substring(0, charIndex));
         if (text[charIndex - 1] !== ' ') MOT.Audio.playBleep();
         
-        // まばたき演出 (勇者のセリフが切り替わるときのみ)
-        const isHero = speaker && speaker.includes('勇者');
-        if (isHero && this.heroImage && this.heroImage.active) {
-          if (charIndex % 15 === 0 && text[charIndex - 1] !== ' ') {
-            this.heroImage.stop();
-            this.heroImage.setTexture('hero_stand_blink');
-          } else if (charIndex % 15 === 5) {
-            this.heroImage.play('hero_combat_anim');
-          }
-        }
+        // GIFアニメーション側にまばたき等が含まれているため、古い静止画用のまばたき演出は不要として削除
 
         if (charIndex >= text.length) {
           typeTimer.destroy();
