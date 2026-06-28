@@ -64,6 +64,7 @@ class BootScene extends Phaser.Scene {
 
     // 主人公の瞬き（表情切り替え用）
     this.load.image('hero_stand_blink', window.HERO_STAND_BLINK_B64);
+    this.load.image('hero_stand_silent', 'assets/images/hero_stand_silent.png');
 
     // Title background (Hello World)
     this.load.image('title_bg', window.TITLE_BG_B64);
