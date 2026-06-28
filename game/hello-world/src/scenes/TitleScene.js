@@ -112,7 +112,8 @@ class TitleScene extends Phaser.Scene {
     }.bind(this));
 
     // Version text
-    this.add.text(w - 20, h - 20, 'v0.1.0', {
+    const versionText = window.GAME_VERSION ? `v0.1.0 (${window.GAME_VERSION})` : 'v0.1.0';
+    this.add.text(w - 20, h - 20, versionText, {
       fontFamily: '"Press Start 2P"',
       fontSize: '10px',
       color: '#ffffff'
