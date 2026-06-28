@@ -216,10 +216,7 @@ class BossScene extends Phaser.Scene {
              var hScale = 750 / this.heroImage.width;
              this.heroImage.setScale(hScale);
              this.heroImage.setY(100 + (this.heroImage.height * hScale) / 2);
-    this.demonImage = this.add.image(1920 - 300, 1080 / 2, 'demon_lord_normal').setAlpha(0).setDepth(90);
-    var dScale = 750 / this.demonImage.width;
-    this.demonImage.setScale(dScale);
-    this.demonImage.setY(100 + (this.demonImage.height * dScale) / 2);
+    // removed demonImage init
              var enemyFrame = this.add.rectangle(w - 300, h / 2, 400, 600, 0x1F2933).setAlpha(0).setDepth(90).setStrokeStyle(4, 0xffffff);
              var enemyLabel = this.add.text(w - 300, h / 2, '博士', { fontFamily: '"DotGothic16"', fontSize: '40px', color: '#ffffff' }).setOrigin(0.5).setAlpha(0).setDepth(90);
              this.tweens.add({ targets: [dimBg, enemyFrame, enemyLabel], alpha: 1, duration: 500 });
@@ -270,6 +267,11 @@ class BossScene extends Phaser.Scene {
     var hScale = 750 / this.heroImage.width;
     this.heroImage.setScale(hScale);
     this.heroImage.setY(100 + (this.heroImage.height * hScale) / 2);
+    
+    this.demonImage = this.add.image(1920 - 300, 1080 / 2, 'demon_lord_normal').setAlpha(0).setDepth(90);
+    var dScale = 750 / this.demonImage.width;
+    this.demonImage.setScale(dScale);
+    this.demonImage.setY(100 + (this.demonImage.height * dScale) / 2);
     
     const sayDevice = (text) => new Promise(res => {
       this.tweens.add({ targets: dimBg, alpha: 0, duration: 300 });
