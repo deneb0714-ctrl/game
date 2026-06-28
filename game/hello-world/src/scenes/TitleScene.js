@@ -118,6 +118,12 @@ class TitleScene extends Phaser.Scene {
       fontSize: '10px',
       color: '#ffffff'
     }).setOrigin(1, 1).setDepth(10);
+
+    // Debug shortcuts
+    this.input.keyboard.on('keydown-ONE', () => { MOT.resetFlags(); this.scene.start('BossScene', { bossIndex: 0 }); });
+    this.input.keyboard.on('keydown-TWO', () => { MOT.resetFlags(); this.scene.start('BossScene', { bossIndex: 1 }); });
+    this.input.keyboard.on('keydown-THREE', () => { MOT.resetFlags(); this.scene.start('BossScene', { bossIndex: 2 }); });
+    this.input.keyboard.on('keydown-FOUR', () => { MOT.resetFlags(); this.scene.start('BossScene', { bossIndex: 3 }); });
   }
 
   update(time, delta) {
