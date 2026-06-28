@@ -6,9 +6,9 @@ class BossScene extends Phaser.Scene {
     super({ key: 'BossScene' });
   }
 
-  init() {
+  init(data) {
     this.bossQueue = ['boss1', 'boss2', 'boss3_twins', 'demon_lord'];
-    this.currentBossIndex = 0;
+    this.currentBossIndex = (data && data.bossIndex !== undefined) ? data.bossIndex : 0;
     this.dialogActive = false;
     this.lastDialogActive = false; // 会話終了時のクールタイム検出用
     this.bossHP = 0;
@@ -1725,15 +1725,14 @@ class BossScene extends Phaser.Scene {
         bodyText.setText(text.substring(0, charIndex));
         if (text[charIndex - 1] !== ' ') MOT.Audio.playBleep();
         
-        // まばたき演出
+        // まばたき演出（話し始めのみ一瞬）
         const isHero = speaker && speaker.includes('勇者');
         if (isHero && this.heroImage && this.heroImage.active) {
-          if ((charIndex === 1 || charIndex % 15 === 0) && text[charIndex - 1] !== ' ') {
-            // Silence state check
+          if (charIndex === 1 && text[charIndex - 1] !== ' ') {
             if (this.heroImage.texture.key !== 'hero_stand_silent') {
               this.heroImage.setTexture('hero_stand_blink');
             }
-          } else if (charIndex % 15 === 5) {
+          } else if (charIndex === 4 || charIndex >= text.length) {
             if (this.heroImage.texture.key === 'hero_stand_blink') {
               this.heroImage.setTexture('hero_stand');
             }
@@ -1742,11 +1741,11 @@ class BossScene extends Phaser.Scene {
 
         const isDemon = speaker && speaker.includes('魔王');
         if (isDemon && this.demonImage && this.demonImage.active) {
-          if ((charIndex === 1 || charIndex % 15 === 0) && text[charIndex - 1] !== ' ') {
+          if (charIndex === 1 && text[charIndex - 1] !== ' ') {
             if (this.demonImage.texture.key !== 'demon_lord_dying') {
               this.demonImage.setTexture('demon_lord_silent');
             }
-          } else if (charIndex % 15 === 5) {
+          } else if (charIndex === 4 || charIndex >= text.length) {
             if (this.demonImage.texture.key === 'demon_lord_silent') {
               this.demonImage.setTexture('demon_lord_normal');
             }
