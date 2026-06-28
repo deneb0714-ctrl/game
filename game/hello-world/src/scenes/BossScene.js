@@ -297,11 +297,7 @@ class BossScene extends Phaser.Scene {
       this.tweens.add({ targets: this.heroImage, alpha: 0.4, duration: 300 });
       if(this.demonImage) {
         this.tweens.add({ targets: this.demonImage, alpha: 1, duration: 300 });
-        if (text === '「……」' || text === '「……。」' || text === '「…」' || text.includes('……まあよい')) {
-          this.demonImage.setTexture('demon_lord_silent');
-        } else {
-          this.demonImage.setTexture('demon_lord_normal');
-        }
+        this.demonImage.setTexture('demon_lord_normal');
         this.demonImage.setScale(750 / this.demonImage.width);
         this.demonImage.setY(100 + (this.demonImage.height * this.demonImage.scaleY) / 2);
       }
@@ -1731,9 +1727,27 @@ class BossScene extends Phaser.Scene {
         const isHero = speaker && speaker.includes('勇者');
         if (isHero && this.heroImage && this.heroImage.active) {
           if (charIndex % 15 === 0 && text[charIndex - 1] !== ' ') {
-            this.heroImage.setTexture('hero_stand_blink');
+            // Silence state check
+            if (this.heroImage.texture.key !== 'hero_stand_silent') {
+              this.heroImage.setTexture('hero_stand_blink');
+            }
           } else if (charIndex % 15 === 5) {
-            this.heroImage.setTexture('hero_stand');
+            if (this.heroImage.texture.key === 'hero_stand_blink') {
+              this.heroImage.setTexture('hero_stand');
+            }
+          }
+        }
+
+        const isDemon = speaker && speaker.includes('魔王');
+        if (isDemon && this.demonImage && this.demonImage.active) {
+          if (charIndex % 15 === 0 && text[charIndex - 1] !== ' ') {
+            if (this.demonImage.texture.key !== 'demon_lord_dying') {
+              this.demonImage.setTexture('demon_lord_silent');
+            }
+          } else if (charIndex % 15 === 5) {
+            if (this.demonImage.texture.key === 'demon_lord_silent') {
+              this.demonImage.setTexture('demon_lord_normal');
+            }
           }
         }
 
