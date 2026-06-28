@@ -66,6 +66,11 @@ class BootScene extends Phaser.Scene {
     this.load.image('hero_stand_blink', window.HERO_STAND_BLINK_B64);
     this.load.image('hero_stand_silent', 'assets/images/hero_stand_silent.png');
 
+    // Demon Lord portraits
+    this.load.image('demon_lord_normal', 'assets/images/demon_lord_normal.png');
+    this.load.image('demon_lord_silent', 'assets/images/demon_lord_silent.png');
+    this.load.image('demon_lord_dying', 'assets/images/demon_lord_dying.png');
+
     // Title background (Hello World)
     this.load.image('title_bg', window.TITLE_BG_B64);
     

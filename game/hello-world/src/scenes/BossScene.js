@@ -216,6 +216,10 @@ class BossScene extends Phaser.Scene {
              var hScale = 750 / this.heroImage.width;
              this.heroImage.setScale(hScale);
              this.heroImage.setY(100 + (this.heroImage.height * hScale) / 2);
+    this.demonImage = this.add.image(1920 - 300, 1080 / 2, 'demon_lord_normal').setAlpha(0).setDepth(90);
+    var dScale = 750 / this.demonImage.width;
+    this.demonImage.setScale(dScale);
+    this.demonImage.setY(100 + (this.demonImage.height * dScale) / 2);
              var enemyFrame = this.add.rectangle(w - 300, h / 2, 400, 600, 0x1F2933).setAlpha(0).setDepth(90).setStrokeStyle(4, 0xffffff);
              var enemyLabel = this.add.text(w - 300, h / 2, '博士', { fontFamily: '"DotGothic16"', fontSize: '40px', color: '#ffffff' }).setOrigin(0.5).setAlpha(0).setDepth(90);
              this.tweens.add({ targets: [dimBg, enemyFrame, enemyLabel], alpha: 1, duration: 500 });
@@ -270,18 +274,37 @@ class BossScene extends Phaser.Scene {
     const sayDevice = (text) => new Promise(res => {
       this.tweens.add({ targets: dimBg, alpha: 0, duration: 300 });
       this.tweens.add({ targets: this.heroImage, alpha: 0, duration: 300 });
+      if(this.demonImage) this.tweens.add({ targets: this.demonImage, alpha: 0, duration: 300 });
       this.showDeviceDialogue(text, res);
     });
 
     const sayHero = (text) => new Promise(res => {
       this.tweens.add({ targets: dimBg, alpha: 0.6, duration: 300 });
       this.tweens.add({ targets: this.heroImage, alpha: 1, duration: 300 });
+      if(this.demonImage) this.tweens.add({ targets: this.demonImage, alpha: 0.4, duration: 300 });
+      if (text === '「……」' || text === '「……。」' || text === '「…」') {
+        this.heroImage.setTexture('hero_stand_silent');
+      } else {
+        this.heroImage.setTexture('hero_stand');
+      }
+      this.heroImage.setScale(750 / this.heroImage.width);
+      this.heroImage.setY(100 + (this.heroImage.height * this.heroImage.scaleY) / 2);
       this.showDialogue('勇者', text, res);
     });
 
     const sayDemon = (text) => new Promise(res => {
       this.tweens.add({ targets: dimBg, alpha: 0.6, duration: 300 });
       this.tweens.add({ targets: this.heroImage, alpha: 0.4, duration: 300 });
+      if(this.demonImage) {
+        this.tweens.add({ targets: this.demonImage, alpha: 1, duration: 300 });
+        if (text === '「……」' || text === '「……。」' || text === '「…」' || text.includes('……まあよい')) {
+          this.demonImage.setTexture('demon_lord_silent');
+        } else {
+          this.demonImage.setTexture('demon_lord_normal');
+        }
+        this.demonImage.setScale(750 / this.demonImage.width);
+        this.demonImage.setY(100 + (this.demonImage.height * this.demonImage.scaleY) / 2);
+      }
       this.showDialogue('魔王 – ヴェリタス', text, res);
     });
 
@@ -299,7 +322,7 @@ class BossScene extends Phaser.Scene {
       await sayHero('「僕は」');
       await sayDemon('「来るがよい、勇者！」');
       
-      this.tweens.add({ targets: [dimBg, this.heroImage], alpha: 0, duration: 300 });
+      this.tweens.add({ targets: [dimBg, this.heroImage, this.demonImage], alpha: 0, duration: 300 });
       onComplete();
     })();
   }
@@ -1081,9 +1104,16 @@ class BossScene extends Phaser.Scene {
             })();
           } else if (key === 'demon_lord') {
             var f = MOT.flags;
-            const sayDevice = (text) => new Promise(res => { this.tweens.add({ targets: dimBg, alpha: 0.6, duration: 300 }); this.tweens.add({targets: this.heroImage, alpha: 0.4, duration: 300}); this.showDeviceDialogue(text, res); });
-            const sayHero = (text) => new Promise(res => { this.tweens.add({ targets: dimBg, alpha: 0.6, duration: 300 }); this.tweens.add({targets: this.heroImage, alpha: 1, duration: 300});  if (text === '「……」' || text === '「……。」' || text === '「…」') {        this.heroImage.setTexture('hero_stand_silent');      } else {        this.heroImage.setTexture('hero_stand');      }     this.heroImage.setScale(750 / this.heroImage.width);     this.heroImage.setY(100 + (this.heroImage.height * this.heroImage.scaleY) / 2);      this.showDialogue('勇者', text, res); });
-            const sayDemon = (text) => new Promise(res => { this.tweens.add({ targets: dimBg, alpha: 0.6, duration: 300 }); this.tweens.add({targets: this.heroImage, alpha: 0.4, duration: 300}); this.showDialogue('魔王', text, res); });
+            
+            this.demonImage = this.add.image(1920 - 300, 1080 / 2, 'demon_lord_dying').setAlpha(0).setDepth(90);
+            var dScale = 750 / this.demonImage.width;
+            this.demonImage.setScale(dScale);
+            this.demonImage.setY(100 + (this.demonImage.height * dScale) / 2);
+
+            const sayDevice = (text) => new Promise(res => { this.tweens.add({ targets: dimBg, alpha: 0.6, duration: 300 }); this.tweens.add({targets: this.heroImage, alpha: 0.4, duration: 300}); this.tweens.add({ targets: this.demonImage, alpha: 0.4, duration: 300 }); this.showDeviceDialogue(text, res); });
+            const sayHero = (text) => new Promise(res => { this.tweens.add({ targets: dimBg, alpha: 0.6, duration: 300 }); this.tweens.add({targets: this.heroImage, alpha: 1, duration: 300}); this.tweens.add({ targets: this.demonImage, alpha: 0.4, duration: 300 }); if (text === '「……」' || text === '「……。」' || text === '「…」') { this.heroImage.setTexture('hero_stand_silent'); } else { this.heroImage.setTexture('hero_stand'); } this.heroImage.setScale(750 / this.heroImage.width); this.heroImage.setY(100 + (this.heroImage.height * this.heroImage.scaleY) / 2); this.showDialogue('勇者', text, res); });
+            const sayDemon = (text) => new Promise(res => { this.tweens.add({ targets: dimBg, alpha: 0.6, duration: 300 }); this.tweens.add({targets: this.heroImage, alpha: 0.4, duration: 300}); this.tweens.add({ targets: this.demonImage, alpha: 1, duration: 300 }); this.demonImage.setTexture('demon_lord_dying'); this.demonImage.setScale(750 / this.demonImage.width); this.demonImage.setY(100 + (this.demonImage.height * this.demonImage.scaleY) / 2); this.showDialogue('魔王', text, res); });
+    
             
             const askShatterChoice = (label1, label2, canShatter) => new Promise(res => {
               if (this.choiceContainer) this.choiceContainer.destroy();
