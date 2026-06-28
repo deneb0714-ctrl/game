@@ -1728,7 +1728,7 @@ class BossScene extends Phaser.Scene {
         // まばたき演出
         const isHero = speaker && speaker.includes('勇者');
         if (isHero && this.heroImage && this.heroImage.active) {
-          if (charIndex % 15 === 0 && text[charIndex - 1] !== ' ') {
+          if ((charIndex === 1 || charIndex % 15 === 0) && text[charIndex - 1] !== ' ') {
             // Silence state check
             if (this.heroImage.texture.key !== 'hero_stand_silent') {
               this.heroImage.setTexture('hero_stand_blink');
@@ -1742,7 +1742,7 @@ class BossScene extends Phaser.Scene {
 
         const isDemon = speaker && speaker.includes('魔王');
         if (isDemon && this.demonImage && this.demonImage.active) {
-          if (charIndex % 15 === 0 && text[charIndex - 1] !== ' ') {
+          if ((charIndex === 1 || charIndex % 15 === 0) && text[charIndex - 1] !== ' ') {
             if (this.demonImage.texture.key !== 'demon_lord_dying') {
               this.demonImage.setTexture('demon_lord_silent');
             }
