@@ -43,6 +43,9 @@ class BossScene extends Phaser.Scene {
 
     // Player
     this.player = this.physics.add.sprite(-100, 460, 'hero_stand_combat').setScale(2).setDepth(10);
+    // STG風の小さな当たり判定（未スケール時8x8、画面上16x16）
+    this.player.body.setSize(8, 8);
+    this.player.body.setOffset((this.player.width - 8) / 2, (this.player.height - 8) / 2);
     this.player.play('hero_combat_anim');
     this.tweens.add({ 
       targets: this.player, 
