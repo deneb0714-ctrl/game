@@ -280,7 +280,7 @@ class BossScene extends Phaser.Scene {
     this.heroImage.setScale(hScale);
     this.heroImage.setY(100 + (this.heroImage.height * hScale) / 2);
     
-    this.demonImage = this.add.image(1920 - 650, 1080 / 2, 'demon_lord_normal').setAlpha(0).setDepth(90);
+    this.demonImage = this.add.image(1920 - 300, 1080 / 2, 'demon_lord_normal').setAlpha(0).setDepth(90);
     var dScale = 1000 / this.demonImage.width;
     this.demonImage.setScale(dScale);
     this.demonImage.setY(100 + (this.demonImage.height * dScale) / 2 - 200);
@@ -1132,7 +1132,7 @@ class BossScene extends Phaser.Scene {
           } else if (key === 'demon_lord') {
             var f = MOT.flags;
             
-            this.demonImage = this.add.image(1920 - 650, 1080 / 2, 'demon_lord_dying').setAlpha(0).setDepth(90);
+            this.demonImage = this.add.image(1920 - 300, 1080 / 2, 'demon_lord_dying').setAlpha(0).setDepth(90);
             var dScale = 1000 / this.demonImage.width;
             this.demonImage.setScale(dScale);
             this.demonImage.setY(100 + (this.demonImage.height * dScale) / 2 - 200);
