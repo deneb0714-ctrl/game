@@ -59,8 +59,8 @@ MOT.handleMovement = function (scene, player) {
   // 初期化（初回のみ）
   if (player.currentLane === undefined) {
     player.currentLane = 1;
-    player.currentCol  = 0; // 一番左の列からスタート
-    player.x = COL_XS[0];
+    player.currentCol  = 1; // 中央の列からスタート (X=300)
+    player.x = COL_XS[1];
     player.y = LANE_YS[1];
     player.setVelocity(0, 0);
   }
