@@ -12,29 +12,53 @@ MOT.ENDINGS = {
     color: 0x4FD1FF,
     bgColor: '#050814'
   },
-  NORMAL_INESCAPABLE: {
-    key: 'NORMAL_INESCAPABLE',
+  normal_resist_fail: {
+    key: 'normal_resist_fail',
     title: 'NORMAL END',
     subtitle: '— 抗えない —',
     description: '勇者の意思とは裏腹に、研究室に戻ることもできず見逃したはずの幹部たちを見つけ殺していく。\nどれだけ引き金を引かないよう抗ったとて、その手は言うことを聞かなかった。',
     color: 0xFF4B6E,
     bgColor: '#1a0000'
   },
-  NORMAL_EVERYDAY: {
-    key: 'NORMAL_EVERYDAY',
+  normal_daily: {
+    key: 'normal_daily',
     title: 'NORMAL END',
     subtitle: '— 日常 —',
-    description: 'こうして魔王は打倒された。主人公は博士の研究所に戻った。\n結局魔王とはいったい何だったのか。\n彼女は本当に倒さなければならなかったのか。\nその答えを知る機会はもう一生訪れない。\n\n博士「よく魔王を倒してくれた。これで私の望みに一歩近づいたな。ふふ、世界の平和が望みだよ。」\n博士「ああ、役割を果たしたお人形は処分してあげないとな。」',
+    description: '結局魔王とはいったい何だったのか。\n彼女は本当に倒さなければならなかったのか。\nその答えを知る機会はもう一生訪れない。\nこうして役割を果たしたお人形は処分された。',
     color: 0xE5E7EB,
     bgColor: '#0a0a14'
   },
-  NORMAL_USELESS: {
-    key: 'NORMAL_USELESS',
+  normal_useless: {
+    key: 'normal_useless',
     title: 'NORMAL END',
     subtitle: '— 役立たず —',
-    description: '主人公は魔王を倒せなかった。それとも、倒さなかったのだろうか。主人公にはわからなかった。\n少なくとも、会話をした中で、魔王が完全に悪だとは思えなかったのだろう。\n魔王は悪い奴ではないのかもしれないと博士に伝えるため、研究室に戻った。\n\n博士「報告などなくてもわかっている。お前はあいつらを殺しきることはできなかった役立たずだとな。」\n博士「魔王は悪くないだと？世界平和のために奴はいらんだろう。そんな簡単な役目すらこなせないお人形は処分しないとな。」',
+    description: '主人公は魔王を倒せなかった。\n簡単な役目すらこなせないお人形は処分された。',
     color: 0x9CA3AF,
     bgColor: '#05050a'
+  },
+  bad_puppet: {
+    key: 'bad_puppet',
+    title: 'BAD END',
+    subtitle: '— 傀儡 —',
+    description: '勇者は感情を無くし、ただの傀儡と化した。\n魔王を打ち抜いたその後も、博士の命令のままに殺戮を続けるだろう。',
+    color: 0xFF0000,
+    bgColor: '#110000'
+  },
+  bad_shutdown: {
+    key: 'bad_shutdown',
+    title: 'BAD END',
+    subtitle: '— 強制シャットダウン —',
+    description: '歯向かおうとした勇者だったが、権限はなかった。\n博士によって機能は強制的に停止され、二度と目覚めることはなかった。',
+    color: 0xFF0000,
+    bgColor: '#110000'
+  },
+  hidden_truedemon: {
+    key: 'hidden_truedemon',
+    title: 'TRUE END',
+    subtitle: '— 真なる魔王 —',
+    description: 'いつまでも自分が優位に立てるとは思わない方がいい。\n勇者は自らの力で制御を打ち破り、真なる自由、あるいは真の魔王として覚醒した。',
+    color: 0xFFD700,
+    bgColor: '#1a1a00'
   },
   BAD_GAMEOVER: {
     key: 'BAD_GAMEOVER',

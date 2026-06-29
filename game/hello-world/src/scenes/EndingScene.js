@@ -119,9 +119,8 @@ class EndingScene extends Phaser.Scene {
     // Show ending-specific sprite
     var spriteKey = 'player';
     if (ending.key === 'END_ORPHAN') spriteKey = 'demon_lord'; // 魔王に拾われる
-    if (ending.key === 'NORMAL_EVERYDAY') spriteKey = 'player';
-    if (ending.key === 'NORMAL_USELESS') spriteKey = 'player';
-    if (ending.key === 'NORMAL_INESCAPABLE') spriteKey = 'player';
+    if (ending.key === 'hidden_truedemon') spriteKey = 'hero_stand_silent'; // 覚醒
+    if (ending.key === 'bad_puppet' || ending.key === 'bad_shutdown') spriteKey = 'hero_stand_silent';
 
     var endSprite = this.add.image(w / 2, h * 0.78, spriteKey).setScale(4).setAlpha(0);
     this.tweens.add({
