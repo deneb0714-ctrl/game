@@ -126,7 +126,7 @@ class BossScene extends Phaser.Scene {
         choices: []
       },
       doctor: {
-        texture: 'doctor_face', name: '博士', hp: 120, scale: 2.0,
+        texture: 'doctor_face', name: '博士', hp: 120, scale: 0.15,
         intro: '「さぁ、最終決戦といこうじゃないか！」',
         defeat: '「驚いた...まさかお前がここまでやるとはな」',
         choices: []
