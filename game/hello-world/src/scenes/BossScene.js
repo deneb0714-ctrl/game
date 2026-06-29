@@ -1259,46 +1259,103 @@ class BossScene extends Phaser.Scene {
                   
                   if (c === 2) {
                       if (Satsui >= 100 && DP < 100) {
+                          await sayDevice('「よくやった。さぁ早くとどめを！」');
+                          
+                          // 魔王爆発演出
+                          MOT.Audio.playSelect(); // 爆発音の代わり、または別途音があれば
+                          this.cameras.main.shake(500, 0.05);
+                          if(this.demonImage) {
+                              this.tweens.add({ targets: this.demonImage, scale: 2, alpha: 0, duration: 500, ease: 'Power2' });
+                          }
+                          await new Promise(r => this.time.delayedCall(1000, r));
+                          
                           await new Promise(res => {
-                              this.tweens.add({ targets: dimBg, alpha: 0.6, duration: 300 });
-                              if(this.demonImage) this.tweens.add({ targets: this.demonImage, alpha: 0, duration: 300 });
-                              if(this.heroImage) this.tweens.add({targets: this.heroImage, alpha: 0, duration: 300});
                               this.showDialogue('', '一言も発さず、残党も出会い次第殺しながら博士の研究室に戻る。', res);
                           });
                           
-                          this.cameras.main.fadeOut(1000);
-                          await new Promise(r => this.time.delayedCall(1000, r));
+                          // 左にスライドするトランジション（黒い矩形を右から左へスライドして画面を隠す）
+                          var w = 1920, h = 1080;
+                          let slideRect = this.add.rectangle(w + w/2, h/2, w, h, 0x000000).setDepth(1000);
+                          await new Promise(res => {
+                              this.tweens.add({ targets: slideRect, x: w/2, duration: 600, ease: 'Power2', onComplete: res });
+                          });
                           
+                          // 裏で研究室シーンへの切り替えと戦闘UIの非表示
                           this.bg.setTexture('bg_lab');
-                          if (this.demonImage) { this.demonImage.destroy(); this.demonImage = null; }
+                          this.bg.setTint(0xffffff); // 背景色が変えられていた場合に戻す
                           
+                          // 戦闘UIとオブジェクトを全て隠す
+                          if (this.player) this.player.setVisible(false);
+                          if (this.playerHitboxGraphics) this.playerHitboxGraphics.setVisible(false);
+                          if (this.bossHpBg) this.bossHpBg.setVisible(false);
+                          if (this.bossHpBar) this.bossHpBar.setVisible(false);
+                          if (this.barrierVisual) this.barrierVisual.setVisible(false);
+                          if (this.uiBg) this.uiBg.setVisible(false);
+                          if (this.uiText) this.uiText.setVisible(false);
+                          this.playerBullets.clear(true, true);
+                          this.enemyBullets.clear(true, true);
+                          
+                          if (this.demonImage) { this.demonImage.destroy(); this.demonImage = null; }
+                          if (this.heroImage) { this.heroImage.destroy(); this.heroImage = null; }
+                          
+                          // 博士の立ち絵
                           this.doctorImage = this.add.image(1920 - 300, 1080 / 2, 'doctor_stand').setAlpha(0).setDepth(90);
                           var docScale = 750 / this.doctorImage.width;
                           this.doctorImage.setScale(docScale);
                           this.doctorImage.setY(100 + (this.doctorImage.height * docScale) / 2);
                           
-                          if (this.heroImage) {
-                              this.heroImage.setTexture('hero_stand_corrupted');
-                              this.heroImage.setScale(750 / this.heroImage.width);
-                              this.heroImage.setY(100 + (this.heroImage.height * this.heroImage.scaleY) / 2);
-                          }
+                          // 勇者（覚醒）の立ち絵
+                          this.heroImage = this.add.image(300, 1080 / 2, 'hero_stand_corrupted').setAlpha(0).setDepth(90);
+                          var newHeroScale = 750 / 1080; // 画像の幅が1080であることを前提に手動計算
+                          this.heroImage.setScale(newHeroScale);
+                          this.heroImage.setY(100 + (1920 * newHeroScale) / 2);
                           
-                          this.cameras.main.fadeIn(1000);
-                          await new Promise(r => this.time.delayedCall(1000, r));
+                          // 黒い矩形をさらに左へスライドして画面を現す
+                          await new Promise(res => {
+                              this.tweens.add({ targets: slideRect, x: -w/2, duration: 600, ease: 'Power2', onComplete: res });
+                          });
+                          slideRect.destroy();
                           
-                          const sayDoctorLab = (text) => new Promise(res => { this.tweens.add({ targets: dimBg, alpha: 0.6, duration: 300 }); if(this.heroImage) this.tweens.add({targets: this.heroImage, alpha: 0.4, duration: 300}); this.tweens.add({ targets: this.doctorImage, alpha: 1, duration: 300 }); this.showDialogue('博士', text, res); });
-                          const sayHeroLab = (text) => new Promise(res => { this.tweens.add({ targets: dimBg, alpha: 0.6, duration: 300 }); if(this.heroImage) this.tweens.add({targets: this.heroImage, alpha: 1, duration: 300}); this.tweens.add({ targets: this.doctorImage, alpha: 0.4, duration: 300 }); if(this.heroImage){ this.heroImage.setTexture('hero_stand_corrupted'); this.heroImage.setScale(750 / this.heroImage.width); this.heroImage.setY(100 + (this.heroImage.height * this.heroImage.scaleY) / 2); } this.showDialogue('勇者', text, res); });
+                          const sayDoctorLab = (text) => new Promise(res => { this.tweens.add({ targets: dimBg, alpha: 0.6, duration: 300 }); this.tweens.add({targets: this.heroImage, alpha: 0.4, duration: 300}); this.tweens.add({ targets: this.doctorImage, alpha: 1, duration: 300 }); this.showDialogue('博士', text, res); });
+                          const sayHeroLab = (text) => new Promise(res => { this.tweens.add({ targets: dimBg, alpha: 0.6, duration: 300 }); this.tweens.add({targets: this.heroImage, alpha: 1, duration: 300}); this.tweens.add({ targets: this.doctorImage, alpha: 0.4, duration: 300 }); this.showDialogue('勇者', text, res); });
                           
                           await sayDoctorLab('「貴様……システムに逆らうというのか！」');
                           await sayDoctorLab('「……！？」');
                           
-                          await askShatterChoice('1. 博士を殺す', '2. 博士を殺す', false);
+                          // 5つの選択肢
+                          if (this.choiceContainer) this.choiceContainer.destroy();
+                          this.choiceContainer = this.add.container(0, 0).setDepth(200);
+                          var bgChoice = this.add.rectangle(w / 2, h / 2, w, h, 0x000000, 0.4).setInteractive();
+                          this.choiceContainer.add(bgChoice);
+                          var titleChoice = this.add.text(w / 2, h / 2 - 200, '選択してください', { fontFamily: '"DotGothic16"', fontSize: '40px', color: '#ffffff' }).setOrigin(0.5);
+                          this.choiceContainer.add(titleChoice);
+                          
+                          let yStart = h / 2 - 120;
+                          for(let i=0; i<5; i++){
+                              let box = this.add.rectangle(w / 2, yStart + i * 60, 500, 50, 0x1F2933, 0.8).setStrokeStyle(2, 0x4FD1FF);
+                              let txt = this.add.text(w / 2, yStart + i * 60, '博士を殺す', { fontFamily: '"DotGothic16"', fontSize: '24px', color: '#ffffff' }).setOrigin(0.5);
+                              this.choiceContainer.add([box, txt]);
+                          }
+                          await new Promise(res => {
+                              let cursor = this.add.text(w / 2 - 280, yStart, '▶', { fontFamily: '"DotGothic16"', fontSize: '24px', color: '#39FF14' }).setOrigin(0.5);
+                              this.choiceContainer.add(cursor);
+                              let idx = 0;
+                              const kh = (e) => {
+                                  if(e.key==='ArrowUp' || e.key==='w') { idx = Math.max(0, idx-1); cursor.setY(yStart + idx*60); }
+                                  if(e.key==='ArrowDown' || e.key==='s') { idx = Math.min(4, idx+1); cursor.setY(yStart + idx*60); }
+                                  if(e.key==='Enter' || e.key===' ') {
+                                      this.input.keyboard.off('keydown', kh);
+                                      this.choiceContainer.destroy();
+                                      res();
+                                  }
+                              };
+                              this.input.keyboard.on('keydown', kh);
+                          });
                           
                           await sayHeroLab('「いつまでも自分が優位に立てるとは思わない方がいい」');
                           
                           this.cameras.main.shake(1000, 0.05);
                           MOT.Audio.playSelect();
-                          var w = 1920, h = 1080;
                           let glass = this.add.rectangle(w/2, h/2, w, h, 0xffffff).setAlpha(0).setDepth(400).setBlendMode(Phaser.BlendModes.ADD);
                           this.tweens.add({targets: glass, alpha: 1, duration: 100, yoyo: true, repeat: 3});
                           await new Promise(r => this.time.delayedCall(1000, r));
