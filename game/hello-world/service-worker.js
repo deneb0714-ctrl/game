@@ -1,5 +1,5 @@
 // Service Worker for 真理のマリオネット
-const CACHE_NAME = 'marionette-v42';
+const CACHE_NAME = 'marionette-v43';
 const ASSETS_TO_CACHE = [
   '/',
   '/index.html',

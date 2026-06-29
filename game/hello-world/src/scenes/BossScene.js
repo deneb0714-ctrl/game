@@ -1259,9 +1259,43 @@ class BossScene extends Phaser.Scene {
                   
                   if (c === 2) {
                       if (Satsui >= 100 && DP < 100) {
-                          await sayDevice('「貴様……システムに逆らうというのか！」');
-                          await sayDevice('「……！？」');
-                          await sayHero('「いつまでも自分が優位に立てるとは思わない方がいい」');
+                          await new Promise(res => {
+                              this.tweens.add({ targets: dimBg, alpha: 0.6, duration: 300 });
+                              if(this.demonImage) this.tweens.add({ targets: this.demonImage, alpha: 0, duration: 300 });
+                              if(this.heroImage) this.tweens.add({targets: this.heroImage, alpha: 0, duration: 300});
+                              this.showDialogue('', '一言も発さず、残党も出会い次第殺しながら博士の研究室に戻る。', res);
+                          });
+                          
+                          this.cameras.main.fadeOut(1000);
+                          await new Promise(r => this.time.delayedCall(1000, r));
+                          
+                          this.bg.setTexture('bg_lab');
+                          if (this.demonImage) { this.demonImage.destroy(); this.demonImage = null; }
+                          
+                          this.doctorImage = this.add.image(1920 - 300, 1080 / 2, 'doctor_stand').setAlpha(0).setDepth(90);
+                          var docScale = 750 / this.doctorImage.width;
+                          this.doctorImage.setScale(docScale);
+                          this.doctorImage.setY(100 + (this.doctorImage.height * docScale) / 2);
+                          
+                          if (this.heroImage) {
+                              this.heroImage.setTexture('hero_stand_corrupted');
+                              this.heroImage.setScale(750 / this.heroImage.width);
+                              this.heroImage.setY(100 + (this.heroImage.height * this.heroImage.scaleY) / 2);
+                          }
+                          
+                          this.cameras.main.fadeIn(1000);
+                          await new Promise(r => this.time.delayedCall(1000, r));
+                          
+                          const sayDoctorLab = (text) => new Promise(res => { this.tweens.add({ targets: dimBg, alpha: 0.6, duration: 300 }); if(this.heroImage) this.tweens.add({targets: this.heroImage, alpha: 0.4, duration: 300}); this.tweens.add({ targets: this.doctorImage, alpha: 1, duration: 300 }); this.showDialogue('博士', text, res); });
+                          const sayHeroLab = (text) => new Promise(res => { this.tweens.add({ targets: dimBg, alpha: 0.6, duration: 300 }); if(this.heroImage) this.tweens.add({targets: this.heroImage, alpha: 1, duration: 300}); this.tweens.add({ targets: this.doctorImage, alpha: 0.4, duration: 300 }); if(this.heroImage){ this.heroImage.setTexture('hero_stand_corrupted'); this.heroImage.setScale(750 / this.heroImage.width); this.heroImage.setY(100 + (this.heroImage.height * this.heroImage.scaleY) / 2); } this.showDialogue('勇者', text, res); });
+                          
+                          await sayDoctorLab('「貴様……システムに逆らうというのか！」');
+                          await sayDoctorLab('「……！？」');
+                          
+                          await askShatterChoice('1. 博士を殺す', '2. 博士を殺す', false);
+                          
+                          await sayHeroLab('「いつまでも自分が優位に立てるとは思わない方がいい」');
+                          
                           this.cameras.main.shake(1000, 0.05);
                           MOT.Audio.playSelect();
                           var w = 1920, h = 1080;
