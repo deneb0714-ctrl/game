@@ -43,9 +43,9 @@ class BossScene extends Phaser.Scene {
 
     // Player
     this.player = this.physics.add.sprite(-100, 460, 'hero_stand_combat').setScale(2).setDepth(10);
-    // STG風の小さな当たり判定（未スケール時8x8、画面上16x16）
-    this.player.body.setSize(8, 8);
-    this.player.body.setOffset((this.player.width - 8) / 2, (this.player.height - 8) / 2);
+    // マントと魔法陣を除いた全身を覆う当たり判定（未スケール時26x80、画面上52x160）
+    this.player.body.setSize(26, 80);
+    this.player.body.setOffset(28, 15);
     
     // 当たり判定可視化用グラフィックス
     this.playerHitboxGraphics = this.add.graphics();
@@ -488,12 +488,12 @@ class BossScene extends Phaser.Scene {
   }
 
   update(time, delta) {
-    // 当たり判定の描画（常にプレイヤーに追従）
+    // 当たり判定の描画（常にプレイヤーのbodyに追従する赤い線）
     if (this.playerHitboxGraphics) {
       this.playerHitboxGraphics.clear();
       if (this.player && this.player.active && this.player.alpha > 0) {
-        this.playerHitboxGraphics.fillStyle(0xff0000, 0.8);
-        this.playerHitboxGraphics.fillCircle(this.player.body.center.x, this.player.body.center.y, 8);
+        this.playerHitboxGraphics.lineStyle(3, 0xff0000, 0.8);
+        this.playerHitboxGraphics.strokeRect(this.player.body.x, this.player.body.y, this.player.body.width, this.player.body.height);
       }
     }
 
