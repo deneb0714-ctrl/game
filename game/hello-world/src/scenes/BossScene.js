@@ -1273,12 +1273,16 @@ class BossScene extends Phaser.Scene {
                               this.showDialogue('', '一言も発さず、残党も出会い次第殺しながら博士の研究室に戻る。', res);
                           });
                           
-                          // 左にスライドするトランジション（黒い矩形を右から左へスライドして画面を隠す）
-                          var w = 1920, h = 1080;
-                          let slideRect = this.add.rectangle(w + w/2, h/2, w, h, 0x000000).setDepth(1000);
-                          await new Promise(res => {
-                              this.tweens.add({ targets: slideRect, x: w/2, duration: 600, ease: 'Power2', onComplete: res });
-                          });
+                          // 自機（主人公）が左へスライドして画面外へ消える演出
+                          if (this.player) {
+                              await new Promise(res => {
+                                  this.tweens.add({ targets: this.player, x: -100, duration: 1500, ease: 'Power2', onComplete: res });
+                              });
+                          }
+                          
+                          // フェードアウト
+                          this.cameras.main.fadeOut(1000);
+                          await new Promise(r => this.time.delayedCall(1000, r));
                           
                           // 裏で研究室シーンへの切り替えと戦闘UIの非表示
                           this.bg.setTexture('bg_lab');
@@ -1310,11 +1314,9 @@ class BossScene extends Phaser.Scene {
                           this.heroImage.setScale(newHeroScale);
                           this.heroImage.setY(100 + (1920 * newHeroScale) / 2);
                           
-                          // 黒い矩形をさらに左へスライドして画面を現す
-                          await new Promise(res => {
-                              this.tweens.add({ targets: slideRect, x: -w/2, duration: 600, ease: 'Power2', onComplete: res });
-                          });
-                          slideRect.destroy();
+                          // フェードイン
+                          this.cameras.main.fadeIn(1000);
+                          await new Promise(r => this.time.delayedCall(1000, r));
                           
                           const sayDoctorLab = (text) => new Promise(res => { this.tweens.add({ targets: dimBg, alpha: 0.6, duration: 300 }); this.tweens.add({targets: this.heroImage, alpha: 0.4, duration: 300}); this.tweens.add({ targets: this.doctorImage, alpha: 1, duration: 300 }); this.showDialogue('博士', text, res); });
                           const sayHeroLab = (text) => new Promise(res => { this.tweens.add({ targets: dimBg, alpha: 0.6, duration: 300 }); this.tweens.add({targets: this.heroImage, alpha: 1, duration: 300}); this.tweens.add({ targets: this.doctorImage, alpha: 0.4, duration: 300 }); this.showDialogue('勇者', text, res); });
@@ -1325,6 +1327,7 @@ class BossScene extends Phaser.Scene {
                           // 5つの選択肢
                           if (this.choiceContainer) this.choiceContainer.destroy();
                           this.choiceContainer = this.add.container(0, 0).setDepth(200);
+                          var w = 1920, h = 1080;
                           var bgChoice = this.add.rectangle(w / 2, h / 2, w, h, 0x000000, 0.4).setInteractive();
                           this.choiceContainer.add(bgChoice);
                           var titleChoice = this.add.text(w / 2, h / 2 - 200, '選択してください', { fontFamily: '"DotGothic16"', fontSize: '40px', color: '#ffffff' }).setOrigin(0.5);
