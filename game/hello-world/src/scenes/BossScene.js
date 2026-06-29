@@ -120,7 +120,7 @@ class BossScene extends Phaser.Scene {
         // Intro and defeat are handled custom via playTwinsIntro and post-battle logic
       },
       demon_lord: {
-        texture: 'demon_lord', name: '魔王 – ヴェリタス', hp: 80, scale: 2,
+        texture: 'demon_stand_combat', name: '魔王 – ヴェリタス', hp: 80, scale: 2,
         intro: '「…来たか、博士の人形よ。\nお前に真実を伝えなければならない。」',
         defeat: '「聞いてくれ。博士こそが…この世界を壊そうとしている。\n俺は…それを止めたかっただけだ。」',
         choices: []
@@ -152,6 +152,7 @@ class BossScene extends Phaser.Scene {
 
     // Spawn boss (hidden initially)
     var boss = this.physics.add.sprite(1920, 460, cfg.texture);
+    if (key === 'demon_lord') boss.play('demon_combat_anim');
     boss.setScale(cfg.scale);
     boss.setDepth(8);
     this.enemyGroup.add(boss);
@@ -494,6 +495,14 @@ class BossScene extends Phaser.Scene {
       if (this.player && this.player.active && this.player.alpha > 0) {
         this.playerHitboxGraphics.lineStyle(3, 0x00ffff, 0.8);
         this.playerHitboxGraphics.strokeRect(this.player.body.x, this.player.body.y, this.player.body.width, this.player.body.height);
+      }
+      if (this.currentBoss && this.currentBoss.active && this.currentBoss.visible) {
+        this.playerHitboxGraphics.lineStyle(3, 0xff00ff, 0.8);
+        this.playerHitboxGraphics.strokeRect(this.currentBoss.body.x, this.currentBoss.body.y, this.currentBoss.body.width, this.currentBoss.body.height);
+      }
+      if (this.sisterBoss && this.sisterBoss.active && this.sisterBoss.visible) {
+        this.playerHitboxGraphics.lineStyle(3, 0xff00ff, 0.8);
+        this.playerHitboxGraphics.strokeRect(this.sisterBoss.body.x, this.sisterBoss.body.y, this.sisterBoss.body.width, this.sisterBoss.body.height);
       }
     }
 

@@ -61,6 +61,10 @@ class BootScene extends Phaser.Scene {
       frameWidth: window.HERO_COMBAT_FRAME_WIDTH,
       frameHeight: window.HERO_COMBAT_FRAME_HEIGHT
     });
+    this.load.spritesheet('demon_stand_combat', window.DEMON_COMBAT_SHEET_B64, {
+      frameWidth: window.DEMON_COMBAT_FRAME_WIDTH,
+      frameHeight: window.DEMON_COMBAT_FRAME_HEIGHT
+    });
 
     // 主人公の瞬き（表情切り替え用）
     this.load.image('hero_stand_blink', window.HERO_STAND_BLINK_B64);
@@ -107,6 +111,13 @@ class BootScene extends Phaser.Scene {
     this.anims.create({
       key: 'hero_combat_anim',
       frames: this.anims.generateFrameNumbers('hero_stand_combat', { start: 0, end: 59 }),
+      frameRate: 15,
+      repeat: -1
+    });
+    
+    this.anims.create({
+      key: 'demon_combat_anim',
+      frames: this.anims.generateFrameNumbers('demon_stand_combat', { start: 0, end: 39 }),
       frameRate: 15,
       repeat: -1
     });
