@@ -46,6 +46,11 @@ class BossScene extends Phaser.Scene {
     // STG風の小さな当たり判定（未スケール時8x8、画面上16x16）
     this.player.body.setSize(8, 8);
     this.player.body.setOffset((this.player.width - 8) / 2, (this.player.height - 8) / 2);
+    
+    // 当たり判定可視化用グラフィックス
+    this.playerHitboxGraphics = this.add.graphics();
+    this.playerHitboxGraphics.setDepth(11);
+
     this.player.play('hero_combat_anim');
     this.tweens.add({ 
       targets: this.player, 
@@ -483,6 +488,15 @@ class BossScene extends Phaser.Scene {
   }
 
   update(time, delta) {
+    // 当たり判定の描画（常にプレイヤーに追従）
+    if (this.playerHitboxGraphics) {
+      this.playerHitboxGraphics.clear();
+      if (this.player && this.player.active && this.player.alpha > 0) {
+        this.playerHitboxGraphics.fillStyle(0xff0000, 0.8);
+        this.playerHitboxGraphics.fillCircle(this.player.body.center.x, this.player.body.center.y, 8);
+      }
+    }
+
     // 博士の指示システム update（ダイアログ判定より先に実行して、表示非表示を管理する）
     MOT.DoctorDirective.update(this, delta, this.player, this.dialogActive);
 
