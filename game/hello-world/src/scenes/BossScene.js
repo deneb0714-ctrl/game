@@ -43,15 +43,15 @@ class BossScene extends Phaser.Scene {
 
     // Player
     this.player = this.physics.add.sprite(-100, 460, 'hero_stand_combat').setScale(2).setDepth(10);
-    // マントと魔法陣を除いた全身を覆う当たり判定（頭の余白を削る）
-    this.player.body.setSize(32, 78);
-    this.player.body.setOffset(16, 17);
     
     // 当たり判定可視化用グラフィックス
     this.playerHitboxGraphics = this.add.graphics();
     this.playerHitboxGraphics.setDepth(11);
 
     this.player.play('hero_combat_anim');
+    // アニメーション再生後にサイズを指定（アニメーションによって上書きされるのを防ぐ）
+    this.player.body.setSize(24, 80);
+    this.player.body.setOffset(20, 15);
     this.tweens.add({ 
       targets: this.player, 
       x: 300, 
