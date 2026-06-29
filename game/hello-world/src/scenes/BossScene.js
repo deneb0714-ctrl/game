@@ -1284,20 +1284,38 @@ class BossScene extends Phaser.Scene {
                           this.cameras.main.fadeOut(1000);
                           await new Promise(r => this.time.delayedCall(1000, r));
                           
-                          // 裏で研究室シーンへの切り替えと戦闘UIの非表示
-                          this.bg.setTexture('bg_lab');
-                          this.bg.setTint(0xffffff); // 背景色が変えられていた場合に戻す
-                          
                           // 戦闘UIとオブジェクトを全て隠す
-                          if (this.player) this.player.setVisible(false);
+                          if (this.player) { this.player.setVisible(false); this.player.setActive(false); }
                           if (this.playerHitboxGraphics) this.playerHitboxGraphics.setVisible(false);
                           if (this.bossHpBg) this.bossHpBg.setVisible(false);
                           if (this.bossHpBar) this.bossHpBar.setVisible(false);
                           if (this.barrierVisual) this.barrierVisual.setVisible(false);
                           if (this.uiBg) this.uiBg.setVisible(false);
                           if (this.uiText) this.uiText.setVisible(false);
+                          if (this.hpText) this.hpText.setVisible(false);
+                          if (this.energyText) this.energyText.setVisible(false);
+                          if (this.energyBar) this.energyBar.setVisible(false);
+                          if (this.barrierIconBg) this.barrierIconBg.setVisible(false);
+                          if (this.barrierIconFg) this.barrierIconFg.setVisible(false);
+                          if (this.bossHPText) this.bossHPText.setVisible(false);
+                          if (this.areaNameText) this.areaNameText.setVisible(false);
+                          if (this.iconPersonBg) this.iconPersonBg.setVisible(false);
+                          if (this.iconPersonFill) this.iconPersonFill.setVisible(false);
+                          if (this.dollText) this.dollText.setVisible(false);
+                          if (this.iconBatteryBg) this.iconBatteryBg.setVisible(false);
+                          if (this.iconBatteryFill) this.iconBatteryFill.setVisible(false);
+                          if (this.intentText) this.intentText.setVisible(false);
+                          if (this.laneGraphics) { this.laneGraphics.setVisible(false); }
+                          if (this.currentBoss) { this.currentBoss.setVisible(false); this.currentBoss.setActive(false); }
+                          
                           this.playerBullets.clear(true, true);
                           this.enemyBullets.clear(true, true);
+                          
+                          this.bg.setTexture('bg_lab');
+                          this.bg.setTint(0xffffff); // 背景色が変えられていた場合に戻す
+                          this.bg.setOrigin(0, 0.5);
+                          this.bg.setPosition(0, 1080 / 2);
+                          this.bg.setScale(1920 / 1024);
                           
                           if (this.demonImage) { this.demonImage.destroy(); this.demonImage = null; }
                           if (this.heroImage) { this.heroImage.destroy(); this.heroImage = null; }
@@ -2026,7 +2044,7 @@ class BossScene extends Phaser.Scene {
         const isHero = speaker && speaker.includes('勇者');
         if (isHero && this.heroImage && this.heroImage.active) {
           if (charIndex === 1 && text[charIndex - 1] !== ' ') {
-            if (this.heroImage.texture.key !== 'hero_stand_silent') {
+            if (this.heroImage.texture.key === 'hero_stand') {
               this.heroImage.setTexture('hero_stand_blink');
             }
           } else if (charIndex === 4 || charIndex >= text.length) {
