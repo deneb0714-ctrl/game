@@ -68,7 +68,9 @@ class BootScene extends Phaser.Scene {
 
     // 主人公の瞬き（表情切り替え用）
     this.load.image('hero_stand_blink', window.HERO_STAND_BLINK_B64);
+    this.load.image('hero_stand', 'assets/images/hero_stand.png');
     this.load.image('hero_stand_silent', 'assets/images/hero_stand_silent.png');
+    this.load.image('hero_stand_corrupted', 'assets/images/hero_stand_corrupted.png');
 
     // Demon Lord portraits
     this.load.image('demon_lord_normal', 'assets/images/demon_lord_normal.png');

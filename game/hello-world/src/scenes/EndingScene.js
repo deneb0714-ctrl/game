@@ -117,20 +117,25 @@ class EndingScene extends Phaser.Scene {
     }, [], this);
 
     // Show ending-specific sprite
-    var spriteKey = 'player';
+    var spriteKey = null;
     if (ending.key === 'END_ORPHAN') spriteKey = 'demon_lord'; // 魔王に拾われる
-    if (ending.key === 'hidden_truedemon') spriteKey = 'hero_stand_silent'; // 覚醒
-    if (ending.key === 'bad_puppet' || ending.key === 'bad_shutdown') spriteKey = 'hero_stand_silent';
+    if (ending.key === 'hidden_truedemon') spriteKey = 'hero_stand_corrupted'; // 覚醒
 
-    var endSprite = this.add.image(w / 2, h * 0.78, spriteKey).setScale(4).setAlpha(0);
-    this.tweens.add({
-      targets: endSprite, alpha: 0.6, duration: 2000, delay: 3000,
-      ease: 'Power2'
-    });
+    var endSprite = null;
+    if (spriteKey) {
+      endSprite = this.add.image(w / 2, h * 0.78, spriteKey).setScale(4).setAlpha(0);
+      var spriteDelay = 3000;
+      if (ending.key === 'hidden_truedemon') {
+        spriteDelay = 2500 + fullDesc.length * 45 + 500;
+      }
+      this.tweens.add({
+        targets: endSprite, alpha: 1, duration: 2000, delay: spriteDelay,
+        ease: 'Power2'
+      });
+    }
 
     if (ending.key === 'BAD_GAMEOVER') {
       desc.setVisible(false);
-      endSprite.setVisible(false);
     }
 
     // Title button (appears after a delay)
