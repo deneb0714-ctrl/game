@@ -2037,6 +2037,8 @@ class BossScene extends Phaser.Scene {
               this.demonImage.setTexture('demon_lord_normal');
             }
           }
+        }
+
         if (charIndex >= text.length) {
           typeTimer.destroy();
           contText.setAlpha(1);
