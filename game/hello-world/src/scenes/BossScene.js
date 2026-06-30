@@ -2383,15 +2383,11 @@ class BossScene extends Phaser.Scene {
       this.energyBarOutline.strokeRect(30, 80, 200, 16);
       
       this.iconPersonBg = this.add.image(30, 110, 'icon_person').setOrigin(0, 0).setTint(0x555555).setDepth(100).setScrollFactor(0);
-      this.iconPersonFill = this.add.image(30, 110, 'icon_person').setOrigin(0, 0).setTint(0xFFFF00).setDepth(100).setScrollFactor(0);
-      this.personMask = this.add.graphics().fillStyle(0xffffff, 1).fillRect(0, 0, 32, 64);
-      this.iconPersonFill.setMask(this.personMask.createGeometryMask());
+      this.iconPersonFill = this.add.image(30, 110 + 64, 'icon_person').setOrigin(0, 1).setTint(0xFFFF00).setDepth(100).setScrollFactor(0);
       this.dollText = this.add.text(70, 130, '', { fontFamily: '"Press Start 2P"', fontSize: '12px', color: '#FFFF00' }).setDepth(100).setScrollFactor(0);
       
       this.iconBatteryBg = this.add.image(130, 110, 'icon_battery').setOrigin(0, 0).setTint(0x555555).setDepth(100).setScrollFactor(0);
-      this.iconBatteryFill = this.add.image(130, 110, 'icon_battery').setOrigin(0, 0).setTint(0xFF0000).setDepth(100).setScrollFactor(0);
-      this.batteryMask = this.add.graphics().fillStyle(0xffffff, 1).fillRect(0, 0, 32, 64);
-      this.iconBatteryFill.setMask(this.batteryMask.createGeometryMask());
+      this.iconBatteryFill = this.add.image(130, 110 + 64, 'icon_battery').setOrigin(0, 1).setTint(0xFF0000).setDepth(100).setScrollFactor(0);
       this.intentText = this.add.text(170, 130, '', { fontFamily: '"Press Start 2P"', fontSize: '12px', color: '#FF0000' }).setDepth(100).setScrollFactor(0);
     }
 
@@ -2416,17 +2412,13 @@ class BossScene extends Phaser.Scene {
     // Doll Points update
     const dollValue = MOT.flags.dollPoints || 0;
     const dollPct = Phaser.Math.Clamp(dollValue / 100, 0, 1);
-    this.personMask.y = 110 + (64 - 64 * dollPct);
-    this.personMask.x = 30;
-    this.personMask.scaleY = Math.max(0.001, dollPct);
+    this.iconPersonFill.scaleY = Math.max(0.001, dollPct);
     this.dollText.setText('DP:' + dollValue);
 
     // Killing Intent update
     const intentValue = MOT.flags.killingIntent || 0;
     const intentPct = Phaser.Math.Clamp(intentValue / 100, 0, 1);
-    this.batteryMask.y = 110 + (64 - 64 * intentPct);
-    this.batteryMask.x = 130;
-    this.batteryMask.scaleY = Math.max(0.001, intentPct);
+    this.iconBatteryFill.scaleY = Math.max(0.001, intentPct);
     this.intentText.setText('KI:' + intentValue);
 
     const iconX = 260;
