@@ -79,6 +79,10 @@ class BootScene extends Phaser.Scene {
     this.load.image('demon_lord_dying', 'assets/images/demon_lord_dying.png?v=' + v);
     this.load.image('demon_lord_shock', 'assets/images/demon_lord_shock.png?v=' + v);
 
+    // Icons
+    this.load.image('icon_person', 'assets/images/icon_person.png?v=' + v);
+    this.load.image('icon_battery', 'assets/images/icon_battery.png?v=' + v);
+
     // Title background (Hello World)
     this.load.image('title_bg', window.TITLE_BG_B64);
     
@@ -484,26 +488,7 @@ class BootScene extends Phaser.Scene {
     g2.generateTexture('item_health', 20, 20);
     g2.destroy();
 
-    // UI: Person Icon (Doll Points)
-    const gPerson = this.make.graphics({ add: false });
-    gPerson.fillStyle(0xFFFFFF, 1);
-    gPerson.fillCircle(16, 8, 8); // head
-    gPerson.fillRect(8, 18, 16, 20); // body
-    gPerson.fillRect(2, 18, 4, 18); // left arm
-    gPerson.fillRect(26, 18, 4, 18); // right arm
-    gPerson.fillRect(10, 40, 4, 20); // left leg
-    gPerson.fillRect(18, 40, 4, 20); // right leg
-    gPerson.generateTexture('icon_person', 32, 64);
-    gPerson.destroy();
-
-    // UI: Battery Icon (Killing Intent)
-    const gBattery = this.make.graphics({ add: false });
-    gBattery.lineStyle(4, 0xFFFFFF, 1);
-    gBattery.strokeRect(4, 8, 24, 48); // battery body
-    gBattery.fillStyle(0xFFFFFF, 1);
-    gBattery.fillRect(10, 2, 12, 6); // battery top
-    gBattery.generateTexture('icon_battery', 32, 64);
-    gBattery.destroy();
+    // Removed dynamic generation of icon_person and icon_battery to prevent WebGL crash on generated textures
   }
 
   // --- Scrolling backgrounds ---

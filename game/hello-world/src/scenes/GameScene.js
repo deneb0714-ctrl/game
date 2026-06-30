@@ -777,11 +777,11 @@ class GameScene extends Phaser.Scene {
       this.energyBarOutline.strokeRect(30, 80, 200, 16);
       
       this.iconPersonBg = this.add.image(30, 110, 'icon_person').setOrigin(0, 0).setTint(0x555555).setDepth(100).setScrollFactor(0);
-      this.iconPersonFill = this.add.image(30, 110 + 64, 'icon_person').setOrigin(0, 1).setTint(0xFFFF00).setDepth(100).setScrollFactor(0);
+      this.iconPersonFill = this.add.image(30, 110, 'icon_person').setOrigin(0, 0).setTint(0xFFFF00).setDepth(100).setScrollFactor(0);
       this.dollText = this.add.text(70, 130, '', { fontFamily: '"Press Start 2P"', fontSize: '12px', color: '#FFFF00' }).setDepth(100).setScrollFactor(0);
       
       this.iconBatteryBg = this.add.image(130, 110, 'icon_battery').setOrigin(0, 0).setTint(0x555555).setDepth(100).setScrollFactor(0);
-      this.iconBatteryFill = this.add.image(130, 110 + 64, 'icon_battery').setOrigin(0, 1).setTint(0xFF0000).setDepth(100).setScrollFactor(0);
+      this.iconBatteryFill = this.add.image(130, 110, 'icon_battery').setOrigin(0, 0).setTint(0xFF0000).setDepth(100).setScrollFactor(0);
       this.intentText = this.add.text(170, 130, '', { fontFamily: '"Press Start 2P"', fontSize: '12px', color: '#FF0000' }).setDepth(100).setScrollFactor(0);
     }
 
@@ -804,13 +804,15 @@ class GameScene extends Phaser.Scene {
     // Doll Points update
     const dollValue = MOT.flags.dollPoints || 0;
     const dollPct = Phaser.Math.Clamp(dollValue / 100, 0, 1);
-    this.iconPersonFill.scaleY = Math.max(0.001, dollPct);
+    const dollH = Math.max(0.01, 64 * dollPct);
+    this.iconPersonFill.setCrop(0, 64 - dollH, 32, dollH);
     this.dollText.setText('DP:' + dollValue);
 
     // Killing Intent update
     const intentValue = MOT.flags.killingIntent || 0;
     const intentPct = Phaser.Math.Clamp(intentValue / 100, 0, 1);
-    this.iconBatteryFill.scaleY = Math.max(0.001, intentPct);
+    const intentH = Math.max(0.01, 64 * intentPct);
+    this.iconBatteryFill.setCrop(0, 64 - intentH, 32, intentH);
     this.intentText.setText('KI:' + intentValue);
 
     const iconX = 260;
