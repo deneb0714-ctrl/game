@@ -1884,6 +1884,21 @@ class BossScene extends Phaser.Scene {
       // Clear enemy bullets so player is safe while collecting items
       this.enemyBullets.clear(true, true);
       
+      if (this.currentBossIndex >= this.bossQueue.length) {
+        // エンディングへ移行する場合は戦闘を完全に停止し、即座に暗転する
+        this.dialogActive = true; 
+        if (MOT.DoctorDirective && MOT.DoctorDirective.directiveContainer) {
+            MOT.DoctorDirective.directiveContainer.destroy();
+            MOT.DoctorDirective.directiveContainer = null;
+        }
+        
+        this.cameras.main.fadeOut(1500, 0, 0, 0);
+        this.time.delayedCall(1500, () => {
+          this.scene.start('EndingScene');
+        });
+        return;
+      }
+      
       this.dialogActive = false; // Allow player to move and collect items
       this.physics.resume(); // Resume physics so player can move
       
@@ -1896,15 +1911,6 @@ class BossScene extends Phaser.Scene {
         this.playerBullets.clear(true, true);
         this.enemyBullets.clear(true, true);
         if (this.itemGroup) this.itemGroup.clear(true, true);
-        
-        if (this.currentBossIndex >= this.bossQueue.length) {
-          // エンディングへ移行する場合は即座に暗転
-          this.cameras.main.fadeOut(1500, 0, 0, 0);
-          this.time.delayedCall(1500, () => {
-            this.scene.start('EndingScene');
-          });
-          return;
-        }
         
         // Take control of player for transition
         this.dialogActive = true;
