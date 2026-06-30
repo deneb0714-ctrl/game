@@ -1355,36 +1355,7 @@ class BossScene extends Phaser.Scene {
                           await sayDoctorLab('「貴様……システムに逆らうというのか！」');
                           await sayDoctorLab('「……！？」');
                           
-                          // 5つの選択肢
-                          if (this.choiceContainer) this.choiceContainer.destroy();
-                          this.choiceContainer = this.add.container(0, 0).setDepth(200);
-                          var w = 1920, h = 1080;
-                          var bgChoice = this.add.rectangle(w / 2, h / 2, w, h, 0x000000, 0.4).setInteractive();
-                          this.choiceContainer.add(bgChoice);
-                          var titleChoice = this.add.text(w / 2, h / 2 - 200, '選択してください', { fontFamily: '"DotGothic16"', fontSize: '40px', color: '#ffffff' }).setOrigin(0.5);
-                          this.choiceContainer.add(titleChoice);
-                          
-                          let yStart = h / 2 - 120;
-                          for(let i=0; i<5; i++){
-                              let box = this.add.rectangle(w / 2, yStart + i * 60, 500, 50, 0x1F2933, 0.8).setStrokeStyle(2, 0x4FD1FF);
-                              let txt = this.add.text(w / 2, yStart + i * 60, '博士を殺す', { fontFamily: '"DotGothic16"', fontSize: '24px', color: '#ffffff' }).setOrigin(0.5);
-                              this.choiceContainer.add([box, txt]);
-                          }
-                          await new Promise(res => {
-                              let cursor = this.add.text(w / 2 - 280, yStart, '▶', { fontFamily: '"DotGothic16"', fontSize: '24px', color: '#39FF14' }).setOrigin(0.5);
-                              this.choiceContainer.add(cursor);
-                              let idx = 0;
-                              const kh = (e) => {
-                                  if(e.key==='ArrowUp' || e.key==='w') { idx = Math.max(0, idx-1); cursor.setY(yStart + idx*60); }
-                                  if(e.key==='ArrowDown' || e.key==='s') { idx = Math.min(4, idx+1); cursor.setY(yStart + idx*60); }
-                                  if(e.key==='Enter' || e.key===' ') {
-                                      this.input.keyboard.off('keydown', kh);
-                                      this.choiceContainer.destroy();
-                                      res();
-                                  }
-                              };
-                              this.input.keyboard.on('keydown', kh);
-                          });
+                          // (選択肢なしでそのまま進行)
                           
                           await sayHeroLab('「いつまでも自分が優位に立てるとは思わない方がいい」');
                           
