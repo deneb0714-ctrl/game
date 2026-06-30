@@ -799,13 +799,15 @@ class GameScene extends Phaser.Scene {
       this.intentText = this.add.text(170, 130, '', { fontFamily: '"Press Start 2P"', fontSize: '12px', color: '#FF0000' }).setDepth(100).setScrollFactor(0);
     }
 
-    const dollPct = Phaser.Math.Clamp(MOT.flags.dollPoints / 100, 0, 1);
+    const dollValue = MOT.flags.dollPoints || 0;
+    const dollPct = Phaser.Math.Clamp(dollValue / 100, 0, 1);
     this.iconPersonFill.setCrop(0, 64 - 64 * dollPct, 32, 64 * dollPct);
-    this.dollText.setText('DP:' + MOT.flags.dollPoints);
+    this.dollText.setText('DP:' + dollValue);
 
-    const intentPct = Phaser.Math.Clamp(MOT.flags.killingIntent / 100, 0, 1);
+    const intentValue = MOT.flags.killingIntent || 0;
+    const intentPct = Phaser.Math.Clamp(intentValue / 100, 0, 1);
     this.iconBatteryFill.setCrop(0, 64 - 64 * intentPct, 32, 64 * intentPct);
-    this.intentText.setText('KI:' + MOT.flags.killingIntent);
+    this.intentText.setText('KI:' + intentValue);
 
     const iconX = 260;
     const iconY = 88;
