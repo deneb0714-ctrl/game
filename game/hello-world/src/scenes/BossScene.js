@@ -2373,36 +2373,60 @@ class BossScene extends Phaser.Scene {
     this.hpText.setText(hearts);
 
     var pct = MOT.flags.energy / MOT.flags.maxEnergyThreshold;
-    this.energyBar.clear();
-    this.energyBar.fillStyle(0x1F2933, 1); this.energyBar.fillRect(30, 80, 200, 16);
-    this.energyBar.fillStyle(MOT.flags.maxEnergy ? 0xFF4B6E : 0x4FD1FF, 1);
-    this.energyBar.fillRect(32, 82, 196 * pct, 12);
-    this.energyBar.lineStyle(1, 0x4FD1FF, 0.6); this.energyBar.strokeRect(30, 80, 200, 16);
-    this.energyText.setText('EN: ' + MOT.flags.energy + '/' + MOT.flags.maxEnergyThreshold);
-
-    // Doll Points UI
-    if (!this.iconPersonBg) {
-      this.iconPersonBg = this.add.image(30, 110, 'icon_person').setOrigin(0, 0).setDepth(100).setScrollFactor(0);
-      this.dollBarBg = this.add.graphics().setDepth(100).setScrollFactor(0);
-      this.dollBarFg = this.add.graphics().setDepth(100).setScrollFactor(0);
+    
+    // HUD Elements Initialization
+    if (!this.energyBarBgObj) {
+      this.energyBarBgObj = this.add.rectangle(130, 88, 200, 16, 0x1F2933).setDepth(100).setScrollFactor(0);
+      this.energyBarFgObj = this.add.rectangle(32, 82, 196, 12, 0x4FD1FF).setOrigin(0, 0).setDepth(100).setScrollFactor(0);
+      this.energyBarOutline = this.add.graphics().setDepth(100).setScrollFactor(0);
+      this.energyBarOutline.lineStyle(1, 0x4FD1FF, 0.6);
+      this.energyBarOutline.strokeRect(30, 80, 200, 16);
+      
+      this.iconPersonBg = this.add.image(30, 110, 'icon_person').setOrigin(0, 0).setTint(0x555555).setDepth(100).setScrollFactor(0);
+      this.iconPersonFill = this.add.image(30, 110, 'icon_person').setOrigin(0, 0).setTint(0xFFFF00).setDepth(100).setScrollFactor(0);
+      this.personMask = this.add.graphics().fillStyle(0xffffff, 1).fillRect(0, 0, 32, 64);
+      this.iconPersonFill.setMask(this.personMask.createGeometryMask());
       this.dollText = this.add.text(70, 130, '', { fontFamily: '"Press Start 2P"', fontSize: '12px', color: '#FFFF00' }).setDepth(100).setScrollFactor(0);
       
-      this.iconBatteryBg = this.add.image(150, 110, 'icon_battery').setOrigin(0, 0).setDepth(100).setScrollFactor(0);
-      this.intentBarBg = this.add.graphics().setDepth(100).setScrollFactor(0);
-      this.intentBarFg = this.add.graphics().setDepth(100).setScrollFactor(0);
-      this.intentText = this.add.text(190, 130, '', { fontFamily: '"Press Start 2P"', fontSize: '12px', color: '#FF0000' }).setDepth(100).setScrollFactor(0);
+      this.iconBatteryBg = this.add.image(130, 110, 'icon_battery').setOrigin(0, 0).setTint(0x555555).setDepth(100).setScrollFactor(0);
+      this.iconBatteryFill = this.add.image(130, 110, 'icon_battery').setOrigin(0, 0).setTint(0xFF0000).setDepth(100).setScrollFactor(0);
+      this.batteryMask = this.add.graphics().fillStyle(0xffffff, 1).fillRect(0, 0, 32, 64);
+      this.iconBatteryFill.setMask(this.batteryMask.createGeometryMask());
+      this.intentText = this.add.text(170, 130, '', { fontFamily: '"Press Start 2P"', fontSize: '12px', color: '#FF0000' }).setDepth(100).setScrollFactor(0);
     }
 
+    // Energy bar update (using scaleX instead of clear/fillRect)
+    const barColor = MOT.flags.maxEnergy ? 0xFF4B6E : 0x4FD1FF;
+    this.energyBarFgObj.setFillStyle(barColor, 1);
+    this.energyBarFgObj.scaleX = Math.max(0.001, pct);
+
+    // 必殺技ゲージのハイライト
+    this.energyBarOutline.clear();
+    if (this.isEnergyHighlighted) {
+      const flash = (Math.sin(Date.now() / 150) + 1) / 2;
+      this.energyBarOutline.lineStyle(4, 0xFFFF00, 0.4 + 0.6 * flash);
+      this.energyBarOutline.strokeRect(26, 76, 208, 24);
+    } else {
+      this.energyBarOutline.lineStyle(1, 0x4FD1FF, 0.6);
+      this.energyBarOutline.strokeRect(30, 80, 200, 16);
+    }
+
+    this.energyText.setText('EN: ' + MOT.flags.energy + '/' + MOT.flags.maxEnergyThreshold);
+
+    // Doll Points update
     const dollValue = MOT.flags.dollPoints || 0;
     const dollPct = Phaser.Math.Clamp(dollValue / 100, 0, 1);
-    this.dollBarBg.clear().fillStyle(0x1F2933, 1).fillRect(70, 115, 60, 10);
-    this.dollBarFg.clear().fillStyle(0xFFFF00, 1).fillRect(70, 115, 60 * dollPct, 10);
+    this.personMask.y = 110 + (64 - 64 * dollPct);
+    this.personMask.x = 30;
+    this.personMask.scaleY = Math.max(0.001, dollPct);
     this.dollText.setText('DP:' + dollValue);
 
+    // Killing Intent update
     const intentValue = MOT.flags.killingIntent || 0;
     const intentPct = Phaser.Math.Clamp(intentValue / 100, 0, 1);
-    this.intentBarBg.clear().fillStyle(0x1F2933, 1).fillRect(190, 115, 60, 10);
-    this.intentBarFg.clear().fillStyle(0xFF0000, 1).fillRect(190, 115, 60 * intentPct, 10);
+    this.batteryMask.y = 110 + (64 - 64 * intentPct);
+    this.batteryMask.x = 130;
+    this.batteryMask.scaleY = Math.max(0.001, intentPct);
     this.intentText.setText('KI:' + intentValue);
 
     const iconX = 260;
