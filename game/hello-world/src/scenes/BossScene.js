@@ -2451,7 +2451,20 @@ class BossScene extends Phaser.Scene {
 
     // Boss HP
     this.bossHPBar.clear();
-    if (this.currentBoss && this.currentBoss.visible !== false && (this.currentBoss.active || this.currentBoss.configKey === 'boss3_twins')) {
+    let isTwins = this.currentBoss && this.currentBoss.configKey === 'boss3_twins';
+    let showBossUI = false;
+    if (isTwins) {
+      if ((this.currentBoss && this.currentBoss.visible !== false && this.currentBoss.active) ||
+          (this.sisterBoss && this.sisterBoss.visible !== false && this.sisterBoss.active)) {
+        showBossUI = true;
+      }
+    } else {
+      if (this.currentBoss && this.currentBoss.visible !== false && this.currentBoss.active) {
+        showBossUI = true;
+      }
+    }
+
+    if (showBossUI) {
       var key = this.currentBoss.configKey;
       var cfg = this.getBossConfig(key);
       
