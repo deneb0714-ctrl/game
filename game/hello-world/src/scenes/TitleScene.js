@@ -98,18 +98,43 @@ class TitleScene extends Phaser.Scene {
         this.heroGif.once('animationcomplete', function() {
           this.cameras.main.fadeOut(500, 5, 8, 20);
           this.time.delayedCall(500, function () {
-            MOT.resetFlags();
-            this.scene.start('StoryScene');
+            this.scene.start('StoryScene', { bossIndex: 0 });
           }, [], this);
         }, this);
       } else {
         this.cameras.main.fadeOut(500, 5, 8, 20);
         this.time.delayedCall(500, function () {
-          MOT.resetFlags();
-          this.scene.start('StoryScene');
+          this.scene.start('StoryScene', { bossIndex: 0 });
         }, [], this);
       }
     }.bind(this));
+
+    // デバッグショートカットキーUI
+    if (!isGlitch) {
+      this.add.text(10, 10, '[Debug Shortcuts (Starts from Demon Lord Defeat)]\n1: 狂気 (Kills=3)\n2: 強制シャットダウン (Kills=1, DP=100)\n3: 優秀な兵士 (Kills=1, DP=0)\n4: 魔王を倒す/拾われる (Kills=0, 殺意=0)\n5: 反逆/真の魔王 (Kills=0, 殺意=100)', {
+        fontFamily: '"DotGothic16"',
+        fontSize: '16px',
+        color: '#ffaaaa',
+        backgroundColor: 'rgba(0,0,0,0.5)',
+        padding: { x: 5, y: 5 }
+      }).setDepth(100);
+
+      const startDebugEnding = (kills, dp, satsui) => {
+        MOT.flags.kills = kills;
+        MOT.flags.dollPoints = dp;
+        MOT.flags.killingIntent = satsui;
+        this.cameras.main.fadeOut(500, 5, 8, 20);
+        this.time.delayedCall(500, () => {
+          this.scene.start('BossScene', { bossIndex: 3, debugSkipCombat: true });
+        });
+      };
+
+      this.input.keyboard.on('keydown-ONE', () => startDebugEnding(3, 0, 0));
+      this.input.keyboard.on('keydown-TWO', () => startDebugEnding(1, 100, 0));
+      this.input.keyboard.on('keydown-THREE', () => startDebugEnding(1, 0, 0));
+      this.input.keyboard.on('keydown-FOUR', () => startDebugEnding(0, 0, 0));
+      this.input.keyboard.on('keydown-FIVE', () => startDebugEnding(0, 0, 100));
+    }
 
     // Version text
     const versionText = window.GAME_VERSION ? `v0.1.0 (${window.GAME_VERSION})` : 'v0.1.0';

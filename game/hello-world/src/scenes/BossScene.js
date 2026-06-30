@@ -9,6 +9,7 @@ class BossScene extends Phaser.Scene {
   init(data) {
     this.bossQueue = ['boss1', 'boss2', 'boss3_twins', 'demon_lord'];
     this.currentBossIndex = (data && data.bossIndex !== undefined) ? data.bossIndex : 0;
+    this.debugSkipCombat = data && data.debugSkipCombat;
     this.dialogActive = false;
     this.lastDialogActive = false; // 会話終了時のクールタイム検出用
     this.bossHP = 0;
@@ -184,6 +185,16 @@ class BossScene extends Phaser.Scene {
     else if (key === 'boss2') areaText = '「次のエリアに着いたか。そこは、宵闇の森だ。」';
     else if (key === 'boss3_twins') areaText = '「次のエリアに着いたか。そこは、子夜の城塞 だ。そろそろ魔王城に着くだろう。敵も強くなっている。気を付けてくれ」';
     else if (key === 'demon_lord') areaText = '「とうとう魔王城に着いたか。そこには魔王がいるはずだ。警戒を怠らないように」';
+
+    // デバッグ用: 戦闘スキップして即死させる
+    if (this.debugSkipCombat && key === 'demon_lord') {
+      boss.setVisible(true);
+      boss.hp = 0;
+      this.time.delayedCall(100, () => {
+        this.onBossHit({ damage: 9999, destroy: function(){} }, boss);
+      });
+      return;
+    }
 
     if (areaText !== '') {
       this.showDeviceDialogue(areaText, () => {
