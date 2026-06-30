@@ -2213,12 +2213,11 @@ class BossScene extends Phaser.Scene {
 
         const isDemon = speaker && speaker.includes('魔王');
         if (isDemon && this.demonImage && this.demonImage.active) {
-          if (charIndex === 1 && text[charIndex - 1] !== ' ') {
-            if (this.demonImage.texture.key !== 'demon_lord_dying') {
-              this.demonImage.setTexture('demon_lord_silent');
-            }
-          } else if (charIndex === 4 || charIndex >= text.length) {
-            if (this.demonImage.texture.key === 'demon_lord_silent') {
+          const currentTex = this.demonImage.texture.key;
+          if (currentTex === 'demon_lord_normal' || currentTex === 'demon_lord_blink' || currentTex === 'demon_lord_silent') {
+            if (charIndex < text.length && (charIndex % 15 === 1 || charIndex % 15 === 2)) {
+              this.demonImage.setTexture('demon_lord_blink');
+            } else {
               this.demonImage.setTexture('demon_lord_normal');
             }
           }

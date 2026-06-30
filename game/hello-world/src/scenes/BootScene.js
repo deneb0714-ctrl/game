@@ -75,6 +75,7 @@ class BootScene extends Phaser.Scene {
 
 
     this.load.image('demon_lord_normal', 'assets/images/demon_lord_normal.png?v=' + v);
+    this.load.image('demon_lord_blink', 'assets/images/demon_lord_blink.png?v=' + v);
     this.load.image('demon_lord_silent', 'assets/images/demon_lord_silent.png?v=' + v);
     this.load.image('demon_lord_dying', 'assets/images/demon_lord_dying.png?v=' + v);
     this.load.image('demon_lord_shock', 'assets/images/demon_lord_shock.png?v=' + v);
