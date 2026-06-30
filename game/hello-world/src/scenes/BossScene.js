@@ -1267,10 +1267,8 @@ class BossScene extends Phaser.Scene {
               };
 
               if (Kills === 0) {
-                  await sayDevice('「早くとどめをさせ！」');
-                  let c = await askShatterChoice('1. 殺す', '2. 殺さない', true);
-                  
-                  if (c === 2) {
+                  // 魔王を殺す生かすの選択肢を削除し、そのまま（c===2ルート）進行
+                  if (true) {
                       if (Satsui >= 100 && DP < 100) {
                           await sayDevice('「よくやった。さぁ早くとどめを！」');
                           
@@ -1355,7 +1353,36 @@ class BossScene extends Phaser.Scene {
                           await sayDoctorLab('「貴様……システムに逆らうというのか！」');
                           await sayDoctorLab('「……！？」');
                           
-                          // (選択肢なしでそのまま進行)
+                          // 5つの選択肢
+                          if (this.choiceContainer) this.choiceContainer.destroy();
+                          this.choiceContainer = this.add.container(0, 0).setDepth(200);
+                          var w = 1920, h = 1080;
+                          var bgChoice = this.add.rectangle(w / 2, h / 2, w, h, 0x000000, 0.4).setInteractive();
+                          this.choiceContainer.add(bgChoice);
+                          var titleChoice = this.add.text(w / 2, h / 2 - 200, '選択してください', { fontFamily: '"DotGothic16"', fontSize: '40px', color: '#ffffff' }).setOrigin(0.5);
+                          this.choiceContainer.add(titleChoice);
+                          
+                          let yStart = h / 2 - 120;
+                          for(let i=0; i<5; i++){
+                              let box = this.add.rectangle(w / 2, yStart + i * 60, 500, 50, 0x1F2933, 0.8).setStrokeStyle(2, 0x4FD1FF);
+                              let txt = this.add.text(w / 2, yStart + i * 60, '博士を殺す', { fontFamily: '"DotGothic16"', fontSize: '24px', color: '#ffffff' }).setOrigin(0.5);
+                              this.choiceContainer.add([box, txt]);
+                          }
+                          await new Promise(res => {
+                              let cursor = this.add.text(w / 2 - 280, yStart, '▶', { fontFamily: '"DotGothic16"', fontSize: '24px', color: '#39FF14' }).setOrigin(0.5);
+                              this.choiceContainer.add(cursor);
+                              let idx = 0;
+                              const kh = (e) => {
+                                  if(e.key==='ArrowUp' || e.key==='w') { idx = Math.max(0, idx-1); cursor.setY(yStart + idx*60); }
+                                  if(e.key==='ArrowDown' || e.key==='s') { idx = Math.min(4, idx+1); cursor.setY(yStart + idx*60); }
+                                  if(e.key==='Enter' || e.key===' ') {
+                                      this.input.keyboard.off('keydown', kh);
+                                      this.choiceContainer.destroy();
+                                      res();
+                                  }
+                              };
+                              this.input.keyboard.on('keydown', kh);
+                          });
                           
                           await sayHeroLab('「いつまでも自分が優位に立てるとは思わない方がいい」');
                           
@@ -1377,20 +1404,6 @@ class BossScene extends Phaser.Scene {
                           this.proceedToNextArea(boss, true);
                           return;
                       }
-                  } else {
-                      await sayDemon('「わがしもべたちは、わらわに従っていただけだ。おぬしもむやみに殺したいわけではないのだろう？」');
-                      await sayDemon('「だから今ここで契約を結べ。われはこのまま何もしない。だからしもべを殺すな」');
-                      await sayHero('「…わかった。」');
-                      await sayDevice('「勝手に決めるな。お前の使命を忘れたのか。魔王を倒した後、残りのやつらも倒しに行くんだ。」');
-                      await sayDemon('「ふざけるな！！！わらわたちが何をした！世界の悪だと言うのなら、それは！」');
-                      MOT.Audio.playSelect();
-                      await sayHero('「！」');
-                      await sayHero('「なんで、今勝手に手が…！」');
-                      await sayDevice('「ろくでもない生物を生かしておく必要はないだろう。無駄な命乞いを聞く前にさっさと始末させたに過ぎない。」');
-                      await sayDevice('「いいか。お前はこれから逃がした幹部を殺しに行くんだ。逃がすなんてことをしたらわかっているな？」');
-                      this.cameras.main.fadeOut(1000);
-                      await new Promise(r => this.time.delayedCall(1000, r));
-                      ending('normal_resist_fail');
                   }
               } else if (Kills > 0 && Kills < 3) {
                   if (DP >= 100) {
