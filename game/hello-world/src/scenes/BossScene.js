@@ -1611,9 +1611,57 @@ class BossScene extends Phaser.Scene {
                           await new Promise(r => this.time.delayedCall(3000, r));
                           this.tweens.add({targets: blackText, alpha: 0, duration: 1000});
                           await new Promise(r => this.time.delayedCall(1000, r));
+                          
+                          // 戦闘UIとオブジェクトを全て隠す
+                          if (this.player) { this.player.setVisible(false); this.player.setActive(false); }
+                          if (this.playerHitboxGraphics) this.playerHitboxGraphics.setVisible(false);
+                          if (this.bossHpBg) this.bossHpBg.setVisible(false);
+                          if (this.bossHpBar) this.bossHpBar.setVisible(false);
+                          if (this.barrierVisual) this.barrierVisual.setVisible(false);
+                          if (this.uiBg) this.uiBg.setVisible(false);
+                          if (this.uiText) this.uiText.setVisible(false);
+                          if (this.hpText) this.hpText.setVisible(false);
+                          if (this.energyText) this.energyText.setVisible(false);
+                          if (this.energyBar) this.energyBar.setVisible(false);
+                          if (this.barrierIconBg) this.barrierIconBg.setVisible(false);
+                          if (this.barrierIconFg) this.barrierIconFg.setVisible(false);
+                          if (this.bossHPText) this.bossHPText.setVisible(false);
+                          if (this.areaNameText) this.areaNameText.setVisible(false);
+                          if (this.iconPersonBg) this.iconPersonBg.setVisible(false);
+                          if (this.iconPersonFill) this.iconPersonFill.setVisible(false);
+                          if (this.dollText) this.dollText.setVisible(false);
+                          if (this.iconBatteryBg) this.iconBatteryBg.setVisible(false);
+                          if (this.iconBatteryFill) this.iconBatteryFill.setVisible(false);
+                          if (this.intentText) this.intentText.setVisible(false);
+                          if (this.dimBg) { this.dimBg.setVisible(false); }
+                          if (this.demonImage) { this.demonImage.setVisible(false); }
+                          if (this.heroImage) { this.heroImage.setVisible(false); }
+
+                          // 研究室の背景
+                          var labBgDaily = this.add.image(1920/2, 1080/2, 'bg_lab').setDepth(90);
+                          labBgDaily.setScale(Math.max(1920 / labBgDaily.width, 1080 / labBgDaily.height));
+                          
+                          // 勇者と博士の立ち絵
+                          var docImgDaily = this.add.image(1920 - 300, 1080/2, 'doctor_stand').setDepth(95);
+                          this.textures.get('doctor_stand').setFilter(Phaser.Textures.FilterMode.LINEAR);
+                          var docScaleDaily = 750 / this.textures.get('doctor_stand').getSourceImage().width;
+                          docImgDaily.setScale(docScaleDaily);
+                          docImgDaily.setY(100 + (this.textures.get('doctor_stand').getSourceImage().height * docScaleDaily) / 2);
+                          
+                          var heroImgDaily = this.add.image(300, 1080/2, 'hero_stand').setDepth(95);
+                          var hScaleDaily = 750 / heroImgDaily.width;
+                          heroImgDaily.setScale(hScaleDaily);
+                          heroImgDaily.setY(100 + (heroImgDaily.height * hScaleDaily) / 2);
+
+                          const sayDoctorLabDaily = (text) => new Promise(res => { 
+                              this.tweens.add({targets: docImgDaily, alpha: 1, duration: 300});
+                              this.tweens.add({targets: heroImgDaily, alpha: 0.4, duration: 300});
+                              this.showDialogue('博士', text, res);
+                          });
+
                           this.cameras.main.fadeIn(1000);
-                          await sayDevice('「よく魔王を倒してくれた。これで私の望みに一歩近づいたな。ふふ、世界の平和が望みだよ。」');
-                          await sayDevice('「ああ、役割を果たしたお人形は処分してあげないとな。」');
+                          await sayDoctorLabDaily('「よく魔王を倒してくれた。これで私の望みに一歩近づいたな。ふふ、世界の平和が望みだよ。」');
+                          await sayDoctorLabDaily('「ああ、役割を果たしたお人形は処分してあげないとな。」');
                           ending('normal_daily');
                       }
                   }
