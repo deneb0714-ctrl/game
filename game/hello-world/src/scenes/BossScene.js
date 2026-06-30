@@ -1909,8 +1909,8 @@ class BossScene extends Phaser.Scene {
         // Take control of player for transition
         this.dialogActive = true;
         this.player.setCollideWorldBounds(false);
-        // Player exits to the left of the screen
-        this.tweens.add({ targets: this.player, x: -200, duration: 1000, ease: 'Power2' });
+        // Player exits to the right of the screen
+        this.tweens.add({ targets: this.player, x: 2100, duration: 1000, ease: 'Power2' });
         this.cameras.main.fadeOut(1000, 0, 0, 0);
         
         this.time.delayedCall(1000, () => {
