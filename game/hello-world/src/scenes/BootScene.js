@@ -61,9 +61,10 @@ class BootScene extends Phaser.Scene {
       frameWidth: window.HERO_COMBAT_FRAME_WIDTH,
       frameHeight: window.HERO_COMBAT_FRAME_HEIGHT
     });
-    this.load.spritesheet('demon_stand_combat', 'assets/demon_combat_sheet.png', {
-      frameWidth: 659,
-      frameHeight: 1090
+    const v = window.GAME_VERSION || 'v1';
+    this.load.spritesheet('demon_stand_combat', 'assets/images/demon_lord_sheet.png?v=' + v, {
+      frameWidth: 315,
+      frameHeight: 560
     });
 
     // 主人公の瞬き（表情切り替え用）
@@ -72,12 +73,11 @@ class BootScene extends Phaser.Scene {
     this.load.image('hero_stand_silent', 'assets/images/hero_stand_silent.png');
     this.load.image('hero_stand_corrupted', 'assets/images/hero_stand_corrupted.png');
 
-    // Demon Lord animated spritesheet
-    const v = window.GAME_VERSION || 'v1';
-    this.load.spritesheet('demon_lord_sheet', 'assets/images/demon_lord_sheet.png?v=' + v, {
-      frameWidth: 315,
-      frameHeight: 560
-    });
+
+    this.load.image('demon_lord_normal', 'assets/images/demon_lord_normal.png?v=' + v);
+    this.load.image('demon_lord_silent', 'assets/images/demon_lord_silent.png?v=' + v);
+    this.load.image('demon_lord_dying', 'assets/images/demon_lord_dying.png?v=' + v);
+    this.load.image('demon_lord_shock', 'assets/images/demon_lord_shock.png?v=' + v);
 
     // Icons
     this.load.image('icon_person', 'assets/images/icon_person.png?v=' + v);

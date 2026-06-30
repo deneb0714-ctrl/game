@@ -121,7 +121,7 @@ class BossScene extends Phaser.Scene {
         // Intro and defeat are handled custom via playTwinsIntro and post-battle logic
       },
       demon_lord: {
-        texture: 'demon_stand_combat', name: '魔王 – ヴェリタス', hp: 80, scale: 0.26,
+        texture: 'demon_stand_combat', name: '魔王 – ヴェリタス', hp: 80, scale: 0.5,
         intro: '「…来たか、博士の人形よ。\nお前に真実を伝えなければならない。」',
         defeat: '「聞いてくれ。博士こそが…この世界を壊そうとしている。\n俺は…それを止めたかっただけだ。」',
         choices: []
@@ -291,14 +291,7 @@ class BossScene extends Phaser.Scene {
     this.heroImage.setScale(hScale);
     this.heroImage.setY(100 + (this.heroImage.height * hScale) / 2);
     
-    this.anims.create({
-      key: 'demon_lord_idle',
-      frames: this.anims.generateFrameNumbers('demon_lord_sheet', { start: 0, end: 39 }),
-      frameRate: 15,
-      repeat: -1
-    });
-    this.demonImage = this.add.sprite(1920 - 300, 1080 / 2, 'demon_lord_sheet').setAlpha(0).setDepth(90);
-    this.demonImage.play('demon_lord_idle');
+    this.demonImage = this.add.image(1920 - 300, 1080 / 2, 'demon_lord_normal').setAlpha(0).setDepth(90);
     var dScale = 1000 / this.demonImage.width;
     this.demonImage.setScale(dScale);
     this.demonImage.setY(100 + (this.demonImage.height * dScale) / 2 - 200);
@@ -329,7 +322,7 @@ class BossScene extends Phaser.Scene {
       this.tweens.add({ targets: this.heroImage, alpha: 0.4, duration: 300 });
       if(this.demonImage) {
         this.tweens.add({ targets: this.demonImage, alpha: 1, duration: 300 });
-        // this.demonImage.setTexture(tex); // Now an animated sprite, so we keep playing the idle animation
+        this.demonImage.setTexture(tex);
         this.demonImage.setScale(1000 / this.demonImage.width);
         this.demonImage.setY(100 + (this.demonImage.height * this.demonImage.scaleY) / 2 - 200);
       }
@@ -1150,17 +1143,14 @@ class BossScene extends Phaser.Scene {
           } else if (key === 'demon_lord') {
             var f = MOT.flags;
             
-            this.demonImage = this.add.sprite(1920 - 300, 1080 / 2, 'demon_lord_sheet').setAlpha(0).setDepth(90);
-            this.demonImage.play('demon_lord_idle');
-            // Tint it to indicate dying state
-            this.demonImage.setTint(0xFF8888);
+            this.demonImage = this.add.image(1920 - 300, 1080 / 2, 'demon_lord_dying').setAlpha(0).setDepth(90);
             var dScale = 1000 / this.demonImage.width;
             this.demonImage.setScale(dScale);
             this.demonImage.setY(100 + (this.demonImage.height * dScale) / 2 - 200);
 
             const sayDevice = (text) => new Promise(res => { this.tweens.add({ targets: dimBg, alpha: 0.6, duration: 300 }); this.tweens.add({targets: this.heroImage, alpha: 0.4, duration: 300}); this.tweens.add({ targets: this.demonImage, alpha: 0.4, duration: 300 }); this.showDeviceDialogue(text, res); });
             const sayHero = (text) => new Promise(res => { this.tweens.add({ targets: dimBg, alpha: 0.6, duration: 300 }); this.tweens.add({targets: this.heroImage, alpha: 1, duration: 300}); this.tweens.add({ targets: this.demonImage, alpha: 0.4, duration: 300 }); if (text === '「……」' || text === '「……。」' || text === '「…」') { this.heroImage.setTexture('hero_stand_silent'); } else { this.heroImage.setTexture('hero_stand'); } this.heroImage.setScale(750 / this.heroImage.width); this.heroImage.setY(100 + (this.heroImage.height * this.heroImage.scaleY) / 2); this.showDialogue('勇者', text, res); });
-            const sayDemon = (text) => new Promise(res => { this.tweens.add({ targets: dimBg, alpha: 0.6, duration: 300 }); this.tweens.add({targets: this.heroImage, alpha: 0.4, duration: 300}); this.tweens.add({ targets: this.demonImage, alpha: 1, duration: 300 }); this.demonImage.setScale(1000 / this.demonImage.width); this.demonImage.setY(100 + (this.demonImage.height * this.demonImage.scaleY) / 2 - 200); this.showDialogue('魔王', text, res); });
+            const sayDemon = (text) => new Promise(res => { this.tweens.add({ targets: dimBg, alpha: 0.6, duration: 300 }); this.tweens.add({targets: this.heroImage, alpha: 0.4, duration: 300}); this.tweens.add({ targets: this.demonImage, alpha: 1, duration: 300 }); this.demonImage.setTexture('demon_lord_dying'); this.demonImage.setScale(1000 / this.demonImage.width); this.demonImage.setY(100 + (this.demonImage.height * this.demonImage.scaleY) / 2 - 200); this.showDialogue('魔王', text, res); });
     
             
             const askShatterChoice = (label1, label2, canShatter) => new Promise(res => {
@@ -2224,9 +2214,13 @@ class BossScene extends Phaser.Scene {
         const isDemon = speaker && speaker.includes('魔王');
         if (isDemon && this.demonImage && this.demonImage.active) {
           if (charIndex === 1 && text[charIndex - 1] !== ' ') {
-            // Keep playing animation
+            if (this.demonImage.texture.key !== 'demon_lord_dying') {
+              this.demonImage.setTexture('demon_lord_silent');
+            }
           } else if (charIndex === 4 || charIndex >= text.length) {
-            // Keep playing animation
+            if (this.demonImage.texture.key === 'demon_lord_silent') {
+              this.demonImage.setTexture('demon_lord_normal');
+            }
           }
         }
 
