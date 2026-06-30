@@ -1445,17 +1445,17 @@ class BossScene extends Phaser.Scene {
                       if (this.heroImage) { this.heroImage.setVisible(false); }
 
                       // 研究室の背景
-                      var labBg = this.add.image(1920/2, 1080/2, 'bg_lab').setDepth(200);
+                      var labBg = this.add.image(1920/2, 1080/2, 'bg_lab').setDepth(90);
                       labBg.setScale(Math.max(1920 / labBg.width, 1080 / labBg.height));
                       
                       // 勇者と博士の立ち絵
-                      var docImg = this.add.image(1920 - 300, 1080/2, 'doctor_stand').setDepth(205);
+                      var docImg = this.add.image(1920 - 300, 1080/2, 'doctor_stand').setDepth(95);
                       this.textures.get('doctor_stand').setFilter(Phaser.Textures.FilterMode.LINEAR);
                       var docScale = 750 / this.textures.get('doctor_stand').getSourceImage().width;
                       docImg.setScale(docScale);
                       docImg.setY(100 + (this.textures.get('doctor_stand').getSourceImage().height * docScale) / 2);
                       
-                      var heroImgNew = this.add.image(300, 1080/2, 'hero_stand').setDepth(205);
+                      var heroImgNew = this.add.image(300, 1080/2, 'hero_stand').setDepth(95);
                       var hScaleNew = 750 / heroImgNew.width;
                       heroImgNew.setScale(hScaleNew);
                       heroImgNew.setY(100 + (heroImgNew.height * hScaleNew) / 2);
@@ -1477,7 +1477,7 @@ class BossScene extends Phaser.Scene {
                       await sayDoctorLab('「ふむ。すでに物言わぬお人形にでも堕ちたか。」');
                       
                       if (this.choiceContainer) this.choiceContainer.destroy();
-                      this.choiceContainer = this.add.container(0, 0).setDepth(210);
+                      this.choiceContainer = this.add.container(0, 0).setDepth(110);
                       var w = 1920, h = 1080;
                       var bg = this.add.rectangle(w / 2, h / 2, w, h, 0x000000, 0.4).setInteractive();
                       this.choiceContainer.add(bg);
