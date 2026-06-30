@@ -95,7 +95,8 @@ MOT.collectItem = function (scene, player, item) {
     MOT.showPickupText(scene, item.x, item.y, '+' + item.value + ' HP', 0x4FFF7F);
   } else if (item.itemType === 'red_diamond') {
     MOT.flags.killingIntent = Math.min(100, MOT.flags.killingIntent + item.value);
-    MOT.showPickupText(scene, item.x, item.y, '殺意 +' + item.value, 0xFF0000);
+    MOT.addEnergy(15);
+    MOT.showPickupText(scene, item.x, item.y, '殺意 +' + item.value + ' / EN +15', 0xFF0000);
   }
   item.destroy();
 };
