@@ -61,9 +61,9 @@ class BootScene extends Phaser.Scene {
       frameWidth: window.HERO_COMBAT_FRAME_WIDTH,
       frameHeight: window.HERO_COMBAT_FRAME_HEIGHT
     });
-    this.load.spritesheet('demon_stand_combat', window.DEMON_COMBAT_SHEET_B64, {
-      frameWidth: window.DEMON_COMBAT_FRAME_WIDTH,
-      frameHeight: window.DEMON_COMBAT_FRAME_HEIGHT
+    this.load.spritesheet('demon_stand_combat', 'assets/demon_combat_sheet.png', {
+      frameWidth: 659,
+      frameHeight: 1090
     });
 
     // 主人公の瞬き（表情切り替え用）
