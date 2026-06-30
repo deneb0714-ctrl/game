@@ -1746,11 +1746,21 @@ class BossScene extends Phaser.Scene {
     var resumeFn = function() {
       this.currentBoss = null;
       this.currentBossIndex++;
-      this.dialogActive = false;
       
       // Clear bullets again just in case
       this.enemyBullets.clear(true, true);
       this.playerBullets.clear(true, true);
+      
+      if (this.currentBossIndex >= this.bossQueue.length) {
+        // エンディングへ移行する場合は、自機を動かしたり操作可能にせず即座に暗転
+        this.cameras.main.fadeOut(1500, 0, 0, 0);
+        this.time.delayedCall(1500, () => {
+          this.scene.start('EndingScene');
+        });
+        return;
+      }
+      
+      this.dialogActive = false;
       
       // Item drop
       MOT.spawnHealthItem(this, 960, 460);
