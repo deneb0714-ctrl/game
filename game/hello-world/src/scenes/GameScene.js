@@ -801,12 +801,22 @@ class GameScene extends Phaser.Scene {
 
     const dollValue = MOT.flags.dollPoints || 0;
     const dollPct = Phaser.Math.Clamp(dollValue / 100, 0, 1);
-    this.iconPersonFill.setCrop(0, 64 - 64 * dollPct, 32, 64 * dollPct);
+    if (dollPct <= 0) {
+      this.iconPersonFill.setVisible(false);
+    } else {
+      this.iconPersonFill.setVisible(true);
+      this.iconPersonFill.setCrop(0, 64 - 64 * dollPct, 32, Math.max(0.1, 64 * dollPct));
+    }
     this.dollText.setText('DP:' + dollValue);
 
     const intentValue = MOT.flags.killingIntent || 0;
     const intentPct = Phaser.Math.Clamp(intentValue / 100, 0, 1);
-    this.iconBatteryFill.setCrop(0, 64 - 64 * intentPct, 32, 64 * intentPct);
+    if (intentPct <= 0) {
+      this.iconBatteryFill.setVisible(false);
+    } else {
+      this.iconBatteryFill.setVisible(true);
+      this.iconBatteryFill.setCrop(0, 64 - 64 * intentPct, 32, Math.max(0.1, 64 * intentPct));
+    }
     this.intentText.setText('KI:' + intentValue);
 
     const iconX = 260;
