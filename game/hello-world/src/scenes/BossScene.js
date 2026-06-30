@@ -1881,49 +1881,62 @@ class BossScene extends Phaser.Scene {
       this.currentBoss = null;
       this.currentBossIndex++;
       
-      // Clear bullets again just in case
+      // Clear enemy bullets so player is safe while collecting items
       this.enemyBullets.clear(true, true);
-      this.playerBullets.clear(true, true);
       
-      if (this.currentBossIndex >= this.bossQueue.length) {
-        // エンディングへ移行する場合は、自機を動かしたり操作可能にせず即座に暗転
-        this.cameras.main.fadeOut(1500, 0, 0, 0);
-        this.time.delayedCall(1500, () => {
-          this.scene.start('EndingScene');
-        });
-        return;
-      }
-      
-      this.dialogActive = false;
+      this.dialogActive = false; // Allow player to move and collect items
+      this.physics.resume(); // Resume physics so player can move
       
       // Item drop
       MOT.spawnHealthItem(this, 960, 460);
       
-      this.player.setCollideWorldBounds(false);
-      this.tweens.add({ targets: this.player, x: 2100, duration: 1000, ease: 'Power2' });
-      this.cameras.main.fadeOut(1000, 0, 0, 0);
-      
-      this.time.delayedCall(1000, () => {
-        var bgKey = 'bg_boss_stage2';
-        if (this.currentBossIndex === 1) bgKey = 'bg_boss_stage3';
-        else if (this.currentBossIndex === 2) bgKey = 'bg_boss_stage4';
-        else if (this.currentBossIndex === 3) bgKey = 'bg_boss_stage5';
-        this.bg.setTexture(bgKey);
+      // Wait a few seconds for player to collect diamonds/items
+      this.time.delayedCall(4000, () => {
+        // Clear all remaining items and player bullets on transition
+        this.playerBullets.clear(true, true);
+        this.enemyBullets.clear(true, true);
+        if (this.itemGroup) this.itemGroup.clear(true, true);
         
-        this.player.x = -100;
+        if (this.currentBossIndex >= this.bossQueue.length) {
+          // エンディングへ移行する場合は即座に暗転
+          this.cameras.main.fadeOut(1500, 0, 0, 0);
+          this.time.delayedCall(1500, () => {
+            this.scene.start('EndingScene');
+          });
+          return;
+        }
         
-        this.cameras.main.fadeIn(500, 0, 0, 0);
-        this.tweens.add({
-          targets: this.player, x: 300, duration: 1000, ease: 'Power2',
-          onComplete: () => {
-            this.player.setCollideWorldBounds(true);
-            this.physics.resume();
-            if (this.currentBossIndex < this.bossQueue.length) {
-              this.startIntermission();
-            } else {
-              this.time.delayedCall(1500, () => { this.startBoss(); });
+        // Take control of player for transition
+        this.dialogActive = true;
+        this.player.setCollideWorldBounds(false);
+        // Player exits to the left of the screen
+        this.tweens.add({ targets: this.player, x: -200, duration: 1000, ease: 'Power2' });
+        this.cameras.main.fadeOut(1000, 0, 0, 0);
+        
+        this.time.delayedCall(1000, () => {
+          var bgKey = 'bg_boss_stage2';
+          if (this.currentBossIndex === 1) bgKey = 'bg_boss_stage3';
+          else if (this.currentBossIndex === 2) bgKey = 'bg_boss_stage4';
+          else if (this.currentBossIndex === 3) bgKey = 'bg_boss_stage5';
+          this.bg.setTexture(bgKey);
+          
+          // Player enters from the left of the screen
+          this.player.x = -200;
+          
+          this.cameras.main.fadeIn(500, 0, 0, 0);
+          this.tweens.add({
+            targets: this.player, x: 300, duration: 1000, ease: 'Power2',
+            onComplete: () => {
+              this.dialogActive = false;
+              this.player.setCollideWorldBounds(true);
+              this.physics.resume();
+              if (this.currentBossIndex < this.bossQueue.length) {
+                this.startIntermission();
+              } else {
+                this.time.delayedCall(1500, () => { this.startBoss(); });
+              }
             }
-          }
+          });
         });
       });
     }.bind(this);
