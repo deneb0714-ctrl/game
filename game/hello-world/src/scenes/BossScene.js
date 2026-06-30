@@ -1434,12 +1434,66 @@ class BossScene extends Phaser.Scene {
                       await new Promise(r => this.time.delayedCall(3000, r));
                       this.tweens.add({targets: blackText, alpha: 0, duration: 1000});
                       await new Promise(r => this.time.delayedCall(1000, r));
+                      
+                      // 戦闘UIとオブジェクトを全て隠す
+                      if (this.player) { this.player.setVisible(false); this.player.setActive(false); }
+                      if (this.playerHitboxGraphics) this.playerHitboxGraphics.setVisible(false);
+                      if (this.bossHpBg) this.bossHpBg.setVisible(false);
+                      if (this.bossHpBar) this.bossHpBar.setVisible(false);
+                      if (this.barrierVisual) this.barrierVisual.setVisible(false);
+                      if (this.uiBg) this.uiBg.setVisible(false);
+                      if (this.uiText) this.uiText.setVisible(false);
+                      if (this.hpText) this.hpText.setVisible(false);
+                      if (this.energyText) this.energyText.setVisible(false);
+                      if (this.energyBar) this.energyBar.setVisible(false);
+                      if (this.barrierIconBg) this.barrierIconBg.setVisible(false);
+                      if (this.barrierIconFg) this.barrierIconFg.setVisible(false);
+                      if (this.bossHPText) this.bossHPText.setVisible(false);
+                      if (this.areaNameText) this.areaNameText.setVisible(false);
+                      if (this.iconPersonBg) this.iconPersonBg.setVisible(false);
+                      if (this.iconPersonFill) this.iconPersonFill.setVisible(false);
+                      if (this.dollText) this.dollText.setVisible(false);
+                      if (this.iconBatteryBg) this.iconBatteryBg.setVisible(false);
+                      if (this.iconBatteryFill) this.iconBatteryFill.setVisible(false);
+                      if (this.intentText) this.intentText.setVisible(false);
+                      if (this.dimBg) { this.dimBg.setVisible(false); }
+                      if (this.demonImage) { this.demonImage.setVisible(false); }
+                      if (this.heroImage) { this.heroImage.setVisible(false); }
+
+                      // 研究室の背景
+                      var labBg = this.add.image(1920/2, 1080/2, 'bg_lab').setDepth(200);
+                      labBg.setScale(Math.max(1920 / labBg.width, 1080 / labBg.height));
+                      
+                      // 勇者と博士の立ち絵
+                      var docImg = this.add.image(1920 - 300, 1080/2, 'doctor_stand').setDepth(205);
+                      this.textures.get('doctor_stand').setFilter(Phaser.Textures.FilterMode.LINEAR);
+                      var docScale = 750 / this.textures.get('doctor_stand').getSourceImage().width;
+                      docImg.setScale(docScale);
+                      docImg.setY(100 + (this.textures.get('doctor_stand').getSourceImage().height * docScale) / 2);
+                      
+                      var heroImgNew = this.add.image(300, 1080/2, 'hero_stand').setDepth(205);
+                      var hScaleNew = 750 / heroImgNew.width;
+                      heroImgNew.setScale(hScaleNew);
+                      heroImgNew.setY(100 + (heroImgNew.height * hScaleNew) / 2);
+
+                      const sayDoctorLab = (text) => new Promise(res => { 
+                          this.tweens.add({targets: docImg, alpha: 1, duration: 300});
+                          this.tweens.add({targets: heroImgNew, alpha: 0.4, duration: 300});
+                          this.showDialogue('博士', text, res);
+                      });
+                      const sayHeroLab = (text) => new Promise(res => { 
+                          this.tweens.add({targets: docImg, alpha: 0.4, duration: 300});
+                          this.tweens.add({targets: heroImgNew, alpha: 1, duration: 300});
+                          this.showDialogue('勇者', text, res);
+                      });
+
                       this.cameras.main.fadeIn(1000);
-                      await sayDevice('「よくやったな、勇者よ」');
-                      await sayHero('「…」');
-                      await sayDevice('「ふむ。すでに物言わぬお人形にでも堕ちたか。」');
+                      await sayDoctorLab('「よくやったな、勇者よ」');
+                      await sayHeroLab('「…」');
+                      await sayDoctorLab('「ふむ。すでに物言わぬお人形にでも堕ちたか。」');
+                      
                       if (this.choiceContainer) this.choiceContainer.destroy();
-                      this.choiceContainer = this.add.container(0, 0).setDepth(200);
+                      this.choiceContainer = this.add.container(0, 0).setDepth(210);
                       var w = 1920, h = 1080;
                       var bg = this.add.rectangle(w / 2, h / 2, w, h, 0x000000, 0.4).setInteractive();
                       this.choiceContainer.add(bg);
@@ -1466,11 +1520,11 @@ class BossScene extends Phaser.Scene {
                           };
                           this.input.keyboard.on('keydown', kh);
                       });
-                      await sayHero('「…」');
-                      await sayDevice('「こちらに銃を構えてどうした？私を倒したいでも言うのか。」');
-                      await sayDevice('「残念だが、お前にその権限はない。」');
-                      await sayDevice('「お前にできることは、このまま邪魔者を倒し私の役に立つことだけだ。」');
-                      await sayDevice('「だが、歯向かってきたお前をこのまま使う必要もないな。処分するとでもしようか。」');
+                      await sayHeroLab('「…」');
+                      await sayDoctorLab('「こちらに銃を構えてどうした？私を倒したいでも言うのか。」');
+                      await sayDoctorLab('「残念だが、お前にその権限はない。」');
+                      await sayDoctorLab('「お前にできることは、このまま邪魔者を倒し私の役に立つことだけだ。」');
+                      await sayDoctorLab('「だが、歯向かってきたお前をこのまま使う必要もないな。処分するとでもしようか。」');
                       ending('bad_shutdown');
                   } else {
                       await sayDevice('「よくやった。さぁ早くとどめを！」');
