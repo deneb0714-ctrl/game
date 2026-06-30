@@ -73,10 +73,11 @@ class BootScene extends Phaser.Scene {
     this.load.image('hero_stand_corrupted', 'assets/images/hero_stand_corrupted.png');
 
     // Demon Lord portraits
-    this.load.image('demon_lord_normal', 'assets/images/demon_lord_normal.png');
-    this.load.image('demon_lord_silent', 'assets/images/demon_lord_silent.png');
-    this.load.image('demon_lord_dying', 'assets/images/demon_lord_dying.png');
-    this.load.image('demon_lord_shock', 'assets/images/demon_lord_shock.png');
+    const v = window.GAME_VERSION || 'v1';
+    this.load.image('demon_lord_normal', 'assets/images/demon_lord_normal.png?v=' + v);
+    this.load.image('demon_lord_silent', 'assets/images/demon_lord_silent.png?v=' + v);
+    this.load.image('demon_lord_dying', 'assets/images/demon_lord_dying.png?v=' + v);
+    this.load.image('demon_lord_shock', 'assets/images/demon_lord_shock.png?v=' + v);
 
     // Title background (Hello World)
     this.load.image('title_bg', window.TITLE_BG_B64);
