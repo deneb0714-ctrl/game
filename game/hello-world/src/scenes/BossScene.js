@@ -2382,37 +2382,27 @@ class BossScene extends Phaser.Scene {
 
     // Doll Points UI
     if (!this.iconPersonBg) {
-      this.iconPersonBg = this.add.image(30, 110, 'icon_person').setOrigin(0, 0).setTint(0x555555).setDepth(100).setScrollFactor(0);
-      this.iconPersonFill = this.add.image(30, 110, 'icon_person').setOrigin(0, 0).setTint(0xFFFF00).setDepth(100).setScrollFactor(0);
+      this.iconPersonBg = this.add.image(30, 110, 'icon_person').setOrigin(0, 0).setDepth(100).setScrollFactor(0);
+      this.dollBarBg = this.add.graphics().setDepth(100).setScrollFactor(0);
+      this.dollBarFg = this.add.graphics().setDepth(100).setScrollFactor(0);
       this.dollText = this.add.text(70, 130, '', { fontFamily: '"Press Start 2P"', fontSize: '12px', color: '#FFFF00' }).setDepth(100).setScrollFactor(0);
       
-      this.iconBatteryBg = this.add.image(130, 110, 'icon_battery').setOrigin(0, 0).setTint(0x555555).setDepth(100).setScrollFactor(0);
-      this.iconBatteryFill = this.add.image(130, 110, 'icon_battery').setOrigin(0, 0).setTint(0xFF0000).setDepth(100).setScrollFactor(0);
-      this.intentText = this.add.text(170, 130, '', { fontFamily: '"Press Start 2P"', fontSize: '12px', color: '#FF0000' }).setDepth(100).setScrollFactor(0);
+      this.iconBatteryBg = this.add.image(150, 110, 'icon_battery').setOrigin(0, 0).setDepth(100).setScrollFactor(0);
+      this.intentBarBg = this.add.graphics().setDepth(100).setScrollFactor(0);
+      this.intentBarFg = this.add.graphics().setDepth(100).setScrollFactor(0);
+      this.intentText = this.add.text(190, 130, '', { fontFamily: '"Press Start 2P"', fontSize: '12px', color: '#FF0000' }).setDepth(100).setScrollFactor(0);
     }
 
     const dollValue = MOT.flags.dollPoints || 0;
     const dollPct = Phaser.Math.Clamp(dollValue / 100, 0, 1);
-    if (dollPct <= 0) {
-      this.iconPersonFill.setVisible(false);
-    } else {
-      this.iconPersonFill.setVisible(true);
-      const cropY = Math.floor(64 - 64 * dollPct);
-      const cropH = Math.ceil(64 * dollPct);
-      this.iconPersonFill.setCrop(0, cropY, 32, Math.max(1, cropH));
-    }
+    this.dollBarBg.clear().fillStyle(0x1F2933, 1).fillRect(70, 115, 60, 10);
+    this.dollBarFg.clear().fillStyle(0xFFFF00, 1).fillRect(70, 115, 60 * dollPct, 10);
     this.dollText.setText('DP:' + dollValue);
 
     const intentValue = MOT.flags.killingIntent || 0;
     const intentPct = Phaser.Math.Clamp(intentValue / 100, 0, 1);
-    if (intentPct <= 0) {
-      this.iconBatteryFill.setVisible(false);
-    } else {
-      this.iconBatteryFill.setVisible(true);
-      const cropY = Math.floor(64 - 64 * intentPct);
-      const cropH = Math.ceil(64 * intentPct);
-      this.iconBatteryFill.setCrop(0, cropY, 32, Math.max(1, cropH));
-    }
+    this.intentBarBg.clear().fillStyle(0x1F2933, 1).fillRect(190, 115, 60, 10);
+    this.intentBarFg.clear().fillStyle(0xFF0000, 1).fillRect(190, 115, 60 * intentPct, 10);
     this.intentText.setText('KI:' + intentValue);
 
     const iconX = 260;
