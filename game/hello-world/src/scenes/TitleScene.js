@@ -111,7 +111,7 @@ class TitleScene extends Phaser.Scene {
 
     // デバッグショートカットキーUI
     if (!isGlitch) {
-      this.add.text(10, 10, '[Debug Shortcuts (Starts from Demon Lord Defeat)]\n1: 狂気 (Kills=3)\n2: 強制シャットダウン (Kills=1, DP=100)\n3: 優秀な兵士 (Kills=1, DP=0)\n4: 魔王を倒す/拾われる (Kills=0, 殺意=0)\n5: 反逆/真の魔王 (Kills=0, 殺意=100)', {
+      this.add.text(10, 10, '[Debug Shortcuts (Starts from Demon Lord Defeat)]\n1: 傀儡エンド (Kills=3)\n2: 強制シャットダウン (Kills=1, DP=100)\n3: 優秀な兵士 (Kills=1, DP=0)\n4: 魔王を倒す/拾われる (Kills=0, 殺意=0)\n5: 反逆/真の魔王 (Kills=0, 殺意=100)', {
         fontFamily: '"DotGothic16"',
         fontSize: '16px',
         color: '#ffaaaa',

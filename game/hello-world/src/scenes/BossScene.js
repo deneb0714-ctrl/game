@@ -1254,10 +1254,12 @@ class BossScene extends Phaser.Scene {
             (async () => {
               let DP = MOT.flags.dollPoints || 0;
               let Satsui = MOT.flags.killingIntent || 0;
-              let Kills = 0;
-              if (MOT.flags.killedBoss1) Kills++;
-              if (MOT.flags.killedBoss2) Kills++;
-              if (MOT.flags.killedTwins) Kills++;
+              let Kills = MOT.flags.kills !== undefined ? MOT.flags.kills : 0;
+              if (MOT.flags.kills === undefined) {
+                if (MOT.flags.killedBoss1) Kills++;
+                if (MOT.flags.killedBoss2) Kills++;
+                if (MOT.flags.killedTwins) Kills++;
+              }
 
               const ending = (key) => {
                   MOT.flags.finalEnding = key;
