@@ -60,8 +60,11 @@ class GameScene extends Phaser.Scene {
     this.player.setDepth(10);
     this.player.setScale(2);
     // STG風の小さな当たり判定（未スケール時8x8、画面上16x16）
-    this.player.body.setSize(8, 8);
-    this.player.body.setOffset((this.player.width - 8) / 2, (this.player.height - 8) / 2);
+    this.player.body.setSize(14, 60);
+    this.player.body.setOffset(25, 25);
+
+    this.playerHitboxGraphics = this.add.graphics();
+    this.playerHitboxGraphics.setDepth(11);
 
     // Player trail effect
     this.playerTrail = this.add.particles(0, 0, 'particle', {
@@ -167,6 +170,14 @@ class GameScene extends Phaser.Scene {
 
     // Player movement (keyboard)
     MOT.handleMovement(this, this.player);
+
+    if (this.playerHitboxGraphics) {
+      this.playerHitboxGraphics.clear();
+      if (this.player && this.player.active && this.player.alpha > 0) {
+        this.playerHitboxGraphics.lineStyle(3, 0x00ffff, 0.8);
+        this.playerHitboxGraphics.strokeRect(this.player.body.x, this.player.body.y, this.player.body.width, this.player.body.height);
+      }
+    }
 
     // 博士の指示システム update (チュートリアル中は出さない)
     if (this.currentStage !== 1) {
