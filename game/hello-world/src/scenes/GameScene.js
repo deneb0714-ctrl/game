@@ -805,7 +805,9 @@ class GameScene extends Phaser.Scene {
       this.iconPersonFill.setVisible(false);
     } else {
       this.iconPersonFill.setVisible(true);
-      this.iconPersonFill.setCrop(0, 64 - 64 * dollPct, 32, Math.max(0.1, 64 * dollPct));
+      const cropY = Math.floor(64 - 64 * dollPct);
+      const cropH = Math.ceil(64 * dollPct);
+      this.iconPersonFill.setCrop(0, cropY, 32, Math.max(1, cropH));
     }
     this.dollText.setText('DP:' + dollValue);
 
@@ -815,7 +817,9 @@ class GameScene extends Phaser.Scene {
       this.iconBatteryFill.setVisible(false);
     } else {
       this.iconBatteryFill.setVisible(true);
-      this.iconBatteryFill.setCrop(0, 64 - 64 * intentPct, 32, Math.max(0.1, 64 * intentPct));
+      const cropY = Math.floor(64 - 64 * intentPct);
+      const cropH = Math.ceil(64 * intentPct);
+      this.iconBatteryFill.setCrop(0, cropY, 32, Math.max(1, cropH));
     }
     this.intentText.setText('KI:' + intentValue);
 

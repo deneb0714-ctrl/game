@@ -13,9 +13,9 @@ class StoryScene extends Phaser.Scene {
     // Initialize global flags
     window.MOT = window.MOT || {};
     MOT.flags = MOT.flags || {};
-    MOT.flags.dollPoints = 0;
-    MOT.flags.killedBoss1 = false;
-    MOT.flags.killedBoss2 = false;
+    if (MOT.resetFlags) {
+      MOT.resetFlags();
+    }
 
     // Dark background initially
     this.cameras.main.setBackgroundColor('#000000');
