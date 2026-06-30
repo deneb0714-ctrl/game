@@ -56,12 +56,12 @@ class BootScene extends Phaser.Scene {
     // 主人公の立ち絵
     this.load.image('hero_stand', window.HERO_STAND_B64);
     
-    // 主人公の戦闘時・他者との会話時の立ち絵
-    this.load.spritesheet('hero_stand_combat', window.HERO_COMBAT_SHEET_B64, {
-      frameWidth: window.HERO_COMBAT_FRAME_WIDTH,
-      frameHeight: window.HERO_COMBAT_FRAME_HEIGHT
-    });
     const v = window.GAME_VERSION || 'v1';
+    // 主人公の戦闘時・他者との会話時の立ち絵
+    this.load.spritesheet('hero_stand_combat', 'assets/images/hero_combat_sheet.png?v=' + v, {
+      frameWidth: 63,
+      frameHeight: 112
+    });
     this.load.spritesheet('demon_stand_combat', 'assets/images/demon_lord_sheet.png?v=' + v, {
       frameWidth: 315,
       frameHeight: 560
@@ -103,12 +103,10 @@ class BootScene extends Phaser.Scene {
     this.load.image('title_bg_glitch', window.TITLE_BG_GLITCH_B64);
 
     // Hero Title GIF (SpriteSheet)
-    if (window.HERO_TITLE_SHEET_B64) {
-      this.load.spritesheet('hero_title_anim', window.HERO_TITLE_SHEET_B64, {
-        frameWidth: 960,
-        frameHeight: 540
-      });
-    }
+    this.load.spritesheet('hero_title_anim', 'assets/images/hero_title_sheet.png?v=' + v, {
+      frameWidth: 960,
+      frameHeight: 540
+    });
     this.load.image('bg_lab', 'assets/bg_lab.png');
   }
 
