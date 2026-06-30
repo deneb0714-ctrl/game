@@ -1,38 +1,33 @@
-import os
 from PIL import Image
 
-folder = 'temp_demon_zip'
-files = sorted(os.listdir(folder))
+gif_path = r"../../魔王_戦闘ドット.gif"
+sheet_path = r"assets/images/demon_lord_sheet.png"
 
-# 40 frames total
-cols = 8
-rows = 5
-frame_w = 659
-frame_h = 1090
+try:
+    img = Image.open(gif_path)
+    frames = []
+    try:
+        while True:
+            # Convert frame to RGBA to preserve transparency
+            frame = img.convert("RGBA")
+            frames.append(frame)
+            img.seek(img.tell() + 1)
+    except EOFError:
+        pass
 
-# create blank transparent canvas
-sheet = Image.new('RGBA', (cols * frame_w, rows * frame_h), (0, 0, 0, 0))
+    if frames:
+        width, height = frames[0].size
+        num_frames = len(frames)
+        
+        # Create spritesheet
+        sheet = Image.new("RGBA", (width * num_frames, height), (0,0,0,0))
+        for i, frame in enumerate(frames):
+            sheet.paste(frame, (i * width, 0))
+            
+        sheet.save(sheet_path)
+        print(f"Created spritesheet with {num_frames} frames, size {width}x{height}")
+    else:
+        print("No frames found.")
 
-for idx, f in enumerate(files):
-    img = Image.open(os.path.join(folder, f)).convert('RGBA')
-    # crop bounding box
-    cropped = img.crop((68, 52, 727, 1142))
-    
-    # make white transparent
-    data = cropped.getdata()
-    new_data = []
-    for item in data:
-        # replace pure white
-        if item[0] == 255 and item[1] == 255 and item[2] == 255:
-            new_data.append((255, 255, 255, 0))
-        else:
-            new_data.append(item)
-    cropped.putdata(new_data)
-    
-    # paste into sheet
-    c = idx % cols
-    r = idx // cols
-    sheet.paste(cropped, (c * frame_w, r * frame_h))
-
-sheet.save('assets/demon_combat_sheet.png')
-print("Successfully generated assets/demon_combat_sheet.png")
+except Exception as e:
+    print(f"Error: {e}")
