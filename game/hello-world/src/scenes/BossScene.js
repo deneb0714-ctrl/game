@@ -8,7 +8,13 @@ class BossScene extends Phaser.Scene {
 
   init(data) {
     this.bossQueue = ['boss1', 'boss2', 'boss3_twins', 'demon_lord'];
-    this.currentBossIndex = (data && data.bossIndex !== undefined) ? data.bossIndex : 0;
+    if (data && data.bossIndex !== undefined) {
+      this.currentBossIndex = data.bossIndex;
+    } else if (data && data.startBossIndex !== undefined) {
+      this.currentBossIndex = data.startBossIndex;
+    } else {
+      this.currentBossIndex = 0;
+    }
     this.debugSkipCombat = data && data.debugSkipCombat;
     this.dialogActive = false;
     this.lastDialogActive = false; // 会話終了時のクールタイム検出用
