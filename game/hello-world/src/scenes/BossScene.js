@@ -7,6 +7,7 @@ class BossScene extends Phaser.Scene {
   }
 
   init(data) {
+    this.startData = data;
     this.bossQueue = ['boss1', 'boss2', 'boss3_twins', 'demon_lord'];
     if (data && data.bossIndex !== undefined) {
       this.currentBossIndex = data.bossIndex;
@@ -111,7 +112,9 @@ class BossScene extends Phaser.Scene {
     this.cameras.main.fadeIn(800, 5, 8, 20);
 
     // Start first boss
-    this.time.delayedCall(1000, function () { this.startBoss(); }, [], this);
+    if (!(this.startData && this.startData.jumpToEndingSetup)) {
+      this.time.delayedCall(1000, function () { this.startBoss(); }, [], this);
+    }
 
     // ── デバッグ用ショートカット ──
     // Q/E/R/8/9/0: 旧エンディング直行（条件なし）
@@ -156,25 +159,23 @@ class BossScene extends Phaser.Scene {
       this.onBossHit({ active: true, damage: 9999, silent: true, destroy: function(){} }, dummyBoss);
     };
 
-    this.input.keyboard.on('keydown-ONE', () => jumpToDemonLordDefeat(() => {
-      MOT.flags.killedBoss1 = true; MOT.flags.killedBoss2 = true; MOT.flags.killedTwins = true;
-    }));
-    this.input.keyboard.on('keydown-TWO', () => jumpToDemonLordDefeat(() => {
-      MOT.flags.killedBoss1 = true; MOT.flags.killedBoss2 = false; MOT.flags.killedTwins = false;
-      MOT.flags.dollPoints = 5;
-    }));
-    this.input.keyboard.on('keydown-THREE', () => jumpToDemonLordDefeat(() => {
-      MOT.flags.killedBoss1 = false; MOT.flags.killedBoss2 = false; MOT.flags.killedTwins = false;
-      MOT.flags.dollPoints = 150;
-    }));
-    this.input.keyboard.on('keydown-FOUR', () => jumpToDemonLordDefeat(() => {
-      MOT.flags.killedBoss1 = false; MOT.flags.killedBoss2 = false; MOT.flags.killedTwins = false;
-      MOT.flags.dollPoints = 50; MOT.flags.killingIntent = 100;
-    }));
-    this.input.keyboard.on('keydown-FIVE', () => jumpToDemonLordDefeat(() => {
-      MOT.flags.killedBoss1 = true; MOT.flags.killedBoss2 = false; MOT.flags.killedTwins = false;
-      MOT.flags.dollPoints = 1;
-    }));
+    if (this.startData && this.startData.jumpToEndingSetup) {
+      const type = this.startData.jumpToEndingSetup;
+      this.time.delayedCall(100, () => {
+        if (type === 1) {
+          jumpToDemonLordDefeat(() => { MOT.flags.killedBoss1 = true; MOT.flags.killedBoss2 = true; MOT.flags.killedTwins = true; });
+        } else if (type === 2) {
+          jumpToDemonLordDefeat(() => { MOT.flags.killedBoss1 = true; MOT.flags.killedBoss2 = false; MOT.flags.killedTwins = false; MOT.flags.dollPoints = 5; });
+        } else if (type === 3) {
+          jumpToDemonLordDefeat(() => { MOT.flags.killedBoss1 = false; MOT.flags.killedBoss2 = false; MOT.flags.killedTwins = false; MOT.flags.dollPoints = 150; });
+        } else if (type === 4) {
+          jumpToDemonLordDefeat(() => { MOT.flags.killedBoss1 = false; MOT.flags.killedBoss2 = false; MOT.flags.killedTwins = false; MOT.flags.dollPoints = 50; MOT.flags.killingIntent = 100; });
+        } else if (type === 5) {
+          jumpToDemonLordDefeat(() => { MOT.flags.killedBoss1 = true; MOT.flags.killedBoss2 = false; MOT.flags.killedTwins = false; MOT.flags.dollPoints = 1; });
+        }
+      });
+    }
+
   }
 
   getBossConfig(key) {

@@ -127,14 +127,10 @@ class TitleScene extends Phaser.Scene {
         padding: { x: 5, y: 5 }
       }).setDepth(100);
 
-      const startDebugEnding = (endingType) => {
-        // Will be mapped to proper flags later, for now just basic setup
-        MOT.flags.kills = 0;
-        MOT.flags.dollPoints = 0;
-        MOT.flags.killingIntent = 0;
+      const startDebugEnding = (endingTypeNum) => {
         this.cameras.main.fadeOut(500, 5, 8, 20);
         this.time.delayedCall(500, () => {
-          this.scene.start('EndingScene', { debugEnding: endingType });
+          this.scene.start('BossScene', { jumpToEndingSetup: endingTypeNum });
         });
       };
 
@@ -145,11 +141,11 @@ class TitleScene extends Phaser.Scene {
         });
       };
 
-      this.input.keyboard.on('keydown-ONE', () => startDebugEnding('puppet'));
-      this.input.keyboard.on('keydown-TWO', () => startDebugEnding('forced_shutdown'));
-      this.input.keyboard.on('keydown-THREE', () => startDebugEnding('normal_daily'));
-      this.input.keyboard.on('keydown-FOUR', () => startDebugEnding('orphan_hero'));
-      this.input.keyboard.on('keydown-FIVE', () => startDebugEnding('true_demon_lord'));
+      this.input.keyboard.on('keydown-ONE', () => startDebugEnding(1));
+      this.input.keyboard.on('keydown-TWO', () => startDebugEnding(2));
+      this.input.keyboard.on('keydown-THREE', () => startDebugEnding(3));
+      this.input.keyboard.on('keydown-FOUR', () => startDebugEnding(4));
+      this.input.keyboard.on('keydown-FIVE', () => startDebugEnding(5));
 
       this.input.keyboard.on('keydown-Q', () => startBoss(0));
       this.input.keyboard.on('keydown-W', () => startBoss(1));
