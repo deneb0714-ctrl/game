@@ -1549,7 +1549,6 @@ class BossScene extends Phaser.Scene {
                           ending('normal_useless');
                       }
                   }
-              }
               /*
                   let c = await askShatterChoice('1. 心臓を打ち抜く', '2. 見逃す', true);
                   
