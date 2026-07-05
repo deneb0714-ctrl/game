@@ -206,6 +206,7 @@ class BossScene extends Phaser.Scene {
       this.inunekoEnemy.maxHp = 50;
       this.inunekoEnemy.active = true;
       this.inunekoEnemy.configKey = 'inuneko';
+      this.inunekoEnemy.setVisible(false);
       this.enemyGroup.add(this.inunekoEnemy);
       
       this.anims.create({
@@ -292,6 +293,7 @@ class BossScene extends Phaser.Scene {
        boss.setVisible(true); boss.body.enable = true;
        this.cameras.main.shake(400, 0.015);
        if (key === 'demon_lord' && this.inunekoEnemy) {
+         this.inunekoEnemy.setVisible(true);
          this.tweens.add({ targets: this.inunekoEnemy, x: 1400 - 60, duration: 1200, ease: 'Power2' });
        }
        this.tweens.add({
