@@ -788,11 +788,11 @@ class GameScene extends Phaser.Scene {
 
   createHUD() {
     this.hpText = this.add.text(30, 20, '', {
-      fontFamily: '"Press Start 2P"', fontSize: '16px', color: '#FF4B6E'
+      fontFamily: '"Press Start 2P"', fontSize: '32px', color: '#FF4B6E'
     }).setDepth(100).setScrollFactor(0);
 
-    this.energyText = this.add.text(30, 50, '', {
-      fontFamily: '"Press Start 2P"', fontSize: '14px', color: '#4FD1FF'
+    this.energyText = this.add.text(30, 60, '', {
+      fontFamily: '"Press Start 2P"', fontSize: '24px', color: '#4FD1FF'
     }).setDepth(100).setScrollFactor(0);
 
     this.energyBar = this.add.graphics().setDepth(100).setScrollFactor(0);
@@ -811,19 +811,19 @@ class GameScene extends Phaser.Scene {
 
     // HUD Elements Initialization
     if (!this.energyBarBgObj) {
-      this.energyBarBgObj = this.add.rectangle(130, 88, 200, 16, 0x1F2933).setDepth(100).setScrollFactor(0);
-      this.energyBarFgObj = this.add.rectangle(32, 82, 196, 12, 0x4FD1FF).setOrigin(0, 0).setDepth(100).setScrollFactor(0);
+      this.energyBarBgObj = this.add.rectangle(230, 116, 400, 32, 0x1F2933).setDepth(100).setScrollFactor(0);
+      this.energyBarFgObj = this.add.rectangle(34, 104, 392, 24, 0x4FD1FF).setOrigin(0, 0).setDepth(100).setScrollFactor(0);
       this.energyBarOutline = this.add.graphics().setDepth(100).setScrollFactor(0);
-      this.energyBarOutline.lineStyle(1, 0x4FD1FF, 0.6);
-      this.energyBarOutline.strokeRect(30, 80, 200, 16);
+      this.energyBarOutline.lineStyle(2, 0x4FD1FF, 0.6);
+      this.energyBarOutline.strokeRect(30, 100, 400, 32);
       
-      this.iconPersonBg = this.add.image(30, 110, 'icon_person').setOrigin(0, 0).setTint(0x555555).setDepth(100).setScrollFactor(0);
-      this.iconPersonFill = this.add.image(30, 110, 'icon_person').setOrigin(0, 0).setTint(0xFFFF00).setDepth(100).setScrollFactor(0);
-      this.dollText = this.add.text(70, 130, '', { fontFamily: '"Press Start 2P"', fontSize: '12px', color: '#FFFF00' }).setDepth(100).setScrollFactor(0);
+      this.iconPersonBg = this.add.image(520, 52, 'icon_person').setOrigin(0, 0).setTint(0x555555).setDepth(100).setScrollFactor(0).setScale(2);
+      this.iconPersonFill = this.add.image(520, 52, 'icon_person').setOrigin(0, 0).setTint(0xFFFF00).setDepth(100).setScrollFactor(0).setScale(2);
+      this.dollText = this.add.text(590, 100, '', { fontFamily: '"Press Start 2P"', fontSize: '20px', color: '#FFFF00' }).setDepth(100).setScrollFactor(0);
       
-      this.iconBatteryBg = this.add.image(130, 110, 'icon_battery').setOrigin(0, 0).setTint(0x555555).setDepth(100).setScrollFactor(0);
-      this.iconBatteryFill = this.add.image(130, 110, 'icon_battery').setOrigin(0, 0).setTint(0xFF0000).setDepth(100).setScrollFactor(0);
-      this.intentText = this.add.text(170, 130, '', { fontFamily: '"Press Start 2P"', fontSize: '12px', color: '#FF0000' }).setDepth(100).setScrollFactor(0);
+      this.iconBatteryBg = this.add.image(680, 52, 'icon_battery').setOrigin(0, 0).setTint(0x555555).setDepth(100).setScrollFactor(0).setScale(2);
+      this.iconBatteryFill = this.add.image(680, 52, 'icon_battery').setOrigin(0, 0).setTint(0xFF0000).setDepth(100).setScrollFactor(0).setScale(2);
+      this.intentText = this.add.text(750, 100, '', { fontFamily: '"Press Start 2P"', fontSize: '20px', color: '#FF0000' }).setDepth(100).setScrollFactor(0);
     }
 
     // Energy bar update (using scaleX instead of clear/fillRect)
@@ -837,7 +837,7 @@ class GameScene extends Phaser.Scene {
     if (this.isEnergyHighlighted) {
       const flash = (Math.sin(Date.now() / 150) + 1) / 2;
       this.energyBar.lineStyle(4, 0xFFFF00, 0.4 + 0.6 * flash);
-      this.energyBar.strokeRect(26, 76, 208, 24);
+      this.energyBar.strokeRect(26, 96, 408, 40);
     }
 
     this.energyText.setText('EN: ' + MOT.flags.energy + '/' + MOT.flags.maxEnergyThreshold);
@@ -860,9 +860,9 @@ class GameScene extends Phaser.Scene {
     this.iconBatteryFill.setCrop(0, bH - intentH, bW, intentH);
     this.intentText.setText('KI:' + intentValue);
 
-    const iconX = 260;
-    const iconY = 88;
-    const iconRadius = 12;
+    const iconX = 470;
+    const iconY = 116;
+    const iconRadius = 24;
 
     this.barrierIconBg.clear();
     this.barrierIconFg.clear();
