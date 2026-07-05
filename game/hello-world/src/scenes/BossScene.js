@@ -842,7 +842,7 @@ class BossScene extends Phaser.Scene {
     this.enemyGroup.getChildren().forEach(function (e) {
       if (e.x < -100) {
         if (e.isScenarioMinion || e.isIntermissionEnemy) {
-          this.onBossHit({ active: true, damage: 9999, destroy: function(){} }, e);
+          this.onBossHit({ active: true, damage: 9999, silent: true, destroy: function(){} }, e);
         } else {
           e.destroy();
         }
@@ -912,7 +912,7 @@ class BossScene extends Phaser.Scene {
       if (this.enemyGroup) {
         this.enemyGroup.getChildren().slice().forEach(enemy => {
           if (enemy.isIntermissionEnemy && enemy.active) {
-            this.onBossHit({ active: true, damage: 9999, destroy: () => { } }, enemy);
+            this.onBossHit({ active: true, damage: 9999, silent: true, destroy: () => { } }, enemy);
           }
         });
       }
@@ -1147,8 +1147,10 @@ class BossScene extends Phaser.Scene {
       boss.setTint(0xffffff);
       this.time.delayedCall(50, function () { if (boss.active) boss.clearTint(); });
       if (boss.hp <= 0) {
-        this.showExplosion(boss.x, boss.y);
-        if (Phaser.Math.Between(0, 100) < 40) MOT.spawnEnergyItem(this, boss.x, boss.y);
+        if (!bullet.silent) {
+          this.showExplosion(boss.x, boss.y);
+          if (Phaser.Math.Between(0, 100) < 40) MOT.spawnEnergyItem(this, boss.x, boss.y);
+        }
         
         const isScenario = boss.isScenarioMinion;
         boss.destroy();
