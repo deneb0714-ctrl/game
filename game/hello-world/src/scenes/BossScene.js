@@ -129,6 +129,8 @@ class BossScene extends Phaser.Scene {
     //   4 → TRUE END 真なる魔王  (幹部全員生存・魔王生かす・DP≤100・殺意≥100)
     //   5 → BAD END 強制シャットダウン (幹部一部殺害・DP<3・魔王殺す)
     const jumpToDemonLordDefeat = (setupFn) => {
+      MOT.flags.finalEnding = null;
+      delete MOT.flags.kills;
       setupFn();
       
       // Clear current combat
@@ -139,6 +141,9 @@ class BossScene extends Phaser.Scene {
       this.physics.resume();
       this.dialogActive = false;
       if (this.choiceContainer) { this.choiceContainer.destroy(); this.choiceContainer = null; }
+      
+      this.currentBossIndex = 3;
+      this.bossDefeated = true;
       
       // Create a dummy demon lord to pass to onBossHit
       let dummyBoss = this.physics.add.sprite(1400, 1080 / 2, 'demon_combat_anim');
