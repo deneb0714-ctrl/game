@@ -264,6 +264,21 @@ class BossScene extends Phaser.Scene {
     }
   }
 
+  async playDialogSequence(seq, onComplete) {
+    this.dialogActive = true;
+    for (let i = 0; i < seq.length; i++) {
+      let d = seq[i];
+      await new Promise(res => {
+        if (d.speaker === '博士') {
+          this.showDeviceDialogue(d.text, res);
+        } else {
+          this.showDialogue(d.speaker, d.text, res);
+        }
+      });
+    }
+    if (onComplete) onComplete();
+  }
+
   startBossIntro(key, boss) {
     if (key !== 'demon_lord' && key !== 'doctor') {
       this.dialogActive = false;
@@ -1369,30 +1384,53 @@ class BossScene extends Phaser.Scene {
                   this.proceedToNextArea(boss, false);
               };
 
-              if (Kills === 0) {
-                  // 魔王を殺す生かすの選択肢を削除し、そのまま（c===2ルート）進行
-                  if (true) {
-                      if (Satsui >= 100 && DP < 100) {
-                          await sayDevice('「よくやった。さぁ早くとどめを！」');
-                          
-                          // 魔王爆発演出
-                          MOT.Audio.playSelect(); // 爆発音の代わり、または別途音があれば
-                          this.cameras.main.shake(500, 0.05);
-                          if(this.demonImage) {
-                              this.tweens.add({ targets: this.demonImage, scale: 2, alpha: 0, duration: 500, ease: 'Power2' });
-                          }
-                          await new Promise(r => this.time.delayedCall(1000, r));
-                          
-                          await new Promise(res => {
-                              this.showDialogue('', '一言も発さず、残党も出会い次第殺しながら博士の研究室に戻る。', res);
-                          });
-                          
-                          // 自機（主人公）が左へスライドして画面外へ消える演出
-                          if (this.player) {
-                              await new Promise(res => {
-                                  this.tweens.add({ targets: this.player, x: -100, duration: 1500, ease: 'Power2', onComplete: res });
-                              });
-                          }
+              // Kills === 3 (幹部全員殺害) の場合は選択肢なしで魔王を殺す
+              if (Kills === 3) {
+                  await sayDevice('「よくやった。さぁ早くとどめを！」');
+                  await sayDemon('「ぐっ…すまないわがしもべたち…ここまでのようだ」');
+                  await sayHero('「…」');
+                  MOT.Audio.playSelect();
+                  MOT.flags.killedDemonLord = true;
+                  
+                  // 魔王爆発演出
+                  this.cameras.main.shake(500, 0.05);
+                  if(this.demonImage) {
+                      this.tweens.add({ targets: this.demonImage, scale: 2, alpha: 0, duration: 500, ease: 'Power2' });
+                  }
+                  await new Promise(r => this.time.delayedCall(1000, r));
+                  ending('bad_puppet');
+                  return;
+              }
+
+              // Kills < 3 の場合は選択肢を出す
+              await sayDevice('「よくやった。さぁ早くとどめを！」');
+              let c = await askShatterChoice('1. 心臓を打ち抜く', '2. 見逃す', true);
+              
+              if (c === 1) {
+                  // 魔王を殺す
+                  MOT.flags.killedDemonLord = true;
+                  await sayDemon('「ぐっ…すまないわがしもべたち…ここまでのようだ」');
+                  await sayHero('「…」');
+                  MOT.Audio.playSelect(); // 爆発音
+                  
+                  // 魔王爆発演出
+                  this.cameras.main.shake(500, 0.05);
+                  if(this.demonImage) {
+                      this.tweens.add({ targets: this.demonImage, scale: 2, alpha: 0, duration: 500, ease: 'Power2' });
+                  }
+                  await new Promise(r => this.time.delayedCall(1000, r));
+                  if (DP >= 3) {
+                      ending('normal_daily');
+                  } else {
+                      ending('bad_shutdown');
+                  }
+              } else {
+                  // 魔王を生かす
+                  MOT.flags.killedDemonLord = false;
+                  
+                  // 生かした場合の分岐演出 (True Demon Lord or others)
+                  if (Kills === 0 && Satsui >= 100 && DP <= 100) {
+                      // 真の魔王エンドの特別演出（博士のラボへ移行）
                           
                           // フェードアウト
                           this.cameras.main.fadeOut(1000);
@@ -1434,7 +1472,7 @@ class BossScene extends Phaser.Scene {
                           if (this.demonImage) { this.demonImage.destroy(); this.demonImage = null; }
                           if (this.heroImage) { this.heroImage.destroy(); this.heroImage = null; }
                           
-                          // 博士の立ち絵
+                          // 博士的立ち絵
                           this.doctorImage = this.add.image(1920 - 300, 1080 / 2, 'doctor_stand').setAlpha(0).setDepth(90);
                           var docScale = 750 / this.doctorImage.width;
                           this.doctorImage.setScale(docScale);
@@ -1509,11 +1547,82 @@ class BossScene extends Phaser.Scene {
                       }
                   }
               } else if (Kills > 0 && Kills < 3) {
-                  if (DP >= 100) {
-                      await sayDevice('「よくやった。さぁ早くとどめを！」');
-                      await sayDemon('「ぐっ…すまないわがしもべたち…ここまでのようだ」');
-                      await sayHero('「…」');
-                      MOT.Audio.playSelect();
+                  await sayDevice('「よくやった。さぁ早くとどめを！」');
+                  let c = await askShatterChoice('1. 心臓を打ち抜く', '2. 見逃す', true);
+                  
+                  if (c === 2) {
+                      MOT.flags.killedDemonLord = false;
+                      await sayHero('「…魔王は悪いやつじゃなかった。僕は殺さない。」');
+                      ending('normal_useless');
+                      return;
+                  }
+
+                  MOT.flags.killedDemonLord = true;
+                  await sayDemon('「ぐっ…すまないわがしもべたち…ここまでのようだ」');
+                  await sayHero('「…」');
+                  MOT.Audio.playSelect();
+                  
+                  if (DP >= 3) {
+                      this.cameras.main.fadeOut(1000);
+                      await new Promise(r => this.time.delayedCall(1000, r));
+                      let blackText = this.add.text(1920/2, 1080/2, '無言で残党も出会い次第殺しながら博士の研究室に戻る。', {fontFamily: '"DotGothic16"', fontSize: '32px', color: '#fff'}).setOrigin(0.5).setDepth(300).setAlpha(0);
+                      this.tweens.add({targets: blackText, alpha: 1, duration: 1000});
+                      await new Promise(r => this.time.delayedCall(3000, r));
+                      this.tweens.add({targets: blackText, alpha: 0, duration: 1000});
+                      await new Promise(r => this.time.delayedCall(1000, r));
+                      
+                      // 戦闘UIとオブジェクトを全て隠す
+                      if (this.player) { this.player.setVisible(false); this.player.setActive(false); }
+                      if (this.playerHitboxGraphics) this.playerHitboxGraphics.setVisible(false);
+                      if (this.bossHpBg) this.bossHpBg.setVisible(false);
+                      if (this.bossHpBar) this.bossHpBar.setVisible(false);
+                      if (this.barrierVisual) this.barrierVisual.setVisible(false);
+                      if (this.uiBg) this.uiBg.setVisible(false);
+                      if (this.uiText) this.uiText.setVisible(false);
+                      if (this.hpText) this.hpText.setVisible(false);
+                      if (this.energyText) this.energyText.setVisible(false);
+                      if (this.energyBar) this.energyBar.setVisible(false);
+                      if (this.barrierIconBg) this.barrierIconBg.setVisible(false);
+                      if (this.barrierIconFg) this.barrierIconFg.setVisible(false);
+                      if (this.bossHPText) this.bossHPText.setVisible(false);
+                      if (this.areaNameText) this.areaNameText.setVisible(false);
+                      if (this.iconPersonBg) this.iconPersonBg.setVisible(false);
+                      if (this.iconPersonFill) this.iconPersonFill.setVisible(false);
+                      if (this.dollText) this.dollText.setVisible(false);
+                      if (this.iconBatteryBg) this.iconBatteryBg.setVisible(false);
+                      if (this.iconBatteryFill) this.iconBatteryFill.setVisible(false);
+                      if (this.intentText) this.intentText.setVisible(false);
+                      if (this.dimBg) { this.dimBg.setVisible(false); }
+                      if (this.demonImage) { this.demonImage.setVisible(false); }
+                      if (this.heroImage) { this.heroImage.setVisible(false); }
+
+                      // 研究室の背景
+                      var labBgDaily = this.add.image(1920/2, 1080/2, 'bg_lab').setDepth(90);
+                      labBgDaily.setScale(Math.max(1920 / labBgDaily.width, 1080 / labBgDaily.height));
+                      
+                      // 勇者と博士の立ち絵
+                      var docImgDaily = this.add.image(1920 - 300, 1080/2, 'doctor_stand').setDepth(95);
+                      this.textures.get('doctor_stand').setFilter(Phaser.Textures.FilterMode.LINEAR);
+                      var docScaleDaily = 750 / this.textures.get('doctor_stand').getSourceImage().width;
+                      docImgDaily.setScale(docScaleDaily);
+                      docImgDaily.setY(100 + (this.textures.get('doctor_stand').getSourceImage().height * docScaleDaily) / 2);
+                      
+                      var heroImgDaily = this.add.image(300, 1080/2, 'hero_stand').setDepth(95);
+                      var hScaleDaily = 750 / heroImgDaily.width;
+                      heroImgDaily.setScale(hScaleDaily);
+                      heroImgDaily.setY(100 + (heroImgDaily.height * hScaleDaily) / 2);
+
+                      const sayDoctorLabDaily = (text) => new Promise(res => { 
+                          this.tweens.add({targets: docImgDaily, alpha: 1, duration: 300});
+                          this.tweens.add({targets: heroImgDaily, alpha: 0.4, duration: 300});
+                          this.showDialogue('博士', text, res);
+                      });
+
+                      this.cameras.main.fadeIn(1000);
+                      await sayDoctorLabDaily('「よく魔王を倒してくれた。これで私の望みに一歩近づいたな。ふふ、世界の平和が望みだよ。」');
+                      await sayDoctorLabDaily('「ああ、役割を果たしたお人形は処分してあげないとな。」');
+                      ending('normal_daily');
+                  } else {
                       this.cameras.main.fadeOut(1000);
                       await new Promise(r => this.time.delayedCall(1000, r));
                       let blackText = this.add.text(1920/2, 1080/2, '無言で残党も出会い次第殺しながら博士の研究室に戻る。', {fontFamily: '"DotGothic16"', fontSize: '32px', color: '#fff'}).setOrigin(0.5).setDepth(300).setAlpha(0);
@@ -1613,160 +1722,6 @@ class BossScene extends Phaser.Scene {
                       await sayDoctorLab('「お前にできることは、このまま邪魔者を倒し私の役に立つことだけだ。」');
                       await sayDoctorLab('「だが、歯向かってきたお前をこのまま使う必要もないな。処分するとでもしようか。」');
                       ending('bad_shutdown');
-                  } else {
-                      await sayDevice('「よくやった。さぁ早くとどめを！」');
-                      await sayDemon('「ぐっ…ここまでか…」');
-                      const askChoice = (label1, label2) => new Promise(res => {
-                          if (this.choiceContainer) this.choiceContainer.destroy();
-                          this.choiceContainer = this.add.container(0, 0).setDepth(200);
-                          var w = 1920, h = 1080;
-                          var bg = this.add.rectangle(w / 2, h / 2, w, h, 0x000000, 0.4).setInteractive();
-                          this.choiceContainer.add(bg);
-                          var box1 = this.add.rectangle(w / 2, h/2 - 40, 500, 50, 0x1F2933, 0.8).setStrokeStyle(2, 0x4FD1FF);
-                          var txt1 = this.add.text(w / 2, h/2 - 40, label1, { fontFamily: '"DotGothic16"', fontSize: '24px', color: '#ffffff' }).setOrigin(0.5);
-                          var box2 = this.add.rectangle(w / 2, h/2 + 40, 500, 50, 0x1F2933, 0.8).setStrokeStyle(2, 0x4FD1FF);
-                          var txt2 = this.add.text(w / 2, h/2 + 40, label2, { fontFamily: '"DotGothic16"', fontSize: '24px', color: '#ffffff' }).setOrigin(0.5);
-                          this.choiceContainer.add([box1, txt1, box2, txt2]);
-                          let cursor = this.add.text(w / 2 - 280, h/2 - 40, '▶', { fontFamily: '"DotGothic16"', fontSize: '24px', color: '#39FF14' }).setOrigin(0.5);
-                          this.choiceContainer.add(cursor);
-                          let idx = 0;
-                          const kh = (e) => {
-                              if(e.key==='ArrowUp' || e.key==='w') { idx = 0; cursor.setY(h/2 - 40); }
-                              if(e.key==='ArrowDown' || e.key==='s') { idx = 1; cursor.setY(h/2 + 40); }
-                              if(e.key==='Enter' || e.key===' ') {
-                                  this.input.keyboard.off('keydown', kh);
-                                  this.choiceContainer.destroy();
-                                  res(idx + 1);
-                              }
-                          };
-                          this.input.keyboard.on('keydown', kh);
-                      });
-                      let c = await askChoice('1. 心臓を打ち抜く', '2. 見逃す');
-                      if (c === 2) {
-                          await sayDemon('「わらわを見逃して何が望みだ？しもべたちを殺しているんだ。和平を求めて居るわけではないのであろう？」');
-                          await sayDemon('「わらわは、しもべを殺された恨みを忘れることはできん。何が目的であれ、お前を許すことはできないだろう。」');
-                          this.cameras.main.fadeOut(1000);
-                          await new Promise(r => this.time.delayedCall(1000, r));
-                          let blackText = this.add.text(1920/2, 1080/2, '主人公は魔王を倒せなかった。それとも、倒さなかったのだろうか。', {fontFamily: '"DotGothic16"', fontSize: '32px', color: '#fff'}).setOrigin(0.5).setDepth(300).setAlpha(0);
-                          this.tweens.add({targets: blackText, alpha: 1, duration: 1000});
-                          await new Promise(r => this.time.delayedCall(3000, r));
-                          this.tweens.add({targets: blackText, alpha: 0, duration: 1000});
-                          await new Promise(r => this.time.delayedCall(1000, r));
-                          
-                          // 戦闘UIとオブジェクトを全て隠す
-                          if (this.player) { this.player.setVisible(false); this.player.setActive(false); }
-                          if (this.playerHitboxGraphics) this.playerHitboxGraphics.setVisible(false);
-                          if (this.bossHpBg) this.bossHpBg.setVisible(false);
-                          if (this.bossHpBar) this.bossHpBar.setVisible(false);
-                          if (this.barrierVisual) this.barrierVisual.setVisible(false);
-                          if (this.uiBg) this.uiBg.setVisible(false);
-                          if (this.uiText) this.uiText.setVisible(false);
-                          if (this.hpText) this.hpText.setVisible(false);
-                          if (this.energyText) this.energyText.setVisible(false);
-                          if (this.energyBar) this.energyBar.setVisible(false);
-                          if (this.barrierIconBg) this.barrierIconBg.setVisible(false);
-                          if (this.barrierIconFg) this.barrierIconFg.setVisible(false);
-                          if (this.bossHPText) this.bossHPText.setVisible(false);
-                          if (this.areaNameText) this.areaNameText.setVisible(false);
-                          if (this.iconPersonBg) this.iconPersonBg.setVisible(false);
-                          if (this.iconPersonFill) this.iconPersonFill.setVisible(false);
-                          if (this.dollText) this.dollText.setVisible(false);
-                          if (this.iconBatteryBg) this.iconBatteryBg.setVisible(false);
-                          if (this.iconBatteryFill) this.iconBatteryFill.setVisible(false);
-                          if (this.intentText) this.intentText.setVisible(false);
-                          if (this.dimBg) { this.dimBg.setVisible(false); }
-                          if (this.demonImage) { this.demonImage.setVisible(false); }
-                          if (this.heroImage) { this.heroImage.setVisible(false); }
-
-                          // 研究室の背景
-                          var labBg = this.add.image(1920/2, 1080/2, 'bg_lab').setDepth(90);
-                          labBg.setScale(Math.max(1920 / labBg.width, 1080 / labBg.height));
-                          
-                          // 勇者と博士の立ち絵
-                          var docImg = this.add.image(1920 - 300, 1080/2, 'doctor_stand').setDepth(95);
-                          this.textures.get('doctor_stand').setFilter(Phaser.Textures.FilterMode.LINEAR);
-                          var docScale = 750 / this.textures.get('doctor_stand').getSourceImage().width;
-                          docImg.setScale(docScale);
-                          docImg.setY(100 + (this.textures.get('doctor_stand').getSourceImage().height * docScale) / 2);
-                          
-                          var heroImgNew = this.add.image(300, 1080/2, 'hero_stand').setDepth(95);
-                          var hScaleNew = 750 / heroImgNew.width;
-                          heroImgNew.setScale(hScaleNew);
-                          heroImgNew.setY(100 + (heroImgNew.height * hScaleNew) / 2);
-
-                          const sayDoctorLab = (text) => new Promise(res => { 
-                              this.tweens.add({targets: docImg, alpha: 1, duration: 300});
-                              this.tweens.add({targets: heroImgNew, alpha: 0.4, duration: 300});
-                              this.showDialogue('博士', text, res);
-                          });
-
-                          this.cameras.main.fadeIn(1000);
-                          await sayDoctorLab('「報告などなくてもわかっている。お前はあいつらを殺しきることはできなかった役立たずだとな。」');
-                          await sayDoctorLab('「魔王は悪くないだと？世界平和のために奴はいらんだろう。そんな簡単な役目すらこなせないお人形は処分しないとな。」');
-                          ending('normal_useless');
-                      } else {
-                          await sayDemon('「このわらわが...！すまない、我がしもべたち...」');
-                          MOT.Audio.playSelect();
-                          this.cameras.main.fadeOut(1000);
-                          await new Promise(r => this.time.delayedCall(1000, r));
-                          let blackText = this.add.text(1920/2, 1080/2, 'こうして魔王は打倒された。主人公は博士の研究所に戻った。', {fontFamily: '"DotGothic16"', fontSize: '32px', color: '#fff'}).setOrigin(0.5).setDepth(300).setAlpha(0);
-                          this.tweens.add({targets: blackText, alpha: 1, duration: 1000});
-                          await new Promise(r => this.time.delayedCall(3000, r));
-                          this.tweens.add({targets: blackText, alpha: 0, duration: 1000});
-                          await new Promise(r => this.time.delayedCall(1000, r));
-                          
-                          // 戦闘UIとオブジェクトを全て隠す
-                          if (this.player) { this.player.setVisible(false); this.player.setActive(false); }
-                          if (this.playerHitboxGraphics) this.playerHitboxGraphics.setVisible(false);
-                          if (this.bossHpBg) this.bossHpBg.setVisible(false);
-                          if (this.bossHpBar) this.bossHpBar.setVisible(false);
-                          if (this.barrierVisual) this.barrierVisual.setVisible(false);
-                          if (this.uiBg) this.uiBg.setVisible(false);
-                          if (this.uiText) this.uiText.setVisible(false);
-                          if (this.hpText) this.hpText.setVisible(false);
-                          if (this.energyText) this.energyText.setVisible(false);
-                          if (this.energyBar) this.energyBar.setVisible(false);
-                          if (this.barrierIconBg) this.barrierIconBg.setVisible(false);
-                          if (this.barrierIconFg) this.barrierIconFg.setVisible(false);
-                          if (this.bossHPText) this.bossHPText.setVisible(false);
-                          if (this.areaNameText) this.areaNameText.setVisible(false);
-                          if (this.iconPersonBg) this.iconPersonBg.setVisible(false);
-                          if (this.iconPersonFill) this.iconPersonFill.setVisible(false);
-                          if (this.dollText) this.dollText.setVisible(false);
-                          if (this.iconBatteryBg) this.iconBatteryBg.setVisible(false);
-                          if (this.iconBatteryFill) this.iconBatteryFill.setVisible(false);
-                          if (this.intentText) this.intentText.setVisible(false);
-                          if (this.dimBg) { this.dimBg.setVisible(false); }
-                          if (this.demonImage) { this.demonImage.setVisible(false); }
-                          if (this.heroImage) { this.heroImage.setVisible(false); }
-
-                          // 研究室の背景
-                          var labBgDaily = this.add.image(1920/2, 1080/2, 'bg_lab').setDepth(90);
-                          labBgDaily.setScale(Math.max(1920 / labBgDaily.width, 1080 / labBgDaily.height));
-                          
-                          // 勇者と博士の立ち絵
-                          var docImgDaily = this.add.image(1920 - 300, 1080/2, 'doctor_stand').setDepth(95);
-                          this.textures.get('doctor_stand').setFilter(Phaser.Textures.FilterMode.LINEAR);
-                          var docScaleDaily = 750 / this.textures.get('doctor_stand').getSourceImage().width;
-                          docImgDaily.setScale(docScaleDaily);
-                          docImgDaily.setY(100 + (this.textures.get('doctor_stand').getSourceImage().height * docScaleDaily) / 2);
-                          
-                          var heroImgDaily = this.add.image(300, 1080/2, 'hero_stand').setDepth(95);
-                          var hScaleDaily = 750 / heroImgDaily.width;
-                          heroImgDaily.setScale(hScaleDaily);
-                          heroImgDaily.setY(100 + (heroImgDaily.height * hScaleDaily) / 2);
-
-                          const sayDoctorLabDaily = (text) => new Promise(res => { 
-                              this.tweens.add({targets: docImgDaily, alpha: 1, duration: 300});
-                              this.tweens.add({targets: heroImgDaily, alpha: 0.4, duration: 300});
-                              this.showDialogue('博士', text, res);
-                          });
-
-                          this.cameras.main.fadeIn(1000);
-                          await sayDoctorLabDaily('「よく魔王を倒してくれた。これで私の望みに一歩近づいたな。ふふ、世界の平和が望みだよ。」');
-                          await sayDoctorLabDaily('「ああ、役割を果たしたお人形は処分してあげないとな。」');
-                          ending('normal_daily');
-                      }
                   }
               } else if (Kills === 3) {
                   await sayDevice('「よくやった。さぁ早くとどめを！」');
@@ -1819,21 +1774,22 @@ class BossScene extends Phaser.Scene {
               if (c === 1) {
                 await sayDevice('「なんだ、ここでも殺さないのか。わかっているのか？その女の言う通り、私はお前を騙していたんだ。」');
                 await sayHero('「あなたがやったことは許せない。だけど、ここであなたを殺したら同じになる。」');
-                await sayDevice('「ずいぶんな言いようだな。だがそうだな、お前が殺せぬというなら自分で終わらせようじゃないか！」');
-                await sayHero('「！」');
-                MOT.Audio.playSelect();
+                await sayDevice('「ずいぶんな言いようだな。」');
               } else {
                 await sayDevice('「驚いた...まさかお前がここまでやるとはな」');
                 await sayHero('「…」');
                 await sayDevice('「なにをしている？早くとどめを刺せ」');
                 await sayHero('「できない...。あなたがやったことは許せないが、それでもあなたは僕の...」');
                 await sayDevice('「全く...本当にどうしようもない欠陥品だな」');
-                await sayDevice('「お前にやれぬというならこの命、自分で終わらせよう！」');
-                await sayHero('「！」');
-                MOT.Audio.playSelect();
               }
+              const sayDemon = (text) => new Promise(res => { this.tweens.add({ targets: dimBg, alpha: 0.6, duration: 300 }); this.tweens.add({targets: this.heroImage, alpha: 0.4, duration: 300}); this.showDialogue('魔王', text, res); });
+              await sayDemon('「安心しろ、わらわは誰も殺さない。」');
+              await sayDemon('「すべてを許し、そして…すべてをわらわのしもべとして生かしてやろう！」');
+              await sayDevice('「な、何を…！ぐわあああっ！！」');
+              MOT.Audio.playSelect();
+              await sayHero('「……」');
               
-              MOT.flags.finalEnding = 'END_ORPHAN';
+              MOT.flags.finalEnding = 'hidden_truedemon';
               this.proceedToNextArea(boss, false);
             })();
           } else {

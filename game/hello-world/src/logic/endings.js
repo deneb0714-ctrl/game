@@ -48,7 +48,7 @@ MOT.ENDINGS = {
     key: 'hidden_truedemon',
     title: 'TRUE END',
     subtitle: '— 真なる魔王 —',
-    description: '「いつまでも自分が優位に立てるとは思わない方がいい」\n\n主人公は自らの力で制御を打ち破り、真なる自由、あるいは真の魔王として覚醒した。',
+    description: '魔王は約束通り誰も殺さなかった。\nしかし、それは慈悲ではなかった。\n\n博士を含め、全ては洗脳され、魔王の忠実なしもべとなった。\n新たな支配者のもと、歪な平和が訪れたのである。',
     color: 0xFFD700,
     bgColor: '#1a1a00'
   },
@@ -66,29 +66,60 @@ MOT.decideEnding = function () {
   const f = MOT.flags;
   if (f.diedCount > 0) return MOT.ENDINGS.BAD_GAMEOVER;
   
-  // DP >= 100 AND killed everyone -> puppet
-  if (f.dollPoints >= 100 && f.killedBoss1 && f.killedBoss2 && f.killedTwins) {
+  const allAlive = (!f.killedBoss1 && !f.killedBoss2 && !f.killedTwins);
+  const allKilled = (f.killedBoss1 && f.killedBoss2 && f.killedTwins);
+  const someKilled = (!allAlive && !allKilled);
+
+  // 幹部を全員殺す -> 傀儡
+  if (allKilled) {
     return MOT.ENDINGS.bad_puppet;
   }
-  
-  // 0 DP, High KI (>= 100), Spared all bosses -> True Demon Lord
-  if (f.dollPoints === 0 && f.killingIntent >= 100 && !f.killedBoss1 && !f.killedBoss2 && !f.killedTwins) {
-    return MOT.ENDINGS.hidden_truedemon;
-  }
-  
-  // Spared all bosses -> Orphan Hero
-  if (!f.killedBoss1 && !f.killedBoss2 && !f.killedTwins) {
-    return MOT.ENDINGS.END_ORPHAN;
+
+  // 幹部を一部殺してる
+  if (someKilled) {
+    if (!f.killedDemonLord) {
+      // 魔王を生かす -> YES -> 役立たず
+      return MOT.ENDINGS.normal_useless;
+    } else {
+      // 魔王を生かす -> NO -> ドルポがたまってるか？
+      if (f.dollPoints >= 3) { // TODO: ドルポがたまっているの閾値(仮に3とする)
+        return MOT.ENDINGS.normal_daily;
+      } else {
+        return MOT.ENDINGS.bad_shutdown;
+      }
+    }
   }
 
-  // Killed some -> Normal / Shutdown
-  if (f.killedDemonLord) {
-    // If not matching specific puppet conditions, just normal daily
-    // Or wait, does shutdown happen if they try to turn on doctor? 
-    // In EndingScene, we'll give choices for Shutdown. For now return Normal Daily.
-    return MOT.ENDINGS.normal_daily;
-  } else {
-    // Spared Demon Lord but killed others -> Useless
-    return MOT.ENDINGS.normal_useless;
+  // 幹部が全員生きてる
+  if (allAlive) {
+    if (!f.killedDemonLord) {
+      // 魔王を生かす -> YES -> ドールポイントが100以下か？
+      if (f.dollPoints <= 100) { // 100以下＝YES
+        if (f.killingIntent >= 100) {
+          // 殺意がたまっている＝YES -> 真の魔王
+          return MOT.ENDINGS.hidden_truedemon;
+        } else {
+          // 殺意がたまっている＝NO -> 身寄りのない勇者
+          return MOT.ENDINGS.END_ORPHAN;
+        }
+      } else {
+        // ドールポイントが100以下＝NO -> 身寄りのない勇者
+        return MOT.ENDINGS.END_ORPHAN;
+      }
+    } else {
+      // 魔王を生かす -> NO -> 抗えない
+      // TODO: "抗えない"エンディングは今normal_dailyなどの代わりに追加するか、別途新設する。
+      // 「抗えない」＝傀儡ではないがノーマルエンドの一つ。
+      return {
+        key: 'normal_unresistable',
+        title: 'NORMAL END',
+        subtitle: '— 抗えない —',
+        description: '勇者の意思とは裏腹に、見逃したはずの幹部たちを見つけ殺していく。\nどれだけ引き金を引かないよう抗ったとて、その手は言うことを聞かなかった。',
+        color: 0x9CA3AF,
+        bgColor: '#05050a'
+      };
+    }
   }
+  
+  return MOT.ENDINGS.normal_daily; // Fallback
 };

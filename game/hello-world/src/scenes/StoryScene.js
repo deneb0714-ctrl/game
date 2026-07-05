@@ -316,7 +316,7 @@ class StoryScene extends Phaser.Scene {
       });
     } else if (choiceIndex === 3) {
       this.nameText.setText('博士');
-      this.messageText.setText('そうか。やる気は十分のようで嬉しいよ。');
+      this.messageText.setText('そ、そうか。やる気は十分のようで嬉しいよ。');
       
       this.doctorImage.setAlpha(1);
       this.heroImage.setAlpha(0.4);
