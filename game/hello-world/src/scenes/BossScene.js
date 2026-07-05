@@ -1533,7 +1533,7 @@ class BossScene extends Phaser.Scene {
                           this.tweens.add({targets: glass, alpha: 1, duration: 100, yoyo: true, repeat: 3});
                           await new Promise(r => this.time.delayedCall(1000, r));
                           ending('hidden_truedemon');
-                      } else {
+                      } else if (Kills === 0) {
                           await sayDemon('「そうか、良く正しい選択をした。ここから話すのは、信じるも信じないもお前の自由だ。」');
                           await sayDemon('「きっとお前は、あいつに私が世界を滅ぼそうとでもしていると言われたのだろう？だが、私はそんなことを考えていない。むしろ世界にとっての悪はあいつだ。あいつはこの世界に人間以上の存在がいることが許せないのだ。わらわはやつに襲われていた魔族を保護し、あいつと長い間戦ってきた」');
                           await sayDevice('「…なんだ、すべて話されてしまったみたいだな」');
@@ -1544,10 +1544,13 @@ class BossScene extends Phaser.Scene {
                           this.bossQueue.push('doctor');
                           this.proceedToNextArea(boss, true);
                           return;
+                      } else {
+                          await sayHero('「…魔王は悪いやつじゃなかった。僕は殺さない。」');
+                          ending('normal_useless');
                       }
                   }
-              } else if (Kills > 0 && Kills < 3) {
-                  await sayDevice('「よくやった。さぁ早くとどめを！」');
+              }
+              /*
                   let c = await askShatterChoice('1. 心臓を打ち抜く', '2. 見逃す', true);
                   
                   if (c === 2) {
@@ -1758,6 +1761,7 @@ class BossScene extends Phaser.Scene {
                   MOT.Audio.playSelect();
                   ending('bad_puppet');
               }
+              */
             })();
           } else if (key === 'doctor') {
             const sayDevice = (text) => new Promise(res => { this.tweens.add({ targets: dimBg, alpha: 0.6, duration: 300 }); this.tweens.add({targets: this.heroImage, alpha: 0.4, duration: 300}); this.showDeviceDialogue(text, res); });
