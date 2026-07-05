@@ -128,33 +128,48 @@ class BossScene extends Phaser.Scene {
     //   3 → END 身寄りのない勇者 (幹部全員生存・魔王生かす・DP>100)
     //   4 → TRUE END 真なる魔王  (幹部全員生存・魔王生かす・DP≤100・殺意≥100)
     //   5 → BAD END 強制シャットダウン (幹部一部殺害・DP<3・魔王殺す)
-    const debugJumpEnding = (setupFn, endingKey) => {
-      if (!this.bossDefeated) return;
+    const jumpToDemonLordDefeat = (setupFn) => {
       setupFn();
-      MOT.flags.finalEnding = endingKey;
-      this.cameras.main.fadeOut(600, 0, 0, 0);
-      this.time.delayedCall(600, () => this.scene.start('EndingScene'));
+      
+      // Clear current combat
+      if (this.currentBoss) this.currentBoss.destroy();
+      this.enemyGroup.clear(true, true);
+      this.playerBullets.clear(true, true);
+      this.enemyBullets.clear(true, true);
+      this.physics.resume();
+      this.dialogActive = false;
+      if (this.choiceContainer) { this.choiceContainer.destroy(); this.choiceContainer = null; }
+      
+      // Create a dummy demon lord to pass to onBossHit
+      let dummyBoss = this.physics.add.sprite(1400, 1080 / 2, 'demon_combat_anim');
+      dummyBoss.configKey = 'demon_lord';
+      dummyBoss.hp = 0;
+      dummyBoss.active = true;
+      this.currentBoss = dummyBoss;
+      
+      // Trigger demon lord death sequence silently
+      this.onBossHit({ active: true, damage: 9999, silent: true, destroy: function(){} }, dummyBoss);
     };
-    this.input.keyboard.on('keydown-ONE', () => debugJumpEnding(() => {
+
+    this.input.keyboard.on('keydown-ONE', () => jumpToDemonLordDefeat(() => {
       MOT.flags.killedBoss1 = true; MOT.flags.killedBoss2 = true; MOT.flags.killedTwins = true;
-      MOT.flags.killedDemonLord = true;
-    }, 'bad_puppet'));
-    this.input.keyboard.on('keydown-TWO', () => debugJumpEnding(() => {
+    }));
+    this.input.keyboard.on('keydown-TWO', () => jumpToDemonLordDefeat(() => {
       MOT.flags.killedBoss1 = true; MOT.flags.killedBoss2 = false; MOT.flags.killedTwins = false;
-      MOT.flags.killedDemonLord = true; MOT.flags.dollPoints = 5;
-    }, 'normal_daily'));
-    this.input.keyboard.on('keydown-THREE', () => debugJumpEnding(() => {
+      MOT.flags.dollPoints = 5;
+    }));
+    this.input.keyboard.on('keydown-THREE', () => jumpToDemonLordDefeat(() => {
       MOT.flags.killedBoss1 = false; MOT.flags.killedBoss2 = false; MOT.flags.killedTwins = false;
-      MOT.flags.killedDemonLord = false; MOT.flags.dollPoints = 150;
-    }, 'END_ORPHAN'));
-    this.input.keyboard.on('keydown-FOUR', () => debugJumpEnding(() => {
+      MOT.flags.dollPoints = 150;
+    }));
+    this.input.keyboard.on('keydown-FOUR', () => jumpToDemonLordDefeat(() => {
       MOT.flags.killedBoss1 = false; MOT.flags.killedBoss2 = false; MOT.flags.killedTwins = false;
-      MOT.flags.killedDemonLord = false; MOT.flags.dollPoints = 50; MOT.flags.killingIntent = 100;
-    }, 'hidden_truedemon'));
-    this.input.keyboard.on('keydown-FIVE', () => debugJumpEnding(() => {
+      MOT.flags.dollPoints = 50; MOT.flags.killingIntent = 100;
+    }));
+    this.input.keyboard.on('keydown-FIVE', () => jumpToDemonLordDefeat(() => {
       MOT.flags.killedBoss1 = true; MOT.flags.killedBoss2 = false; MOT.flags.killedTwins = false;
-      MOT.flags.killedDemonLord = true; MOT.flags.dollPoints = 1;
-    }, 'bad_shutdown'));
+      MOT.flags.dollPoints = 1;
+    }));
   }
 
   getBossConfig(key) {
@@ -2393,7 +2408,7 @@ class BossScene extends Phaser.Scene {
     });
     this.dialogContainer.add(bodyText);
 
-    var contText = this.add.text(w - 240, boxY + boxH - 40, '▶ [SPACE]', {
+    var contText = this.add.text(w - 280, boxY + boxH - 40, '▶ [SPACE]', {
       fontFamily: '"Press Start 2P"', fontSize: '20px', color: '#9CA3AF'
     }).setAlpha(0);
     this.dialogContainer.add(contText);
@@ -2525,7 +2540,7 @@ class BossScene extends Phaser.Scene {
     });
     this.dialogContainer.add(bodyText);
 
-    var contText = this.add.text(w - 240, boxY + boxH - 40, '▶ [SPACE]', {
+    var contText = this.add.text(w - 280, boxY + boxH - 40, '▶ [SPACE]', {
       fontFamily: '"Press Start 2P"', fontSize: '20px', color: '#9CA3AF'
     }).setAlpha(0);
     this.dialogContainer.add(contText);
@@ -2599,7 +2614,7 @@ class BossScene extends Phaser.Scene {
     elements.push(overlay);
 
     // [ENTER] KEY ガイドテキストを右下に追加
-    const contText = this.add.text(w - 240, h - 60, '▶ [ENTER] KEY', {
+    const contText = this.add.text(w - 280, h - 60, '▶ [ENTER] KEY', {
       fontFamily: '"Press Start 2P"',
       fontSize: '20px',
       color: '#9CA3AF'
