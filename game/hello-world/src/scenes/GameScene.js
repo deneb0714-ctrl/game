@@ -909,23 +909,21 @@ class GameScene extends Phaser.Scene {
     this.dialogContainer.add(box);
 
     var iconBox = this.add.graphics();
-    iconBox.fillStyle(0x1F2933, 1);
-    iconBox.fillRect(80, boxY - 140, 180, 180);
-    iconBox.lineStyle(4, 0x4FD1FF, 1);
-    iconBox.strokeRect(80, boxY - 140, 180, 180);
+    iconBox.lineStyle(2, 0x4FD1FF, 0.8);
+    iconBox.strokeRect(80, boxY + 40, 100, 100);
     this.dialogContainer.add(iconBox);
     
-    var face = this.add.image(170, boxY - 50, 'doctor_normal');
-    var scaleRatio = 900 / face.height;
+    var face = this.add.image(130, boxY + 90, 'doctor_normal');
+    var scaleRatio = 500 / face.height;
     face.setScale(scaleRatio);
     var maskShape = this.make.graphics();
     maskShape.fillStyle(0xffffff);
-    maskShape.fillRect(82, boxY - 138, 176, 176);
+    maskShape.fillRect(82, boxY + 42, 96, 96);
     face.setMask(maskShape.createGeometryMask());
-    face.setY(boxY - 50 + (face.height * scaleRatio) * 0.22);
+    face.setY(boxY + 90 + (face.height * scaleRatio) * 0.35);
     this.dialogContainer.add(face);
 
-    var nameText = this.add.text(280, boxY + 10, '『博士』', {
+    var nameText = this.add.text(210, boxY + 10, '『博士』', {
       fontFamily: '"DotGothic16"', fontSize: '44px', color: '#4FD1FF'
     });
     this.dialogContainer.add(nameText);

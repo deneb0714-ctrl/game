@@ -90,8 +90,8 @@ MOT.DoctorDirective = {
     maskShape.fillCircle(130, boxY + 60, 48);
     var mask = maskShape.createGeometryMask();
     face.setMask(mask);
-    // Y座標を少し上げて顔が中心に来るように調整 (22%あたりを顔中心と仮定)
-    face.setY(boxY + 60 + (face.height * scaleRatio) * 0.22);
+    // Y座標を少し上げて顔が中心に来るように調整
+    face.setY(boxY + 60 + (face.height * scaleRatio) * 0.35);
     
     // 背景の黒丸（装飾）
     var faceBg = scene.add.circle(130, boxY + 60, 52, 0x000000);
