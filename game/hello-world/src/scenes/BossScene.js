@@ -107,12 +107,12 @@ class BossScene extends Phaser.Scene {
     this.input.keyboard.on('keydown-TWO', () => this.scene.restart({ bossIndex: 1 }));
     this.input.keyboard.on('keydown-THREE', () => this.scene.restart({ bossIndex: 2 }));
     this.input.keyboard.on('keydown-FOUR', () => this.scene.restart({ bossIndex: 3 }));
-    this.input.keyboard.on('keydown-Q', () => { MOT.flags.finalEnding = 'END_USELESS'; this.scene.start('EndingScene'); });
-    this.input.keyboard.on('keydown-E', () => { MOT.flags.finalEnding = 'END_SHUTDOWN'; this.scene.start('EndingScene'); });
-    this.input.keyboard.on('keydown-R', () => { MOT.flags.finalEnding = 'END_TRUE_DEMON_LORD'; this.scene.start('EndingScene'); });
-    this.input.keyboard.on('keydown-EIGHT', () => { MOT.flags.finalEnding = 'END_ORPHAN'; this.scene.start('EndingScene'); });
-    this.input.keyboard.on('keydown-NINE', () => { MOT.flags.finalEnding = 'END_PUPPET'; this.scene.start('EndingScene'); });
-    this.input.keyboard.on('keydown-ZERO', () => { MOT.flags.finalEnding = 'END_NORMAL'; this.scene.start('EndingScene'); });
+    this.input.keyboard.on('keydown-Q', () => { if (!this.bossDefeated) return; MOT.flags.finalEnding = 'END_USELESS'; this.scene.start('EndingScene'); });
+    this.input.keyboard.on('keydown-E', () => { if (!this.bossDefeated) return; MOT.flags.finalEnding = 'END_SHUTDOWN'; this.scene.start('EndingScene'); });
+    this.input.keyboard.on('keydown-R', () => { if (!this.bossDefeated) return; MOT.flags.finalEnding = 'END_TRUE_DEMON_LORD'; this.scene.start('EndingScene'); });
+    this.input.keyboard.on('keydown-EIGHT', () => { if (!this.bossDefeated) return; MOT.flags.finalEnding = 'END_ORPHAN'; this.scene.start('EndingScene'); });
+    this.input.keyboard.on('keydown-NINE', () => { if (!this.bossDefeated) return; MOT.flags.finalEnding = 'END_PUPPET'; this.scene.start('EndingScene'); });
+    this.input.keyboard.on('keydown-ZERO', () => { if (!this.bossDefeated) return; MOT.flags.finalEnding = 'END_NORMAL'; this.scene.start('EndingScene'); });
   }
 
   getBossConfig(key) {
