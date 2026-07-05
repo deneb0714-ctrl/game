@@ -201,16 +201,11 @@ class BossScene extends Phaser.Scene {
     this.physics.pause();
 
     if (key === 'demon_lord') {
-      this.inunekoEnemy = this.physics.add.sprite(boss.x - 60, boss.y - 100, 'inuneko_combat');
-      this.inunekoEnemy.setDisplaySize(90, 160); // アスペクト比を維持してサイズ調整
+      this.inunekoEnemy = this.add.sprite(boss.x - 60, boss.y - 100, 'inuneko_combat');
+      this.inunekoEnemy.setDisplaySize(90, 160);
       this.inunekoEnemy.setDepth(9);
-      this.inunekoEnemy.hp = 50;
-      this.inunekoEnemy.maxHp = 50;
-      this.inunekoEnemy.active = true;
-      this.inunekoEnemy.configKey = 'inuneko';
       this.inunekoEnemy.setVisible(false);
-      this.inunekoGroup.add(this.inunekoEnemy);
-      
+
       this.anims.create({
         key: 'inuneko_anim',
         frames: this.anims.generateFrameNumbers('inuneko_combat', { start: 0, end: 47 }),
@@ -222,20 +217,20 @@ class BossScene extends Phaser.Scene {
       // 上下にフワフワする動き
       this.tweens.add({
         targets: this.inunekoEnemy,
-        y: this.inunekoEnemy.y + 50,
-        duration: 2000,
+        y: '-=40',
+        duration: 1800,
         yoyo: true,
         repeat: -1,
         ease: 'Sine.easeInOut'
       });
 
-      // 弾幕攻撃
+      // 弾幕攻撃（演出のみ、弾はボスのenemyBulletsグループに追加）
       this.time.addEvent({
         delay: 2500,
         loop: true,
         callback: () => {
           if (this.dialogActive) return;
-          if (this.inunekoEnemy && this.inunekoEnemy.active && this.inunekoEnemy.hp > 0) {
+          if (this.inunekoEnemy && this.inunekoEnemy.visible) {
              let angleDeg = Phaser.Math.RadToDeg(Phaser.Math.Angle.Between(this.inunekoEnemy.x, this.inunekoEnemy.y, this.player.x, this.player.y));
              MOT.fireFan(this, this.inunekoEnemy.x, this.inunekoEnemy.y, 3, 250, angleDeg, 45);
           }
@@ -297,7 +292,17 @@ class BossScene extends Phaser.Scene {
        this.cameras.main.shake(400, 0.015);
        if (key === 'demon_lord' && this.inunekoEnemy) {
          this.inunekoEnemy.setVisible(true);
-         this.tweens.add({ targets: this.inunekoEnemy, x: 1400 - 60, duration: 1200, ease: 'Power2' });
+         this.tweens.add({ targets: this.inunekoEnemy, x: 1340, duration: 1200, ease: 'Power2',
+           onComplete: () => {
+             // ランダムに左右にフワフワ動く
+             const floatInuneko = () => {
+               if (!this.inunekoEnemy || !this.inunekoEnemy.visible) return;
+               const targetX = Phaser.Math.Between(1280, 1500);
+               this.tweens.add({ targets: this.inunekoEnemy, x: targetX, duration: Phaser.Math.Between(1500, 3000), ease: 'Sine.easeInOut', onComplete: floatInuneko });
+             };
+             floatInuneko();
+           }
+         });
        }
        this.tweens.add({
          targets: boss, x: 1400, duration: 1200, ease: 'Power2',
@@ -1011,22 +1016,6 @@ class BossScene extends Phaser.Scene {
     bullet.destroy(); // 弾を消す
     const dmg = bullet.damage || 1;
 
-    // 犬猫の被弾処理
-    if (boss.configKey === 'inuneko') {
-      boss.hp -= dmg;
-      if (this.bossHPBar) {
-         // No red blink
-      }
-      if (boss.hp <= 0 && boss.active) {
-        boss.active = false;
-        boss.body.enable = false;
-        boss.stop();
-        boss.setTexture('inuneko_dying');
-        boss.setDisplaySize(150, 150); 
-        MOT.Audio.playSelect();
-      }
-      return;
-    }
 
     // ── 幕間中の雑魚敵の場合 ──────────────────────────────────────
     if (boss.isIntermissionEnemy || boss.isScenarioMinion) {
