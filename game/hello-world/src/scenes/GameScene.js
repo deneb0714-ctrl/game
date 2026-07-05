@@ -512,7 +512,7 @@ class GameScene extends Phaser.Scene {
         if (charIndex >= text.length) {
           typeTimer.destroy();
           // Space to continue
-          const contText = this.add.text(w - 240, boxY + boxH - 40, '▶ [SPACE] KEY', {
+          const contText = this.add.text(w - 240, boxY + boxH - 40, '▶ [SPACE]', {
             fontFamily: '"Press Start 2P"', fontSize: '20px', color: '#9CA3AF'
           }).setDepth(51);
           this.tweens.add({ targets: contText, alpha: 0.3, yoyo: true, repeat: -1, duration: 500 });
@@ -941,7 +941,7 @@ class GameScene extends Phaser.Scene {
     });
     this.dialogContainer.add(bodyText);
 
-    var contText = this.add.text(w - 240, boxY + boxH - 40, '▶ [SPACE] KEY', {
+    var contText = this.add.text(w - 240, boxY + boxH - 40, '▶ [SPACE]', {
       fontFamily: '"Press Start 2P"', fontSize: '20px', color: '#9CA3AF'
     }).setAlpha(0);
     this.dialogContainer.add(contText);

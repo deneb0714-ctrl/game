@@ -103,7 +103,7 @@ class StoryScene extends Phaser.Scene {
     });
 
     // Advance Guide text
-    this.contText = this.add.text(w - 240, boxY + boxH - 40, '▶ [SPACE] KEY', {
+    this.contText = this.add.text(w - 240, boxY + boxH - 40, '▶ [SPACE]', {
       fontFamily: '"Press Start 2P"',
       fontSize: '20px',
       color: '#9CA3AF'
@@ -160,7 +160,7 @@ class StoryScene extends Phaser.Scene {
       this.contText.setText('▶ [ENTER] KEY');
       this.contText.setAlpha(1);
     } else {
-      this.contText.setText('▶ [SPACE] KEY');
+      this.contText.setText('▶ [SPACE]');
       this.contText.setAlpha(1);
     }
 
