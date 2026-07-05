@@ -915,11 +915,14 @@ class GameScene extends Phaser.Scene {
     iconBox.strokeRect(80, boxY - 140, 180, 180);
     this.dialogContainer.add(iconBox);
     
-    var face = this.add.image(170, boxY - 50, 'doctor_face');
-    let faceW = this.textures.get('doctor_face').getSourceImage().width;
-    let faceH = this.textures.get('doctor_face').getSourceImage().height;
-    let faceScale = Math.min(170 / faceW, 170 / faceH);
-    face.setScale(faceScale);
+    var face = this.add.image(170, boxY - 50, 'doctor_normal');
+    var scaleRatio = 900 / face.height;
+    face.setScale(scaleRatio);
+    var maskShape = this.make.graphics();
+    maskShape.fillStyle(0xffffff);
+    maskShape.fillRect(82, boxY - 138, 176, 176);
+    face.setMask(maskShape.createGeometryMask());
+    face.setY(boxY - 50 + (face.height * scaleRatio) * 0.22);
     this.dialogContainer.add(face);
 
     var nameText = this.add.text(280, boxY + 10, '『博士』', {

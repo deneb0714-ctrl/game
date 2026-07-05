@@ -2358,7 +2358,15 @@ class BossScene extends Phaser.Scene {
     iconBox.strokeRect(80, boxY + 40, 100, 100);
     this.dialogContainer.add(iconBox);
     
-    var face = this.add.image(130, boxY + 90, 'doctor_face').setDisplaySize(96, 96);
+    var face = this.add.image(130, boxY + 90, 'doctor_normal');
+    var scaleRatio = 500 / face.height;
+    face.setScale(scaleRatio);
+    var maskShape = this.make.graphics();
+    maskShape.fillStyle(0xffffff);
+    maskShape.fillRect(82, boxY + 42, 96, 96);
+    face.setMask(maskShape.createGeometryMask());
+    // 顔が中心に来るよう調整 (立ち絵の上部20%あたりが顔と仮定)
+    face.setY(boxY + 90 + (face.height * scaleRatio) * 0.22);
     this.dialogContainer.add(face);
 
     var nameText = this.add.text(210, boxY + 10, '博士 📡', {
