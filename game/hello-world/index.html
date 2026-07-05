@@ -58,12 +58,15 @@
   <script src="src/main.js?v=80"></script>
 
   <script>
-    // Register Service Worker for PWA
+    // Unregister Service Worker to clear old PWA caches and force fresh load
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
-        navigator.serviceWorker.register('service-worker.js')
-          .then(reg => console.log('SW registered:', reg.scope))
-          .catch(err => console.warn('SW registration failed:', err));
+        navigator.serviceWorker.getRegistrations().then(function(registrations) {
+          for(let registration of registrations) {
+            registration.unregister();
+            console.log('SW unregistered');
+          }
+        });
       });
     }
   </script>
