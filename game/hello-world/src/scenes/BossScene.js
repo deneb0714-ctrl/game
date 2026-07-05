@@ -146,11 +146,12 @@ class BossScene extends Phaser.Scene {
       if (this.choiceContainer) { this.choiceContainer.destroy(); this.choiceContainer = null; }
       
       this.currentBossIndex = 3;
-      this.bossDefeated = true;
+      this.bossDefeated = false;
       
       let dummyBoss = this.physics.add.sprite(1400, 1080 / 2, 'demon_combat_anim');
       dummyBoss.configKey = 'demon_lord';
-      dummyBoss.hp = 0;
+      dummyBoss.hp = 9999;
+      this.bossHP = 9999;
       dummyBoss.active = true;
       this.currentBoss = dummyBoss;
       
