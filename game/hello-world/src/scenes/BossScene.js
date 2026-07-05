@@ -93,6 +93,18 @@ class BossScene extends Phaser.Scene {
 
     // Start first boss
     this.time.delayedCall(1000, function () { this.startBoss(); }, [], this);
+
+    // デバッグ・ボスジャンプ用ショートカット（off('keydown')で消されないように専用キー名で登録）
+    this.input.keyboard.on('keydown-ONE', () => this.scene.restart({ bossIndex: 0 }));
+    this.input.keyboard.on('keydown-TWO', () => this.scene.restart({ bossIndex: 1 }));
+    this.input.keyboard.on('keydown-THREE', () => this.scene.restart({ bossIndex: 2 }));
+    this.input.keyboard.on('keydown-FOUR', () => this.scene.restart({ bossIndex: 3 }));
+    this.input.keyboard.on('keydown-Q', () => { MOT.flags.finalEnding = 'END_USELESS'; this.scene.start('EndingScene'); });
+    this.input.keyboard.on('keydown-E', () => { MOT.flags.finalEnding = 'END_SHUTDOWN'; this.scene.start('EndingScene'); });
+    this.input.keyboard.on('keydown-R', () => { MOT.flags.finalEnding = 'END_TRUE_DEMON_LORD'; this.scene.start('EndingScene'); });
+    this.input.keyboard.on('keydown-EIGHT', () => { MOT.flags.finalEnding = 'END_ORPHAN'; this.scene.start('EndingScene'); });
+    this.input.keyboard.on('keydown-NINE', () => { MOT.flags.finalEnding = 'END_PUPPET'; this.scene.start('EndingScene'); });
+    this.input.keyboard.on('keydown-ZERO', () => { MOT.flags.finalEnding = 'END_NORMAL'; this.scene.start('EndingScene'); });
   }
 
   getBossConfig(key) {
@@ -1960,13 +1972,13 @@ class BossScene extends Phaser.Scene {
             } else if (event.key === 'r') {
               MOT.flags.finalEnding = 'END_TRUE_DEMON_LORD'; this.scene.start('EndingScene');
             } else if (event.key === '1') {
-              this.currentBossIndex = 0; this.scene.restart();
+              this.scene.restart({ bossIndex: 0 });
             } else if (event.key === '2') {
-              this.currentBossIndex = 1; this.scene.restart();
+              this.scene.restart({ bossIndex: 1 });
             } else if (event.key === '3') {
-              this.currentBossIndex = 2; this.scene.restart();
+              this.scene.restart({ bossIndex: 2 });
             } else if (event.key === '4') {
-              this.currentBossIndex = 3; this.scene.restart();
+              this.scene.restart({ bossIndex: 3 });
             }
           }, this); this.player.setCollideWorldBounds(true);
           this.physics.resume();
