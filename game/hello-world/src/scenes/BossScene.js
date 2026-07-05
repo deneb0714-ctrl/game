@@ -291,6 +291,9 @@ class BossScene extends Phaser.Scene {
     if (key === 'demon_lord' || key === 'doctor') {
        boss.setVisible(true); boss.body.enable = true;
        this.cameras.main.shake(400, 0.015);
+       if (key === 'demon_lord' && this.inunekoEnemy) {
+         this.tweens.add({ targets: this.inunekoEnemy, x: 1400 - 60, duration: 1200, ease: 'Power2' });
+       }
        this.tweens.add({
          targets: boss, x: 1400, duration: 1200, ease: 'Power2',
          onComplete: () => {
@@ -434,7 +437,7 @@ class BossScene extends Phaser.Scene {
         this.demonImage.setY(100 + (this.demonImage.height * this.demonImage.scaleY) / 2 - 200);
       }
       if(this.inunekoImage) {
-        this.tweens.add({ targets: this.inunekoImage, alpha: 1, duration: 300 });
+        this.tweens.add({ targets: this.inunekoImage, alpha: 0.4, duration: 300 });
       }
       this.showDialogue('魔王 – ヴェリタス', text, res);
     });
