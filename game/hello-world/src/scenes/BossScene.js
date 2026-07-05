@@ -205,37 +205,18 @@ class BossScene extends Phaser.Scene {
       this.inunekoEnemy.setDisplaySize(90, 160);
       this.inunekoEnemy.setDepth(9);
       this.inunekoEnemy.setVisible(false);
+      // バリア状態フラグ
+      this.demonLordBarrierActive = false;
 
-      this.anims.create({
-        key: 'inuneko_anim',
-        frames: this.anims.generateFrameNumbers('inuneko_combat', { start: 0, end: 47 }),
-        frameRate: 10,
-        repeat: -1
-      });
+      if (!this.anims.exists('inuneko_anim')) {
+        this.anims.create({
+          key: 'inuneko_anim',
+          frames: this.anims.generateFrameNumbers('inuneko_combat', { start: 0, end: 47 }),
+          frameRate: 10,
+          repeat: -1
+        });
+      }
       this.inunekoEnemy.play('inuneko_anim');
-
-      // 上下にフワフワする動き
-      this.tweens.add({
-        targets: this.inunekoEnemy,
-        y: '-=40',
-        duration: 1800,
-        yoyo: true,
-        repeat: -1,
-        ease: 'Sine.easeInOut'
-      });
-
-      // 弾幕攻撃（演出のみ、弾はボスのenemyBulletsグループに追加）
-      this.time.addEvent({
-        delay: 2500,
-        loop: true,
-        callback: () => {
-          if (this.dialogActive) return;
-          if (this.inunekoEnemy && this.inunekoEnemy.visible) {
-             let angleDeg = Phaser.Math.RadToDeg(Phaser.Math.Angle.Between(this.inunekoEnemy.x, this.inunekoEnemy.y, this.player.x, this.player.y));
-             MOT.fireFan(this, this.inunekoEnemy.x, this.inunekoEnemy.y, 3, 250, angleDeg, 45);
-          }
-        }
-      });
     }
 
     let areaText = '';
@@ -290,19 +271,12 @@ class BossScene extends Phaser.Scene {
     if (key === 'demon_lord' || key === 'doctor') {
        boss.setVisible(true); boss.body.enable = true;
        this.cameras.main.shake(400, 0.015);
-       if (key === 'demon_lord' && this.inunekoEnemy) {
+        if (key === 'demon_lord' && this.inunekoEnemy) {
          this.inunekoEnemy.setVisible(true);
-         this.tweens.add({ targets: this.inunekoEnemy, x: 1340, duration: 1200, ease: 'Power2',
-           onComplete: () => {
-             // ランダムに左右にフワフワ動く
-             const floatInuneko = () => {
-               if (!this.inunekoEnemy || !this.inunekoEnemy.visible) return;
-               const targetX = Phaser.Math.Between(1280, 1500);
-               this.tweens.add({ targets: this.inunekoEnemy, x: targetX, duration: Phaser.Math.Between(1500, 3000), ease: 'Sine.easeInOut', onComplete: floatInuneko });
-             };
-             floatInuneko();
-           }
-         });
+         // 会話中はボスの右隣に静止（上下小揺れのみ）
+         this.inunekoEnemy.x = 1920;
+         this.tweens.add({ targets: this.inunekoEnemy, x: 1350, duration: 1200, ease: 'Power2' });
+         this.tweens.add({ targets: this.inunekoEnemy, y: '-=20', duration: 1600, yoyo: true, repeat: -1, ease: 'Sine.easeInOut' });
        }
        this.tweens.add({
          targets: boss, x: 1400, duration: 1200, ease: 'Power2',
@@ -640,7 +614,104 @@ class BossScene extends Phaser.Scene {
       callbackScope: this,
       loop: true
     });
+
+    // 犬猫スターの戦闘行動を開始
+    if (this.inunekoEnemy && this.currentBoss && this.currentBoss.configKey === 'demon_lord') {
+      this.startInunekoFight(this.currentBoss);
+    }
   }
+
+  startInunekoFight(boss) {
+    // 上下フワフワtweenを止めてから軌道移動へ
+    this.tweens.killTweensOf(this.inunekoEnemy);
+
+    // ボスの周囲をランダムに飛び回る
+    const orbitInuneko = () => {
+      if (!this.inunekoEnemy || this.dialogActive) return;
+      const offsetX = Phaser.Math.Between(-180, 40);
+      const offsetY = Phaser.Math.Between(-130, 130);
+      const duration = Phaser.Math.Between(1200, 2500);
+      this.tweens.add({
+        targets: this.inunekoEnemy,
+        x: boss.x + offsetX,
+        y: boss.y + offsetY,
+        duration: duration,
+        ease: 'Sine.easeInOut',
+        onComplete: orbitInuneko
+      });
+    };
+    orbitInuneko();
+
+    // 弾幕（プレイヤー方向に2.5秒ごと）
+    this.inukoBulletTimer = this.time.addEvent({
+      delay: 2500,
+      loop: true,
+      callback: () => {
+        if (this.dialogActive || !this.inunekoEnemy || !this.inunekoEnemy.visible) return;
+        const angleDeg = Phaser.Math.RadToDeg(Phaser.Math.Angle.Between(this.inunekoEnemy.x, this.inunekoEnemy.y, this.player.x, this.player.y));
+        MOT.fireFan(this, this.inunekoEnemy.x, this.inunekoEnemy.y, 3, 250, angleDeg, 40);
+      }
+    });
+
+    // 補助魔法（20〜35秒ごとにランダムで弾幕加速 or バリア）
+    const supportAction = () => {
+      if (this.dialogActive || !this.inunekoEnemy || !this.inunekoEnemy.visible) {
+        this.time.delayedCall(Phaser.Math.Between(20000, 35000), supportAction);
+        return;
+      }
+      const action = Phaser.Math.Between(0, 1);
+      if (action === 0) {
+        this.inunekoSpeedBoost();
+      } else {
+        this.inunekoBarrier(boss);
+      }
+      this.time.delayedCall(Phaser.Math.Between(20000, 35000), supportAction);
+    };
+    this.time.delayedCall(Phaser.Math.Between(20000, 35000), supportAction);
+  }
+
+  // 補助魔法1: 弾幕加速（8秒間ボスの攻撃間隔を短縮）
+  inunekoSpeedBoost() {
+    MOT.Audio.playMagic();
+    // キラキラエフェクト（犬猫の位置から）
+    for (let i = 0; i < 8; i++) {
+      this.time.delayedCall(i * 60, () => {
+        if (!this.inunekoEnemy) return;
+        const star = this.add.text(
+          this.inunekoEnemy.x + Phaser.Math.Between(-30, 30),
+          this.inunekoEnemy.y + Phaser.Math.Between(-30, 30),
+          '✦', { fontSize: '18px', color: '#FFD700' }
+        ).setDepth(20);
+        this.tweens.add({ targets: star, y: star.y - 40, alpha: 0, duration: 600, onComplete: () => star.destroy() });
+      });
+    }
+    this.inunekoBoostActive = true;
+    this.time.delayedCall(8000, () => { this.inunekoBoostActive = false; });
+  }
+
+  // 補助魔法2: 魔王にバリアを張る（5秒間ダメージ無効）
+  inunekoBarrier(boss) {
+    if (this.demonLordBarrierActive) return;
+    MOT.Audio.playMagic();
+    this.demonLordBarrierActive = true;
+    // バリアの見た目（ボスの周囲に光輪）
+    this.barrierGraphic = this.add.graphics().setDepth(15);
+    const drawBarrier = () => {
+      if (!this.barrierGraphic) return;
+      this.barrierGraphic.clear();
+      this.barrierGraphic.lineStyle(3, 0xAA88FF, 0.7 + 0.3 * Math.sin(Date.now() / 150));
+      this.barrierGraphic.strokeCircle(boss.x, boss.y, 80);
+    };
+    this.barrierUpdateCb = drawBarrier;
+    // 5秒後に解除
+    this.time.delayedCall(5000, () => {
+      this.demonLordBarrierActive = false;
+      if (this.barrierGraphic) { this.barrierGraphic.destroy(); this.barrierGraphic = null; }
+      this.barrierUpdateCb = null;
+    });
+  }
+
+
 
   update(time, delta) {
     // 当たり判定の描画（常にプレイヤーのbodyに追従する水色の線）
@@ -706,6 +777,7 @@ class BossScene extends Phaser.Scene {
     if (this.currentBoss && this.currentBoss.active && this.currentBoss.visible) {
       this.bossAttackTimer += delta;
       var interval = this.bossHP < this.bossMaxHP * 0.5 ? 600 : 1000;
+      if (this.inunekoBoostActive) interval = Math.floor(interval * 0.5); // 犬猫スター弾幕加速
       if (this.currentBoss.configKey === 'boss3_twins') interval = 3000; // Brother shoots less frequently
       
       if (this.bossAttackTimer >= interval) {
@@ -741,6 +813,9 @@ class BossScene extends Phaser.Scene {
     this.playerBullets.getChildren().forEach(function (b) {
       if (b.x > 2000) b.destroy();
     });
+
+    // 犬猫バリアグラフィック更新
+    if (this.barrierUpdateCb) this.barrierUpdateCb();
 
     this.updateHUD();
   }
@@ -1016,6 +1091,13 @@ class BossScene extends Phaser.Scene {
     bullet.destroy(); // 弾を消す
     const dmg = bullet.damage || 1;
 
+    // 犬猫バリア中は魔王ボスへのダメージ無効（バリア光エフェクト）
+    if (this.demonLordBarrierActive && boss === this.currentBoss) {
+      if (this.barrierGraphic) {
+        this.tweens.add({ targets: this.barrierGraphic, alpha: 0, duration: 80, yoyo: true });
+      }
+      return;
+    }
 
     // ── 幕間中の雑魚敵の場合 ──────────────────────────────────────
     if (boss.isIntermissionEnemy || boss.isScenarioMinion) {
