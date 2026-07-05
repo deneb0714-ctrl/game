@@ -91,6 +91,8 @@ class BossScene extends Phaser.Scene {
     MOT.setupTouchControls(this, this.player);
 
     this.physics.add.overlap(this.player, this.enemyBullets, this.onPlayerHit, null, this);
+    this.inunekoGroup = this.physics.add.group();
+    this.physics.add.overlap(this.playerBullets, this.inunekoGroup, this.onBossHit, null, this);
     this.physics.add.overlap(this.playerBullets, this.enemyGroup, this.onBossHit, null, this);
     this.physics.add.overlap(this.player, this.itemGroup, MOT.collectItem.bind(null, this), null, this);
 
@@ -207,7 +209,7 @@ class BossScene extends Phaser.Scene {
       this.inunekoEnemy.active = true;
       this.inunekoEnemy.configKey = 'inuneko';
       this.inunekoEnemy.setVisible(false);
-      this.enemyGroup.add(this.inunekoEnemy);
+      this.inunekoGroup.add(this.inunekoEnemy);
       
       this.anims.create({
         key: 'inuneko_anim',
@@ -1000,6 +1002,7 @@ class BossScene extends Phaser.Scene {
   }
 
   onBossHit(bullet, boss) {
+    if (!bullet || !bullet.active) return;
     // 画面外 (x > 1920) にいる敵はダメージを受けない (弾は消去されるが敵はノーダメージ)
     if (boss.x > 1920) {
       bullet.destroy();
