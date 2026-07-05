@@ -853,7 +853,7 @@ class BossScene extends Phaser.Scene {
       if (b.x < -50 || b.x > 2000 || b.y < -50 || b.y > 1130) b.destroy();
     });
     this.playerBullets.getChildren().forEach(function (b) {
-      if (b.x > 2000) b.destroy();
+      if (b.x > 1600) b.destroy();
     });
 
     // 犬猫バリアグラフィック更新
