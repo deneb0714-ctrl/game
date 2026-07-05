@@ -146,6 +146,7 @@ class StoryScene extends Phaser.Scene {
     // Set Text
     this.nameText.setText(data.speaker);
     this.messageText.setText(data.text);
+    this.nameBox.width = Math.max(240, this.nameText.width + 60);
 
     // ガイドの表示制御
     if (data.choice) {
