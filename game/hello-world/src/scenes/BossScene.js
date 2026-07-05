@@ -272,7 +272,7 @@ class BossScene extends Phaser.Scene {
       boss.setVisible(true);
       boss.hp = 0;
       this.time.delayedCall(100, () => {
-        this.onBossHit({ damage: 9999, destroy: function(){} }, boss);
+        this.onBossHit({ active: true, damage: 9999, destroy: function(){} }, boss);
       });
       return;
     }
@@ -842,7 +842,7 @@ class BossScene extends Phaser.Scene {
     this.enemyGroup.getChildren().forEach(function (e) {
       if (e.x < -100) {
         if (e.isScenarioMinion || e.isIntermissionEnemy) {
-          this.onBossHit({ damage: 9999, destroy: function(){} }, e);
+          this.onBossHit({ active: true, damage: 9999, destroy: function(){} }, e);
         } else {
           e.destroy();
         }
@@ -912,7 +912,7 @@ class BossScene extends Phaser.Scene {
       if (this.enemyGroup) {
         this.enemyGroup.getChildren().slice().forEach(enemy => {
           if (enemy.isIntermissionEnemy && enemy.active) {
-            this.onBossHit({ damage: 9999, destroy: () => { } }, enemy);
+            this.onBossHit({ active: true, damage: 9999, destroy: () => { } }, enemy);
           }
         });
       }
