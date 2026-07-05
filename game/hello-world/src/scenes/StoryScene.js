@@ -90,7 +90,7 @@ class StoryScene extends Phaser.Scene {
     this.areaNameText = this.add.text(1920 - 30, 20, '曙光技研', { fontFamily: '"DotGothic16"', fontSize: '32px', color: '#FFFFFF', backgroundColor: 'rgba(0,0,0,0.5)', padding: { x: 10, y: 5 } }).setOrigin(1, 0).setDepth(100).setAlpha(0);
     
     // Name Tag
-    this.nameBox = this.add.rectangle(400, boxY, 240, 60, 0x1F2933).setStrokeStyle(2, 0x4FD1FF);
+    this.nameBox = this.add.graphics();
     this.nameText = this.add.text(400, boxY, '', { fontFamily: '"DotGothic16"', fontSize: '44px', color: '#ffffff' }).setOrigin(0.5);
 
     // Message Text
@@ -146,7 +146,14 @@ class StoryScene extends Phaser.Scene {
     // Set Text
     this.nameText.setText(data.speaker);
     this.messageText.setText(data.text);
-    this.nameBox.width = Math.max(240, this.nameText.width + 60);
+    
+    let boxW = Math.max(240, this.nameText.width + 60);
+    const boxY = this.cameras.main.height - 320 - 40;
+    this.nameBox.clear();
+    this.nameBox.fillStyle(0x1F2933);
+    this.nameBox.fillRect(400 - boxW / 2, boxY - 30, boxW, 60);
+    this.nameBox.lineStyle(2, 0x4FD1FF);
+    this.nameBox.strokeRect(400 - boxW / 2, boxY - 30, boxW, 60);
 
     // ガイドの表示制御
     if (data.choice) {
