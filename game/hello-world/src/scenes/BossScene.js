@@ -148,12 +148,16 @@ class BossScene extends Phaser.Scene {
       this.currentBossIndex = 3;
       this.bossDefeated = true;
       
-      // Create a dummy demon lord to pass to onBossHit
       let dummyBoss = this.physics.add.sprite(1400, 1080 / 2, 'demon_combat_anim');
       dummyBoss.configKey = 'demon_lord';
       dummyBoss.hp = 0;
       dummyBoss.active = true;
       this.currentBoss = dummyBoss;
+      
+      // Initialize heroImage if it doesn't exist, to prevent tweens from crashing
+      if (!this.heroImage) {
+        this.heroImage = this.add.image(300, 1080 / 2, 'hero_stand').setAlpha(0).setDepth(90);
+      }
       
       // Trigger demon lord death sequence silently
       this.onBossHit({ active: true, damage: 9999, silent: true, destroy: function(){} }, dummyBoss);
