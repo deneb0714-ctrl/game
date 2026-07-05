@@ -210,7 +210,7 @@ class BossScene extends Phaser.Scene {
       
       this.anims.create({
         key: 'inuneko_anim',
-        frames: this.anims.generateFrameNumbers('inuneko_combat', { start: 0, end: 3 }),
+        frames: this.anims.generateFrameNumbers('inuneko_combat', { start: 0, end: 47 }),
         frameRate: 10,
         repeat: -1
       });
@@ -372,8 +372,9 @@ class BossScene extends Phaser.Scene {
 
     // 犬猫スター会話用立ち絵
     this.inunekoImage = this.add.image(1920 - 450, 1080 / 2 - 250, 'inuneko_stand').setAlpha(0).setDepth(91);
-    var iScale = 300 / this.inunekoImage.width;
+    var iScale = 300 / 691; // Fixed width from cropped image
     this.inunekoImage.setScale(iScale);
+    this.inunekoImage.setY(100 + (672 * iScale) / 2 - 150); // Adjusted height
     this.time.addEvent({
       delay: 3000, loop: true, callback: () => {
         if (this.inunekoImage && this.inunekoImage.active && this.inunekoImage.alpha > 0) {
@@ -395,6 +396,17 @@ class BossScene extends Phaser.Scene {
       if(this.demonImage) this.tweens.add({ targets: this.demonImage, alpha: 0, duration: 300 });
       if(this.inunekoImage) this.tweens.add({ targets: this.inunekoImage, alpha: 0, duration: 300 });
       this.showDeviceDialogue(text, res);
+    });
+
+    const sayInuneko = (text, tex = 'inuneko_stand') => new Promise(res => {
+      this.tweens.add({ targets: dimBg, alpha: 0.6, duration: 300 });
+      this.tweens.add({ targets: this.heroImage, alpha: 0.4, duration: 300 });
+      if(this.demonImage) this.tweens.add({ targets: this.demonImage, alpha: 0.4, duration: 300 });
+      if(this.inunekoImage) {
+        this.tweens.add({ targets: this.inunekoImage, alpha: 1, duration: 300 });
+        this.inunekoImage.setTexture(tex);
+      }
+      this.showDialogue('犬猫☆すたー', text, res);
     });
 
     const sayHero = (text) => new Promise(res => {
@@ -428,18 +440,26 @@ class BossScene extends Phaser.Scene {
     });
 
     (async () => {
-      await sayDevice('「とうとう最後のエリアに着いたか。そこには魔王がいるはずだ。警戒を怠らないように」');
+      await sayDevice('「とうとう魔王城に着いたな。そこには魔王がいるはずだ。警戒を怠らないようにしろ。」');
       await sayDemon('「－－－よくぞここまで来た！無謀な侵入者よ！」');
-      await sayHero('「！」');
-      await sayDevice('「魔王だ！」');
-      await sayDemon('「わらわの部下が世話になったな？王として、その返礼をくれてやろう」');
+      await sayInuneko('「いつもいつも懲りないやつらだにゃ！」');
+      await sayHero('「！？」');
+      await sayDevice('「ついに出てきな！魔王め！あいつのせいで、俺は……」');
+      await sayHero('「え、あのマスコットが魔王……？」');
+      await sayDevice('「……は？ちがう！あいつは魔王の奴隷だ！」');
+      await sayHero('「奴隷……？」');
+      await sayInuneko('「にゃにゃ！？奴隷じゃなくて魔王様の親愛なる使い魔であり、偉大な『犬猫☆すたー』だわん！」');
+      await sayHero('「（犬なのか、猫なのか、ハムスターなのかはっきりしない生き物だな…）」');
+      await sayDemon('「ふふ、わらわの部下が世話になったな？魔王として、その返礼をくれてやろう」');
       await sayDevice('「気をつけろ。奴はこれまでの敵とは比べ物にならない」');
-      await sayDemon('「しかし、勇者よ。戦う前に一つ聞こう。貴様は自分が何者か知っているのか？」');
+      await sayHero('「……僕は君を倒しに来た勇者だ。ここで決着をつけよう」');
+      await sayDemon('「そうか、貴様は”勇者”なのか……。しかし”勇者”よ。戦う前に一つ問おう。貴様は自分が何者か知っているのか？」');
       await sayHero('「…？」');
       await sayDevice('「奴の言葉に耳を貸す必要はない。お前はただ、与えられた使命をはたすのだ」');
       await sayDemon('「……まあよい。今ここで話したところで、お前は信じぬだろう。だが覚えておけ。見えているものだけが真実とは限らぬ。」');
       await sayHero('「僕は」');
-      await sayDemon('「来るがよい、勇者！」');
+      await sayDemon('「来るがよい、”勇者”！」');
+      await sayInuneko('「受けてたつにゃん、”勇者”！」');
       
       this.tweens.add({ targets: [dimBg, this.heroImage, this.demonImage], alpha: 0, duration: 300 });
       if(this.inunekoImage) this.tweens.add({ targets: this.inunekoImage, alpha: 0, duration: 300 });
@@ -480,6 +500,17 @@ class BossScene extends Phaser.Scene {
         this.tweens.add({ targets: [femaleFrame, femaleLabel], alpha: 1, duration: 300 });
       }
       this.showDialogue(speaker, text, res);
+    });
+
+    const sayInuneko = (text, tex = 'inuneko_stand') => new Promise(res => {
+      this.tweens.add({ targets: dimBg, alpha: 0.6, duration: 300 });
+      this.tweens.add({ targets: this.heroImage, alpha: 0.4, duration: 300 });
+      if(this.demonImage) this.tweens.add({ targets: this.demonImage, alpha: 0.4, duration: 300 });
+      if(this.inunekoImage) {
+        this.tweens.add({ targets: this.inunekoImage, alpha: 1, duration: 300 });
+        this.inunekoImage.setTexture(tex);
+      }
+      this.showDialogue('犬猫☆すたー', text, res);
     });
 
     const sayHero = (text) => new Promise(res => {
@@ -1025,7 +1056,18 @@ class BossScene extends Phaser.Scene {
             const sayDevice = (text) => new Promise(res => { this.tweens.add({ targets: dimBg, alpha: 0.6, duration: 300 }); this.tweens.add({ targets: [enemyFrame, enemyLabel, this.heroImage], alpha: 0.4, duration: 300 }); this.showDeviceDialogue(text, res); });
             const sayEnemyUnknown = (text) => new Promise(res => { this.tweens.add({ targets: dimBg, alpha: 0.6, duration: 300 }); this.tweens.add({ targets: [enemyFrame, enemyLabel], alpha: 1, duration: 300 }); this.tweens.add({targets: this.heroImage, alpha: 0.4, duration: 300}); enemyLabel.setText('???'); this.showDialogue('???', text, res); });
             const sayEnemyName = (name, text) => new Promise(res => { this.tweens.add({ targets: dimBg, alpha: 0.6, duration: 300 }); this.tweens.add({ targets: [enemyFrame, enemyLabel], alpha: 1, duration: 300 }); this.tweens.add({targets: this.heroImage, alpha: 0.4, duration: 300}); enemyLabel.setText(name); this.showDialogue(name, text, res); });
-            const sayHero = (text) => new Promise(res => { this.tweens.add({ targets: dimBg, alpha: 0.6, duration: 300 }); this.tweens.add({ targets: [enemyFrame, enemyLabel], alpha: 0.4, duration: 300 }); this.tweens.add({targets: this.heroImage, alpha: 1, duration: 300});  if (text === '「……」' || text === '「……。」' || text === '「…」') {        this.heroImage.setTexture('hero_stand_silent');      } else {        this.heroImage.setTexture('hero_stand');      }     this.heroImage.setScale(750 / this.heroImage.width);     this.heroImage.setY(100 + (this.heroImage.height * this.heroImage.scaleY) / 2);      this.showDialogue('勇者', text, res); });
+            const sayInuneko = (text, tex = 'inuneko_stand') => new Promise(res => {
+      this.tweens.add({ targets: dimBg, alpha: 0.6, duration: 300 });
+      this.tweens.add({ targets: this.heroImage, alpha: 0.4, duration: 300 });
+      if(this.demonImage) this.tweens.add({ targets: this.demonImage, alpha: 0.4, duration: 300 });
+      if(this.inunekoImage) {
+        this.tweens.add({ targets: this.inunekoImage, alpha: 1, duration: 300 });
+        this.inunekoImage.setTexture(tex);
+      }
+      this.showDialogue('犬猫☆すたー', text, res);
+    });
+
+    const sayHero = (text) => new Promise(res => { this.tweens.add({ targets: dimBg, alpha: 0.6, duration: 300 }); this.tweens.add({ targets: [enemyFrame, enemyLabel], alpha: 0.4, duration: 300 }); this.tweens.add({targets: this.heroImage, alpha: 1, duration: 300});  if (text === '「……」' || text === '「……。」' || text === '「…」') {        this.heroImage.setTexture('hero_stand_silent');      } else {        this.heroImage.setTexture('hero_stand');      }     this.heroImage.setScale(750 / this.heroImage.width);     this.heroImage.setY(100 + (this.heroImage.height * this.heroImage.scaleY) / 2);      this.showDialogue('勇者', text, res); });
 
             var key = this.currentBoss.configKey;
             
@@ -1199,7 +1241,18 @@ class BossScene extends Phaser.Scene {
             ]);
           });
           const sayDevice = (text) => new Promise(res => { this.tweens.add({ targets: dimBg, alpha: 0.6, duration: 300 }); this.tweens.add({targets: this.heroImage, alpha: 0.4, duration: 300}); this.showDeviceDialogue(text, res); });
-          const sayHero = (text) => new Promise(res => { this.tweens.add({ targets: dimBg, alpha: 0.6, duration: 300 }); this.tweens.add({targets: this.heroImage, alpha: 1, duration: 300});  if (text === '「……」' || text === '「……。」' || text === '「…」') {        this.heroImage.setTexture('hero_stand_silent');      } else {        this.heroImage.setTexture('hero_stand');      }     this.heroImage.setScale(750 / this.heroImage.width);     this.heroImage.setY(100 + (this.heroImage.height * this.heroImage.scaleY) / 2);      this.showDialogue('勇者', text, res); });
+          const sayInuneko = (text, tex = 'inuneko_stand') => new Promise(res => {
+      this.tweens.add({ targets: dimBg, alpha: 0.6, duration: 300 });
+      this.tweens.add({ targets: this.heroImage, alpha: 0.4, duration: 300 });
+      if(this.demonImage) this.tweens.add({ targets: this.demonImage, alpha: 0.4, duration: 300 });
+      if(this.inunekoImage) {
+        this.tweens.add({ targets: this.inunekoImage, alpha: 1, duration: 300 });
+        this.inunekoImage.setTexture(tex);
+      }
+      this.showDialogue('犬猫☆すたー', text, res);
+    });
+
+    const sayHero = (text) => new Promise(res => { this.tweens.add({ targets: dimBg, alpha: 0.6, duration: 300 }); this.tweens.add({targets: this.heroImage, alpha: 1, duration: 300});  if (text === '「……」' || text === '「……。」' || text === '「…」') {        this.heroImage.setTexture('hero_stand_silent');      } else {        this.heroImage.setTexture('hero_stand');      }     this.heroImage.setScale(750 / this.heroImage.width);     this.heroImage.setY(100 + (this.heroImage.height * this.heroImage.scaleY) / 2);      this.showDialogue('勇者', text, res); });
 
           if (key === 'boss1') {
             const sayEnemy = (text) => new Promise(res => { this.tweens.add({ targets: dimBg, alpha: 0.6, duration: 300 }); this.tweens.add({targets: this.heroImage, alpha: 0.4, duration: 300}); this.showDialogue('敵幹部1', text, res); });
@@ -1267,7 +1320,18 @@ class BossScene extends Phaser.Scene {
             this.demonImage.setY(100 + (this.demonImage.height * dScale) / 2 - 200);
 
             const sayDevice = (text) => new Promise(res => { this.tweens.add({ targets: dimBg, alpha: 0.6, duration: 300 }); this.tweens.add({targets: this.heroImage, alpha: 0.4, duration: 300}); this.tweens.add({ targets: this.demonImage, alpha: 0.4, duration: 300 }); this.showDeviceDialogue(text, res); });
-            const sayHero = (text) => new Promise(res => { this.tweens.add({ targets: dimBg, alpha: 0.6, duration: 300 }); this.tweens.add({targets: this.heroImage, alpha: 1, duration: 300}); this.tweens.add({ targets: this.demonImage, alpha: 0.4, duration: 300 }); if (text === '「……」' || text === '「……。」' || text === '「…」') { this.heroImage.setTexture('hero_stand_silent'); } else { this.heroImage.setTexture('hero_stand'); } this.heroImage.setScale(750 / this.heroImage.width); this.heroImage.setY(100 + (this.heroImage.height * this.heroImage.scaleY) / 2); this.showDialogue('勇者', text, res); });
+            const sayInuneko = (text, tex = 'inuneko_stand') => new Promise(res => {
+      this.tweens.add({ targets: dimBg, alpha: 0.6, duration: 300 });
+      this.tweens.add({ targets: this.heroImage, alpha: 0.4, duration: 300 });
+      if(this.demonImage) this.tweens.add({ targets: this.demonImage, alpha: 0.4, duration: 300 });
+      if(this.inunekoImage) {
+        this.tweens.add({ targets: this.inunekoImage, alpha: 1, duration: 300 });
+        this.inunekoImage.setTexture(tex);
+      }
+      this.showDialogue('犬猫☆すたー', text, res);
+    });
+
+    const sayHero = (text) => new Promise(res => { this.tweens.add({ targets: dimBg, alpha: 0.6, duration: 300 }); this.tweens.add({targets: this.heroImage, alpha: 1, duration: 300}); this.tweens.add({ targets: this.demonImage, alpha: 0.4, duration: 300 }); if (text === '「……」' || text === '「……。」' || text === '「…」') { this.heroImage.setTexture('hero_stand_silent'); } else { this.heroImage.setTexture('hero_stand'); } this.heroImage.setScale(750 / this.heroImage.width); this.heroImage.setY(100 + (this.heroImage.height * this.heroImage.scaleY) / 2); this.showDialogue('勇者', text, res); });
             const sayDemon = (text) => new Promise(res => { this.tweens.add({ targets: dimBg, alpha: 0.6, duration: 300 }); this.tweens.add({targets: this.heroImage, alpha: 0.4, duration: 300}); this.tweens.add({ targets: this.demonImage, alpha: 1, duration: 300 }); this.demonImage.setTexture('demon_lord_dying'); this.demonImage.setScale(1000 / this.demonImage.width); this.demonImage.setY(100 + (this.demonImage.height * this.demonImage.scaleY) / 2 - 200); this.showDialogue('魔王', text, res); });
     
             
@@ -1764,7 +1828,18 @@ class BossScene extends Phaser.Scene {
             })();
           } else if (key === 'doctor') {
             const sayDevice = (text) => new Promise(res => { this.tweens.add({ targets: dimBg, alpha: 0.6, duration: 300 }); this.tweens.add({targets: this.heroImage, alpha: 0.4, duration: 300}); this.showDeviceDialogue(text, res); });
-            const sayHero = (text) => new Promise(res => { this.tweens.add({ targets: dimBg, alpha: 0.6, duration: 300 }); this.tweens.add({targets: this.heroImage, alpha: 1, duration: 300});  if (text === '「……」' || text === '「……。」' || text === '「…」') {        this.heroImage.setTexture('hero_stand_silent');      } else {        this.heroImage.setTexture('hero_stand');      }     this.heroImage.setScale(750 / this.heroImage.width);     this.heroImage.setY(100 + (this.heroImage.height * this.heroImage.scaleY) / 2);      this.showDialogue('勇者', text, res); });
+            const sayInuneko = (text, tex = 'inuneko_stand') => new Promise(res => {
+      this.tweens.add({ targets: dimBg, alpha: 0.6, duration: 300 });
+      this.tweens.add({ targets: this.heroImage, alpha: 0.4, duration: 300 });
+      if(this.demonImage) this.tweens.add({ targets: this.demonImage, alpha: 0.4, duration: 300 });
+      if(this.inunekoImage) {
+        this.tweens.add({ targets: this.inunekoImage, alpha: 1, duration: 300 });
+        this.inunekoImage.setTexture(tex);
+      }
+      this.showDialogue('犬猫☆すたー', text, res);
+    });
+
+    const sayHero = (text) => new Promise(res => { this.tweens.add({ targets: dimBg, alpha: 0.6, duration: 300 }); this.tweens.add({targets: this.heroImage, alpha: 1, duration: 300});  if (text === '「……」' || text === '「……。」' || text === '「…」') {        this.heroImage.setTexture('hero_stand_silent');      } else {        this.heroImage.setTexture('hero_stand');      }     this.heroImage.setScale(750 / this.heroImage.width);     this.heroImage.setY(100 + (this.heroImage.height * this.heroImage.scaleY) / 2);      this.showDialogue('勇者', text, res); });
             const askChoice = (label1, label2) => new Promise(res => {
               this.showChoice([
                 { text: label1, callback: () => { MOT.Audio.playSelect(); res(1); } },
@@ -1848,7 +1923,18 @@ class BossScene extends Phaser.Scene {
           ]);
         });
         const sayDevice = (text) => new Promise(res => { this.tweens.add({ targets: dimBg, alpha: 0.6, duration: 300 }); this.tweens.add({targets: this.heroImage, alpha: 0.4, duration: 300}); this.showDeviceDialogue(text, res); });
-        const sayHero = (text) => new Promise(res => { this.tweens.add({ targets: dimBg, alpha: 0.6, duration: 300 }); this.tweens.add({targets: this.heroImage, alpha: 1, duration: 300});  if (text === '「……」' || text === '「……。」' || text === '「…」') {        this.heroImage.setTexture('hero_stand_silent');      } else {        this.heroImage.setTexture('hero_stand');      }     this.heroImage.setScale(750 / this.heroImage.width);     this.heroImage.setY(100 + (this.heroImage.height * this.heroImage.scaleY) / 2);      this.showDialogue('勇者', text, res); });
+        const sayInuneko = (text, tex = 'inuneko_stand') => new Promise(res => {
+      this.tweens.add({ targets: dimBg, alpha: 0.6, duration: 300 });
+      this.tweens.add({ targets: this.heroImage, alpha: 0.4, duration: 300 });
+      if(this.demonImage) this.tweens.add({ targets: this.demonImage, alpha: 0.4, duration: 300 });
+      if(this.inunekoImage) {
+        this.tweens.add({ targets: this.inunekoImage, alpha: 1, duration: 300 });
+        this.inunekoImage.setTexture(tex);
+      }
+      this.showDialogue('犬猫☆すたー', text, res);
+    });
+
+    const sayHero = (text) => new Promise(res => { this.tweens.add({ targets: dimBg, alpha: 0.6, duration: 300 }); this.tweens.add({targets: this.heroImage, alpha: 1, duration: 300});  if (text === '「……」' || text === '「……。」' || text === '「…」') {        this.heroImage.setTexture('hero_stand_silent');      } else {        this.heroImage.setTexture('hero_stand');      }     this.heroImage.setScale(750 / this.heroImage.width);     this.heroImage.setY(100 + (this.heroImage.height * this.heroImage.scaleY) / 2);      this.showDialogue('勇者', text, res); });
         const sayMan = (text) => new Promise(res => { this.tweens.add({ targets: dimBg, alpha: 0.6, duration: 300 }); this.tweens.add({targets: this.heroImage, alpha: 0.4, duration: 300}); this.showDialogue('男', text, res); });
         const sayWoman = (text) => new Promise(res => { this.tweens.add({ targets: dimBg, alpha: 0.6, duration: 300 }); this.tweens.add({targets: this.heroImage, alpha: 0.4, duration: 300}); this.showDialogue('女', text, res); });
 

@@ -81,7 +81,7 @@ class BootScene extends Phaser.Scene {
     this.load.image('inuneko_stand', 'assets/images/inuneko_stand.png?v=' + v);
     this.load.image('inuneko_blink', 'assets/images/inuneko_blink.png?v=' + v);
     this.load.image('inuneko_dying', 'assets/images/inuneko_dying.png?v=' + v);
-    this.load.spritesheet('inuneko_combat', 'assets/images/inuneko_combat_sheet.png?v=' + v, { frameWidth: 120, frameHeight: 120 }); // 仮サイズ
+    this.load.spritesheet('inuneko_combat', 'assets/images/inuneko_combat_sheet.png?v=' + v, { frameWidth: 315, frameHeight: 560 });
     
     this.load.image('icon_person', 'assets/images/icon_person.png?v=' + v);
     this.load.image('demon_lord_dying', 'assets/images/demon_lord_dying.png?v=' + v);
@@ -101,7 +101,7 @@ class BootScene extends Phaser.Scene {
     this.load.image('inuneko_stand', 'assets/images/inuneko_stand.png?v=' + v);
     this.load.image('inuneko_dying', 'assets/images/inuneko_dying.png?v=' + v);
     this.load.image('inuneko_blink', 'assets/images/inuneko_blink.png?v=' + v);
-    this.load.image('inuneko_combat', 'assets/images/inuneko_combat_sheet.png?v=' + v); // Used as static for now
+
 
     // Hero New
     this.load.image('hero_silent_new', 'assets/images/hero_silent_new.png?v=' + v);
