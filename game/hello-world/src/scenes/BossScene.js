@@ -1847,7 +1847,9 @@ class BossScene extends Phaser.Scene {
     this.tweens.add({ targets: this.player, x: 2100, duration: 1500, ease: 'Power2' });
     this.cameras.main.fadeOut(1500, 0, 0, 0);
     this.time.delayedCall(1500, function () { 
-      this.player.x = -100;
+      this.bg.setTexture('bg_boss_stage5');
+      this.tweens.killTweensOf(this.player);
+      this.player.x = -200;
       this.tweens.add({ 
         targets: this.player, 
         x: 300, 
@@ -1855,6 +1857,7 @@ class BossScene extends Phaser.Scene {
         ease: 'Power2',
         onComplete: () => {
           this.player.setCollideWorldBounds(true);
+          this.physics.resume();
         }
       });
       this.cameras.main.fadeIn(1000, 0, 0, 0);
@@ -1927,6 +1930,7 @@ class BossScene extends Phaser.Scene {
           this.bg.setTexture(bgKey);
           
           // Player enters from the left of the screen
+          this.tweens.killTweensOf(this.player);
           this.player.x = -200;
           
           this.cameras.main.fadeIn(500, 0, 0, 0);
