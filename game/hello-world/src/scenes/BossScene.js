@@ -1457,6 +1457,9 @@ class BossScene extends Phaser.Scene {
           } else if (key === 'demon_lord') {
             var f = MOT.flags;
             
+            var dimBg = this.add.rectangle(1920/2, 1080/2, 1920, 1080, 0x000000, 0.6).setAlpha(0).setDepth(89);
+            this.dimBg = dimBg;
+            
             this.demonImage = this.add.image(1920 - 300, 1080 / 2, 'demon_lord_dying').setAlpha(0).setDepth(90);
             var dScale = 1000 / this.demonImage.width;
             this.demonImage.setScale(dScale);
