@@ -81,21 +81,22 @@ MOT.DoctorDirective = {
     container.add(box);
 
     // 博士の顔アイコン (左端の枠内)
-    var face = scene.add.image(130, boxY + 60, 'doctor_normal');
+    // 枠に合わせて少し大きくする (半径75 = 直径150)
+    var face = scene.add.image(140, boxY + 100, 'doctor_normal');
     // もっと近づける（ズームアップ）
-    var scaleRatio = 500 / face.height; 
+    var scaleRatio = 750 / face.height; 
     face.setScale(scaleRatio);
     var maskShape = scene.make.graphics();
     maskShape.fillStyle(0xffffff);
-    maskShape.fillCircle(130, boxY + 60, 48);
+    maskShape.fillCircle(140, boxY + 100, 75);
     var mask = maskShape.createGeometryMask();
     face.setMask(mask);
     // Y座標を少し上げて顔が中心に来るように調整
-    face.setY(boxY + 60 + (face.height * scaleRatio) * 0.35);
+    face.setY(boxY + 100 + (face.height * scaleRatio) * 0.35);
     
     // 背景の黒丸（装飾）
-    var faceBg = scene.add.circle(130, boxY + 60, 52, 0x000000);
-    var faceBorder = scene.add.circle(130, boxY + 60, 52).setStrokeStyle(2, 0xFFFFAA);
+    var faceBg = scene.add.circle(140, boxY + 100, 79, 0x000000);
+    var faceBorder = scene.add.circle(140, boxY + 100, 79).setStrokeStyle(2, 0xFFFFAA);
     container.add([faceBg, face, faceBorder]);
 
     // 「博士」ラベル

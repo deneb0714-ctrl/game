@@ -2355,28 +2355,28 @@ class BossScene extends Phaser.Scene {
     // 博士の顔アイコン (左端の枠内)
     var iconBox = this.add.graphics();
     iconBox.lineStyle(2, 0x39FF14, 0.8);
-    iconBox.strokeRect(80, boxY + 40, 100, 100);
+    iconBox.strokeRect(80, boxY + 40, 200, 200);
     this.dialogContainer.add(iconBox);
     
-    var face = this.add.image(130, boxY + 90, 'doctor_normal');
-    var scaleRatio = 500 / face.height;
+    var face = this.add.image(180, boxY + 140, 'doctor_normal');
+    var scaleRatio = 1000 / face.height;
     face.setScale(scaleRatio);
     var maskShape = this.make.graphics();
     maskShape.fillStyle(0xffffff);
-    maskShape.fillRect(82, boxY + 42, 96, 96);
+    maskShape.fillRect(82, boxY + 42, 196, 196);
     face.setMask(maskShape.createGeometryMask());
     // 顔が中心に来るよう調整
-    face.setY(boxY + 90 + (face.height * scaleRatio) * 0.35);
+    face.setY(boxY + 140 + (face.height * scaleRatio) * 0.35);
     this.dialogContainer.add(face);
 
-    var nameText = this.add.text(210, boxY + 10, '博士 📡', {
+    var nameText = this.add.text(310, boxY + 10, '博士 📡', {
       fontFamily: '"DotGothic16"', fontSize: '44px', color: '#39FF14'
     });
     this.dialogContainer.add(nameText);
 
-    var bodyText = this.add.text(210, boxY + 60, '', {
+    var bodyText = this.add.text(310, boxY + 60, '', {
       fontFamily: '"DotGothic16"', fontSize: '40px', color: '#E5E7EB',
-      wordWrap: { width: w - 330, useAdvancedWrap: true }, lineSpacing: 8
+      wordWrap: { width: w - 420, useAdvancedWrap: true }, lineSpacing: 8
     });
     this.dialogContainer.add(bodyText);
 

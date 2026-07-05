@@ -24,13 +24,13 @@ class StoryScene extends Phaser.Scene {
 
     // Dialogue Data
     this.dialogue = [
-      { speaker: '『博士』', text: '...link established', bg: 'black' },
-      { speaker: '『博士』', text: '...signal drift: 0.03', bg: 'black' },
-      { speaker: '『博士』', text: 'こんにちは。『▱▱』よ。', bg: 'black' },
-      { speaker: '『博士』', text: '世界構造の誤差、観測値より逸脱。あなたには、それを正すだけの力がある。', bg: 'black' },
-      { speaker: '『博士』', text: '悪性因子、未除去。この世界を救う宿命を背負いなさい。', bg: 'black' },
-      { speaker: '『博士』', text: '...trace lost', bg: 'black' },
-      { speaker: '『博士』', text: '...reconnecting...', bg: 'black' },
+      { speaker: 'mmƂ̃````bbggggO', text: '...link established', bg: 'black' },
+      { speaker: 'mmƂ̃````bbggggO', text: '...signal drift: 0.03', bg: 'black' },
+      { speaker: 'mmƂ̃````bbggggO', text: 'こんにちは。『▱▱』よ。', bg: 'black' },
+      { speaker: 'mmƂ̃````bbggggO', text: '世界構造の誤差、観測値より逸脱。あなたには、それを正すだけの力がある。', bg: 'black' },
+      { speaker: 'mmƂ̃````bbggggO', text: '悪性因子、未除去。この世界を救う宿命を背負いなさい。', bg: 'black' },
+      { speaker: 'mmƂ̃````bbggggO', text: '...trace lost', bg: 'black' },
+      { speaker: 'mmƂ̃````bbggggO', text: '...reconnecting...', bg: 'black' },
 
       { speaker: '？？？', text: 'おお、ようやく成功したぞ！目覚めたか！！勇者よ。', bg: 'lab' },
       { speaker: '勇者', text: '……あなたは、誰ですか', bg: 'lab' },
