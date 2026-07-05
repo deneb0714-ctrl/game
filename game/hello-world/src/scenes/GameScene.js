@@ -99,7 +99,10 @@ class GameScene extends Phaser.Scene {
     this.createHUD();
 
     // Stage info text
-    const stageLabel = 'STAGE 1 – ○○';
+    let stageLabel = 'STAGE 1 – 始まりの村';
+    if (this.currentStage === 2) stageLabel = 'STAGE 2 – 黄昏の荒野';
+    if (this.currentStage === 3) stageLabel = 'STAGE 3 – 宵闇の森';
+    if (this.currentStage === 4) stageLabel = 'STAGE 4 – 子夜の城塞';
     const stageText = this.add.text(w / 2, h / 2, stageLabel, {
       fontFamily: '"Press Start 2P"',
       fontSize: '28px',
@@ -117,11 +120,13 @@ class GameScene extends Phaser.Scene {
     // Wave schedule
     this.waveSchedule = this.getWaveSchedule();
 
-    // Tutorial State
+    // Tutorial / Intro State
     if (this.currentStage === 1) {
       this.tutorialPhase = 1;
       this.tutorialTimer = 0;
       this.tutorialWaitSpecial = false;
+    } else {
+      this.stageIntroDone = false;
     }
 
     // Fade in
@@ -155,6 +160,20 @@ class GameScene extends Phaser.Scene {
 
     if (this.currentStage === 1 && this.tutorialPhase) {
       this.updateTutorial(delta);
+    } else if (this.currentStage > 1 && !this.stageIntroDone && this.stageTimer > 1000 && !this.dialogActive) {
+      this.stageIntroDone = true;
+      this.physics.pause();
+      this.dialogActive = true;
+      
+      let text = '';
+      if (this.currentStage === 2) text = '「次のエリアに着いたか。そこは、黄昏の荒野だ。魔王城までまだ距離があるからそこまで敵は強くないが気は抜くなよ。」';
+      if (this.currentStage === 3) text = '「次のエリアに着いたか。そこは、宵闇の森だ。」';
+      if (this.currentStage === 4) text = '「次のエリアに着いたか。そこは、子夜の城塞だ。そろそろ魔王城に着くだろう。敵も強くなっている。気を付けてくれ」';
+      
+      this.showDeviceDialogue(text, () => {
+        this.dialogActive = false;
+        this.physics.resume();
+      });
     }
     
     if (this.dialogActive) return;
@@ -815,15 +834,19 @@ class GameScene extends Phaser.Scene {
     // Doll Points update
     const dollValue = MOT.flags.dollPoints || 0;
     const dollPct = Phaser.Math.Clamp(dollValue / 100, 0, 1);
-    const dollH = Math.max(0.01, 64 * dollPct);
-    this.iconPersonFill.setCrop(0, 64 - dollH, 32, dollH);
+    const pW = this.iconPersonFill.width || 32;
+    const pH = this.iconPersonFill.height || 64;
+    const dollH = Math.max(0.01, pH * dollPct);
+    this.iconPersonFill.setCrop(0, pH - dollH, pW, dollH);
     this.dollText.setText('DP:' + dollValue);
 
     // Killing Intent update
     const intentValue = MOT.flags.killingIntent || 0;
     const intentPct = Phaser.Math.Clamp(intentValue / 100, 0, 1);
-    const intentH = Math.max(0.01, 64 * intentPct);
-    this.iconBatteryFill.setCrop(0, 64 - intentH, 32, intentH);
+    const bW = this.iconBatteryFill.width || 32;
+    const bH = this.iconBatteryFill.height || 64;
+    const intentH = Math.max(0.01, bH * intentPct);
+    this.iconBatteryFill.setCrop(0, bH - intentH, bW, intentH);
     this.intentText.setText('KI:' + intentValue);
 
     const iconX = 260;
@@ -881,20 +904,26 @@ class GameScene extends Phaser.Scene {
     var box = this.add.graphics();
     box.fillStyle(0x0a0a1a, 0.92);
     box.fillRoundedRect(60, boxY, w - 120, boxH, 12);
-    box.lineStyle(2, 0x39FF14, 0.8);
+    box.lineStyle(2, 0x4FD1FF, 0.8);
     box.strokeRoundedRect(60, boxY, w - 120, boxH, 12);
     this.dialogContainer.add(box);
 
     var iconBox = this.add.graphics();
-    iconBox.lineStyle(2, 0x39FF14, 0.8);
-    iconBox.strokeRect(80, boxY + 40, 100, 100);
+    iconBox.fillStyle(0x1F2933, 1);
+    iconBox.fillRect(80, boxY - 140, 180, 180);
+    iconBox.lineStyle(4, 0x4FD1FF, 1);
+    iconBox.strokeRect(80, boxY - 140, 180, 180);
     this.dialogContainer.add(iconBox);
     
-    var face = this.add.image(130, boxY + 90, 'doctor_face').setDisplaySize(96, 96);
+    var face = this.add.image(170, boxY - 50, 'doctor_face');
+    let faceW = this.textures.get('doctor_face').getSourceImage().width;
+    let faceH = this.textures.get('doctor_face').getSourceImage().height;
+    let faceScale = Math.min(170 / faceW, 170 / faceH);
+    face.setScale(faceScale);
     this.dialogContainer.add(face);
 
-    var nameText = this.add.text(210, boxY + 10, '博士 📡', {
-      fontFamily: '"DotGothic16"', fontSize: '44px', color: '#39FF14'
+    var nameText = this.add.text(280, boxY + 10, '『博士』', {
+      fontFamily: '"DotGothic16"', fontSize: '44px', color: '#4FD1FF'
     });
     this.dialogContainer.add(nameText);
 

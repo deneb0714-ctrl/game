@@ -24,12 +24,18 @@ class StoryScene extends Phaser.Scene {
 
     // Dialogue Data
     this.dialogue = [
-      { speaker: '誰かの声', text: 'さぁ、起きるのだ。勇者よ。', bg: 'black' },
-      { speaker: '誰かの声', text: 'そして悪を倒し、この世界を救う宿命を背負え。', bg: 'black' },
+      { speaker: '『博士』', text: '...link established', bg: 'black' },
+      { speaker: '『博士』', text: '...signal drift: 0.03', bg: 'black' },
+      { speaker: '『博士』', text: 'こんにちは。『▱▱』よ。', bg: 'black' },
+      { speaker: '『博士』', text: '世界構造の誤差、観測値より逸脱。あなたには、それを正すだけの力がある。', bg: 'black' },
+      { speaker: '『博士』', text: '悪性因子、未除去。この世界を救う宿命を背負いなさい。', bg: 'black' },
+      { speaker: '『博士』', text: '...trace lost', bg: 'black' },
+      { speaker: '『博士』', text: '...reconnecting...', bg: 'black' },
+
       { speaker: '？？？', text: 'おお、ようやく成功したぞ！目覚めたか！！勇者よ。', bg: 'lab' },
-      { speaker: '勇者？', text: '……あなたは、誰ですか', bg: 'lab' },
-      { speaker: '博士', text: '私か？私はしがない博士だ。そして君を呼んだ人間だ。', bg: 'lab' },
-      { speaker: '博士', text: '遥か昔、この世界は平和だった。しかし突如現れた魔王によって蹂躙され、今はもう平和とは程遠い世界になってしまった。', bg: 'lab' },
+      { speaker: '勇者', text: '……あなたは、誰ですか', bg: 'lab' },
+      { speaker: '博士', text: '私か？私はしがない博士だ。そして君をこの世界に呼び覚ました人間だ。', bg: 'lab' },
+      { speaker: '博士', text: '遥か昔、この世界は平和だった。しかし突如現れた魔王によって蹂躙され、今はもう平和とは程遠くなってしまった。', bg: 'lab' },
       { speaker: '博士', text: '目覚めてすぐで悪いが、君にはまず、その魔王を倒してきてほしい。', bg: 'lab' },
       { speaker: '勇者', text: '倒す……？', bg: 'lab' },
       { speaker: '博士', text: '君にはそれだけの力がある。', bg: 'lab', choice: true }
@@ -39,32 +45,41 @@ class StoryScene extends Phaser.Scene {
     this.isWaitingForChoice = false;
 
     // Portraits Layer
-    // Hero portrait (left) - bust-up crop of full-body image
-    this.heroImage = this.add.image(300, h / 2, 'hero_stand').setAlpha(0);
+    // Hero portrait (now on the right)
+    this.heroImage = this.add.image(w - 300, h / 2, 'hero_stand').setAlpha(0);
     
-    // ターゲット幅を広げてアップにする
     var hScale = 750 / this.heroImage.width;
     this.heroImage.setScale(hScale);
-    // 顔が上部に来るように調整し、下半身は吹き出しの後ろに隠れるようにする
     this.heroImage.setY(100 + (this.heroImage.height * hScale) / 2);
     
     this.heroGroup = [this.heroImage];
 
-    // Doctor portrait (right) - bust-up crop of full-body image
-    this.doctorImage = this.add.image(w - 300, h / 2, 'doctor_stand').setAlpha(0);
-    // ガビガビ（ピクセルアート用ニアレストネイバー補間）を解除して滑らかにする
-    this.textures.get('doctor_stand').setFilter(Phaser.Textures.FilterMode.LINEAR);
+    // Doctor portrait (now on the left)
+    this.doctorImage = this.add.image(300, h / 2, 'doctor_normal').setAlpha(0);
+    this.textures.get('doctor_normal').setFilter(Phaser.Textures.FilterMode.LINEAR);
     
-    var imgW = this.textures.get('doctor_stand').getSourceImage().width;
-    var imgH = this.textures.get('doctor_stand').getSourceImage().height;
+    var imgW = this.textures.get('doctor_normal').getSourceImage().width;
+    var imgH = this.textures.get('doctor_normal').getSourceImage().height;
     
-    // ターゲット幅を広げてアップにする
     var scale = 750 / imgW;
     this.doctorImage.setScale(scale);
-    // 顔が上部に来るように調整し、下半身は吹き出しの後ろに隠れるようにする
     this.doctorImage.setY(100 + (imgH * scale) / 2);
     
     this.doctorGroup = [this.doctorImage];
+
+    // Device comm UI (Doctor's face in a small frame)
+    this.deviceCommGroup = this.add.group();
+    this.deviceCommFrame = this.add.rectangle(120, h - 320 - 40 + 160, 200, 200, 0x1F2933).setStrokeStyle(4, 0x4FD1FF).setAlpha(0).setDepth(150);
+    this.deviceCommFace = this.add.image(120, h - 320 - 40 + 160, 'doctor_face').setAlpha(0).setDepth(151);
+    
+    // Scale doctor_face to fit inside the 200x200 frame
+    let faceW = this.textures.get('doctor_face').getSourceImage().width;
+    let faceH = this.textures.get('doctor_face').getSourceImage().height;
+    let faceScale = Math.min(190 / faceW, 190 / faceH);
+    this.deviceCommFace.setScale(faceScale);
+    
+    this.deviceCommGroup.add(this.deviceCommFrame);
+    this.deviceCommGroup.add(this.deviceCommFace);
 
     // UI Layer - Dialog Box
     const boxH = 320;
@@ -75,15 +90,15 @@ class StoryScene extends Phaser.Scene {
     this.areaNameText = this.add.text(1920 - 30, 20, '曙光技研', { fontFamily: '"DotGothic16"', fontSize: '32px', color: '#FFFFFF', backgroundColor: 'rgba(0,0,0,0.5)', padding: { x: 10, y: 5 } }).setOrigin(1, 0).setDepth(100).setAlpha(0);
     
     // Name Tag
-    this.nameBox = this.add.rectangle(200, boxY, 240, 60, 0x1F2933).setStrokeStyle(2, 0x4FD1FF);
-    this.nameText = this.add.text(200, boxY, '', { fontFamily: '"DotGothic16"', fontSize: '44px', color: '#ffffff' }).setOrigin(0.5);
+    this.nameBox = this.add.rectangle(400, boxY, 240, 60, 0x1F2933).setStrokeStyle(2, 0x4FD1FF);
+    this.nameText = this.add.text(400, boxY, '', { fontFamily: '"DotGothic16"', fontSize: '44px', color: '#ffffff' }).setOrigin(0.5);
 
     // Message Text
-    this.messageText = this.add.text(120, boxY + 40, '', {
+    this.messageText = this.add.text(260, boxY + 40, '', {
       fontFamily: '"DotGothic16"',
       fontSize: '48px',
       color: '#E5E7EB',
-      wordWrap: { width: w - 240, useAdvancedWrap: true },
+      wordWrap: { width: w - 300, useAdvancedWrap: true },
       lineSpacing: 10
     });
 
@@ -152,12 +167,22 @@ class StoryScene extends Phaser.Scene {
       });
     }
 
-    // Portrait highlighting
-    if (this.bg.alpha > 0 || data.bg === 'lab') {
-      const isHero = data.speaker.includes('勇者');
-      const isDoctor = data.speaker.includes('博士') || data.speaker === '？？？';
-      this.heroImage.setAlpha(isHero ? 1 : 0.4);
-      this.doctorImage.setAlpha(isDoctor ? 1 : 0.4);
+    // Portrait highlighting and Device UI
+    if (data.speaker === '『博士』') {
+      this.heroImage.setAlpha(0);
+      this.doctorImage.setAlpha(0);
+      this.deviceCommFrame.setAlpha(1);
+      this.deviceCommFace.setAlpha(1);
+      this.nameText.setText('博士');
+    } else {
+      this.deviceCommFrame.setAlpha(0);
+      this.deviceCommFace.setAlpha(0);
+      if (this.bg.alpha > 0 || data.bg === 'lab') {
+        const isHero = data.speaker.includes('勇者');
+        const isDoctor = data.speaker.includes('博士') || data.speaker === '？？？';
+        this.heroImage.setAlpha(isHero ? 1 : 0.4);
+        this.doctorImage.setAlpha(isDoctor ? 1 : 0.4);
+      }
     }
 
     // Handle Choice
@@ -186,7 +211,7 @@ class StoryScene extends Phaser.Scene {
     this.choice2 = this.createChoiceButton(w / 2, h / 2, '2「訳が分からない。いきなりそんなこと言われても困る」', () => {
       this.handleChoice(2);
     });
-    this.choice3 = this.createChoiceButton(w / 2, h / 2 + 120, '3「説明はいらない。早く冒険に行かせて」', () => {
+    this.choice3 = this.createChoiceButton(w / 2, h / 2 + 120, '3「わかった。早く冒険に行かせて（チュートリアルスキップ）」', () => {
       this.handleChoice(3);
     });
 
@@ -307,8 +332,8 @@ class StoryScene extends Phaser.Scene {
       this.messageText.setText('そうか、それは残念だ。無理なら君にもう用はない。');
 
       this.doctorImage.setAlpha(1);
-      if (this.textures.exists('doctor_stand_open')) {
-        this.doctorImage.setTexture('doctor_stand_open');
+      if (this.textures.exists('doctor_open_eyes')) {
+        this.doctorImage.setTexture('doctor_open_eyes');
       }
       this.heroImage.setAlpha(0.4);
 

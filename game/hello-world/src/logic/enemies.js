@@ -52,6 +52,7 @@ MOT.spawnWave = function (scene, count, ySpread, speed) {
  * Fire a linear bullet from position.
  */
 MOT.fireLinear = function (scene, x, y, vx, vy, color) {
+  if (scene.dialogActive) return;
   const texture = (color !== undefined) ? 'bullet_enemy_white' : 'bullet_enemy';
   const bullet = scene.enemyBullets.create(x, y, texture);
   if (bullet) {
@@ -69,6 +70,7 @@ MOT.fireLinear = function (scene, x, y, vx, vy, color) {
  * Fire a fan-shaped spread of bullets.
  */
 MOT.fireFan = function (scene, x, y, count, speed, angleCenter, angleSpread) {
+  if (scene.dialogActive) return;
   const startAngle = angleCenter - angleSpread / 2;
   const step = count > 1 ? angleSpread / (count - 1) : 0;
   for (let i = 0; i < count; i++) {
@@ -83,6 +85,7 @@ MOT.fireFan = function (scene, x, y, count, speed, angleCenter, angleSpread) {
  * Fire a homing bullet that tracks the player.
  */
 MOT.fireHoming = function (scene, x, y, speed, player, color) {
+  if (scene.dialogActive) return;
   const texture = (color !== undefined) ? 'bullet_homing_white' : 'bullet_homing';
   const bullet = scene.enemyBullets.create(x, y, texture);
   if (bullet && player && player.active) {
@@ -99,6 +102,7 @@ MOT.fireHoming = function (scene, x, y, speed, player, color) {
  * Fire a circular burst of bullets.
  */
 MOT.fireCircle = function (scene, x, y, count, speed, color) {
+  if (scene.dialogActive) return;
   for (let i = 0; i < count; i++) {
     const angle = (Math.PI * 2 / count) * i;
     const vx = Math.cos(angle) * speed;

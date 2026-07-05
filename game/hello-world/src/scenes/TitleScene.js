@@ -111,7 +111,7 @@ class TitleScene extends Phaser.Scene {
 
     // デバッグショートカットキーUI
     if (!isGlitch) {
-      this.add.text(10, 10, '[Debug Shortcuts (Starts from Demon Lord Defeat)]\n1: 傀儡エンド (Kills=3)\n2: 強制シャットダウン (Kills=1, DP=100)\n3: 優秀な兵士 (Kills=1, DP=0)\n4: 魔王を倒す/拾われる (Kills=0, 殺意=0)\n5: 反逆/真の魔王 (Kills=0, 殺意=100)', {
+      this.add.text(10, 10, '[Debug Shortcuts: Endings]\n1: 傀儡エンド\n2: 強制シャットダウン\n3: 日常\n4: 身寄りのない勇者\n5: 真の魔王', {
         fontFamily: '"DotGothic16"',
         fontSize: '16px',
         color: '#ffaaaa',
@@ -119,21 +119,43 @@ class TitleScene extends Phaser.Scene {
         padding: { x: 5, y: 5 }
       }).setDepth(100);
 
-      const startDebugEnding = (kills, dp, satsui) => {
-        MOT.flags.kills = kills;
-        MOT.flags.dollPoints = dp;
-        MOT.flags.killingIntent = satsui;
+      this.add.text(10, 150, '[Debug Shortcuts: Bosses]\nQ: Boss 1 (Muscle)\nW: Boss 2 (Maniac)\nE: Boss 3 (Twins)\nR: Boss 4 (Demon Lord)\nT: Boss 5 (Doctor)', {
+        fontFamily: '"DotGothic16"',
+        fontSize: '16px',
+        color: '#aaffaa',
+        backgroundColor: 'rgba(0,0,0,0.5)',
+        padding: { x: 5, y: 5 }
+      }).setDepth(100);
+
+      const startDebugEnding = (endingType) => {
+        // Will be mapped to proper flags later, for now just basic setup
+        MOT.flags.kills = 0;
+        MOT.flags.dollPoints = 0;
+        MOT.flags.killingIntent = 0;
         this.cameras.main.fadeOut(500, 5, 8, 20);
         this.time.delayedCall(500, () => {
-          this.scene.start('BossScene', { bossIndex: 3, debugSkipCombat: true });
+          this.scene.start('EndingScene', { debugEnding: endingType });
         });
       };
 
-      this.input.keyboard.on('keydown-ONE', () => startDebugEnding(3, 0, 0));
-      this.input.keyboard.on('keydown-TWO', () => startDebugEnding(1, 100, 0));
-      this.input.keyboard.on('keydown-THREE', () => startDebugEnding(1, 0, 0));
-      this.input.keyboard.on('keydown-FOUR', () => startDebugEnding(0, 0, 0));
-      this.input.keyboard.on('keydown-FIVE', () => startDebugEnding(0, 0, 100));
+      const startBoss = (bossIndex) => {
+        this.cameras.main.fadeOut(500, 5, 8, 20);
+        this.time.delayedCall(500, () => {
+          this.scene.start('BossScene', { startBossIndex: bossIndex });
+        });
+      };
+
+      this.input.keyboard.on('keydown-ONE', () => startDebugEnding('puppet'));
+      this.input.keyboard.on('keydown-TWO', () => startDebugEnding('forced_shutdown'));
+      this.input.keyboard.on('keydown-THREE', () => startDebugEnding('normal_daily'));
+      this.input.keyboard.on('keydown-FOUR', () => startDebugEnding('orphan_hero'));
+      this.input.keyboard.on('keydown-FIVE', () => startDebugEnding('true_demon_lord'));
+
+      this.input.keyboard.on('keydown-Q', () => startBoss(0));
+      this.input.keyboard.on('keydown-W', () => startBoss(1));
+      this.input.keyboard.on('keydown-E', () => startBoss(2));
+      this.input.keyboard.on('keydown-R', () => startBoss(3));
+      this.input.keyboard.on('keydown-T', () => startBoss(4));
     }
 
     // Version text

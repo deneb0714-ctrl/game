@@ -43,6 +43,12 @@ MOT.resetFlags = function () {
   MOT.flags.playerMaxHP = 5;
   MOT.flags.dollPoints = 0;
   MOT.flags.killingIntent = 0;
+
+  // New Boss Kill Flags
+  MOT.flags.killedBoss1 = false;
+  MOT.flags.killedBoss2 = false;
+  MOT.flags.killedTwins = false;
+  MOT.flags.killedDemonLord = false;
 };
 
 MOT.modifyFlag = function (key, value) {

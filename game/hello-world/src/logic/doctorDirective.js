@@ -81,13 +81,26 @@ MOT.DoctorDirective = {
     container.add(box);
 
     // 博士の顔アイコン (左端の枠内)
-    var iconBox = scene.add.graphics();
-    iconBox.lineStyle(2, 0x39FF14, 0.8);
-    iconBox.strokeRect(80, boxY + 40, 100, 100);
-    container.add(iconBox);
+    // 博士の顔グラフィック（立ち絵を顔部分だけ切り取って表示）
+    // doctor_normal は立ち絵なので、顔部分を中心にクロップするかマスクをかける
+    var face = scene.add.image(130, boxY + 60, 'doctor_normal');
+    // サイズを調整（顔がちょうどいい大きさになるように）
+    var scaleRatio = 200 / face.height; // 高さに対してスケール
+    face.setScale(scaleRatio);
+    // 顔部分（上部）が見えるようにマスクを作成するか、cropを使用する
+    // 丸くくり抜くためのマスク
+    var maskShape = scene.make.graphics();
+    maskShape.fillStyle(0xffffff);
+    maskShape.fillCircle(130, boxY + 60, 48);
+    var mask = maskShape.createGeometryMask();
+    face.setMask(mask);
+    // Y座標を少し上げて顔が中心に来るように調整
+    face.setY(boxY + 60 + (face.height * scaleRatio) * 0.3); // 要調整。立ち絵の上部に顔があると仮定
     
-    var face = scene.add.image(130, boxY + 90, 'doctor_face').setDisplaySize(96, 96);
-    container.add(face);
+    // 背景の黒丸（装飾）
+    var faceBg = scene.add.circle(130, boxY + 60, 52, 0x000000);
+    var faceBorder = scene.add.circle(130, boxY + 60, 52).setStrokeStyle(2, 0xFFFFAA);
+    container.add([faceBg, face, faceBorder]);
 
     // 「博士」ラベル
     var nameText = scene.add.text(210, boxY + 15, '博士 📡', {

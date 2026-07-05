@@ -180,6 +180,47 @@ class BossScene extends Phaser.Scene {
     this.dialogActive = true;
     this.physics.pause();
 
+    if (key === 'demon_lord') {
+      this.inunekoEnemy = this.physics.add.sprite(boss.x - 200, boss.y - 150, 'inuneko_combat');
+      this.inunekoEnemy.setDisplaySize(120, 120); // 魔王の半分程度のサイズ感（120x120）
+      this.inunekoEnemy.setDepth(9);
+      this.inunekoEnemy.hp = 50;
+      this.inunekoEnemy.maxHp = 50;
+      this.inunekoEnemy.active = true;
+      this.inunekoEnemy.configKey = 'inuneko';
+      this.enemyGroup.add(this.inunekoEnemy);
+      
+      this.anims.create({
+        key: 'inuneko_anim',
+        frames: this.anims.generateFrameNumbers('inuneko_combat', { start: 0, end: 3 }),
+        frameRate: 10,
+        repeat: -1
+      });
+      this.inunekoEnemy.play('inuneko_anim');
+
+      // 上下にフワフワする動き
+      this.tweens.add({
+        targets: this.inunekoEnemy,
+        y: this.inunekoEnemy.y + 50,
+        duration: 2000,
+        yoyo: true,
+        repeat: -1,
+        ease: 'Sine.easeInOut'
+      });
+
+      // 弾幕攻撃
+      this.time.addEvent({
+        delay: 2500,
+        loop: true,
+        callback: () => {
+          if (this.dialogActive) return;
+          if (this.inunekoEnemy && this.inunekoEnemy.active && this.inunekoEnemy.hp > 0) {
+             MOT.fireFan(this, this.inunekoEnemy.x, this.inunekoEnemy.y, this.player.x, this.player.y, 5, 15, 250, 1);
+          }
+        }
+      });
+    }
+
     let areaText = '';
     if (key === 'boss1') areaText = '「次のエリアに着いたか。そこは、黄昏の荒野だ。魔王城までまだ距離があるからそこまで敵は強くないが気は抜くなよ。」';
     else if (key === 'boss2') areaText = '「次のエリアに着いたか。そこは、宵闇の森だ。」';
@@ -295,11 +336,31 @@ class BossScene extends Phaser.Scene {
     var dScale = 1000 / this.demonImage.width;
     this.demonImage.setScale(dScale);
     this.demonImage.setY(100 + (this.demonImage.height * dScale) / 2 - 200);
+
+    // 犬猫スター会話用立ち絵
+    this.inunekoImage = this.add.image(1920 - 450, 1080 / 2 - 250, 'inuneko_stand').setAlpha(0).setDepth(91);
+    var iScale = 300 / this.inunekoImage.width;
+    this.inunekoImage.setScale(iScale);
+    this.time.addEvent({
+      delay: 3000, loop: true, callback: () => {
+        if (this.inunekoImage && this.inunekoImage.active && this.inunekoImage.alpha > 0) {
+          if (this.inunekoImage.texture.key === 'inuneko_stand') {
+            this.inunekoImage.setTexture('inuneko_blink');
+            this.time.delayedCall(150, () => {
+              if (this.inunekoImage && this.inunekoImage.active && this.inunekoImage.texture.key === 'inuneko_blink') {
+                this.inunekoImage.setTexture('inuneko_stand');
+              }
+            });
+          }
+        }
+      }
+    });
     
     const sayDevice = (text) => new Promise(res => {
       this.tweens.add({ targets: dimBg, alpha: 0, duration: 300 });
       this.tweens.add({ targets: this.heroImage, alpha: 0, duration: 300 });
       if(this.demonImage) this.tweens.add({ targets: this.demonImage, alpha: 0, duration: 300 });
+      if(this.inunekoImage) this.tweens.add({ targets: this.inunekoImage, alpha: 0, duration: 300 });
       this.showDeviceDialogue(text, res);
     });
 
@@ -307,6 +368,7 @@ class BossScene extends Phaser.Scene {
       this.tweens.add({ targets: dimBg, alpha: 0.6, duration: 300 });
       this.tweens.add({ targets: this.heroImage, alpha: 1, duration: 300 });
       if(this.demonImage) this.tweens.add({ targets: this.demonImage, alpha: 0.4, duration: 300 });
+      if(this.inunekoImage) this.tweens.add({ targets: this.inunekoImage, alpha: 0.4, duration: 300 });
       if (text === '「……」' || text === '「……。」' || text === '「…」') {
         this.heroImage.setTexture('hero_stand_silent');
       } else {
@@ -326,6 +388,9 @@ class BossScene extends Phaser.Scene {
         this.demonImage.setScale(1000 / this.demonImage.width);
         this.demonImage.setY(100 + (this.demonImage.height * this.demonImage.scaleY) / 2 - 200);
       }
+      if(this.inunekoImage) {
+        this.tweens.add({ targets: this.inunekoImage, alpha: 1, duration: 300 });
+      }
       this.showDialogue('魔王 – ヴェリタス', text, res);
     });
 
@@ -344,6 +409,7 @@ class BossScene extends Phaser.Scene {
       await sayDemon('「来るがよい、勇者！」');
       
       this.tweens.add({ targets: [dimBg, this.heroImage, this.demonImage], alpha: 0, duration: 300 });
+      if(this.inunekoImage) this.tweens.add({ targets: this.inunekoImage, alpha: 0, duration: 300 });
       onComplete();
     })();
   }
@@ -783,6 +849,7 @@ class BossScene extends Phaser.Scene {
 
   // 単一拳銃弾を発射する
   fireGunBullet(fromX, fromY) {
+    if (this.dialogActive) return;
     var b = this.enemyBullets.create(fromX, fromY, 'bullet_enemy');
     if (b) {
       b.setVelocityX(-800); // 高速の弾丸（難易度アップ）
@@ -870,6 +937,24 @@ class BossScene extends Phaser.Scene {
     }
     bullet.destroy(); // 弾を消す
     const dmg = bullet.damage || 1;
+
+    // 犬猫の被弾処理
+    if (boss.configKey === 'inuneko') {
+      boss.hp -= dmg;
+      if (this.bossHPBar) {
+         boss.setTint(0xff0000);
+         this.time.delayedCall(100, () => { if (boss && boss.active) boss.clearTint(); });
+      }
+      if (boss.hp <= 0 && boss.active) {
+        boss.active = false;
+        boss.body.enable = false;
+        boss.stop();
+        boss.setTexture('inuneko_dying');
+        boss.setDisplaySize(150, 150); 
+        MOT.Audio.playSelect();
+      }
+      return;
+    }
 
     // ── 幕間中の雑魚敵の場合 ──────────────────────────────────────
     if (boss.isIntermissionEnemy || boss.isScenarioMinion) {
@@ -1846,17 +1931,44 @@ class BossScene extends Phaser.Scene {
     this.player.setCollideWorldBounds(false);
     this.tweens.add({ targets: this.player, x: 2100, duration: 1500, ease: 'Power2' });
     this.cameras.main.fadeOut(1500, 0, 0, 0);
-    this.time.delayedCall(1500, function () { 
+    this.time.delayedCall(1500, () => { 
       this.bg.setTexture('bg_boss_stage5');
       this.tweens.killTweensOf(this.player);
-      this.player.x = -200;
+      this.player.setPosition(-200, this.player.y);
+      if (this.player.body) {
+        this.player.body.reset(-200, this.player.y);
+      }
+      this.cameras.main.fadeIn(500, 0, 0, 0);
       this.tweens.add({ 
         targets: this.player, 
         x: 300, 
         duration: 1000, 
         ease: 'Power2',
         onComplete: () => {
-          this.player.setCollideWorldBounds(true);
+          this.input.keyboard.on('keydown', function (event) {
+            if (this.dialogActive) return;
+            if (event.key === '8') {
+              MOT.flags.finalEnding = 'END_ORPHAN'; this.scene.start('EndingScene');
+            } else if (event.key === '9') {
+              MOT.flags.finalEnding = 'END_PUPPET'; this.scene.start('EndingScene');
+            } else if (event.key === '0') {
+              MOT.flags.finalEnding = 'END_NORMAL'; this.scene.start('EndingScene');
+            } else if (event.key === 'q') {
+              MOT.flags.finalEnding = 'END_USELESS'; this.scene.start('EndingScene');
+            } else if (event.key === 'e') {
+              MOT.flags.finalEnding = 'END_SHUTDOWN'; this.scene.start('EndingScene');
+            } else if (event.key === 'r') {
+              MOT.flags.finalEnding = 'END_TRUE_DEMON_LORD'; this.scene.start('EndingScene');
+            } else if (event.key === '1') {
+              this.currentBossIndex = 0; this.scene.restart();
+            } else if (event.key === '2') {
+              this.currentBossIndex = 1; this.scene.restart();
+            } else if (event.key === '3') {
+              this.currentBossIndex = 2; this.scene.restart();
+            } else if (event.key === '4') {
+              this.currentBossIndex = 3; this.scene.restart();
+            }
+          }, this); this.player.setCollideWorldBounds(true);
           this.physics.resume();
         }
       });
@@ -1909,8 +2021,8 @@ class BossScene extends Phaser.Scene {
       MOT.spawnHealthItem(this, 960, 460);
       
       // Wait a few seconds for player to collect diamonds/items
-      this.time.delayedCall(4000, () => {
-        // Clear all remaining items and player bullets on transition
+      this.time.delayedCall(3000, () => {
+        // Clear all remaining items and bullets on transition
         this.playerBullets.clear(true, true);
         this.enemyBullets.clear(true, true);
         if (this.itemGroup) this.itemGroup.clear(true, true);
@@ -1918,7 +2030,7 @@ class BossScene extends Phaser.Scene {
         // Take control of player for transition
         this.dialogActive = true;
         this.player.setCollideWorldBounds(false);
-        // Player exits to the right of the screen
+        // Player exits to the right off-screen (Left to Right movement)
         this.tweens.add({ targets: this.player, x: 2100, duration: 1000, ease: 'Power2' });
         this.cameras.main.fadeOut(1000, 0, 0, 0);
         
@@ -1929,9 +2041,12 @@ class BossScene extends Phaser.Scene {
           else if (this.currentBossIndex === 3) bgKey = 'bg_boss_stage5';
           this.bg.setTexture(bgKey);
           
-          // Player enters from the left of the screen
+          // Player enters from the left off-screen
           this.tweens.killTweensOf(this.player);
-          this.player.x = -200;
+          this.player.setPosition(-200, this.player.y);
+          if (this.player.body) {
+            this.player.body.reset(-200, this.player.y);
+          }
           
           this.cameras.main.fadeIn(500, 0, 0, 0);
           this.tweens.add({
@@ -2434,15 +2549,19 @@ class BossScene extends Phaser.Scene {
     // Doll Points update
     const dollValue = MOT.flags.dollPoints || 0;
     const dollPct = Phaser.Math.Clamp(dollValue / 100, 0, 1);
-    const dollH = Math.max(0.01, 64 * dollPct);
-    this.iconPersonFill.setCrop(0, 64 - dollH, 32, dollH);
+    const pW = this.iconPersonFill.width || 32;
+    const pH = this.iconPersonFill.height || 64;
+    const dollH = Math.max(0.01, pH * dollPct);
+    this.iconPersonFill.setCrop(0, pH - dollH, pW, dollH);
     this.dollText.setText('DP:' + dollValue);
 
     // Killing Intent update
     const intentValue = MOT.flags.killingIntent || 0;
     const intentPct = Phaser.Math.Clamp(intentValue / 100, 0, 1);
-    const intentH = Math.max(0.01, 64 * intentPct);
-    this.iconBatteryFill.setCrop(0, 64 - intentH, 32, intentH);
+    const bW = this.iconBatteryFill.width || 32;
+    const bH = this.iconBatteryFill.height || 64;
+    const intentH = Math.max(0.01, bH * intentPct);
+    this.iconBatteryFill.setCrop(0, bH - intentH, bW, intentH);
     this.intentText.setText('KI:' + intentValue);
 
     const iconX = 260;
@@ -2494,10 +2613,13 @@ class BossScene extends Phaser.Scene {
       if (key === 'boss3_twins') {
         // 双子はHPバー2本
         this.bossHPText.setText(cfg.name);
-        var bpct1 = (this.currentBoss.active && this.currentBoss.hp > 0) ? this.currentBoss.hp / cfg.hp : 0;
+        this.bossHPText.setVisible(true);
+        var bpct1 = (this.currentBoss && this.currentBoss.active && this.currentBoss.hp > 0) ? this.currentBoss.hp / cfg.hp : 0;
         this.bossHPBar.fillStyle(0x1F2933, 1); this.bossHPBar.fillRect(560, 40, 800, 10);
-        this.bossHPBar.fillStyle(0x4FD1FF, 1); this.bossHPBar.fillRect(562, 42, 796 * bpct1, 6);
-        this.bossHPBar.lineStyle(1, 0x4FD1FF, 0.6); this.bossHPBar.strokeRect(560, 40, 800, 10);
+        if (bpct1 > 0) {
+          this.bossHPBar.fillStyle(0x4FD1FF, 1); this.bossHPBar.fillRect(562, 42, 796 * bpct1, 6);
+        }
+        this.bossHPBar.lineStyle(2, 0x4FD1FF, 0.8); this.bossHPBar.strokeRect(560, 40, 800, 10);
         
         if (!this.sisterHPText) {
           this.sisterHPText = this.add.text(960, 65, '', { fontFamily: '"Press Start 2P"', fontSize: '14px', color: '#FF4B6E' }).setOrigin(0.5, 0).setDepth(100);
@@ -2506,8 +2628,10 @@ class BossScene extends Phaser.Scene {
         this.sisterHPText.setVisible(true);
         var bpct2 = (this.sisterBoss && this.sisterBoss.active && this.sisterBoss.hp > 0) ? this.sisterBoss.hp / cfg.hp2 : 0;
         this.bossHPBar.fillStyle(0x1F2933, 1); this.bossHPBar.fillRect(560, 80, 800, 10);
-        this.bossHPBar.fillStyle(0xFF4B6E, 1); this.bossHPBar.fillRect(562, 82, 796 * bpct2, 6);
-        this.bossHPBar.lineStyle(1, 0xFF4B6E, 0.6); this.bossHPBar.strokeRect(560, 80, 800, 10);
+        if (bpct2 > 0) {
+          this.bossHPBar.fillStyle(0xFF4B6E, 1); this.bossHPBar.fillRect(562, 82, 796 * bpct2, 6);
+        }
+        this.bossHPBar.lineStyle(2, 0xFF4B6E, 0.8); this.bossHPBar.strokeRect(560, 80, 800, 10);
       } else {
         if (this.sisterHPText) this.sisterHPText.setVisible(false);
         this.bossHPText.setText(cfg.name);
