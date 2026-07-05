@@ -102,17 +102,48 @@ class BossScene extends Phaser.Scene {
     // Start first boss
     this.time.delayedCall(1000, function () { this.startBoss(); }, [], this);
 
-    // デバッグ・ボスジャンプ用ショートカット（off('keydown')で消されないように専用キー名で登録）
-    this.input.keyboard.on('keydown-ONE', () => this.scene.restart({ bossIndex: 0 }));
-    this.input.keyboard.on('keydown-TWO', () => this.scene.restart({ bossIndex: 1 }));
-    this.input.keyboard.on('keydown-THREE', () => this.scene.restart({ bossIndex: 2 }));
-    this.input.keyboard.on('keydown-FOUR', () => this.scene.restart({ bossIndex: 3 }));
-    this.input.keyboard.on('keydown-Q', () => { if (!this.bossDefeated) return; MOT.flags.finalEnding = 'END_USELESS'; this.scene.start('EndingScene'); });
-    this.input.keyboard.on('keydown-E', () => { if (!this.bossDefeated) return; MOT.flags.finalEnding = 'END_SHUTDOWN'; this.scene.start('EndingScene'); });
-    this.input.keyboard.on('keydown-R', () => { if (!this.bossDefeated) return; MOT.flags.finalEnding = 'END_TRUE_DEMON_LORD'; this.scene.start('EndingScene'); });
-    this.input.keyboard.on('keydown-EIGHT', () => { if (!this.bossDefeated) return; MOT.flags.finalEnding = 'END_ORPHAN'; this.scene.start('EndingScene'); });
-    this.input.keyboard.on('keydown-NINE', () => { if (!this.bossDefeated) return; MOT.flags.finalEnding = 'END_PUPPET'; this.scene.start('EndingScene'); });
-    this.input.keyboard.on('keydown-ZERO', () => { if (!this.bossDefeated) return; MOT.flags.finalEnding = 'END_NORMAL'; this.scene.start('EndingScene'); });
+    // ── デバッグ用ショートカット ──
+    // Q/E/R/8/9/0: 旧エンディング直行（条件なし）
+    this.input.keyboard.on('keydown-Q', () => { MOT.flags.finalEnding = 'END_USELESS'; this.scene.start('EndingScene'); });
+    this.input.keyboard.on('keydown-E', () => { MOT.flags.finalEnding = 'END_SHUTDOWN'; this.scene.start('EndingScene'); });
+    this.input.keyboard.on('keydown-R', () => { MOT.flags.finalEnding = 'END_TRUE_DEMON_LORD'; this.scene.start('EndingScene'); });
+    this.input.keyboard.on('keydown-EIGHT', () => { MOT.flags.finalEnding = 'END_ORPHAN'; this.scene.start('EndingScene'); });
+    this.input.keyboard.on('keydown-NINE', () => { MOT.flags.finalEnding = 'END_PUPPET'; this.scene.start('EndingScene'); });
+    this.input.keyboard.on('keydown-ZERO', () => { MOT.flags.finalEnding = 'END_NORMAL'; this.scene.start('EndingScene'); });
+
+    // 1〜5: 魔王撃破直後に対応エンディングの条件を整えてジャンプ
+    //   1 → BAD END 傀儡     (幹部全員殺害・魔王殺す)
+    //   2 → NORMAL END 日常   (幹部一部殺害・DP≥3・魔王殺す)
+    //   3 → END 身寄りのない勇者 (幹部全員生存・魔王生かす・DP>100)
+    //   4 → TRUE END 真なる魔王  (幹部全員生存・魔王生かす・DP≤100・殺意≥100)
+    //   5 → BAD END 強制シャットダウン (幹部一部殺害・DP<3・魔王殺す)
+    const debugJumpEnding = (setupFn, endingKey) => {
+      if (!this.bossDefeated) return;
+      setupFn();
+      MOT.flags.finalEnding = endingKey;
+      this.cameras.main.fadeOut(600, 0, 0, 0);
+      this.time.delayedCall(600, () => this.scene.start('EndingScene'));
+    };
+    this.input.keyboard.on('keydown-ONE', () => debugJumpEnding(() => {
+      MOT.flags.killedBoss1 = true; MOT.flags.killedBoss2 = true; MOT.flags.killedTwins = true;
+      MOT.flags.killedDemonLord = true;
+    }, 'bad_puppet'));
+    this.input.keyboard.on('keydown-TWO', () => debugJumpEnding(() => {
+      MOT.flags.killedBoss1 = true; MOT.flags.killedBoss2 = false; MOT.flags.killedTwins = false;
+      MOT.flags.killedDemonLord = true; MOT.flags.dollPoints = 5;
+    }, 'normal_daily'));
+    this.input.keyboard.on('keydown-THREE', () => debugJumpEnding(() => {
+      MOT.flags.killedBoss1 = false; MOT.flags.killedBoss2 = false; MOT.flags.killedTwins = false;
+      MOT.flags.killedDemonLord = false; MOT.flags.dollPoints = 150;
+    }, 'END_ORPHAN'));
+    this.input.keyboard.on('keydown-FOUR', () => debugJumpEnding(() => {
+      MOT.flags.killedBoss1 = false; MOT.flags.killedBoss2 = false; MOT.flags.killedTwins = false;
+      MOT.flags.killedDemonLord = false; MOT.flags.dollPoints = 50; MOT.flags.killingIntent = 100;
+    }, 'hidden_truedemon'));
+    this.input.keyboard.on('keydown-FIVE', () => debugJumpEnding(() => {
+      MOT.flags.killedBoss1 = true; MOT.flags.killedBoss2 = false; MOT.flags.killedTwins = false;
+      MOT.flags.killedDemonLord = true; MOT.flags.dollPoints = 1;
+    }, 'bad_shutdown'));
   }
 
   getBossConfig(key) {
