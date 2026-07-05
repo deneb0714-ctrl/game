@@ -234,7 +234,8 @@ class BossScene extends Phaser.Scene {
         callback: () => {
           if (this.dialogActive) return;
           if (this.inunekoEnemy && this.inunekoEnemy.active && this.inunekoEnemy.hp > 0) {
-             MOT.fireFan(this, this.inunekoEnemy.x, this.inunekoEnemy.y, this.player.x, this.player.y, 5, 15, 250, 1);
+             let angleDeg = Phaser.Math.RadToDeg(Phaser.Math.Angle.Between(this.inunekoEnemy.x, this.inunekoEnemy.y, this.player.x, this.player.y));
+             MOT.fireFan(this, this.inunekoEnemy.x, this.inunekoEnemy.y, 3, 250, angleDeg, 45);
           }
         }
       });
@@ -1011,8 +1012,7 @@ class BossScene extends Phaser.Scene {
     if (boss.configKey === 'inuneko') {
       boss.hp -= dmg;
       if (this.bossHPBar) {
-         boss.setTint(0xff0000);
-         this.time.delayedCall(100, () => { if (boss && boss.active) boss.clearTint(); });
+         // No red blink
       }
       if (boss.hp <= 0 && boss.active) {
         boss.active = false;
@@ -1324,7 +1324,13 @@ class BossScene extends Phaser.Scene {
             this.demonImage.setScale(dScale);
             this.demonImage.setY(100 + (this.demonImage.height * dScale) / 2 - 200);
 
-            const sayDevice = (text) => new Promise(res => { this.tweens.add({ targets: dimBg, alpha: 0.6, duration: 300 }); this.tweens.add({targets: this.heroImage, alpha: 0.4, duration: 300}); this.tweens.add({ targets: this.demonImage, alpha: 0.4, duration: 300 }); this.showDeviceDialogue(text, res); });
+            // 撃退後の犬猫立ち絵（ハイライトなし）
+            this.inunekoImage = this.add.image(1920 - 120, 1080 / 2 - 250, 'inuneko_dying').setAlpha(0).setDepth(91);
+            var iScale = 300 / 691;
+            this.inunekoImage.setScale(iScale);
+            this.inunekoImage.setY(350);
+
+            const sayDevice = (text) => new Promise(res => { this.tweens.add({ targets: dimBg, alpha: 0.6, duration: 300 }); this.tweens.add({targets: this.heroImage, alpha: 0.4, duration: 300}); this.tweens.add({ targets: this.demonImage, alpha: 0.4, duration: 300 }); if(this.inunekoImage) this.tweens.add({ targets: this.inunekoImage, alpha: 0.4, duration: 300 }); this.showDeviceDialogue(text, res); });
             const sayInuneko = (text, tex = 'inuneko_stand') => new Promise(res => {
       this.tweens.add({ targets: dimBg, alpha: 0.6, duration: 300 });
       this.tweens.add({ targets: this.heroImage, alpha: 0.4, duration: 300 });
@@ -1336,8 +1342,8 @@ class BossScene extends Phaser.Scene {
       this.showDialogue('犬猫☆すたー', text, res);
     });
 
-    const sayHero = (text) => new Promise(res => { this.tweens.add({ targets: dimBg, alpha: 0.6, duration: 300 }); this.tweens.add({targets: this.heroImage, alpha: 1, duration: 300}); this.tweens.add({ targets: this.demonImage, alpha: 0.4, duration: 300 }); if (text === '「……」' || text === '「……。」' || text === '「…」') { this.heroImage.setTexture('hero_stand_silent'); } else { this.heroImage.setTexture('hero_stand'); } this.heroImage.setScale(750 / this.heroImage.width); this.heroImage.setY(100 + (this.heroImage.height * this.heroImage.scaleY) / 2); this.showDialogue('勇者', text, res); });
-            const sayDemon = (text) => new Promise(res => { this.tweens.add({ targets: dimBg, alpha: 0.6, duration: 300 }); this.tweens.add({targets: this.heroImage, alpha: 0.4, duration: 300}); this.tweens.add({ targets: this.demonImage, alpha: 1, duration: 300 }); this.demonImage.setTexture('demon_lord_dying'); this.demonImage.setScale(1000 / this.demonImage.width); this.demonImage.setY(100 + (this.demonImage.height * this.demonImage.scaleY) / 2 - 200); this.showDialogue('魔王', text, res); });
+    const sayHero = (text) => new Promise(res => { this.tweens.add({ targets: dimBg, alpha: 0.6, duration: 300 }); this.tweens.add({targets: this.heroImage, alpha: 1, duration: 300}); this.tweens.add({ targets: this.demonImage, alpha: 0.4, duration: 300 }); if(this.inunekoImage) this.tweens.add({ targets: this.inunekoImage, alpha: 0.4, duration: 300 }); if (text === '「……」' || text === '「……。」' || text === '「…」') { this.heroImage.setTexture('hero_stand_silent'); } else { this.heroImage.setTexture('hero_stand'); } this.heroImage.setScale(750 / this.heroImage.width); this.heroImage.setY(100 + (this.heroImage.height * this.heroImage.scaleY) / 2); this.showDialogue('勇者', text, res); });
+            const sayDemon = (text) => new Promise(res => { this.tweens.add({ targets: dimBg, alpha: 0.6, duration: 300 }); this.tweens.add({targets: this.heroImage, alpha: 0.4, duration: 300}); this.tweens.add({ targets: this.demonImage, alpha: 1, duration: 300 }); if(this.inunekoImage) this.tweens.add({ targets: this.inunekoImage, alpha: 0.4, duration: 300 }); this.demonImage.setTexture('demon_lord_dying'); this.demonImage.setScale(1000 / this.demonImage.width); this.demonImage.setY(100 + (this.demonImage.height * this.demonImage.scaleY) / 2 - 200); this.showDialogue('魔王', text, res); });
     
             
             const askShatterChoice = (label1, label2, canShatter) => new Promise(res => {
@@ -1539,6 +1545,7 @@ class BossScene extends Phaser.Scene {
                           this.bg.setScale(1920 / 1024);
                           
                           if (this.demonImage) { this.demonImage.destroy(); this.demonImage = null; }
+                          if (this.inunekoImage) { this.inunekoImage.destroy(); this.inunekoImage = null; }
                           if (this.heroImage) { this.heroImage.destroy(); this.heroImage = null; }
                           
                           // 博士的立ち絵
@@ -2050,6 +2057,7 @@ class BossScene extends Phaser.Scene {
     if (this.dimBg) { this.dimBg.destroy(); this.dimBg = null; }
     if (this.heroImage) { this.heroImage.destroy(); this.heroImage = null; }
     if (this.demonImage) { this.demonImage.destroy(); this.demonImage = null; }
+                          if (this.inunekoImage) { this.inunekoImage.destroy(); this.inunekoImage = null; }
     if (this.doctorImage) { this.doctorImage.destroy(); this.doctorImage = null; }
   }
 
