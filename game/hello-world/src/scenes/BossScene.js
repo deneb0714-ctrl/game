@@ -199,8 +199,8 @@ class BossScene extends Phaser.Scene {
     this.physics.pause();
 
     if (key === 'demon_lord') {
-      this.inunekoEnemy = this.physics.add.sprite(boss.x - 200, boss.y - 150, 'inuneko_combat');
-      this.inunekoEnemy.setDisplaySize(120, 120); // 魔王の半分程度のサイズ感（120x120）
+      this.inunekoEnemy = this.physics.add.sprite(boss.x - 60, boss.y - 100, 'inuneko_combat');
+      this.inunekoEnemy.setDisplaySize(90, 160); // アスペクト比を維持してサイズ調整
       this.inunekoEnemy.setDepth(9);
       this.inunekoEnemy.hp = 50;
       this.inunekoEnemy.maxHp = 50;
@@ -371,10 +371,10 @@ class BossScene extends Phaser.Scene {
     this.demonImage.setY(100 + (this.demonImage.height * dScale) / 2 - 200);
 
     // 犬猫スター会話用立ち絵
-    this.inunekoImage = this.add.image(1920 - 450, 1080 / 2 - 250, 'inuneko_stand').setAlpha(0).setDepth(91);
+    this.inunekoImage = this.add.image(1920 - 120, 1080 / 2 - 250, 'inuneko_stand').setAlpha(0).setDepth(91);
     var iScale = 300 / 691; // Fixed width from cropped image
     this.inunekoImage.setScale(iScale);
-    this.inunekoImage.setY(100 + (672 * iScale) / 2 - 150); // Adjusted height
+    this.inunekoImage.setY(350); // 顔の右側（高さを顔付近に調整）
     this.time.addEvent({
       delay: 3000, loop: true, callback: () => {
         if (this.inunekoImage && this.inunekoImage.active && this.inunekoImage.alpha > 0) {
