@@ -817,13 +817,11 @@ class GameScene extends Phaser.Scene {
       this.energyBarOutline.lineStyle(2, 0x4FD1FF, 0.6);
       this.energyBarOutline.strokeRect(30, 80, 300, 24);
       
-      this.iconPersonBg = this.add.image(400, 44, 'icon_person').setOrigin(0, 0).setTint(0x555555).setDepth(100).setScrollFactor(0).setScale(1.5);
-      this.iconPersonFill = this.add.image(400, 44, 'icon_person').setOrigin(0, 0).setTint(0xFFFF00).setDepth(100).setScrollFactor(0).setScale(1.5);
-      this.dollText = this.add.text(460, 86, '', { fontFamily: '"Press Start 2P"', fontSize: '16px', color: '#FFFF00' }).setDepth(100).setScrollFactor(0);
+      this.iconPersonBg = this.add.image(390, 44, 'icon_person').setOrigin(0, 0).setTint(0x555555).setDepth(100).setScrollFactor(0).setScale(1.5);
+      this.iconPersonFill = this.add.image(390, 44, 'icon_person').setOrigin(0, 0).setTint(0xFFFF00).setDepth(100).setScrollFactor(0).setScale(1.5);
       
-      this.iconBatteryBg = this.add.image(530, 44, 'icon_battery').setOrigin(0, 0).setTint(0x555555).setDepth(100).setScrollFactor(0).setScale(1.5);
-      this.iconBatteryFill = this.add.image(530, 44, 'icon_battery').setOrigin(0, 0).setTint(0xFF0000).setDepth(100).setScrollFactor(0).setScale(1.5);
-      this.intentText = this.add.text(590, 86, '', { fontFamily: '"Press Start 2P"', fontSize: '16px', color: '#FF0000' }).setDepth(100).setScrollFactor(0);
+      this.iconBatteryBg = this.add.image(450, 44, 'icon_battery').setOrigin(0, 0).setTint(0x555555).setDepth(100).setScrollFactor(0).setScale(1.5);
+      this.iconBatteryFill = this.add.image(450, 44, 'icon_battery').setOrigin(0, 0).setTint(0xFF0000).setDepth(100).setScrollFactor(0).setScale(1.5);
     }
 
     // Energy bar update (using scaleX instead of clear/fillRect)
@@ -849,7 +847,6 @@ class GameScene extends Phaser.Scene {
     const pH = this.iconPersonFill.height || 64;
     const dollH = Math.max(0.01, pH * dollPct);
     this.iconPersonFill.setCrop(0, pH - dollH, pW, dollH);
-    this.dollText.setText('DP:' + dollValue);
 
     // Killing Intent update
     const intentValue = MOT.flags.killingIntent || 0;
@@ -858,7 +855,6 @@ class GameScene extends Phaser.Scene {
     const bH = this.iconBatteryFill.height || 64;
     const intentH = Math.max(0.01, bH * intentPct);
     this.iconBatteryFill.setCrop(0, bH - intentH, bW, intentH);
-    this.intentText.setText('KI:' + intentValue);
 
     const iconX = 360;
     const iconY = 92;
