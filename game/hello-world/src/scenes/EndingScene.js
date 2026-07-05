@@ -118,34 +118,11 @@ class EndingScene extends Phaser.Scene {
 
     // Show ending-specific sprite
     var spriteKey = null;
-    if (ending.key === 'END_ORPHAN') {
-      spriteKey = 'demon_lord'; // 魔王に拾われる
-    } else if (ending.key === 'hidden_truedemon') {
-      spriteKey = 'doctor_stand'; // 洗脳された博士
-    }
+    if (ending.key === 'END_ORPHAN') spriteKey = 'demon_lord'; // 魔王に拾われる
 
     var endSprite = null;
     if (spriteKey) {
-      endSprite = this.add.image(w / 2, h * 0.78, spriteKey).setAlpha(0);
-      
-      if (ending.key === 'hidden_truedemon') {
-        endSprite.setTint(0xff0000); // 赤黒く染める
-        endSprite.setScale(1.5);
-        
-        // 不気味なエフェクト
-        this.tweens.add({
-          targets: endSprite,
-          alpha: { from: 0.5, to: 0.8 },
-          scale: { from: 1.5, to: 1.6 },
-          duration: 3000,
-          yoyo: true,
-          repeat: -1,
-          ease: 'Sine.easeInOut'
-        });
-      } else {
-        endSprite.setScale(4);
-      }
-
+      endSprite = this.add.image(w / 2, h * 0.78, spriteKey).setScale(4).setAlpha(0);
       var spriteDelay = 3000;
       this.tweens.add({
         targets: endSprite, alpha: 1, duration: 2000, delay: spriteDelay,
