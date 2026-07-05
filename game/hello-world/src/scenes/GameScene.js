@@ -24,6 +24,17 @@ class GameScene extends Phaser.Scene {
     this.barrierVisual = null;
     // 博士指示システム初期化
     MOT.DoctorDirective.init();
+
+    // UI初期化（シーン再開時の参照残存を防ぐため）
+    this.energyBarBgObj = null;
+    this.energyBarFgObj = null;
+    this.energyBarOutline = null;
+    this.iconPersonBg = null;
+    this.iconPersonFill = null;
+    this.dollText = null;
+    this.iconBatteryBg = null;
+    this.iconBatteryFill = null;
+    this.intentText = null;
   }
 
   create() {
