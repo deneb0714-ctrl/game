@@ -1297,11 +1297,11 @@ class BossScene extends Phaser.Scene {
       if (Phaser.Math.Between(0, 100) < 50) MOT.spawnEnergyItem(this, boss.x, boss.y);
       
       if (boss.hp <= 0 && boss.active) {
+        var other = (boss === this.currentBoss) ? this.sisterBoss : this.currentBoss;
+        
         boss.active = false;
-        boss.setVisible(false);
         boss.body.enable = false;
         
-        var other = (boss === this.currentBoss) ? this.sisterBoss : this.currentBoss;
         if (!other.active || other.hp <= 0) {
           // both defeated
           if (this.twinReviveTimer) { this.twinReviveTimer.destroy(); this.twinReviveTimer = null; }
@@ -1310,7 +1310,8 @@ class BossScene extends Phaser.Scene {
             this.onTwinsDefeated();
           }
         } else {
-          // One defeated, other still alive
+          // One defeated, other still alive (Hide the first defeated one)
+          boss.setVisible(false);
           let isBrotherDefeated = (boss === this.currentBoss);
 
           // Start 10s revive timer
@@ -2128,6 +2129,10 @@ class BossScene extends Phaser.Scene {
     
     this.cameras.main.shake(300, 0.02);
     
+    // Both sprites remain visible or become visible
+    this.currentBoss.setVisible(true).setAlpha(1);
+    this.sisterBoss.setVisible(true).setAlpha(1);
+    
     this.tweens.add({
       targets: [this.currentBoss, this.sisterBoss], alpha: 0.3, yoyo: true, repeat: 2, duration: 150,
       onComplete: () => {
@@ -2139,27 +2144,44 @@ class BossScene extends Phaser.Scene {
         this.heroImage.setScale(hScale);
         this.heroImage.setY(100 + (this.heroImage.height * hScale) / 2);
 
+        // Sister Portrait (Default to 'sister_hurt' for post-defeat)
+        this.sisterImage = this.add.image(1920 - 300, h / 2, 'sister_hurt').setAlpha(0).setDepth(90);
+        // Fallback scale if texture not loaded, otherwise dynamic
+        var sScale = 750 / 600; 
+        if (this.textures.exists('sister_hurt')) {
+          var tex = this.textures.get('sister_hurt').getSourceImage();
+          if (tex && tex.width > 0) sScale = 750 / tex.width;
+        }
+        this.sisterImage.setScale(sScale);
+        this.sisterImage.setY(100 + (this.sisterImage.height * sScale) / 2);
+
+        // Sister Blinking logic
+        this.time.addEvent({
+          delay: 3000, loop: true, callback: () => {
+            if (this.sisterImage && this.sisterImage.active && this.sisterImage.alpha > 0) {
+              if (this.sisterImage.texture.key === 'sister_normal') {
+                this.sisterImage.setTexture('sister_blink');
+                this.time.delayedCall(150, () => {
+                  if (this.sisterImage && this.sisterImage.active && this.sisterImage.texture.key === 'sister_blink') {
+                    this.sisterImage.setTexture('sister_normal');
+                  }
+                });
+              }
+            }
+          }
+        });
+
         const askChoice = (label1, label2) => new Promise(res => {
           this.showChoice([
             { text: label1, callback: () => { MOT.Audio.playSelect(); res(1); } },
             { text: label2, callback: () => { MOT.Audio.playSelect(); res(2); } }
           ]);
         });
-        const sayDevice = (text) => new Promise(res => { this.tweens.add({ targets: dimBg, alpha: 0.6, duration: 300 }); this.tweens.add({targets: this.heroImage, alpha: 0.4, duration: 300}); this.showDeviceDialogue(text, res); });
-        const sayInuneko = (text, tex = 'inuneko_stand') => new Promise(res => {
-      this.tweens.add({ targets: dimBg, alpha: 0.6, duration: 300 });
-      this.tweens.add({ targets: this.heroImage, alpha: 0.4, duration: 300 });
-      if(this.demonImage) this.tweens.add({ targets: this.demonImage, alpha: 0.4, duration: 300 });
-      if(this.inunekoImage) {
-        this.tweens.add({ targets: this.inunekoImage, alpha: 1, duration: 300 });
-        this.inunekoImage.setTexture(tex);
-      }
-      this.showDialogue('犬猫☆すたー', text, res);
-    });
-
-    const sayHero = (text) => new Promise(res => { this.tweens.add({ targets: dimBg, alpha: 0.6, duration: 300 }); this.tweens.add({targets: this.heroImage, alpha: 1, duration: 300});  if (text === '「……」' || text === '「……。」' || text === '「…」') {        this.heroImage.setTexture('hero_stand_silent');      } else {        this.heroImage.setTexture('hero_stand');      }     this.heroImage.setScale(750 / this.heroImage.width);     this.heroImage.setY(100 + (this.heroImage.height * this.heroImage.scaleY) / 2);      this.showDialogue('勇者', text, res); });
-        const sayMan = (text) => new Promise(res => { this.tweens.add({ targets: dimBg, alpha: 0.6, duration: 300 }); this.tweens.add({targets: this.heroImage, alpha: 0.4, duration: 300}); this.showDialogue('男', text, res); });
-        const sayWoman = (text) => new Promise(res => { this.tweens.add({ targets: dimBg, alpha: 0.6, duration: 300 }); this.tweens.add({targets: this.heroImage, alpha: 0.4, duration: 300}); this.showDialogue('女', text, res); });
+        const sayDevice = (text) => new Promise(res => { this.tweens.add({ targets: dimBg, alpha: 0.6, duration: 300 }); this.tweens.add({targets: this.heroImage, alpha: 0.4, duration: 300}); if(this.sisterImage) this.tweens.add({targets: this.sisterImage, alpha: 0.4, duration: 300}); this.showDeviceDialogue(text, res); });
+        
+        const sayHero = (text) => new Promise(res => { this.tweens.add({ targets: dimBg, alpha: 0.6, duration: 300 }); this.tweens.add({targets: this.heroImage, alpha: 1, duration: 300}); if(this.sisterImage) this.tweens.add({targets: this.sisterImage, alpha: 0.4, duration: 300}); if (text === '「……」' || text === '「……。」' || text === '「…」') { this.heroImage.setTexture('hero_stand_silent'); } else { this.heroImage.setTexture('hero_stand'); } this.heroImage.setScale(750 / this.heroImage.width); this.heroImage.setY(100 + (this.heroImage.height * this.heroImage.scaleY) / 2); this.showDialogue('勇者', text, res); });
+        const sayMan = (text) => new Promise(res => { this.tweens.add({ targets: dimBg, alpha: 0.6, duration: 300 }); this.tweens.add({targets: this.heroImage, alpha: 0.4, duration: 300}); if(this.sisterImage) this.tweens.add({targets: this.sisterImage, alpha: 0.4, duration: 300}); this.showDialogue('男', text, res); });
+        const sayWoman = (text) => new Promise(res => { this.tweens.add({ targets: dimBg, alpha: 0.6, duration: 300 }); this.tweens.add({targets: this.heroImage, alpha: 0.4, duration: 300}); if(this.sisterImage) this.tweens.add({targets: this.sisterImage, alpha: 1, duration: 300}); this.showDialogue('女', text, res); });
 
         (async () => {
           await sayDevice('「さぁ早くとどめを刺せ！」');
@@ -2188,6 +2210,13 @@ class BossScene extends Phaser.Scene {
               await sayDevice('「お前は何をしたい？魔王のやつらは生かしておく価値もない。早く殺すのが世界のためだ。」');
               await sayDevice('「魔王さえ倒せば、トップがいなくなり奴らはどうしようもなくなる。必ず倒すんだ。」');
             }
+            
+            // Fade out dialogue UI
+            this.tweens.add({
+              targets: [dimBg, this.sisterImage, this.heroImage], alpha: 0, duration: 500,
+              onComplete: () => { if(this.sisterImage) this.sisterImage.destroy(); }
+            });
+            
             this.skipToDemonLord(true);
           }
         })();

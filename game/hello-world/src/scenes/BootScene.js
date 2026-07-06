@@ -101,6 +101,9 @@ class BootScene extends Phaser.Scene {
     this.load.image('inuneko_stand', 'assets/images/inuneko_stand.png?v=' + v);
     this.load.image('inuneko_dying', 'assets/images/inuneko_dying.png?v=' + v);
     this.load.image('inuneko_blink', 'assets/images/inuneko_blink.png?v=' + v);
+    this.load.image('sister_normal', 'assets/images/sister_normal.png?v=' + v);
+    this.load.image('sister_blink', 'assets/images/sister_blink.png?v=' + v);
+    this.load.image('sister_hurt', 'assets/images/sister_hurt.png?v=' + v);
 
 
     // Hero New
