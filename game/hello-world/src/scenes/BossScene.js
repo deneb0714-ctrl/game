@@ -1230,14 +1230,36 @@ class BossScene extends Phaser.Scene {
               });
             }
             
+            let lastEnemySpeaker = '男'; // '男' or '女'
+            
             this.tweens.add({ targets: [dimBg, enemyFrame, enemyLabel], alpha: 1, duration: 500 });
             
-            const sayDevice = (text) => new Promise(res => { this.tweens.add({ targets: dimBg, alpha: 0.6, duration: 300 }); this.tweens.add({ targets: [enemyFrame, enemyLabel, this.heroImage], alpha: 0.4, duration: 300 }); if(sisterImage) this.tweens.add({targets: sisterImage, alpha: 0.4, duration: 300}); this.showDeviceDialogue(text, res); });
-            const sayEnemyUnknown = (text) => new Promise(res => { this.tweens.add({ targets: dimBg, alpha: 0.6, duration: 300 }); this.tweens.add({ targets: [enemyFrame, enemyLabel], alpha: 1, duration: 300 }); this.tweens.add({targets: this.heroImage, alpha: 0.4, duration: 300}); if(sisterImage) this.tweens.add({targets: sisterImage, alpha: 0, duration: 300}); enemyLabel.setText('???'); this.showDialogue('???', text, res); });
-            const sayEnemyName = (name, text) => new Promise(res => {
+            const sayDevice = (text) => new Promise(res => {
               this.tweens.add({ targets: dimBg, alpha: 0.6, duration: 300 });
               this.tweens.add({targets: this.heroImage, alpha: 0.4, duration: 300});
-              if (name === '女' && sisterImage) {
+              if (lastEnemySpeaker === '女' && sisterImage) {
+                this.tweens.add({ targets: [enemyFrame, enemyLabel], alpha: 0, duration: 300 });
+                this.tweens.add({ targets: sisterImage, alpha: 0.4, duration: 300 });
+              } else {
+                this.tweens.add({ targets: [enemyFrame, enemyLabel], alpha: 0.4, duration: 300 });
+                if(sisterImage) this.tweens.add({ targets: sisterImage, alpha: 0, duration: 300 });
+              }
+              this.showDeviceDialogue(text, res);
+            });
+            const sayEnemyUnknown = (text) => new Promise(res => {
+              lastEnemySpeaker = '男';
+              this.tweens.add({ targets: dimBg, alpha: 0.6, duration: 300 });
+              this.tweens.add({ targets: [enemyFrame, enemyLabel], alpha: 1, duration: 300 });
+              this.tweens.add({targets: this.heroImage, alpha: 0.4, duration: 300});
+              if(sisterImage) this.tweens.add({targets: sisterImage, alpha: 0, duration: 300});
+              enemyLabel.setText('???');
+              this.showDialogue('???', text, res);
+            });
+            const sayEnemyName = (name, text) => new Promise(res => {
+              if (name === '女' || name === '男') lastEnemySpeaker = name;
+              this.tweens.add({ targets: dimBg, alpha: 0.6, duration: 300 });
+              this.tweens.add({targets: this.heroImage, alpha: 0.4, duration: 300});
+              if (lastEnemySpeaker === '女' && sisterImage) {
                 this.tweens.add({ targets: [enemyFrame, enemyLabel], alpha: 0, duration: 300 });
                 this.tweens.add({ targets: sisterImage, alpha: 1, duration: 300 });
               } else {
@@ -1258,7 +1280,25 @@ class BossScene extends Phaser.Scene {
       this.showDialogue('犬猫☆すたー', text, res);
     });
 
-    const sayHero = (text) => new Promise(res => { this.tweens.add({ targets: dimBg, alpha: 0.6, duration: 300 }); this.tweens.add({ targets: [enemyFrame, enemyLabel], alpha: 0.4, duration: 300 }); this.tweens.add({targets: this.heroImage, alpha: 1, duration: 300});  if (text === '「……」' || text === '「……。」' || text === '「…」') {        this.heroImage.setTexture('hero_stand_silent');      } else {        this.heroImage.setTexture('hero_stand');      }     this.heroImage.setScale(750 / this.heroImage.width);     this.heroImage.setY(100 + (this.heroImage.height * this.heroImage.scaleY) / 2);      this.showDialogue('勇者', text, res); });
+    const sayHero = (text) => new Promise(res => {
+      this.tweens.add({ targets: dimBg, alpha: 0.6, duration: 300 });
+      this.tweens.add({targets: this.heroImage, alpha: 1, duration: 300});
+      if (lastEnemySpeaker === '女' && sisterImage) {
+        this.tweens.add({ targets: [enemyFrame, enemyLabel], alpha: 0, duration: 300 });
+        this.tweens.add({ targets: sisterImage, alpha: 0.4, duration: 300 });
+      } else {
+        this.tweens.add({ targets: [enemyFrame, enemyLabel], alpha: 0.4, duration: 300 });
+        if(sisterImage) this.tweens.add({ targets: sisterImage, alpha: 0, duration: 300 });
+      }
+      if (text === '「……」' || text === '「……。」' || text === '「…」') {
+        this.heroImage.setTexture('hero_stand_silent');
+      } else {
+        this.heroImage.setTexture('hero_stand');
+      }
+      this.heroImage.setScale(750 / this.heroImage.width);
+      this.heroImage.setY(100 + (this.heroImage.height * this.heroImage.scaleY) / 2);
+      this.showDialogue('勇者', text, res);
+    });
 
             var key = this.currentBoss.configKey;
             
