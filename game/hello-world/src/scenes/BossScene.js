@@ -1633,8 +1633,6 @@ class BossScene extends Phaser.Scene {
                   MOT.flags.killedDemonLord = true;
                   
                   if (Kills === 0) {
-                      await sayDemon('「わがしもべたちは、わらわに従っていただけだ。おぬしもむやみに殺したいわけではないのだろう？」');
-                      
                       if (!this.inunekoImage || !this.inunekoImage.active) {
                           this.inunekoImage = this.add.image(1920 - 120, 1080 / 2 - 250, 'inuneko_stand').setAlpha(0).setDepth(91);
                           this.inunekoImage.setScale(300 / 691);
@@ -1653,11 +1651,16 @@ class BossScene extends Phaser.Scene {
                       await localSayDevice('「おい、勝手に決めるな。お前の使命を忘れたのか。魔王を倒した後、残りのやつらも倒しに行くぞ。」');
                       await localSayDemon('「ふざけるな！！！わらわたちが何をした！もしも世界に悪が存在するのなら、それは！」');
                       
-                      // 画面が乱れる
-                      this.cameras.main.shake(1000, 0.05);
-                      let glitchRect = this.add.rectangle(1920/2, 1080/2, 1920, 1080, 0xffffff).setAlpha(0).setDepth(400).setBlendMode(Phaser.BlendModes.ADD);
-                      this.tweens.add({targets: glitchRect, alpha: 1, duration: 100, yoyo: true, repeat: 5});
+                      // 画面が乱れる（目に優しい暗めの横線フリッカーと微弱な揺れ）
+                      this.cameras.main.shake(1000, 0.015);
+                      let glitchRect1 = this.add.rectangle(1920/2, 1080/2 - 150, 1920, 200, 0x000000).setAlpha(0).setDepth(400);
+                      let glitchRect2 = this.add.rectangle(1920/2, 1080/2 + 250, 1920, 100, 0x000000).setAlpha(0).setDepth(400);
+                      this.tweens.add({targets: glitchRect1, alpha: 0.8, duration: 50, yoyo: true, repeat: 10});
+                      this.tweens.add({targets: glitchRect2, alpha: 0.8, duration: 80, yoyo: true, repeat: 6});
+                      
                       let errorText = this.add.text(1920/2, 1080/2, 'ꂍꂍꂍꂍEẼGGGG[[[[AAEEE ', {fontFamily: '"DotGothic16"', fontSize: '100px', color: '#ff0000', backgroundColor: '#000000'}).setOrigin(0.5).setDepth(401);
+                      this.tweens.add({targets: errorText, alpha: 0.2, duration: 40, yoyo: true, repeat: 12});
+                      
                       await new Promise(r => this.time.delayedCall(500, r));
                       
                       // 銃声SE×２回
@@ -1666,9 +1669,22 @@ class BossScene extends Phaser.Scene {
                       MOT.Audio.playSelect();
                       
                       errorText.destroy();
+                      glitchRect1.destroy();
+                      glitchRect2.destroy();
                       
-                      if(this.demonImage) this.tweens.add({ targets: this.demonImage, scale: 2, alpha: 0, duration: 500, ease: 'Power2' });
-                      if(this.inunekoImage) this.tweens.add({ targets: this.inunekoImage, scale: 2, alpha: 0, duration: 500, ease: 'Power2' });
+                      // 魔王と犬猫爆発演出（サイズを相対的に少し拡大しつつ透明にして完全削除）
+                      if(this.demonImage) {
+                          this.tweens.add({ targets: this.demonImage, scale: this.demonImage.scaleX * 1.5, alpha: 0, duration: 500, ease: 'Power2', onComplete: () => { this.demonImage.destroy(); this.demonImage = null; } });
+                      }
+                      if(this.inunekoImage) {
+                          this.tweens.add({ targets: this.inunekoImage, scale: this.inunekoImage.scaleX * 1.5, alpha: 0, duration: 500, ease: 'Power2', onComplete: () => { this.inunekoImage.destroy(); this.inunekoImage = null; } });
+                      }
+                      
+                      // ボススプライトも破壊する演出
+                      if(this.currentBoss) {
+                          this.tweens.add({ targets: this.currentBoss, scale: this.currentBoss.scaleX * 1.5, alpha: 0, duration: 500, ease: 'Power2' });
+                      }
+
                       await new Promise(r => this.time.delayedCall(1000, r));
                       
                       await localSayHero('「！」');
