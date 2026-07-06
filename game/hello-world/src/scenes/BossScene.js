@@ -9,8 +9,7 @@ class BossScene extends Phaser.Scene {
   init(data) {
     this.startData = data;
     this.bossQueue = ['boss1', 'boss2', 'boss3_twins', 'demon_lord'];
-    // デバッグ用: いきなり双子戦（インデックス2）からスタート
-    this.currentBossIndex = 2;
+    this.currentBossIndex = 0;
     if (data && data.bossIndex !== undefined) {
       this.currentBossIndex = data.bossIndex;
     } else if (data && data.startBossIndex !== undefined) {
@@ -2283,22 +2282,18 @@ class BossScene extends Phaser.Scene {
             if (MOT.flags.killedBoss1 || MOT.flags.killedBoss2) {
               await sayMan('「君も何かおかしいって気が付いて来ただろう？博士の言うことなんて聞くべきじゃない」');
               await sayWoman('「兄さまの言う通りよ。そんな奴、従う価値もない。」');
-              await new Promise(r => {
-                let tgts = [this.currentBoss, this.sisterBoss];
-                if (this.sisterImage) tgts.push(this.sisterImage);
-                this.tweens.add({ targets: tgts, x: 2200, duration: 1500, ease: 'Power2', onComplete: r });
-              });
-              if(this.sisterImage) { this.sisterImage.destroy(); this.sisterImage = null; }
+              if(this.sisterImage) {
+                this.tweens.add({ targets: this.sisterImage, alpha: 0, duration: 300, onComplete: () => { if(this.sisterImage) { this.sisterImage.destroy(); this.sisterImage = null; } } });
+              }
+              await new Promise(r => this.tweens.add({ targets: [this.currentBoss, this.sisterBoss], x: 2200, duration: 1500, ease: 'Power2', onComplete: r }));
               await sayDevice('「なぜ殺さない！そいつらの言うことはでたらめだ。魔王軍の言うことを聞く意味なんてないんだ。」');
             } else {
               await sayMan('「君は、最初から気が付いてるんじゃないか？博士がおかしいって。」');
               await sayWoman('「あなたは誰も殺してない。だから、こっち側に来なさい。魔王様も許してくれる。」');
-              await new Promise(r => {
-                let tgts = [this.currentBoss, this.sisterBoss];
-                if (this.sisterImage) tgts.push(this.sisterImage);
-                this.tweens.add({ targets: tgts, x: 2200, duration: 1500, ease: 'Power2', onComplete: r });
-              });
-              if(this.sisterImage) { this.sisterImage.destroy(); this.sisterImage = null; }
+              if(this.sisterImage) {
+                this.tweens.add({ targets: this.sisterImage, alpha: 0, duration: 300, onComplete: () => { if(this.sisterImage) { this.sisterImage.destroy(); this.sisterImage = null; } } });
+              }
+              await new Promise(r => this.tweens.add({ targets: [this.currentBoss, this.sisterBoss], x: 2200, duration: 1500, ease: 'Power2', onComplete: r }));
               await sayDevice('「…」');
               await sayDevice('「お前は何をしたい？魔王のやつらは生かしておく価値もない。早く殺すのが世界のためだ。」');
               await sayDevice('「魔王さえ倒せば、トップがいなくなり奴らはどうしようもなくなる。必ず倒すんだ。」');
