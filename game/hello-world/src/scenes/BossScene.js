@@ -1626,7 +1626,7 @@ class BossScene extends Phaser.Scene {
 
               // Kills < 3 の場合は選択肢を出す
               await sayDevice('「よくやった。さぁ早くとどめを！」');
-              let c = await askShatterChoice('1. 心臓を打ち抜く', '2. 見逃す', true);
+              let c = await askShatterChoice('1. 心臓を打ち抜く', '2. 見逃す', Kills === 0);
               
               if (c === 1) {
                   // 魔王を殺す
