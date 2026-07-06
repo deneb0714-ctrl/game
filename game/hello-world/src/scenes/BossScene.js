@@ -2286,7 +2286,7 @@ class BossScene extends Phaser.Scene {
       // Clear enemy bullets so player is safe while collecting items
       this.enemyBullets.clear(true, true);
       
-      if (this.currentBossIndex >= this.bossQueue.length) {
+      if (this.currentBossIndex >= this.bossQueue.length || MOT.flags.finalEnding) {
         // エンディングへ移行する場合は戦闘を完全に停止し、即座に暗転する
         this.dialogActive = true; 
         if (MOT.DoctorDirective && MOT.DoctorDirective.directiveContainer) {

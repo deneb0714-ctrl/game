@@ -9,7 +9,7 @@ class EndingScene extends Phaser.Scene {
   create() {
     var w = 1920, h = 1080;
     var endingKey = MOT.flags.finalEnding || MOT.decideEnding().key;
-    var ending = MOT.ENDINGS[endingKey] || MOT.ENDINGS.NORMAL_EVERYDAY;
+    var ending = MOT.ENDINGS[endingKey] || MOT.ENDINGS.normal_daily;
 
     this.cameras.main.setBackgroundColor(ending.bgColor);
 

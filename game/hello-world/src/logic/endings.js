@@ -59,6 +59,14 @@ MOT.ENDINGS = {
     description: '「こんなところでやられるとはなさけない」\n\n勇者は力尽き、冷たい大地に倒れた。\n人造人間は静かに機能を停止した。',
     color: 0xFF4B6E,
     bgColor: '#140005'
+  },
+  normal_unresistable: {
+    key: 'normal_unresistable',
+    title: 'NORMAL END',
+    subtitle: '— 抗えない —',
+    description: '勇者の意思とは裏腹に、見逃したはずの幹部たちを見つけ殺していく。\nどれだけ引き金を引かないよう抗ったとて、その手は言うことを聞かなかった。',
+    color: 0x9CA3AF,
+    bgColor: '#05050a'
   }
 };
 
