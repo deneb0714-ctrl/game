@@ -11,10 +11,183 @@ class EndingScene extends Phaser.Scene {
     var endingKey = MOT.flags.finalEnding || MOT.decideEnding().key;
     var ending = MOT.ENDINGS[endingKey] || MOT.ENDINGS.normal_daily;
 
-    this.cameras.main.setBackgroundColor(ending.bgColor);
-
     if (ending.key === 'BAD_GAMEOVER') {
-      // 砂嵐（ノイズ）用のテクスチャ生成
+        this.cameras.main.setBackgroundColor(ending.bgColor);
+        this.showGameOver(w, h, ending);
+        return;
+    }
+
+    if (ending.key === 'bad_shutdown') {
+        this.cameras.main.setBackgroundColor('#000000');
+        this.showEndingScreen(w, h, ending);
+        return;
+    }
+
+    // Start with black background for text phase
+    this.cameras.main.setBackgroundColor('#000000');
+    this.cameras.main.fadeIn(1000, 0, 0, 0);
+
+    // Dialogue Box Phase
+    this.textPhaseElements = [];
+    
+    let dialogBox = this.add.rectangle(w / 2, h - 150, 1400, 200, 0x0a0a14)
+        .setStrokeStyle(4, 0x4FD1FF)
+        .setDepth(20)
+        .setAlpha(0);
+        
+    var desc = this.add.text(w / 2, h - 150, '', {
+      fontFamily: '"DotGothic16"',
+      fontSize: '28px',
+      color: '#E5E7EB',
+      align: 'left',
+      lineSpacing: 25,
+      wordWrap: { width: 1400 }
+    }).setOrigin(0.5).setDepth(21).setAlpha(0);
+
+    this.textPhaseElements.push(dialogBox, desc);
+
+    this.tweens.add({ targets: [dialogBox, desc], alpha: 1, duration: 1000, onComplete: () => {
+        var fullDesc = ending.description;
+        var charIdx = 0;
+        var isTyping = true;
+        var currentPhase = 1;
+        
+        var typeTimer = this.time.addEvent({
+          delay: 50,
+          callback: () => {
+            charIdx++;
+            desc.setText(fullDesc.substring(0, charIdx));
+            if (charIdx >= fullDesc.length) {
+              isTyping = false;
+              this.showNextCursor(w, h, dialogBox);
+            }
+          },
+          repeat: fullDesc.length - 1
+        });
+
+        const finishTextPhase = () => {
+            if (isTyping) {
+                typeTimer.remove();
+                isTyping = false;
+                desc.setText(fullDesc);
+                this.showNextCursor(w, h, dialogBox);
+            } else {
+                if (currentPhase === 1 && ending.postDescription) {
+                    currentPhase = 2;
+                    fullDesc = ending.postDescription;
+                    desc.setText('');
+                    charIdx = 0;
+                    isTyping = true;
+                    if (this.nextIcon) this.nextIcon.setVisible(false);
+                    typeTimer = this.time.addEvent({
+                      delay: 50,
+                      callback: () => {
+                        charIdx++;
+                        desc.setText(fullDesc.substring(0, charIdx));
+                        if (charIdx >= fullDesc.length) {
+                          isTyping = false;
+                          this.showNextCursor(w, h, dialogBox);
+                        }
+                      },
+                      repeat: fullDesc.length - 1
+                    });
+                } else {
+                    this.input.off('pointerdown', finishTextPhase);
+                    this.input.keyboard.off('keydown-ENTER', finishTextPhase);
+                    this.input.keyboard.off('keydown-SPACE', finishTextPhase);
+                    
+                    this.tweens.add({ 
+                        targets: this.textPhaseElements, 
+                        alpha: 0, 
+                        duration: 1000, 
+                        onComplete: () => {
+                            this.showEndingScreen(w, h, ending);
+                        }
+                    });
+                }
+            }
+        };
+        
+        this.input.on('pointerdown', finishTextPhase);
+        this.input.keyboard.on('keydown-ENTER', finishTextPhase);
+        this.input.keyboard.on('keydown-SPACE', finishTextPhase);
+    }});
+  }
+
+  showNextCursor(w, h, dialogBox) {
+      if (this.nextIcon) {
+          this.nextIcon.setVisible(true);
+          return;
+      }
+      this.nextIcon = this.add.text(dialogBox.x + dialogBox.width/2 - 40, dialogBox.y + dialogBox.height/2 - 40, '▼', {fontFamily: '"DotGothic16"', fontSize: '24px', color: '#4FD1FF'}).setDepth(21).setOrigin(0.5);
+      this.tweens.add({ targets: this.nextIcon, alpha: 0, yoyo: true, repeat: -1, duration: 500 });
+      this.textPhaseElements.push(this.nextIcon);
+  }
+
+  showEndingScreen(w, h, ending) {
+    // Change background smoothly (we do this by adding a colored rect and fading it in)
+    let endBg = this.add.rectangle(w/2, h/2, w, h, parseInt(ending.bgColor.replace('#', '0x'))).setDepth(0).setAlpha(0);
+    this.tweens.add({ targets: endBg, alpha: 1, duration: 1500 });
+
+    // Background particles
+    for (var i = 0; i < 60; i++) {
+        var p = this.add.circle(
+            Phaser.Math.Between(0, w),
+            Phaser.Math.Between(0, h),
+            Phaser.Math.Between(2, 6),
+            ending.color,
+            Phaser.Math.FloatBetween(0.05, 0.4)
+        ).setDepth(1).setAlpha(0);
+        
+        this.tweens.add({ targets: p, alpha: p.alpha, duration: 1500 }); // Fade in particles
+        
+        this.tweens.add({
+            targets: p,
+            y: p.y - Phaser.Math.Between(50, 200),
+            alpha: 0,
+            duration: Phaser.Math.Between(3000, 7000),
+            repeat: -1,
+            yoyo: true,
+            ease: 'Sine.easeInOut'
+        });
+    }
+
+    // Ending title (Larger)
+    var titleColor = '#' + ending.color.toString(16).padStart(6, '0');
+    var title = this.add.text(w / 2, h * 0.35, ending.title, {
+      fontFamily: '"Press Start 2P"',
+      fontSize: '80px',
+      color: titleColor,
+      stroke: '#000000',
+      strokeThickness: 8
+    }).setOrigin(0.5).setAlpha(0).setDepth(5);
+
+    // Subtitle (Larger)
+    var subtitle = this.add.text(w / 2, h * 0.55, ending.subtitle, {
+      fontFamily: '"DotGothic16"',
+      fontSize: '52px',
+      color: '#E5E7EB'
+    }).setOrigin(0.5).setAlpha(0).setDepth(5);
+
+    this.tweens.add({ targets: title, alpha: 1, y: h * 0.3, duration: 1500, ease: 'Power2', delay: 500 });
+    this.tweens.add({ targets: subtitle, alpha: 1, duration: 1500, delay: 1500 });
+
+    // Show ending-specific sprite
+    var spriteKey = null;
+    if (ending.key === 'END_ORPHAN') spriteKey = 'demon_lord';
+
+    if (spriteKey) {
+      var endSprite = this.add.image(w / 2, h * 0.8, spriteKey).setScale(4).setAlpha(0).setDepth(4);
+      this.tweens.add({ targets: endSprite, alpha: 1, duration: 2000, delay: 3000, ease: 'Power2' });
+    }
+
+    // Title button
+    this.time.delayedCall(4000, () => {
+      this.createReturnButton(w / 2, h * 0.90);
+    });
+  }
+
+  showGameOver(w, h, ending) {
       if (!this.textures.exists('tv_noise')) {
         const size = 256;
         const canvas = document.createElement('canvas');
@@ -38,115 +211,21 @@ class EndingScene extends Phaser.Scene {
       if (this.textures.exists('game_over_img')) {
         this.add.image(w / 2, h / 2, 'game_over_img').setDisplaySize(w, h).setDepth(1);
       }
-    }
 
-    this.cameras.main.fadeIn(1500, 0, 0, 0);
-
-    // Background particles themed to ending
-    if (ending.key !== 'BAD_GAMEOVER') {
-      for (var i = 0; i < 40; i++) {
-      var p = this.add.circle(
-        Phaser.Math.Between(0, w),
-        Phaser.Math.Between(0, h),
-        Phaser.Math.Between(1, 4),
-        ending.color,
-        Phaser.Math.FloatBetween(0.05, 0.25)
-      );
-      this.tweens.add({
-        targets: p,
-        y: p.y - Phaser.Math.Between(30, 150),
-        alpha: 0,
-        duration: Phaser.Math.Between(3000, 7000),
-        repeat: -1,
-        yoyo: true,
-        ease: 'Sine.easeInOut'
+      this.cameras.main.fadeIn(1500, 0, 0, 0);
+      
+      this.time.delayedCall(3000, () => {
+        this.createReturnButton(w / 2, h * 0.92);
       });
-      }
-    }
-
-    // Ending title
-    var titleColor = '#' + ending.color.toString(16).padStart(6, '0');
-    var title = this.add.text(w / 2, h * 0.2, ending.title, {
-      fontFamily: '"Press Start 2P"',
-      fontSize: '42px',
-      color: titleColor,
-      stroke: '#000000',
-      strokeThickness: 4
-    }).setOrigin(0.5).setAlpha(0);
-
-    // Subtitle
-    var subtitle = this.add.text(w / 2, h * 0.30, ending.subtitle, {
-      fontFamily: '"DotGothic16"',
-      fontSize: '28px',
-      color: '#9CA3AF'
-    }).setOrigin(0.5).setAlpha(0);
-
-    if (ending.key === 'BAD_GAMEOVER') {
-        title.setVisible(false);
-        subtitle.setVisible(false);
-    }
-
-    // Description
-    var desc = this.add.text(w / 2, h * 0.50, ending.description, {
-      fontFamily: '"DotGothic16"',
-      fontSize: '22px',
-      color: '#E5E7EB',
-      align: 'center',
-      lineSpacing: 12,
-      wordWrap: { width: 900 }
-    }).setOrigin(0.5).setAlpha(0);
-
-    // Animate in
-    this.tweens.add({ targets: title, alpha: 1, y: h * 0.18, duration: 1200, ease: 'Power2', delay: 500 });
-    this.tweens.add({ targets: subtitle, alpha: 1, duration: 1000, delay: 1500 });
-
-    // Typewriter for description
-    var fullDesc = ending.description;
-    desc.setText('');
-    desc.setAlpha(1);
-    var charIdx = 0;
-    this.time.delayedCall(2500, function () {
-      this.time.addEvent({
-        delay: 45,
-        callback: function () {
-          charIdx++;
-          desc.setText(fullDesc.substring(0, charIdx));
-        },
-        repeat: fullDesc.length - 1
-      });
-    }, [], this);
-
-    // Show ending-specific sprite
-    var spriteKey = null;
-    if (ending.key === 'END_ORPHAN') spriteKey = 'demon_lord'; // 魔王に拾われる
-
-    var endSprite = null;
-    if (spriteKey) {
-      endSprite = this.add.image(w / 2, h * 0.78, spriteKey).setScale(4).setAlpha(0);
-      var spriteDelay = 3000;
-      this.tweens.add({
-        targets: endSprite, alpha: 1, duration: 2000, delay: spriteDelay,
-        ease: 'Power2'
-      });
-    }
-
-    if (ending.key === 'BAD_GAMEOVER') {
-      desc.setVisible(false);
-    }
-
-    // Title button (appears after a delay)
-    this.time.delayedCall(6000, function () {
-      this.createReturnButton(w / 2, h * 0.92);
-    }, [], this);
   }
 
   createReturnButton(x, y) {
-    var btn = this.add.image(x, y, 'ui_button').setInteractive({ useHandCursor: true }).setAlpha(0);
+    var btn = this.add.image(x, y, 'ui_button').setInteractive({ useHandCursor: true }).setAlpha(0).setDepth(10);
     var txt = this.add.text(x, y, 'TITLE に戻る', {
       fontFamily: '"DotGothic16"',
-      fontSize: '20px',
+      fontSize: '24px',
       color: '#4FD1FF'
-    }).setOrigin(0.5).setAlpha(0);
+    }).setOrigin(0.5).setAlpha(0).setDepth(11);
 
     this.tweens.add({ targets: [btn, txt], alpha: 1, duration: 800 });
 
@@ -168,11 +247,8 @@ class EndingScene extends Phaser.Scene {
 
   update(time, delta) {
     if (this.noiseSprite) {
-        // 砂嵐のノイズアニメーション
         this.noiseSprite.tilePositionX = Phaser.Math.Between(0, 256);
         this.noiseSprite.tilePositionY = Phaser.Math.Between(0, 256);
-        
-        // ランダムな激しい点滅を無くし、一定のアルファ値で目に優しくする
         this.noiseSprite.setAlpha(0.15);
     }
   }

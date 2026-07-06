@@ -14,9 +14,17 @@ class BossScene extends Phaser.Scene {
       this.currentBossIndex = data.bossIndex;
     } else if (data && data.startBossIndex !== undefined) {
       this.currentBossIndex = data.startBossIndex;
-    } else {
-      this.currentBossIndex = 0;
     }
+    
+    // デバッグ用: 強制シャットダウンエンド条件を満たす
+    this.currentBossIndex = 3;
+    MOT.flags = MOT.flags || {};
+    MOT.flags.killedBoss1 = true;
+    MOT.flags.killedBoss2 = true;
+    MOT.flags.killedTwins = false;
+    MOT.flags.kills = 2;
+    MOT.flags.dollPoints = 100;
+    
     this.debugSkipCombat = data && data.debugSkipCombat;
     this.dialogActive = false;
     this.lastDialogActive = false; // 会話終了時のクールタイム検出用
@@ -128,8 +136,8 @@ class BossScene extends Phaser.Scene {
 
     // 1〜5: 魔王撃破直後に対応エンディングの条件を整えてジャンプ
     //   1 → BAD END 傀儡     (幹部全員殺害・魔王殺す)
-    //   2 → BAD END 強制シャットダウン (幹部一部殺害・DP<3・魔王殺す)
-    //   3 → NORMAL END 日常   (幹部一部殺害・DP≥3・魔王殺す)
+    //   2 → BAD END 強制シャットダウン (幹部一部殺害・DP>=100・魔王殺す)
+    //   3 → NORMAL END 日常   (幹部一部殺害・DP<100・魔王殺す)
     //   4 → END 身寄りのない勇者 (幹部全員生存・魔王生かす・DP>100)
     //   5 → TRUE END 真なる魔王  (幹部全員生存・魔王生かす・DP≤100・殺意≥100)
     const jumpToDemonLordDefeat = (setupFn) => {
@@ -171,9 +179,9 @@ class BossScene extends Phaser.Scene {
         if (type === 1) { // 1: 傀儡
           jumpToDemonLordDefeat(() => { MOT.flags.killedBoss1 = true; MOT.flags.killedBoss2 = true; MOT.flags.killedTwins = true; });
         } else if (type === 2) { // 2: 強制シャットダウン
-          jumpToDemonLordDefeat(() => { MOT.flags.killedBoss1 = true; MOT.flags.killedBoss2 = false; MOT.flags.killedTwins = false; MOT.flags.dollPoints = 1; });
+          jumpToDemonLordDefeat(() => { MOT.flags.killedBoss1 = true; MOT.flags.killedBoss2 = false; MOT.flags.killedTwins = false; MOT.flags.dollPoints = 100; });
         } else if (type === 3) { // 3: 日常
-          jumpToDemonLordDefeat(() => { MOT.flags.killedBoss1 = true; MOT.flags.killedBoss2 = false; MOT.flags.killedTwins = false; MOT.flags.dollPoints = 5; });
+          jumpToDemonLordDefeat(() => { MOT.flags.killedBoss1 = true; MOT.flags.killedBoss2 = false; MOT.flags.killedTwins = false; MOT.flags.dollPoints = 0; });
         } else if (type === 4) { // 4: 身寄りのない勇者
           jumpToDemonLordDefeat(() => { MOT.flags.killedBoss1 = false; MOT.flags.killedBoss2 = false; MOT.flags.killedTwins = false; MOT.flags.dollPoints = 150; });
         } else if (type === 5) { // 5: 真の魔王
@@ -210,7 +218,7 @@ class BossScene extends Phaser.Scene {
         // Intro and defeat are handled custom via playTwinsIntro and post-battle logic
       },
       demon_lord: {
-        texture: 'demon_stand_combat', name: '魔王 – ヴェリタス', hp: 80, scale: 0.5,
+        texture: 'demon_stand_combat', name: '魔王 – ヴェリタス', hp: 1, scale: 0.5,
         intro: '「…来たか、博士の人形よ。\nお前に真実を伝えなければならない。」',
         defeat: '「聞いてくれ。博士こそが…この世界を壊そうとしている。\n俺は…それを止めたかっただけだ。」',
         choices: []
@@ -1689,11 +1697,99 @@ class BossScene extends Phaser.Scene {
                   this.proceedToNextArea(boss, false);
               };
 
-              // Kills === 3 (幹部全員殺害) の場合は選択肢なしで魔王を殺す
+              // Kills === 3 (幹部全員殺害) の場合は傀儡エンド専用演出
               if (Kills === 3) {
                   await sayDevice('「よくやった。さぁ早くとどめを！」');
-                  await sayDemon('「ぐっ…すまないわがしもべたち…ここまでのようだ」');
-                  await sayHero('「…」');
+                  await sayDemon('「ぐっ…ここまでか…」');
+                  
+                  // 画面が乱れる演出
+                  this.cameras.main.shake(1000, 0.03);
+                  let glitchBg = this.add.rectangle(1920/2, 1080/2, 1920, 1080, 0x000000, 0.9).setDepth(200);
+                  let consoleText = this.add.text(100, 100, '', {
+                      fontFamily: '"Press Start 2P"', fontSize: '32px', color: '#00ff00', lineSpacing: 10
+                  }).setDepth(201);
+                  
+                  const addLog = async (msg, delay) => {
+                      consoleText.text += msg + '\n';
+                      MOT.Audio.playBleep();
+                      await new Promise(r => this.time.delayedCall(delay, r));
+                  };
+                  
+                  await new Promise(r => this.time.delayedCall(500, r));
+                  await addLog("...link re-established", 800);
+                  await addLog("...signal drift: 0.02", 800);
+                  await addLog("", 400);
+                  await addLog("...incoming packet from Dr.H███", 800);
+                  await addLog("...decoding...", 1200);
+                  
+                  // 画面全体に文字を敷き詰める
+                  let garbledStr = "……EẼGGGG[[́ccccccccȂȂȂꂎꂎȂ炈炈炈炈B ";
+                  let fullScreenStr = garbledStr.repeat(60);
+                  let garbledText = this.add.text(1920/2, 1080/2, fullScreenStr, {
+                      fontFamily: '"DotGothic16"', fontSize: '46px', color: '#ff0000', fontStyle: 'bold', wordWrap: { width: 1900 }, lineSpacing: 10
+                  }).setOrigin(0.5).setDepth(202);
+                  
+                  this.cameras.main.shake(1500, 0.05);
+                  MOT.Audio.playBleep();
+                  
+                  await new Promise(r => this.time.delayedCall(2000, r));
+                  garbledText.destroy();
+                  
+                  await addLog("...channel unstable", 1000);
+                  
+                  // 5つの選択肢
+                  await new Promise(resolve => {
+                      let btnElements = [];
+                      const w = 1920, h = 1080;
+                      let overlay = this.add.graphics().fillStyle(0x000000, 0.5).fillRect(0,0,w,h).setDepth(203);
+                      btnElements.push(overlay);
+                      
+                      let texts = [
+                          "1心臓を打ち抜く",
+                          "2心臓を打ち抜く",
+                          "３心臓を打ち抜く",
+                          "４心臓を打ち抜く",
+                          "５心臓を打ち抜く"
+                      ];
+                      let startY = h / 2 - (texts.length * 45);
+                      
+                      texts.forEach((txtStr, i) => {
+                          let y = startY + i * 110;
+                          let btn = this.add.image(w/2, y, 'ui_button_wide').setInteractive({useHandCursor: true}).setDepth(204).setAlpha(0);
+                          let txt = this.add.text(w/2, y, txtStr, {
+                              fontFamily: '"DotGothic16"', fontSize: '26px', color: '#E5E7EB'
+                          }).setOrigin(0.5).setDepth(205).setAlpha(0);
+                          
+                          this.tweens.add({ targets: [btn, txt], alpha: 1, duration: 300, delay: i*100 });
+                          
+                          btn.on('pointerdown', () => {
+                              this.input.keyboard.off('keydown', kh);
+                              btnElements.forEach(el => el.destroy());
+                              resolve();
+                          });
+                          btnElements.push(btn, txt);
+                      });
+                      
+                      let cursor = this.add.text(w / 2 - 280, startY, '▶', { fontFamily: '"DotGothic16"', fontSize: '24px', color: '#39FF14' }).setOrigin(0.5).setDepth(206);
+                      btnElements.push(cursor);
+                      let idx = 0;
+                      const kh = (e) => {
+                          if(e.key==='ArrowUp' || e.key==='w') { idx = Math.max(0, idx-1); cursor.setY(startY + idx*110); }
+                          if(e.key==='ArrowDown' || e.key==='s') { idx = Math.min(texts.length-1, idx+1); cursor.setY(startY + idx*110); }
+                          if(e.key==='Enter' || e.key===' ') {
+                              this.input.keyboard.off('keydown', kh);
+                              btnElements.forEach(el => el.destroy());
+                              resolve();
+                          }
+                      };
+                      this.input.keyboard.on('keydown', kh);
+                  });
+                  
+                  glitchBg.destroy();
+                  consoleText.destroy();
+                  
+                  await sayDemon('「博士の…傀儡め…！」');
+                  
                   MOT.Audio.playSelect();
                   MOT.flags.killedDemonLord = true;
                   
@@ -1709,6 +1805,7 @@ class BossScene extends Phaser.Scene {
 
               // Kills < 3 の場合は選択肢を出す
               await sayDevice('「よくやった。さぁ早くとどめを！」');
+              await sayDemon('「ぐっ…ここまでか…」');
               let c = await askShatterChoice('1. 心臓を打ち抜く', '2. 見逃す', Kills === 0);
               
               if (c === 1) {
@@ -1777,8 +1874,7 @@ class BossScene extends Phaser.Scene {
                       
                       ending('normal_unresistable');
                   } else {
-                      await sayDemon('「ぐっ…すまないわがしもべたち…ここまでのようだ」');
-                      await sayHero('「…」');
+                      await sayDemon('「このわらわが...！すまない、我がしもべたち...」');
                       MOT.Audio.playSelect(); // 爆発音
                       
                       // 魔王爆発演出
@@ -1787,9 +1883,126 @@ class BossScene extends Phaser.Scene {
                           this.tweens.add({ targets: this.demonImage, scale: 2, alpha: 0, duration: 500, ease: 'Power2' });
                       }
                       await new Promise(r => this.time.delayedCall(1000, r));
-                      if (DP >= 3) {
+                      if (DP < 100) {
                           ending('normal_daily');
                       } else {
+                          // フェードアウト
+                          this.cameras.main.fadeOut(1000);
+                          await new Promise(r => this.time.delayedCall(1000, r));
+                          
+                          // 戦闘UIとオブジェクトを全て隠す
+                          if (this.player) { this.player.setVisible(false); this.player.setActive(false); }
+                          if (this.playerHitboxGraphics) this.playerHitboxGraphics.setVisible(false);
+                          if (this.bossHpBg) this.bossHpBg.setVisible(false);
+                          if (this.bossHpBar) this.bossHpBar.setVisible(false);
+                          if (this.barrierVisual) this.barrierVisual.setVisible(false);
+                          if (this.uiBg) this.uiBg.setVisible(false);
+                          if (this.uiText) this.uiText.setVisible(false);
+                          if (this.hpText) this.hpText.setVisible(false);
+                          if (this.energyText) this.energyText.setVisible(false);
+                          if (this.energyBar) this.energyBar.setVisible(false);
+                          if (this.energyBarBgObj) this.energyBarBgObj.setVisible(false);
+                          if (this.energyBarFgObj) this.energyBarFgObj.setVisible(false);
+                          if (this.energyBarOutline) this.energyBarOutline.setVisible(false);
+                          if (this.barrierIconBg) this.barrierIconBg.setVisible(false);
+                          if (this.barrierIconFg) this.barrierIconFg.setVisible(false);
+                          if (this.bossHPText) this.bossHPText.setVisible(false);
+                          if (this.areaNameText) this.areaNameText.setVisible(false);
+                          if (this.iconPersonBg) this.iconPersonBg.setVisible(false);
+                          if (this.iconPersonFill) this.iconPersonFill.setVisible(false);
+                          if (this.dollText) this.dollText.setVisible(false);
+                          if (this.iconBatteryBg) this.iconBatteryBg.setVisible(false);
+                          if (this.iconBatteryFill) this.iconBatteryFill.setVisible(false);
+                          if (this.intentText) this.intentText.setVisible(false);
+                          if (this.laneGraphics) { this.laneGraphics.setVisible(false); }
+                          if (this.currentBoss) { this.currentBoss.setVisible(false); this.currentBoss.setActive(false); }
+                          if (this.inunekoImage) { this.inunekoImage.setVisible(false); }
+                          if (this.demonImage) { this.demonImage.setVisible(false); }
+                          
+                          this.playerBullets.clear(true, true);
+                          this.enemyBullets.clear(true, true);
+                          
+                          this.bg.setTexture('bg_lab');
+                          this.bg.setTint(0xffffff);
+                          this.bg.setOrigin(0, 0.5);
+                          this.bg.setPosition(0, 1080 / 2);
+                          this.bg.setScale(1920 / 1024);
+                          
+                          this.cameras.main.fadeIn(1000);
+                          await new Promise(r => this.time.delayedCall(1000, r));
+                          
+                          this.textures.get('doctor_stand').setFilter(Phaser.Textures.FilterMode.LINEAR);
+                          var docScale = 750 / this.textures.get('doctor_stand').getSourceImage().width;
+                          let doctorImage = this.add.image(1920 - 300, 1080 / 2, 'doctor_stand').setAlpha(0).setDepth(90);
+                          doctorImage.setScale(docScale);
+                          doctorImage.setY(100 + (this.textures.get('doctor_stand').getSourceImage().height * docScale) / 2);
+                          
+                          if (!this.heroImage || !this.heroImage.active) {
+                              this.heroImage = this.add.image(300, 1080 / 2, 'hero_stand_silent').setAlpha(0).setDepth(90);
+                          } else {
+                              this.heroImage.setTexture('hero_stand_silent');
+                          }
+                          var hScale = 750 / this.heroImage.width;
+                          this.heroImage.setScale(hScale);
+                          this.heroImage.setY(100 + (this.heroImage.height * hScale) / 2);
+                          this.tweens.add({ targets: [doctorImage, this.heroImage], alpha: 1, duration: 500 });
+                          
+                          const sayDoctorLab = (text) => new Promise(res => { this.tweens.add({ targets: dimBg, alpha: 0.6, duration: 300 }); this.tweens.add({targets: doctorImage, alpha: 1, duration: 300}); if(this.heroImage) this.tweens.add({targets: this.heroImage, alpha: 0.4, duration: 300}); this.showDialogue('博士', text, res); });
+                          const sayHeroLab = (text) => new Promise(res => { this.tweens.add({ targets: dimBg, alpha: 0.6, duration: 300 }); this.tweens.add({targets: doctorImage, alpha: 0.4, duration: 300}); if(this.heroImage) this.tweens.add({targets: this.heroImage, alpha: 1, duration: 300}); this.showDialogue('主人公', text, res); });
+                          
+                          await sayDoctorLab('「よくやったな、勇者よ」');
+                          await sayHeroLab('「…」');
+                          await sayDoctorLab('「ふむ？」');
+                          
+                          // 選択肢
+                          await new Promise(resolve => {
+                              let btnElements = [];
+                              const w = 1920, h = 1080;
+                              let overlay = this.add.graphics().fillStyle(0x000000, 0.5).fillRect(0,0,w,h).setDepth(203);
+                              btnElements.push(overlay);
+                              
+                              let texts = [
+                                  "1博士を倒す",
+                                  "2博士を倒す",
+                                  "３博士を倒す",
+                                  "４博士を倒す"
+                              ];
+                              let startY = h / 2 - (texts.length * 45);
+                              
+                              texts.forEach((txtStr, i) => {
+                                  let y = startY + i * 110;
+                                  let btn = this.add.image(w/2, y, 'ui_button_wide').setInteractive({useHandCursor: true}).setDepth(204).setAlpha(0);
+                                  let txt = this.add.text(w/2, y, txtStr, { fontFamily: '"DotGothic16"', fontSize: '26px', color: '#E5E7EB' }).setOrigin(0.5).setDepth(205).setAlpha(0);
+                                  this.tweens.add({ targets: [btn, txt], alpha: 1, duration: 300, delay: i*100 });
+                                  btn.on('pointerdown', () => {
+                                      this.input.keyboard.off('keydown', kh);
+                                      btnElements.forEach(el => el.destroy());
+                                      resolve();
+                                  });
+                                  btnElements.push(btn, txt);
+                              });
+                              
+                              let cursor = this.add.text(w / 2 - 280, startY, '▶', { fontFamily: '"DotGothic16"', fontSize: '24px', color: '#39FF14' }).setOrigin(0.5).setDepth(206);
+                              btnElements.push(cursor);
+                              let idx = 0;
+                              const kh = (e) => {
+                                  if(e.key==='ArrowUp' || e.key==='w') { idx = Math.max(0, idx-1); cursor.setY(startY + idx*110); }
+                                  if(e.key==='ArrowDown' || e.key==='s') { idx = Math.min(texts.length-1, idx+1); cursor.setY(startY + idx*110); }
+                                  if(e.key==='Enter' || e.key===' ') {
+                                      this.input.keyboard.off('keydown', kh);
+                                      btnElements.forEach(el => el.destroy());
+                                      resolve();
+                                  }
+                              };
+                              this.input.keyboard.on('keydown', kh);
+                          });
+                          
+                          await sayHeroLab('「…」');
+                          await sayDoctorLab('「こちらに銃を構えてどうした？私を倒したいとでも言うのか。」');
+                          await sayDoctorLab('「残念だが、お前にその権限はない。」');
+                          await sayDoctorLab('「お前にできることは、このまま邪魔者を倒し私の役に立つことだけだ。」');
+                          await sayDoctorLab('「だが、歯向かってきたお前をこのまま使う必要もないな。処分するとでもしようか。」');
+                          
                           ending('bad_shutdown');
                       }
                   }

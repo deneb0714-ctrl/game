@@ -25,6 +25,7 @@ MOT.ENDINGS = {
     title: 'NORMAL END',
     subtitle: '— 日常 —',
     description: 'こうして魔王は打倒された。主人公は博士の研究所に戻った。\n結局魔王とはいったい何だったのか。\n彼女は本当に倒さなければならなかったのか。\nその答えを知る機会はもう一生訪れない。',
+    postDescription: '博士「よく魔王を倒してくれた。これで私の世界平和に一歩近づいたな。ふふ、これからが楽しみだよ」',
     color: 0xE5E7EB,
     bgColor: '#0a0a14'
   },
@@ -90,10 +91,10 @@ MOT.decideEnding = function () {
       return MOT.ENDINGS.normal_useless;
     } else {
       // 魔王を生かす -> NO -> ドルポがたまってるか？
-      if (f.dollPoints >= 3) { // TODO: ドルポがたまっているの閾値(仮に3とする)
-        return MOT.ENDINGS.normal_daily;
-      } else {
+      if (f.dollPoints >= 100) {
         return MOT.ENDINGS.bad_shutdown;
+      } else {
+        return MOT.ENDINGS.normal_daily;
       }
     }
   }
