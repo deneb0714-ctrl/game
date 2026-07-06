@@ -127,10 +127,10 @@ class BossScene extends Phaser.Scene {
 
     // 1〜5: 魔王撃破直後に対応エンディングの条件を整えてジャンプ
     //   1 → BAD END 傀儡     (幹部全員殺害・魔王殺す)
-    //   2 → NORMAL END 日常   (幹部一部殺害・DP≥3・魔王殺す)
-    //   3 → END 身寄りのない勇者 (幹部全員生存・魔王生かす・DP>100)
-    //   4 → TRUE END 真なる魔王  (幹部全員生存・魔王生かす・DP≤100・殺意≥100)
-    //   5 → BAD END 強制シャットダウン (幹部一部殺害・DP<3・魔王殺す)
+    //   2 → BAD END 強制シャットダウン (幹部一部殺害・DP<3・魔王殺す)
+    //   3 → NORMAL END 日常   (幹部一部殺害・DP≥3・魔王殺す)
+    //   4 → END 身寄りのない勇者 (幹部全員生存・魔王生かす・DP>100)
+    //   5 → TRUE END 真なる魔王  (幹部全員生存・魔王生かす・DP≤100・殺意≥100)
     const jumpToDemonLordDefeat = (setupFn) => {
       MOT.flags.finalEnding = null;
       delete MOT.flags.kills;
@@ -167,16 +167,16 @@ class BossScene extends Phaser.Scene {
     if (this.startData && this.startData.jumpToEndingSetup) {
       const type = this.startData.jumpToEndingSetup;
       this.time.delayedCall(100, () => {
-        if (type === 1) {
+        if (type === 1) { // 1: 傀儡
           jumpToDemonLordDefeat(() => { MOT.flags.killedBoss1 = true; MOT.flags.killedBoss2 = true; MOT.flags.killedTwins = true; });
-        } else if (type === 2) {
-          jumpToDemonLordDefeat(() => { MOT.flags.killedBoss1 = true; MOT.flags.killedBoss2 = false; MOT.flags.killedTwins = false; MOT.flags.dollPoints = 5; });
-        } else if (type === 3) {
-          jumpToDemonLordDefeat(() => { MOT.flags.killedBoss1 = false; MOT.flags.killedBoss2 = false; MOT.flags.killedTwins = false; MOT.flags.dollPoints = 150; });
-        } else if (type === 4) {
-          jumpToDemonLordDefeat(() => { MOT.flags.killedBoss1 = false; MOT.flags.killedBoss2 = false; MOT.flags.killedTwins = false; MOT.flags.dollPoints = 50; MOT.flags.killingIntent = 100; });
-        } else if (type === 5) {
+        } else if (type === 2) { // 2: 強制シャットダウン
           jumpToDemonLordDefeat(() => { MOT.flags.killedBoss1 = true; MOT.flags.killedBoss2 = false; MOT.flags.killedTwins = false; MOT.flags.dollPoints = 1; });
+        } else if (type === 3) { // 3: 日常
+          jumpToDemonLordDefeat(() => { MOT.flags.killedBoss1 = true; MOT.flags.killedBoss2 = false; MOT.flags.killedTwins = false; MOT.flags.dollPoints = 5; });
+        } else if (type === 4) { // 4: 身寄りのない勇者
+          jumpToDemonLordDefeat(() => { MOT.flags.killedBoss1 = false; MOT.flags.killedBoss2 = false; MOT.flags.killedTwins = false; MOT.flags.dollPoints = 150; });
+        } else if (type === 5) { // 5: 真の魔王
+          jumpToDemonLordDefeat(() => { MOT.flags.killedBoss1 = false; MOT.flags.killedBoss2 = false; MOT.flags.killedTwins = false; MOT.flags.dollPoints = 50; MOT.flags.killingIntent = 100; });
         }
       });
     }
