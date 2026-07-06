@@ -1631,20 +1631,68 @@ class BossScene extends Phaser.Scene {
               if (c === 1) {
                   // 魔王を殺す
                   MOT.flags.killedDemonLord = true;
-                  await sayDemon('「ぐっ…すまないわがしもべたち…ここまでのようだ」');
-                  await sayHero('「…」');
-                  MOT.Audio.playSelect(); // 爆発音
                   
-                  // 魔王爆発演出
-                  this.cameras.main.shake(500, 0.05);
-                  if(this.demonImage) {
-                      this.tweens.add({ targets: this.demonImage, scale: 2, alpha: 0, duration: 500, ease: 'Power2' });
-                  }
-                  await new Promise(r => this.time.delayedCall(1000, r));
-                  if (DP >= 3) {
-                      ending('normal_daily');
+                  if (Kills === 0) {
+                      await sayDemon('「わがしもべたちは、わらわに従っていただけだ。おぬしもむやみに殺したいわけではないのだろう？」');
+                      
+                      if (!this.inunekoImage || !this.inunekoImage.active) {
+                          this.inunekoImage = this.add.image(1920 - 120, 1080 / 2 - 250, 'inuneko_stand').setAlpha(0).setDepth(91);
+                          this.inunekoImage.setScale(300 / 691);
+                          this.inunekoImage.setY(350);
+                      }
+                      
+                      const localSayInuneko = (text) => new Promise(res => { this.tweens.add({ targets: dimBg, alpha: 0.6, duration: 300 }); if(this.heroImage) this.tweens.add({targets: this.heroImage, alpha: 0.4, duration: 300}); if(this.inunekoImage) this.tweens.add({targets: this.inunekoImage, alpha: 1, duration: 300}); if(this.demonImage) this.tweens.add({targets: this.demonImage, alpha: 0.4, duration: 300}); this.showDialogue('犬猫☆すたー', text, res); });
+                      const localSayDemon = (text) => new Promise(res => { this.tweens.add({ targets: dimBg, alpha: 0.6, duration: 300 }); if(this.heroImage) this.tweens.add({targets: this.heroImage, alpha: 0.4, duration: 300}); if(this.inunekoImage) this.tweens.add({targets: this.inunekoImage, alpha: 0.4, duration: 300}); if(this.demonImage) this.tweens.add({targets: this.demonImage, alpha: 1, duration: 300}); this.showDialogue('魔王', text, res); });
+                      const localSayHero = (text) => new Promise(res => { this.tweens.add({ targets: dimBg, alpha: 0.6, duration: 300 }); if(this.heroImage) this.tweens.add({targets: this.heroImage, alpha: 1, duration: 300}); if(this.inunekoImage) this.tweens.add({targets: this.inunekoImage, alpha: 0.4, duration: 300}); if(this.demonImage) this.tweens.add({targets: this.demonImage, alpha: 0.4, duration: 300}); this.showDialogue('勇者', text, res); });
+                      const localSayDevice = (text) => new Promise(res => { this.tweens.add({ targets: dimBg, alpha: 0.6, duration: 300 }); if(this.heroImage) this.tweens.add({targets: this.heroImage, alpha: 0.4, duration: 300}); if(this.inunekoImage) this.tweens.add({targets: this.inunekoImage, alpha: 0.4, duration: 300}); if(this.demonImage) this.tweens.add({targets: this.demonImage, alpha: 0.4, duration: 300}); this.showDialogue('博士', text, res); });
+
+                      await localSayDemon('「わがしもべたちは、わらわに従っていただけだ。おぬしもむやみに殺したいわけではないのだろう？」');
+                      await localSayInuneko('「まおうさま……だめだわん……まおうさまがいなくなったら……」');
+                      await localSayDemon('「だから今ここで契約を結べ。われはこのまま何もしない。だからしもべを殺すな」');
+                      await localSayHero('「…わかった。」');
+                      await localSayDevice('「おい、勝手に決めるな。お前の使命を忘れたのか。魔王を倒した後、残りのやつらも倒しに行くぞ。」');
+                      await localSayDemon('「ふざけるな！！！わらわたちが何をした！もしも世界に悪が存在するのなら、それは！」');
+                      
+                      // 画面が乱れる
+                      this.cameras.main.shake(1000, 0.05);
+                      let glitchRect = this.add.rectangle(1920/2, 1080/2, 1920, 1080, 0xffffff).setAlpha(0).setDepth(400).setBlendMode(Phaser.BlendModes.ADD);
+                      this.tweens.add({targets: glitchRect, alpha: 1, duration: 100, yoyo: true, repeat: 5});
+                      let errorText = this.add.text(1920/2, 1080/2, 'ꂍꂍꂍꂍEẼGGGG[[[[AAEEE ', {fontFamily: '"DotGothic16"', fontSize: '100px', color: '#ff0000', backgroundColor: '#000000'}).setOrigin(0.5).setDepth(401);
+                      await new Promise(r => this.time.delayedCall(500, r));
+                      
+                      // 銃声SE×２回
+                      MOT.Audio.playSelect(); 
+                      await new Promise(r => this.time.delayedCall(200, r));
+                      MOT.Audio.playSelect();
+                      
+                      errorText.destroy();
+                      
+                      if(this.demonImage) this.tweens.add({ targets: this.demonImage, scale: 2, alpha: 0, duration: 500, ease: 'Power2' });
+                      if(this.inunekoImage) this.tweens.add({ targets: this.inunekoImage, scale: 2, alpha: 0, duration: 500, ease: 'Power2' });
+                      await new Promise(r => this.time.delayedCall(1000, r));
+                      
+                      await localSayHero('「！」');
+                      await localSayHero('「なんで、今勝手に手が…！」');
+                      await localSayDevice('「ろくでもない生物を生かしておく必要はないだろう。無駄な命乞いを聞く前にさっさと始末したに過ぎない。」');
+                      await localSayDevice('「いいか。お前はこれから逃がした敵を殺しに行くんだ。今度こそ逃がすなんてことは許さないからな？」');
+                      
+                      ending('normal_unresistable');
                   } else {
-                      ending('bad_shutdown');
+                      await sayDemon('「ぐっ…すまないわがしもべたち…ここまでのようだ」');
+                      await sayHero('「…」');
+                      MOT.Audio.playSelect(); // 爆発音
+                      
+                      // 魔王爆発演出
+                      this.cameras.main.shake(500, 0.05);
+                      if(this.demonImage) {
+                          this.tweens.add({ targets: this.demonImage, scale: 2, alpha: 0, duration: 500, ease: 'Power2' });
+                      }
+                      await new Promise(r => this.time.delayedCall(1000, r));
+                      if (DP >= 3) {
+                          ending('normal_daily');
+                      } else {
+                          ending('bad_shutdown');
+                      }
                   }
               } else {
                   // 魔王を生かす
