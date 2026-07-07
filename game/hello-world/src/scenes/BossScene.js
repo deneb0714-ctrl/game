@@ -1224,6 +1224,17 @@ class BossScene extends Phaser.Scene {
             var enemyFrame = this.add.rectangle(w - 300, h / 2, 400, 600, 0x1F2933).setAlpha(0).setDepth(90).setStrokeStyle(4, 0xffffff);
             var enemyLabel = this.add.text(w - 300, h / 2, '???', { fontFamily: '"DotGothic16"', fontSize: '40px', color: '#ffffff' }).setOrigin(0.5).setAlpha(0).setDepth(90);
 
+            var boss1Image = null;
+            if (this.currentBoss && this.currentBoss.configKey === 'boss1') {
+              boss1Image = this.add.image(w - 300, h / 2, 'boss1_normal').setAlpha(0).setDepth(90);
+              var b1Scale = 750 / boss1Image.width;
+              boss1Image.setScale(b1Scale);
+              boss1Image.setY(100 + (boss1Image.height * b1Scale) / 2);
+              
+              enemyFrame.setVisible(false);
+              enemyLabel.setVisible(false);
+            }
+
             // Add sisterImage for boss3_twins scenario intro
             var sisterImage = null;
             if (this.currentBoss && this.currentBoss.configKey === 'boss3_twins') {
@@ -1260,34 +1271,47 @@ class BossScene extends Phaser.Scene {
               this.tweens.add({ targets: dimBg, alpha: 0.6, duration: 300 });
               this.tweens.add({targets: this.heroImage, alpha: 0.4, duration: 300});
               if (lastEnemySpeaker === '女' && sisterImage) {
-                this.tweens.add({ targets: [enemyFrame, enemyLabel], alpha: 0, duration: 300 });
+                if (boss1Image) this.tweens.add({ targets: boss1Image, alpha: 0, duration: 300 });
+                else this.tweens.add({ targets: [enemyFrame, enemyLabel], alpha: 0, duration: 300 });
                 this.tweens.add({ targets: sisterImage, alpha: 0.4, duration: 300 });
               } else {
-                this.tweens.add({ targets: [enemyFrame, enemyLabel], alpha: 0.4, duration: 300 });
+                if (boss1Image) this.tweens.add({ targets: boss1Image, alpha: 0.4, duration: 300 });
+                else this.tweens.add({ targets: [enemyFrame, enemyLabel], alpha: 0.4, duration: 300 });
                 if(sisterImage) this.tweens.add({ targets: sisterImage, alpha: 0, duration: 300 });
               }
               this.showDeviceDialogue(text, res);
             });
-            const sayEnemyUnknown = (text) => new Promise(res => {
+            const sayEnemyUnknown = (text, tex = 'boss1_normal') => new Promise(res => {
               lastEnemySpeaker = '男';
               this.tweens.add({ targets: dimBg, alpha: 0.6, duration: 300 });
-              this.tweens.add({ targets: [enemyFrame, enemyLabel], alpha: 1, duration: 300 });
+              if (boss1Image) {
+                this.tweens.add({ targets: boss1Image, alpha: 1, duration: 300 });
+                boss1Image.setTexture(tex);
+              } else {
+                this.tweens.add({ targets: [enemyFrame, enemyLabel], alpha: 1, duration: 300 });
+                enemyLabel.setText('???');
+              }
               this.tweens.add({targets: this.heroImage, alpha: 0.4, duration: 300});
               if(sisterImage) this.tweens.add({targets: sisterImage, alpha: 0, duration: 300});
-              enemyLabel.setText('???');
               this.showDialogue('???', text, res);
             });
-            const sayEnemyName = (name, text) => new Promise(res => {
+            const sayEnemyName = (name, text, tex = 'boss1_normal') => new Promise(res => {
               if (name === '女' || name === '男') lastEnemySpeaker = name;
               this.tweens.add({ targets: dimBg, alpha: 0.6, duration: 300 });
               this.tweens.add({targets: this.heroImage, alpha: 0.4, duration: 300});
               if (lastEnemySpeaker === '女' && sisterImage) {
-                this.tweens.add({ targets: [enemyFrame, enemyLabel], alpha: 0, duration: 300 });
+                if (boss1Image) this.tweens.add({ targets: boss1Image, alpha: 0, duration: 300 });
+                else this.tweens.add({ targets: [enemyFrame, enemyLabel], alpha: 0, duration: 300 });
                 this.tweens.add({ targets: sisterImage, alpha: 1, duration: 300 });
               } else {
-                this.tweens.add({ targets: [enemyFrame, enemyLabel], alpha: 1, duration: 300 });
+                if (boss1Image) {
+                  this.tweens.add({ targets: boss1Image, alpha: 1, duration: 300 });
+                  boss1Image.setTexture(tex);
+                } else {
+                  this.tweens.add({ targets: [enemyFrame, enemyLabel], alpha: 1, duration: 300 });
+                  enemyLabel.setText(name);
+                }
                 if(sisterImage) this.tweens.add({ targets: sisterImage, alpha: 0, duration: 300 });
-                enemyLabel.setText(name);
               }
               this.showDialogue(name, text, res);
             });
@@ -1306,10 +1330,12 @@ class BossScene extends Phaser.Scene {
       this.tweens.add({ targets: dimBg, alpha: 0.6, duration: 300 });
       this.tweens.add({targets: this.heroImage, alpha: 1, duration: 300});
       if (lastEnemySpeaker === '女' && sisterImage) {
-        this.tweens.add({ targets: [enemyFrame, enemyLabel], alpha: 0, duration: 300 });
+        if (boss1Image) this.tweens.add({ targets: boss1Image, alpha: 0, duration: 300 });
+        else this.tweens.add({ targets: [enemyFrame, enemyLabel], alpha: 0, duration: 300 });
         this.tweens.add({ targets: sisterImage, alpha: 0.4, duration: 300 });
       } else {
-        this.tweens.add({ targets: [enemyFrame, enemyLabel], alpha: 0.4, duration: 300 });
+        if (boss1Image) this.tweens.add({ targets: boss1Image, alpha: 0.4, duration: 300 });
+        else this.tweens.add({ targets: [enemyFrame, enemyLabel], alpha: 0.4, duration: 300 });
         if(sisterImage) this.tweens.add({ targets: sisterImage, alpha: 0, duration: 300 });
       }
       if (text === '「……」' || text === '「……。」' || text === '「…」') {
@@ -1326,7 +1352,7 @@ class BossScene extends Phaser.Scene {
             
             (async () => {
               if (key === 'boss1') {
-                await sayEnemyUnknown('「おいおい、こんなところで何してんだ？今引き返すっていうなら見逃してやるぜ？」');
+                await sayEnemyUnknown('「おいおい、こんなところで何してんだ？今引き返すっていうなら見逃してやるぜ？」', 'boss1_normal');
                 await sayDevice('「まずい。魔王軍のやつらに気付かれた。だが、勇者の君なら倒せるだろう。」');
                 
                 // Show boss
@@ -1335,7 +1361,7 @@ class BossScene extends Phaser.Scene {
                 await new Promise(r => this.tweens.add({ targets: this.currentBoss, x: 1400, duration: 1200, ease: 'Power2', onComplete: r }));
                 this.tweens.add({ targets: this.currentBoss, y: this.currentBoss.y - 30, yoyo: true, repeat: -1, duration: 1000, ease: 'Sine.easeInOut' });
                 
-                await sayEnemyName('敵幹部1', '「なんだ、お前が勇者か。そりゃラッキーなこった。王様から勇者を連れてこいって命じられてんだ。お前も戦う気満々って感じだしやるしかないな！！」');
+                await sayEnemyName('敵幹部1', '「なんだ、お前が勇者か。そりゃラッキーなこった。王様から勇者を連れてこいって命じられてんだ。お前も戦う気満々って感じだしやるしかないな！！」', 'boss1_angry');
                 await sayHero('「……初対面なはずなのに失礼だな。」');
                 await sayDevice('「奴は○○（敵幹部1名）、見かけ通りに己の力のみで戦うことを良しとする。近接攻撃には気を付けるんだ。」');
                 await sayHero('「つまり、脳ｋ……」');
@@ -1373,8 +1399,8 @@ class BossScene extends Phaser.Scene {
               }
               
               this.tweens.add({
-                targets: [dimBg, enemyFrame, enemyLabel, this.heroImage], alpha: 0, duration: 500,
-                onComplete: () => { dimBg.destroy(); enemyFrame.destroy(); enemyLabel.destroy(); if(this.heroImage) this.heroImage.destroy(); if(sisterImage) sisterImage.destroy(); }
+                targets: [dimBg, enemyFrame, enemyLabel, boss1Image, this.heroImage].filter(Boolean), alpha: 0, duration: 500,
+                onComplete: () => { dimBg.destroy(); enemyFrame.destroy(); enemyLabel.destroy(); if(boss1Image) boss1Image.destroy(); if(this.heroImage) this.heroImage.destroy(); if(sisterImage) sisterImage.destroy(); }
               });
               if(sisterImage) this.tweens.add({ targets: sisterImage, alpha: 0, duration: 500 });
               this.dialogActive = false;
@@ -2451,6 +2477,23 @@ class BossScene extends Phaser.Scene {
             })();
           } else {
             // 通常の敗北後
+            let bossKey = this.currentBoss.configKey;
+            var w = 1920, h = 1080;
+            var dimBg = null, bossImage = null, enemyFrame = null, enemyLabel = null;
+            if (bossKey === 'boss1') {
+              dimBg = this.add.rectangle(w/2, h/2, w, h, 0x000000, 0.6).setAlpha(0).setDepth(89);
+              bossImage = this.add.image(w - 300, h / 2, 'boss1_dying').setAlpha(0).setDepth(90);
+              var b1Scale = 750 / bossImage.width;
+              bossImage.setScale(b1Scale);
+              bossImage.setY(100 + (bossImage.height * b1Scale) / 2);
+              this.tweens.add({ targets: [dimBg, bossImage], alpha: 1, duration: 300 });
+            } else if (bossKey === 'boss2') {
+              dimBg = this.add.rectangle(w/2, h/2, w, h, 0x000000, 0.6).setAlpha(0).setDepth(89);
+              enemyFrame = this.add.rectangle(w - 300, h / 2, 400, 600, 0x1F2933).setAlpha(0).setDepth(90).setStrokeStyle(4, 0xffffff);
+              enemyLabel = this.add.text(w - 300, h / 2, cfg.name, { fontFamily: '"DotGothic16"', fontSize: '40px', color: '#ffffff' }).setOrigin(0.5).setAlpha(0).setDepth(90);
+              this.tweens.add({ targets: [dimBg, enemyFrame, enemyLabel], alpha: 1, duration: 300 });
+            }
+
             this.showDialogue(cfg.name, cfg.defeat, function () {
               this.showChoice(cfg.choices.map(function (c) {
                 return {
@@ -2459,7 +2502,21 @@ class BossScene extends Phaser.Scene {
                     MOT.Audio.playSelect();
                     c.flag();
                     var isSpared = (c.text === '見逃す' || c.text.includes('見逃す'));
-                    this.proceedToNextArea(boss, isSpared);
+                    
+                    if (dimBg) {
+                      this.tweens.add({
+                        targets: [dimBg, bossImage, enemyFrame, enemyLabel].filter(Boolean), alpha: 0, duration: 500,
+                        onComplete: () => {
+                           if(dimBg) dimBg.destroy();
+                           if(bossImage) bossImage.destroy();
+                           if(enemyFrame) enemyFrame.destroy();
+                           if(enemyLabel) enemyLabel.destroy();
+                           this.proceedToNextArea(boss, isSpared);
+                        }
+                      });
+                    } else {
+                      this.proceedToNextArea(boss, isSpared);
+                    }
                   }.bind(this)
                 };
               }.bind(this)));

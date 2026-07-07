@@ -87,8 +87,13 @@ class BootScene extends Phaser.Scene {
     this.load.image('demon_lord_shock', 'assets/images/demon_lord_shock.png?v=' + v);
     this.load.image('demon_lord_eyes_closed', 'assets/images/demon_lord_eyes_closed.png?v=' + v);
 
-    // New Bosses
+    // Boss 1 and 2
     this.load.image('boss1_muscle', 'assets/images/boss1_muscle.png?v=' + v);
+    this.load.image('boss1_normal', 'assets/images/boss1_normal.png?v=' + v);
+    this.load.image('boss1_angry', 'assets/images/boss1_angry.png?v=' + v);
+    this.load.image('boss1_dying', 'assets/images/boss1_hurt_normal.png?v=' + v);
+    this.load.image('boss1_sweat', 'assets/images/boss1_sweat.png?v=' + v);
+    this.load.image('boss1_hurt_angry', 'assets/images/boss1_hurt_angry.png?v=' + v);
     this.load.image('boss2_combat', 'assets/images/boss2_combat.jpg?v=' + v);
     
     // Doctor
@@ -161,10 +166,10 @@ class BootScene extends Phaser.Scene {
     // 高解像度画像（立ち絵など）を縮小時にガビガビにならないようLINEARフィルタを一括適用
     const highResKeys = [
       'doctor_stand', 'doctor_stand_open', 'doctor_normal', 'doctor_open_eyes', 'doctor_face',
+      'boss1_muscle', 'boss1_normal', 'boss1_angry', 'boss1_dying', 'boss1_sweat', 'boss1_hurt_angry', 'boss2_combat',
       'hero_stand', 'hero_stand_silent', 'hero_stand_corrupted', 'hero_stand_blink',
       'demon_lord_normal', 'demon_lord_blink', 'demon_lord_dying', 'demon_lord_shock', 'demon_lord_eyes_closed',
-      'inuneko_stand', 'inuneko_blink', 'inuneko_dying',
-      'boss1_muscle', 'boss2_combat'
+      'inuneko_stand', 'inuneko_blink', 'inuneko_dying'
     ];
     highResKeys.forEach(k => {
       if (this.textures.exists(k)) {
