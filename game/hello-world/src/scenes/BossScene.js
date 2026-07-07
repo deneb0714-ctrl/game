@@ -2909,8 +2909,9 @@ class BossScene extends Phaser.Scene {
     if (this.dimBg) { this.dimBg.destroy(); this.dimBg = null; }
     if (this.heroImage) { this.heroImage.destroy(); this.heroImage = null; }
     if (this.demonImage) { this.demonImage.destroy(); this.demonImage = null; }
-                          if (this.inunekoImage) { this.inunekoImage.destroy(); this.inunekoImage = null; }
+    if (this.inunekoImage) { this.inunekoImage.destroy(); this.inunekoImage = null; }
     if (this.doctorImage) { this.doctorImage.destroy(); this.doctorImage = null; }
+    if (this.sisterImage) { this.sisterImage.destroy(); this.sisterImage = null; }
   }
 
   proceedToNextArea(boss, isSpared = false) {
