@@ -987,8 +987,8 @@ class BossScene extends Phaser.Scene {
       
       let pattern = Phaser.Math.Between(0, 2);
       if (pattern === 0 || pattern === 1) {
-        // 高速の追尾レーザー
-        MOT.fireHoming(this, x, y, 600, this.player, 0x4FD1FF, 'bullet_laser');
+        // 高速の斜め追尾レーザー（速度を1400に上げてレーザー感を強調）
+        MOT.fireHoming(this, x, y, 1400, this.player, 0x4FD1FF, 'bullet_laser');
       } else {
         // レーン丸ごと攻撃（5秒警告後）
         this.fireLaneBeam();
@@ -1498,6 +1498,29 @@ class BossScene extends Phaser.Scene {
       return;
     }
 
+
+    if (this.currentBoss.configKey === 'boss3_twins') {
+      boss.hp -= dmg;
+      boss.setTint(0xffffff);
+      this.time.delayedCall(50, function () { if (boss.active) boss.clearTint(); });
+      
+      if (Phaser.Math.Between(0, 100) < 50) {
+        MOT.spawnEnergyItem(this, boss.x, boss.y);
+      }
+      
+      if (boss.hp <= 0 && boss.active) {
+        boss.active = false;
+        boss.setVisible(false);
+        boss.body.enable = false;
+        this.showExplosion(boss.x, boss.y);
+      }
+      
+      if (this.currentBoss.hp <= 0 && this.sisterBoss && this.sisterBoss.hp <= 0 && !this.bossDefeated) {
+        this.bossDefeated = true;
+        this.onTwinsDefeated();
+      }
+      return;
+    }
 
     this.bossHP -= dmg;
     boss.hp = this.bossHP;

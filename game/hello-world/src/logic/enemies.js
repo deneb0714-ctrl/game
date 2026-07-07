@@ -103,7 +103,13 @@ MOT.fireHoming = function (scene, x, y, speed, player, color, tex) {
     bullet.setTint(color !== undefined ? color : 0xFF4B6E);
     
     if (tex === 'bullet_laser') {
+      // レーザーの起点を左端に
+      bullet.setOrigin(0, 0.5);
       bullet.setRotation(angle);
+      
+      // 当たり判定（AABB）が巨大化しないよう、先端付近（画像の右側）に小さく設定
+      bullet.body.setSize(30, 30);
+      bullet.body.setOffset(370, -9); 
     }
     
     scene.time.delayedCall(4000, function () {
