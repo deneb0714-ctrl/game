@@ -82,7 +82,7 @@ class BossScene extends Phaser.Scene {
     // アニメーション再生後にサイズを指定（アニメーションによって上書きされるのを防ぐ）
     this.player.body.setSize(14, 60);
     this.player.body.setOffset(25, 25);
-    this.tweens.add({ 
+    this.player.moveTween = this.tweens.add({ 
       targets: this.player, 
       x: 300, 
       duration: 1000, 

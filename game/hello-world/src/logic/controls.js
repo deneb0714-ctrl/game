@@ -60,8 +60,6 @@ MOT.handleMovement = function (scene, player) {
   if (player.currentLane === undefined) {
     player.currentLane = 1;
     player.currentCol  = 1; // 中央の列からスタート (X=300)
-    player.x = COL_XS[1];
-    player.y = LANE_YS[1];
     player.setVelocity(0, 0);
   }
 

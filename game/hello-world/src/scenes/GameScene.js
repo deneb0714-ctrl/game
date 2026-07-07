@@ -57,9 +57,9 @@ class GameScene extends Phaser.Scene {
     // Player
     this.player = this.physics.add.sprite(-100, 460, 'hero_stand_combat');
     this.player.play('hero_combat_anim');
-    this.tweens.add({ 
+    this.player.moveTween = this.tweens.add({ 
       targets: this.player, 
-      x: 200, 
+      x: 300, 
       duration: 1000, 
       ease: 'Power2',
       onComplete: () => {
