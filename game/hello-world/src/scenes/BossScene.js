@@ -16,15 +16,7 @@ class BossScene extends Phaser.Scene {
       this.currentBossIndex = data.startBossIndex;
     }
     
-    // デバッグ用: 強制シャットダウンエンド条件を満たす
-    this.currentBossIndex = 3;
-    MOT.flags = MOT.flags || {};
-    MOT.flags.killedBoss1 = true;
-    MOT.flags.killedBoss2 = true;
-    MOT.flags.killedTwins = false;
-    MOT.flags.kills = 2;
-    MOT.flags.dollPoints = 100;
-    
+
     this.debugSkipCombat = data && data.debugSkipCombat;
     this.dialogActive = false;
     this.lastDialogActive = false; // 会話終了時のクールタイム検出用
