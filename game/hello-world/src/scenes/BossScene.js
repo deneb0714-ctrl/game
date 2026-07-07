@@ -1361,7 +1361,8 @@ class BossScene extends Phaser.Scene {
                 await new Promise(r => this.tweens.add({ targets: this.currentBoss, x: 1400, duration: 1200, ease: 'Power2', onComplete: r }));
                 this.tweens.add({ targets: this.currentBoss, y: this.currentBoss.y - 30, yoyo: true, repeat: -1, duration: 1000, ease: 'Sine.easeInOut' });
                 
-                await sayEnemyName('敵幹部1', '「なんだ、お前が勇者か。そりゃラッキーなこった。王様から勇者を連れてこいって命じられてんだ。お前も戦う気満々って感じだしやるしかないな！！」', 'boss1_sweat');
+                await sayEnemyName('敵幹部1', '「なんだ、お前が勇者か。そりゃラッキーなこった。」', 'boss1_sweat');
+                await sayEnemyName('敵幹部1', '「王様から勇者を連れてこいって命じられてんだ。お前も戦う気満々って感じだしやるしかないな！！」', 'boss1_normal');
                 await sayHero('「……初対面なはずなのに失礼だな。」');
                 await sayDevice('「奴は○○（敵幹部1名）、見かけ通りに己の力のみで戦うことを良しとする。近接攻撃には気を付けるんだ。」');
                 await sayHero('「つまり、脳ｋ……」');
@@ -2483,9 +2484,11 @@ class BossScene extends Phaser.Scene {
             if (bossKey === 'boss1') {
               dimBg = this.add.rectangle(w/2, h/2, w, h, 0x000000, 0.6).setAlpha(0).setDepth(89);
               bossImage = this.add.image(w - 300, h / 2, 'boss1_dying').setAlpha(0).setDepth(90);
-              var b1Scale = 750 / bossImage.width;
+              var bw = bossImage.width || 576;
+              var bh = bossImage.height || 1024;
+              var b1Scale = 750 / bw;
               bossImage.setScale(b1Scale);
-              bossImage.setY(100 + (bossImage.height * b1Scale) / 2);
+              bossImage.setY(100 + (bh * b1Scale) / 2);
               this.tweens.add({ targets: [dimBg, bossImage], alpha: 1, duration: 300 });
               if (this.heroImage) this.tweens.add({ targets: this.heroImage, alpha: 0.4, duration: 300 });
             } else if (bossKey === 'boss2') {
@@ -2501,12 +2504,16 @@ class BossScene extends Phaser.Scene {
                   text: c.text,
                   callback: function () {
                     MOT.Audio.playSelect();
+                    if (this.dialogContainer) {
+                      this.dialogContainer.destroy();
+                      this.dialogContainer = null;
+                    }
                     c.flag();
                     var isSpared = (c.text === '見逃す' || c.text.includes('見逃す'));
                     
                     if (dimBg) {
                       this.tweens.add({
-                        targets: [dimBg, bossImage, enemyFrame, enemyLabel].filter(Boolean), alpha: 0, duration: 500,
+                        targets: [dimBg, bossImage, enemyFrame, enemyLabel, this.heroImage].filter(Boolean), alpha: 0, duration: 500,
                         onComplete: () => {
                            if(dimBg) dimBg.destroy();
                            if(bossImage) bossImage.destroy();
@@ -2521,7 +2528,7 @@ class BossScene extends Phaser.Scene {
                   }.bind(this)
                 };
               }.bind(this)));
-            }.bind(this));
+            }.bind(this), true);
           }
         }
       });
@@ -3058,7 +3065,7 @@ class BossScene extends Phaser.Scene {
     this.choicesList = [];
   }
 
-  showDialogue(speaker, text, onComplete) {
+  showDialogue(speaker, text, onComplete, keepOpen = false) {
     if (this.dialogContainer) {
       this.dialogContainer.destroy();
     }
@@ -3129,8 +3136,10 @@ class BossScene extends Phaser.Scene {
           const advance = () => {
             this.input.off('pointerdown', advance);
             this.input.keyboard.off('keydown', keyHandler);
-            if (this.dialogContainer) this.dialogContainer.destroy();
-            this.dialogContainer = null;
+            if (!keepOpen && this.dialogContainer) {
+              this.dialogContainer.destroy();
+              this.dialogContainer = null;
+            }
             if (onComplete) onComplete();
           };
           const keyHandler = (event) => {
@@ -3153,7 +3162,7 @@ class BossScene extends Phaser.Scene {
     const overlay = this.add.graphics();
     overlay.fillStyle(0x000000, 0.5);
     overlay.fillRect(0, 0, w, h);
-    overlay.setDepth(49);
+    overlay.setDepth(149);
     elements.push(overlay);
 
     // [ENTER] KEY ガイドテキストを右下に追加
@@ -3161,7 +3170,7 @@ class BossScene extends Phaser.Scene {
       fontFamily: '"Press Start 2P"',
       fontSize: '20px',
       color: '#9CA3AF'
-    }).setDepth(51);
+    }).setDepth(151);
     this.tweens.add({ targets: contText, alpha: 0.3, yoyo: true, repeat: -1, duration: 500 });
     elements.push(contText);
 
@@ -3171,13 +3180,13 @@ class BossScene extends Phaser.Scene {
 
     choices.forEach(function (choice, i) {
       const y = startY + i * 110;
-      const btn = self.add.image(w / 2, y, 'ui_button_wide').setInteractive({ useHandCursor: true }).setDepth(50);
+      const btn = self.add.image(w / 2, y, 'ui_button_wide').setInteractive({ useHandCursor: true }).setDepth(150);
       
       const txt = self.add.text(w / 2, y, choice.text, {
         fontFamily: '"DotGothic16"',
         fontSize: '26px',
         color: '#E5E7EB'
-      }).setOrigin(0.5).setDepth(51);
+      }).setOrigin(0.5).setDepth(151);
 
       elements.push(btn, txt);
       choicesList.push({ btn: btn, txt: txt, callback: choice.callback });
