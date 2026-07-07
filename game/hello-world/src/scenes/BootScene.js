@@ -159,6 +159,20 @@ class BootScene extends Phaser.Scene {
       repeat: -1
     });
 
+    // 高解像度画像（立ち絵など）を縮小時にガビガビにならないようLINEARフィルタを一括適用
+    const highResKeys = [
+      'doctor_stand', 'doctor_stand_open', 'doctor_normal', 'doctor_open_eyes', 'doctor_face',
+      'hero_stand', 'hero_stand_silent', 'hero_stand_corrupted', 'hero_stand_blink',
+      'demon_lord_normal', 'demon_lord_blink', 'demon_lord_dying', 'demon_lord_shock', 'demon_lord_eyes_closed',
+      'inuneko_stand', 'inuneko_blink', 'inuneko_dying',
+      'boss1_muscle', 'boss2_combat'
+    ];
+    highResKeys.forEach(k => {
+      if (this.textures.exists(k)) {
+        this.textures.get(k).setFilter(Phaser.Textures.FilterMode.LINEAR);
+      }
+    });
+
     this.scene.start('TitleScene');
   }
 
