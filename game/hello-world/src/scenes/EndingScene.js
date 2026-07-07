@@ -96,6 +96,11 @@ class EndingScene extends Phaser.Scene {
                     this.input.keyboard.off('keydown-ENTER', finishTextPhase);
                     this.input.keyboard.off('keydown-SPACE', finishTextPhase);
                     
+                    if (this.nextIcon) {
+                        this.nextIcon.destroy();
+                        this.nextIcon = null;
+                    }
+                    
                     this.tweens.add({ 
                         targets: this.textPhaseElements, 
                         alpha: 0, 
