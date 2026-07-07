@@ -1421,63 +1421,6 @@ class BossScene extends Phaser.Scene {
       return;
     }
 
-    // ── ボス敵への処理 ────────────────────────────────────────────
-    if (boss.configKey === 'boss3_twins') {
-      boss.hp -= dmg;
-      boss.setTint(0xffffff);
-      this.time.delayedCall(50, function () { if (boss.active) boss.clearTint(); });
-      if (Phaser.Math.Between(0, 100) < 50) MOT.spawnEnergyItem(this, boss.x, boss.y);
-      
-      if (boss.hp <= 0 && boss.active) {
-        var other = (boss === this.currentBoss) ? this.sisterBoss : this.currentBoss;
-        
-        boss.active = false;
-        boss.body.enable = false;
-        
-        if (!other.active || other.hp <= 0) {
-          // both defeated
-          if (this.twinReviveTimer) { this.twinReviveTimer.destroy(); this.twinReviveTimer = null; }
-          if (!this.bossDefeated) {
-            this.bossDefeated = true;
-            this.onTwinsDefeated();
-          }
-        } else {
-          // One defeated, other still alive (Hide the first defeated one)
-          boss.setVisible(false);
-          let isBrotherDefeated = (boss === this.currentBoss);
-
-          // Start 10s revive timer
-          if (this.twinReviveTimer) this.twinReviveTimer.destroy();
-          this.twinReviveTimer = this.time.delayedCall(10000, () => {
-             boss.active = true;
-             boss.setVisible(true);
-             boss.body.enable = true;
-             boss.hp = boss.maxHp * 0.1;
-             this.showExplosion(boss.x, boss.y); // visual for revive
-             
-             // Dialog on revive
-             let speakerText = isBrotherDefeated ? '「エラー...兄様！応答して！」' : '「…サブシステム、強制駆動」';
-             let speakerColor = isBrotherDefeated ? '#FF4B6E' : '#4FD1FF';
-             let floatText = this.add.text(other.x, other.y - 80, speakerText, { fontFamily: '"DotGothic16"', fontSize: '28px', color: speakerColor }).setOrigin(0.5).setDepth(200);
-             this.tweens.add({ targets: floatText, y: floatText.y - 40, alpha: 0, duration: 2500, ease: 'Power1', onComplete: () => floatText.destroy() });
-             
-             // Revive Glitch Effect (Color Separation without pure white blowout)
-             this.cameras.main.shake(500, 0.01);
-             var w = 1920, h = 1080;
-             var revCont = this.add.container(0, 0).setDepth(150);
-             var b2 = 30;
-             var r1 = this.add.graphics().lineStyle(b2, 0xff0000, 0.5).strokeRect(b2/2, b2/2, w-b2, h-b2);
-             var r2 = this.add.graphics().lineStyle(b2, 0x00ff00, 0.5).strokeRect(b2/2, b2/2, w-b2, h-b2);
-             var r3 = this.add.graphics().lineStyle(b2, 0x0000ff, 0.5).strokeRect(b2/2, b2/2, w-b2, h-b2);
-             revCont.add([r1, r2, r3]);
-             this.tweens.add({ targets: r1, x: {min: -20, max: 20}, y: {min: -20, max: 20}, alpha: {min: 0.1, max: 0.7}, duration: 40, repeat: 10, yoyo: true });
-             this.tweens.add({ targets: r2, x: {min: -20, max: 20}, y: {min: -20, max: 20}, alpha: {min: 0.1, max: 0.7}, duration: 50, repeat: 10, yoyo: true });
-             this.tweens.add({ targets: r3, x: {min: -20, max: 20}, y: {min: -20, max: 20}, alpha: {min: 0.1, max: 0.7}, duration: 60, repeat: 10, yoyo: true, onComplete: () => revCont.destroy() });
-          });
-        }
-      }
-      return;
-    }
 
     this.bossHP -= dmg;
     boss.hp = this.bossHP;
@@ -1537,23 +1480,68 @@ class BossScene extends Phaser.Scene {
     const sayHero = (text) => new Promise(res => { this.tweens.add({ targets: dimBg, alpha: 0.6, duration: 300 }); this.tweens.add({targets: this.heroImage, alpha: 1, duration: 300});  if (text === '「……」' || text === '「……。」' || text === '「…」') {        this.heroImage.setTexture('hero_stand_silent');      } else {        this.heroImage.setTexture('hero_stand');      }     this.heroImage.setScale(750 / this.heroImage.width);     this.heroImage.setY(100 + (this.heroImage.height * this.heroImage.scaleY) / 2);      this.showDialogue('勇者', text, res); });
 
           if (key === 'boss1') {
-            const sayEnemy = (text) => new Promise(res => { this.tweens.add({ targets: dimBg, alpha: 0.6, duration: 300 }); this.tweens.add({targets: this.heroImage, alpha: 0.4, duration: 300}); this.showDialogue('敵幹部1', text, res); });
+            // 幹部1の立ち絵（瀕死・怒り）を右側に生成
+            var boss1DefImg = this.add.image(w - 300, h / 2, 'boss1_hurt_angry').setAlpha(0).setDepth(90);
+            var b1dW = boss1DefImg.width || 576;
+            var b1dH = boss1DefImg.height || 1024;
+            var b1dScale = 750 / b1dW;
+            boss1DefImg.setScale(b1dScale);
+            boss1DefImg.setY(100 + (b1dH * b1dScale) / 2);
+
+            // 幹部1が話すとき：幹部1ハイライト、主人公は暗く
+            const sayEnemyB1 = (text) => new Promise(res => {
+              this.tweens.add({ targets: dimBg, alpha: 0.6, duration: 300 });
+              this.tweens.add({ targets: boss1DefImg, alpha: 1, duration: 300 });
+              this.tweens.add({ targets: this.heroImage, alpha: 0.4, duration: 300 });
+              this.showDialogue('敵幹部1', text, res);
+            });
+            // 主人公が話すとき：主人公ハイライト、幹部1は暗く
+            const sayHeroB1 = (text) => new Promise(res => {
+              this.tweens.add({ targets: dimBg, alpha: 0.6, duration: 300 });
+              this.tweens.add({ targets: this.heroImage, alpha: 1, duration: 300 });
+              this.tweens.add({ targets: boss1DefImg, alpha: 0.4, duration: 300 });
+              if (text === '「……」' || text === '「……。」' || text === '「…」') {
+                this.heroImage.setTexture('hero_stand_silent');
+              } else {
+                this.heroImage.setTexture('hero_stand');
+              }
+              this.heroImage.setScale(750 / this.heroImage.width);
+              this.heroImage.setY(100 + (this.heroImage.height * this.heroImage.scaleY) / 2);
+              this.showDialogue('勇者', text, res);
+            });
+            // 博士が話すとき：両方暗く
+            const sayDeviceB1 = (text) => new Promise(res => {
+              this.tweens.add({ targets: dimBg, alpha: 0.6, duration: 300 });
+              this.tweens.add({ targets: this.heroImage, alpha: 0.4, duration: 300 });
+              this.tweens.add({ targets: boss1DefImg, alpha: 0.4, duration: 300 });
+              this.showDeviceDialogue(text, res);
+            });
+
             (async () => {
-              await sayDevice('「よくやった。このまま止めを刺すんだ。魔物も人間と変わらず心臓を打ち抜けば死ぬ。」');
+              // 立ち絵フェードイン
+              this.tweens.add({ targets: dimBg, alpha: 0.6, duration: 400 });
+              this.tweens.add({ targets: this.heroImage, alpha: 0.4, duration: 400 });
+              this.tweens.add({ targets: boss1DefImg, alpha: 1, duration: 400 });
+              await new Promise(r => this.time.delayedCall(500, r));
+
+              await sayDeviceB1('「よくやった。このまま止めを刺すんだ。魔物も人間と変わらず心臓を打ち抜けば死ぬ。」');
               let c = await askChoice('1. 心臓を打ち抜く', '2. 見逃す');
-              if (c === 1) { MOT.flags.dollPoints++; MOT.flags.killedTwins = true; MOT.flags.killedBoss1 = true;
-                await sayEnemy('「くそっ…！俺もここまでか…」');
-                MOT.Audio.playSelect(); // SE (Gunshot placeholder)
-                await sayDevice('「よくやった。まずは一歩平和に近づいたな。そのまま進んでいくといい」');
+              if (c === 1) {
+                MOT.flags.dollPoints++; MOT.flags.killedTwins = true; MOT.flags.killedBoss1 = true;
+                await sayEnemyB1('「くそっ…！俺もここまでか…」');
+                MOT.Audio.playSelect();
+                await sayDeviceB1('「よくやった。まずは一歩平和に近づいたな。そのまま進んでいくといい」');
+                boss1DefImg.destroy();
                 this.proceedToNextArea(boss, false);
               } else {
                 MOT.flags.killedBoss1 = false;
-                await sayEnemy('「なんで殺さない…？お前はあいつの指示に従ってるんじゃないのか？」');
-                await sayEnemy('「お前が魔王様に従うなら、協力する」');
+                await sayEnemyB1('「なんで殺さない…？お前はあいつの指示に従ってるんじゃないのか？」');
+                await sayEnemyB1('「お前が魔王様に従うなら、協力する」');
                 await new Promise(r => this.tweens.add({ targets: boss, x: 2200, duration: 1500, ease: 'Power2', onComplete: r }));
-                await sayDevice('「君は一体何をしている？」');
-                await sayDevice('「奴らを倒さないと、世界が救われないんだ。何がしたいのかさっぱりだが、次はちゃんと止めを刺せ。」');
-                await sayHero('「……」');
+                boss1DefImg.destroy();
+                await sayDeviceB1('「君は一体何をしている？」');
+                await sayDeviceB1('「奴らを倒さないと、世界が救われないんだ。何がしたいのかさっぱりだが、次はちゃんと止めを刺せ。」');
+                await sayHeroB1('「……」');
                 this.proceedToNextArea(boss, true);
               }
             })();
