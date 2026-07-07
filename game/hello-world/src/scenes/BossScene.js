@@ -1361,7 +1361,7 @@ class BossScene extends Phaser.Scene {
                 await new Promise(r => this.tweens.add({ targets: this.currentBoss, x: 1400, duration: 1200, ease: 'Power2', onComplete: r }));
                 this.tweens.add({ targets: this.currentBoss, y: this.currentBoss.y - 30, yoyo: true, repeat: -1, duration: 1000, ease: 'Sine.easeInOut' });
                 
-                await sayEnemyName('敵幹部1', '「なんだ、お前が勇者か。そりゃラッキーなこった。王様から勇者を連れてこいって命じられてんだ。お前も戦う気満々って感じだしやるしかないな！！」', 'boss1_angry');
+                await sayEnemyName('敵幹部1', '「なんだ、お前が勇者か。そりゃラッキーなこった。王様から勇者を連れてこいって命じられてんだ。お前も戦う気満々って感じだしやるしかないな！！」', 'boss1_sweat');
                 await sayHero('「……初対面なはずなのに失礼だな。」');
                 await sayDevice('「奴は○○（敵幹部1名）、見かけ通りに己の力のみで戦うことを良しとする。近接攻撃には気を付けるんだ。」');
                 await sayHero('「つまり、脳ｋ……」');
@@ -2487,6 +2487,7 @@ class BossScene extends Phaser.Scene {
               bossImage.setScale(b1Scale);
               bossImage.setY(100 + (bossImage.height * b1Scale) / 2);
               this.tweens.add({ targets: [dimBg, bossImage], alpha: 1, duration: 300 });
+              if (this.heroImage) this.tweens.add({ targets: this.heroImage, alpha: 0.4, duration: 300 });
             } else if (bossKey === 'boss2') {
               dimBg = this.add.rectangle(w/2, h/2, w, h, 0x000000, 0.6).setAlpha(0).setDepth(89);
               enemyFrame = this.add.rectangle(w - 300, h / 2, 400, 600, 0x1F2933).setAlpha(0).setDepth(90).setStrokeStyle(4, 0xffffff);
