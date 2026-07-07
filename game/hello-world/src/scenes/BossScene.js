@@ -19,6 +19,11 @@ class BossScene extends Phaser.Scene {
       isSkipping = true;
     }
 
+    // デバッグ用: 博士戦(4)へ直接飛ぶ場合、キューにdoctorを追加
+    if (this.currentBossIndex === 4 && this.bossQueue.indexOf('doctor') === -1) {
+      this.bossQueue.push('doctor');
+    }
+
     if (isSkipping || (data && data.jumpToEndingSetup)) {
       if (!MOT.flags) MOT.flags = {};
       MOT.flags.playerMaxHP = MOT.flags.playerMaxHP || 5;
