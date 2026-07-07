@@ -47,16 +47,15 @@ class BootScene extends Phaser.Scene {
     // 博士の顔アイコン
     this.load.image('doctor_face', window.DOCTOR_B64);
 
+    const v = window.GAME_VERSION || 'v1';
+    
     // 博士の立ち絵
-    this.load.image('doctor_stand', window.DOCTOR_STAND_B64);
-    if (typeof window.DOCTOR_STAND_OPEN_B64 !== 'undefined') {
-      this.load.image('doctor_stand_open', window.DOCTOR_STAND_OPEN_B64);
-    }
+    this.load.image('doctor_stand', 'assets/images/Copilot_20260622_201618.png?v=' + v);
+    this.load.image('doctor_stand_open', 'assets/images/Copilot_20260622_201917.png?v=' + v);
     
     // 主人公の立ち絵
     this.load.image('hero_stand', window.HERO_STAND_B64);
     
-    const v = window.GAME_VERSION || 'v1';
     // 主人公の戦闘時・他者との会話時の立ち絵
     this.load.spritesheet('hero_stand_combat', 'assets/images/hero_combat_sheet.png?v=' + v, {
       frameWidth: 63,
@@ -93,8 +92,8 @@ class BootScene extends Phaser.Scene {
     this.load.image('boss2_combat', 'assets/images/boss2_combat.jpg?v=' + v);
     
     // Doctor
-    this.load.image('doctor_normal', 'assets/images/doctor_normal.png?v=' + v);
-    this.load.image('doctor_open_eyes', 'assets/images/doctor_open_eyes.png?v=' + v);
+    this.load.image('doctor_normal', 'assets/images/Copilot_20260622_201618.png?v=' + v);
+    this.load.image('doctor_open_eyes', 'assets/images/Copilot_20260622_201917.png?v=' + v);
     this.load.image('doctor_face', 'assets/images/doctor_face.jpg?v=' + v);
 
     // Inuneko Star
