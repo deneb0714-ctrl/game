@@ -1952,24 +1952,13 @@ class BossScene extends Phaser.Scene {
                       downPresses++;
                       if (redBarrier) redBarrier.setAlpha(0.1 + (downPresses / 20) * 0.6); // どんどん赤く強く発光する
                       
-                      // 揺れの処理
-                      if (downPresses >= 4 && downPresses < 20) {
-                        let shakeIntensity = 0;
-                        let shakeDuration = 40;
+                      // 揺れの処理（1回目から20回目まで、単一の数式で徐々に大きくする）
+                      if (downPresses < 20) {
+                        // 1〜19回目まで、累乗を使って最初はほぼ0、後半急激に大きくなるようにする
+                        let ratio = downPresses / 20; // 0.05 〜 0.95
+                        let shakeIntensity = Math.pow(ratio, 3) * 0.015; // 0.015が最大の揺れ幅
+                        let shakeDuration = 50 + (downPresses * 5); // 55ms 〜 145ms
                         
-                        if (downPresses <= 7) {
-                          // 4〜7回目：ちょっと揺れてるかも
-                          shakeIntensity = 0.0001 + (downPresses - 4) * 0.00003;
-                        } else if (downPresses <= 10) {
-                          // 8〜10回目：少し揺れてる
-                          shakeIntensity = 0.0003 + (downPresses - 8) * 0.0001;
-                          shakeDuration = 60;
-                        } else {
-                          // 11回目以降：どんどん揺れが大きく
-                          let level = downPresses - 10; // 1〜9
-                          shakeIntensity = 0.001 + Math.pow(level, 1.8) * 0.0003;
-                          shakeDuration = 80 + level * 10;
-                        }
                         this.cameras.main.shake(shakeDuration, shakeIntensity);
                       }
                       
