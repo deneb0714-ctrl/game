@@ -1620,9 +1620,32 @@ class BossScene extends Phaser.Scene {
         boss.setVisible(false);
         boss.body.enable = false;
         this.showExplosion(boss.x, boss.y);
+        
+        // --- 復活処理（5秒） ---
+        let otherBoss = (boss === this.currentBoss) ? this.sisterBoss : this.currentBoss;
+        if (otherBoss && otherBoss.active) {
+          let isBrotherDefeated = (boss === this.currentBoss);
+          
+          if (this.twinReviveTimer) this.twinReviveTimer.destroy();
+          this.cameras.main.shake(500, 0.01);
+          
+          this.twinReviveTimer = this.time.delayedCall(5000, () => {
+             boss.active = true;
+             boss.setVisible(true);
+             boss.body.enable = true;
+             boss.hp = 1; // 復活時のHP
+             this.showExplosion(boss.x, boss.y); 
+             
+             let speakerText = isBrotherDefeated ? '妹「兄さん！起きて！」' : '兄「しっかりしろ！」';
+             let speakerColor = isBrotherDefeated ? '#FF4B6E' : '#4FD1FF';
+             let floatText = this.add.text(otherBoss.x, otherBoss.y - 80, speakerText, { fontFamily: '"DotGothic16"', fontSize: '28px', color: speakerColor }).setOrigin(0.5).setDepth(200);
+             this.tweens.add({ targets: floatText, y: floatText.y - 40, alpha: 0, duration: 2500, ease: 'Power1', onComplete: () => floatText.destroy() });
+          });
+        }
       }
       
       if (this.currentBoss.hp <= 0 && this.sisterBoss && this.sisterBoss.hp <= 0 && !this.bossDefeated) {
+        if (this.twinReviveTimer) this.twinReviveTimer.destroy();
         this.bossDefeated = true;
         this.onTwinsDefeated();
       }
