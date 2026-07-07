@@ -863,7 +863,7 @@ class BossScene extends Phaser.Scene {
       this.bossAttackTimer += delta;
       var interval = this.bossHP < this.bossMaxHP * 0.5 ? 600 : 1000;
       if (this.inunekoBoostActive) interval = Math.floor(interval * 0.5); // 犬猫スター弾幕加速
-      if (this.currentBoss.configKey === 'boss3_twins') interval = 3000; // Brother shoots less frequently
+      if (this.currentBoss.configKey === 'boss3_twins') interval = 1200; // 兄の攻撃頻度を上げる
       
       if (this.bossAttackTimer >= interval) {
         this.bossAttackTimer = 0;
@@ -981,9 +981,16 @@ class BossScene extends Phaser.Scene {
       return;
     }
     
-    // boss3_twins（兄）は追尾弾
+    // boss3_twins（兄）の攻撃パターン
     if (this.currentBoss.configKey === 'boss3_twins') {
-      MOT.fireHoming(this, x, y, 200, this.player, 0x4FD1FF, 'bullet_laser');
+      let pattern = Phaser.Math.Between(0, 2);
+      if (pattern === 0 || pattern === 1) {
+        // 高速の追尾レーザー
+        MOT.fireHoming(this, x, y, 600, this.player, 0x4FD1FF, 'bullet_laser');
+      } else {
+        // レーン丸ごと攻撃（5秒警告後）
+        this.fireLaneBeam();
+      }
       return;
     }
 
@@ -1032,6 +1039,54 @@ class BossScene extends Phaser.Scene {
         }
       });
     }
+  }
+
+  // 5秒間の警告のあと、レーン全体を薙ぎ払う極太レーザー
+  fireLaneBeam() {
+    if (this.dialogActive) return;
+    const laneYs = [220, 460, 700];
+    const targetY = laneYs[Phaser.Math.Between(0, 2)];
+    
+    // 警告演出 (赤い半透明の帯を点滅させる)
+    let warningRect = this.add.rectangle(1920 / 2, targetY, 1920, 100, 0xff0000, 0.2).setDepth(8);
+    this.tweens.add({
+      targets: warningRect,
+      alpha: 0.5,
+      duration: 250,
+      yoyo: true,
+      repeat: 19 // 計5秒 (20回 * 250ms = 5000ms)
+    });
+    
+    // 5秒後に極太レーザー発射
+    this.time.delayedCall(5000, () => {
+      if (warningRect) warningRect.destroy();
+      
+      // カメラを揺らし、爆発音
+      this.cameras.main.shake(500, 0.02);
+      if (MOT.Audio.playExplosion) MOT.Audio.playExplosion();
+      
+      // レーザー実体
+      let beam = this.add.rectangle(1920 / 2, targetY, 1920, 100, 0x4FD1FF, 1).setDepth(9);
+      this.physics.add.existing(beam);
+      beam.body.setAllowGravity(false);
+      beam.body.setImmovable(true);
+      
+      // プレイヤーとの衝突判定
+      let collider = this.physics.add.overlap(this.player, beam, (p, b) => {
+        this.onPlayerHit(p, { destroy: () => {} });
+      });
+      
+      // レーザー消滅
+      this.tweens.add({
+        targets: beam,
+        alpha: 0,
+        duration: 800,
+        onComplete: () => {
+          collider.destroy();
+          beam.destroy();
+        }
+      });
+    });
   }
 
   // 単一斬撃弾を発射する

@@ -65,16 +65,6 @@ MOT.fireLinear = function (scene, x, y, vx, vy, color, tex) {
     if (tex === 'bullet_laser') {
       bullet.setRotation(Math.atan2(vy, vx));
     }
-    
-    // For star, rotate continuously
-    if (tex === 'bullet_star') {
-      scene.tweens.add({
-        targets: bullet,
-        rotation: "+=" + (Math.PI * 2),
-        duration: 1000,
-        repeat: -1
-      });
-    }
 
     // Auto-destroy when off-screen
     scene.time.delayedCall(5000, function () {
@@ -114,14 +104,6 @@ MOT.fireHoming = function (scene, x, y, speed, player, color, tex) {
     
     if (tex === 'bullet_laser') {
       bullet.setRotation(angle);
-    }
-    if (tex === 'bullet_star') {
-      scene.tweens.add({
-        targets: bullet,
-        rotation: "+=" + (Math.PI * 2),
-        duration: 1000,
-        repeat: -1
-      });
     }
     
     scene.time.delayedCall(4000, function () {
