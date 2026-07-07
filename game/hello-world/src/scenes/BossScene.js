@@ -2483,13 +2483,14 @@ class BossScene extends Phaser.Scene {
             var dimBg = null, bossImage = null, enemyFrame = null, enemyLabel = null;
             if (bossKey === 'boss1') {
               dimBg = this.add.rectangle(w/2, h/2, w, h, 0x000000, 0.6).setAlpha(0).setDepth(89);
-              bossImage = this.add.image(w - 300, h / 2, 'boss1_dying').setAlpha(0).setDepth(90);
+              bossImage = this.add.image(w - 300, h / 2, 'boss1_hurt_angry').setAlpha(0).setDepth(90);
               var bw = bossImage.width || 576;
               var bh = bossImage.height || 1024;
               var b1Scale = 750 / bw;
               bossImage.setScale(b1Scale);
               bossImage.setY(100 + (bh * b1Scale) / 2);
-              this.tweens.add({ targets: [dimBg, bossImage], alpha: 1, duration: 300 });
+              this.tweens.add({ targets: dimBg, alpha: 1, duration: 300 });
+              this.tweens.add({ targets: bossImage, alpha: 1, duration: 300 });
               if (this.heroImage) this.tweens.add({ targets: this.heroImage, alpha: 0.4, duration: 300 });
             } else if (bossKey === 'boss2') {
               dimBg = this.add.rectangle(w/2, h/2, w, h, 0x000000, 0.6).setAlpha(0).setDepth(89);
