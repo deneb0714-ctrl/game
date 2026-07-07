@@ -809,7 +809,11 @@ class BossScene extends Phaser.Scene {
     }
 
     // 博士の指示システム update（ダイアログ判定より先に実行して、表示非表示を管理する）
-    if (!(this.currentBoss && this.currentBoss.configKey === 'doctor')) {
+    if (this.currentBossIndex >= 4 || MOT.flags.demonLordFinished) {
+      if (MOT.DoctorDirective && MOT.DoctorDirective.directiveContainer) {
+        MOT.DoctorDirective.hideDirective(this);
+      }
+    } else {
       MOT.DoctorDirective.update(this, delta, this.player, this.dialogActive);
     }
 
@@ -2693,7 +2697,11 @@ class BossScene extends Phaser.Scene {
               this.player.setCollideWorldBounds(true);
               this.physics.resume();
               if (this.currentBossIndex < this.bossQueue.length) {
-                this.startIntermission();
+                if (this.bossQueue[this.currentBossIndex] === 'doctor') {
+                  this.time.delayedCall(1500, () => { this.startBoss(); });
+                } else {
+                  this.startIntermission();
+                }
               } else {
                 this.time.delayedCall(1500, () => { this.startBoss(); });
               }
@@ -2704,6 +2712,14 @@ class BossScene extends Phaser.Scene {
     }.bind(this);
 
     if (isSpared) {
+      if (boss.configKey === 'demon_lord' && this.inunekoEnemy && this.inunekoEnemy.active) {
+        this.tweens.add({
+          targets: this.inunekoEnemy, x: 2200, duration: 1500, ease: 'Power2',
+          onComplete: () => {
+            if (this.inunekoEnemy) { this.inunekoEnemy.destroy(); this.inunekoEnemy = null; }
+          }
+        });
+      }
       this.tweens.add({
         targets: boss, x: 2200, duration: 1500, ease: 'Power2',
         onComplete: function() {
@@ -2712,6 +2728,11 @@ class BossScene extends Phaser.Scene {
         }
       });
     } else {
+      if (boss.configKey === 'demon_lord' && this.inunekoEnemy && this.inunekoEnemy.active) {
+        this.showExplosion(this.inunekoEnemy.x, this.inunekoEnemy.y);
+        this.inunekoEnemy.destroy();
+        this.inunekoEnemy = null;
+      }
       this.showExplosion(boss.x, boss.y);
       boss.destroy();
       resumeFn();
