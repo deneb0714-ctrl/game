@@ -1235,38 +1235,48 @@ class BossScene extends Phaser.Scene {
           });
         }
 
-        // 反射弾幕を発射（シドレミファソラシの音階付き）
-        let noteIndex = 0;
-        this.time.addEvent({
-          delay: 80, // 80ms間隔で発射
-          repeat: 15, // 計16発（2周）
-          callback: () => {
-            if (!this.player || !this.player.active) return;
-            
-            // シ(0), ド(1), レ(2), ミ(3) -> 黄色
-            // ファ(4), ソ(5), ラ(6), シ(7) -> 赤色
-            let isRed = (noteIndex % 8) >= 4; 
-            let color = isRed ? 0xff0000 : 0xffff00;
-            
-            if (MOT.Audio.playJustGuardNote) MOT.Audio.playJustGuardNote(noteIndex);
-            
-            // 扇状に3発同時発射で弾幕感を出す
-            for (let angleOffset of [-0.08, 0, 0.08]) {
-              const reflectBullet = this.playerBullets.create(player.x + 30, player.y, 'bullet_player');
-              if (reflectBullet) {
-                let speed = 1200;
-                reflectBullet.setVelocity(Math.cos(angleOffset) * speed, Math.sin(angleOffset) * speed);
-                reflectBullet.setScale(2); // 少し小さくして数を増やす
-                reflectBullet.setTint(color); 
-                reflectBullet.damage = 1; // 1発あたりのダメージは1（合計ヒットで大ダメージ）
-                this.time.delayedCall(2000, function () {
-                  if (reflectBullet.active) reflectBullet.destroy();
-                });
-              }
-            }
-            noteIndex++;
-          }
-        });
+        // バリア反射時の音階と色変化（回数を重ねるごとに変化）
+        if (this.barrierGuardCount === undefined) this.barrierGuardCount = 0;
+        
+        const freqs = [
+          493.88, // 0: Si (B4)
+          523.25, // 1: Do (C5)
+          587.33, // 2: Re (D5)
+          659.25, // 3: Mi (E5)
+          698.46, // 4: Fa (F5) - 赤になる
+          783.99, // 5: So (G5)
+          880.00, // 6: La (A5)
+          987.77, // 7: Si (B5)
+          1046.50, // 8: Do (C6)
+          1174.66, // 9: Re (D6)
+          1318.51, // 10: Mi (E6)
+          1396.91, // 11: Fa (F6)
+          1567.98  // 12: So (G6) - 2回目のソで黄色に戻る
+        ];
+        
+        let idx = this.barrierGuardCount;
+        if (idx >= freqs.length) idx = freqs.length - 1;
+        
+        let isRed = (idx >= 4 && idx < 12);
+        let color = isRed ? 0xff0000 : 0xffff00;
+        
+        if (window.MOT && MOT.Audio && MOT.Audio.playMusicalNote) {
+            MOT.Audio.playMusicalNote(freqs[idx]);
+        }
+        
+        // 以前通りの単発反射弾
+        const reflectBullet = this.playerBullets.create(player.x + 30, player.y, 'bullet_player');
+        if (reflectBullet) {
+          reflectBullet.setVelocityX(1200);
+          reflectBullet.setScale(3);
+          reflectBullet.setTint(color); 
+          reflectBullet.damage = 5; 
+          this.time.delayedCall(2000, function () {
+            if (reflectBullet.active) reflectBullet.destroy();
+          });
+        }
+        
+        this.barrierGuardCount++;
       } else {
         // 通常のバリア（緑のエフェクト）
         for (let i = 0; i < 8; i++) {

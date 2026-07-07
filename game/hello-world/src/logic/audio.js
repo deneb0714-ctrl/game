@@ -35,6 +35,10 @@ MOT.Audio = (function () {
   }
 
   return {
+    // Musical note for barrier counter
+    playMusicalNote: function(freq) {
+      playTone(freq, 'square', 0.1, 0.1);
+    },
     // Typewriter bleep
     playBleep: function () {
       playTone(Phaser.Math.Between(200, 300), 'square', 0.05, 0.05);
