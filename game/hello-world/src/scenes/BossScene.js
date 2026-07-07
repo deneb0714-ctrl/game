@@ -226,7 +226,7 @@ class BossScene extends Phaser.Scene {
         choices: []
       },
       doctor: {
-        texture: 'doctor_face', name: '博士', hp: 120, scale: 0.15,
+        texture: 'doctor_face', name: '博士', hp: 250, scale: 0.15,
         intro: '「さぁ、最終決戦といこうじゃないか！」',
         defeat: '「驚いた...まさかお前がここまでやるとはな」',
         choices: []
@@ -830,13 +830,29 @@ class BossScene extends Phaser.Scene {
 
     MOT.handleMovement(this, this.player);
 
+    // 博士戦の味方支援システム
+    if (this.currentBoss && this.currentBoss.configKey === 'doctor' && !this.dialogActive) {
+      if (!this.assistTimer) this.assistTimer = 0;
+      this.assistTimer += delta;
+      if (this.assistTimer >= 8000 + Phaser.Math.Between(0, 4000)) { // 8-12 seconds
+        this.assistTimer = 0;
+        this.triggerAllyAssist();
+      }
+    }
+
     // Auto-shoot
     this.autoShootTimer += delta;
-    if (this.autoShootTimer >= 200) {
+    let shootInterval = this.heroAttackSpeedBoost ? 80 : 200;
+    if (this.autoShootTimer >= shootInterval) {
       this.autoShootTimer = 0;
       var b = this.playerBullets.create(this.player.x + 30, this.player.y, 'bullet_player');
       if (b) {
-        b.setVelocityX(600); b.setScale(2);
+        b.setVelocityX(this.heroFirepowerBoost ? 1000 : 600); 
+        b.setScale(this.heroFirepowerBoost ? 4 : 2);
+        if (this.heroFirepowerBoost) {
+          b.setTint(0xffaa00);
+          b.damage = 2;
+        }
         MOT.Audio.playShot();
         this.time.delayedCall(4000, function () { if (b.active) b.destroy(); });
       }
@@ -864,6 +880,7 @@ class BossScene extends Phaser.Scene {
       var interval = this.bossHP < this.bossMaxHP * 0.5 ? 600 : 1000;
       if (this.inunekoBoostActive) interval = Math.floor(interval * 0.5); // 犬猫スター弾幕加速
       if (this.currentBoss.configKey === 'boss3_twins') interval = 1200; // 兄の攻撃頻度を上げる
+      if (this.currentBoss.configKey === 'doctor') interval = this.bossHP < this.bossMaxHP * 0.5 ? 400 : 700; // 博士の攻撃頻度は高く
       
       if (this.bossAttackTimer >= interval) {
         this.bossAttackTimer = 0;
@@ -992,6 +1009,37 @@ class BossScene extends Phaser.Scene {
       } else {
         // レーン丸ごと攻撃（5秒警告後）
         this.fireLaneBeam();
+      }
+      return;
+    }
+
+    // doctor（博士）の攻撃パターン
+    if (this.currentBoss.configKey === 'doctor') {
+      let docPattern = Phaser.Math.Between(0, 4);
+      if (docPattern === 0) {
+        MOT.fireFan(this, x - 30, y, 9, 350, 180, 120);
+      } else if (docPattern === 1) {
+        MOT.fireHoming(this, x, y, 1600, this.player, 0xff0000, 'bullet_laser');
+        this.time.delayedCall(300, () => MOT.fireHoming(this, x, y, 1600, this.player, 0xff0000, 'bullet_laser'));
+      } else if (docPattern === 2) {
+        MOT.fireCircle(this, x, y, 16, 250);
+        this.time.delayedCall(200, () => MOT.fireCircle(this, x, y, 16, 300));
+      } else if (docPattern === 3) {
+        for (let i = 0; i < 3; i++) {
+          let warnY = [220, 460, 700][Phaser.Math.Between(0, 2)];
+          let warnRect = this.add.rectangle(1920/2, warnY, 1920, 80, 0xff0000, 0.3).setDepth(8);
+          this.tweens.add({ targets: warnRect, alpha: 0, duration: 600, onComplete: () => {
+            if(warnRect) warnRect.destroy();
+            let b = MOT.fireLinear(this, x, warnY, -1200, 0, 0xff0000, 'bullet_laser');
+            // 以前のレーザーは全体判定なのでそのまま
+          }});
+        }
+      } else {
+        for (let i = 0; i < 5; i++) {
+          this.time.delayedCall(i * 100, function () {
+            MOT.fireFan(this, x - 30, y, 5, 400, 180, 45);
+          }, [], this);
+        }
       }
       return;
     }
@@ -3451,6 +3499,75 @@ class BossScene extends Phaser.Scene {
 
     this.areaNameText = this.add.text(1920 - 30, 20, '', { fontFamily: '"DotGothic16"', fontSize: '32px', color: '#FFFFFF', backgroundColor: 'rgba(0,0,0,0.5)', padding: { x: 10, y: 5 } }).setOrigin(1, 0).setDepth(100);
 
+  }
+
+  triggerAllyAssist() {
+    if (this.dialogActive) return;
+
+    let allies = ['demon', 'twins', 'boss2', 'boss1'];
+    let chosen = allies[Phaser.Math.Between(0, allies.length - 1)];
+
+    let w = 1920, h = 1080;
+    
+    // UI Create
+    if (this.assistDialog) {
+      this.assistDialog.destroy();
+      this.assistText.destroy();
+      if(this.assistImage) this.assistImage.destroy();
+    }
+    
+    this.assistDialog = this.add.rectangle(w / 2, h - 80, 1200, 120, 0x0a0a14).setStrokeStyle(4, 0x4FD1FF).setDepth(200);
+    this.assistText = this.add.text(w / 2 - 400, h - 110, '', { fontFamily: '"DotGothic16"', fontSize: '28px', color: '#fff', wordWrap: { width: 900 } }).setOrigin(0, 0).setDepth(201);
+    
+    let tex = '';
+    let msg = '';
+    
+    if (chosen === 'demon') {
+      tex = 'demon_stand_combat';
+      msg = 'ヴェリタス「人間よ、少しは休むがよい！」\n【効果：HP回復】';
+      MOT.flags.playerHP = Math.min((MOT.flags.playerMaxHP || 5), MOT.flags.playerHP + 2);
+    } else if (chosen === 'twins') {
+      tex = 'boss3_sister'; // 妹立ち絵
+      msg = '妹「ふんっ、今回だけ特別に守ってあげるんだから！」\n【効果：無敵バリア展開】';
+      this.barrierActive = true;
+      this.barrierTime = 0;
+      this.barrierCooldown = 0;
+      if (!this.barrierVisual) {
+        this.barrierVisual = this.add.circle(this.player.x, this.player.y, 60, 0x00FFaa, 0.3);
+        this.barrierVisual.setStrokeStyle(4, 0x00FFaa, 0.8);
+        this.barrierVisual.setDepth(9);
+      }
+    } else if (chosen === 'boss2') {
+      tex = 'boss2_combat';
+      msg = '戦闘狂「もっと速く、もっと激しく撃ちまくれぇ！！」\n【効果：連射速度超UP】';
+      this.heroAttackSpeedBoost = true;
+      this.time.delayedCall(8000, () => { this.heroAttackSpeedBoost = false; });
+    } else if (chosen === 'boss1') {
+      tex = 'boss1_muscle';
+      msg = '筋肉「お前の力、そんなものではないだろう！！」\n【効果：攻撃力＆サイズUP】';
+      this.heroFirepowerBoost = true;
+      this.time.delayedCall(8000, () => { this.heroFirepowerBoost = false; });
+    }
+    
+    this.assistImage = this.add.image(w / 2 - 500, h - 80, tex).setScale(0.15).setDepth(201);
+    // boss3_sister scale correction
+    if (chosen === 'twins') this.assistImage.setScale(1.5);
+    else if (chosen === 'demon') this.assistImage.setScale(0.25);
+    
+    this.assistText.setText(msg);
+    MOT.Audio.playBleep(); 
+    
+    // Auto hide
+    this.time.delayedCall(3000, () => {
+      if (this.assistDialog) {
+        this.tweens.add({ targets: [this.assistDialog, this.assistText, this.assistImage], alpha: 0, duration: 500, onComplete: () => {
+          if (this.assistDialog) this.assistDialog.destroy();
+          if (this.assistText) this.assistText.destroy();
+          if (this.assistImage) this.assistImage.destroy();
+          this.assistDialog = null;
+        }});
+      }
+    });
   }
 
   updateHUD() {
