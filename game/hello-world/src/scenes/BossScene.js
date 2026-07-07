@@ -1952,16 +1952,32 @@ class BossScene extends Phaser.Scene {
                       downPresses++;
                       if (redBarrier) redBarrier.setAlpha(0.1 + (downPresses / 20) * 0.6); // どんどん赤く強く発光する
                       
+                      // 揺れの処理
+                      if (downPresses >= 4 && downPresses < 20) {
+                        let shakeIntensity = 0;
+                        let shakeDuration = 100;
+                        
+                        if (downPresses <= 7) {
+                          // 4〜7回目：ちょっと揺れてるかも
+                          shakeIntensity = 0.0005 + (downPresses - 4) * 0.0002;
+                          shakeDuration = 50;
+                        } else if (downPresses <= 10) {
+                          // 8〜10回目：少し揺れてる
+                          shakeIntensity = 0.0015 + (downPresses - 8) * 0.0005;
+                          shakeDuration = 80;
+                        } else {
+                          // 11回目以降：どんどん揺れが大きく
+                          let level = downPresses - 10; // 1〜9
+                          shakeIntensity = 0.003 + Math.pow(level, 1.5) * 0.0008;
+                          shakeDuration = 100 + level * 10;
+                        }
+                        this.cameras.main.shake(shakeDuration, shakeIntensity);
+                      }
+                      
                       // 10回目以降からヒビが入り、徐々に広がる
                       if (downPresses >= 10 && downPresses < 20) {
                         let scale = (downPresses - 9) * 0.5; // 0.5, 1.0, 1.5...
                         drawCrack(w/2, y2 - 40, scale);
-                        
-                        // 揺れは最初はほとんどなく、後半に急激に大きくなる
-                        let shakeLevel = downPresses - 9; // 1〜10
-                        let shakeIntensity = 0.0002 * Math.pow(shakeLevel, 1.8);
-                        this.cameras.main.shake(100 + shakeLevel * 15, shakeIntensity);
-                        
                         if (MOT.Audio.playBleep) MOT.Audio.playBleep();
                       }
                       
