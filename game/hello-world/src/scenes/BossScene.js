@@ -118,6 +118,14 @@ class BossScene extends Phaser.Scene {
     MOT.setupControls(this);
     MOT.setupTouchControls(this, this.player);
 
+    this.barrierHitbox = this.physics.add.sprite(-100, 460, null).setVisible(false);
+    this.barrierHitbox.body.setCircle(60);
+    this.physics.add.overlap(this.barrierHitbox, this.enemyBullets, (hitbox, bullet) => {
+      if (this.barrierActive) {
+        this.onPlayerHit(this.player, bullet);
+      }
+    });
+
     this.physics.add.overlap(this.player, this.enemyBullets, this.onPlayerHit, null, this);
     this.inunekoGroup = this.physics.add.group();
     this.physics.add.overlap(this.playerBullets, this.inunekoGroup, this.onBossHit, null, this);
@@ -873,6 +881,7 @@ class BossScene extends Phaser.Scene {
       this.barrierTime += delta;
       if (this.barrierVisual) {
         this.barrierVisual.setPosition(this.player.x, this.player.y);
+        this.barrierHitbox.setPosition(this.player.x, this.player.y);
       }
       if (this.barrierTime >= 3000) {
         this.deactivateBarrier();
