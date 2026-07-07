@@ -809,7 +809,9 @@ class BossScene extends Phaser.Scene {
     }
 
     // 博士の指示システム update（ダイアログ判定より先に実行して、表示非表示を管理する）
-    MOT.DoctorDirective.update(this, delta, this.player, this.dialogActive);
+    if (!(this.currentBoss && this.currentBoss.configKey === 'doctor')) {
+      MOT.DoctorDirective.update(this, delta, this.player, this.dialogActive);
+    }
 
     // 会話が終わった瞬間（dialogActive が true から false に変わった時）に、バリアのクールタイムを最大（0%からチャージ）にする
     if (!this.dialogActive && this.lastDialogActive) {
@@ -2117,12 +2119,30 @@ class BossScene extends Phaser.Scene {
                           await new Promise(r => this.time.delayedCall(1000, r));
                           ending('hidden_truedemon');
                       } else if (Kills === 0) {
-                          await sayDemon('「そうか、良く正しい選択をした。ここから話すのは、信じるも信じないもお前の自由だ。」');
-                          await sayDemon('「きっとお前は、あいつに私が世界を滅ぼそうとでもしていると言われたのだろう？だが、私はそんなことを考えていない。むしろ世界にとっての悪はあいつだ。あいつはこの世界に人間以上の存在がいることが許せないのだ。わらわはやつに襲われていた魔族を保護し、あいつと長い間戦ってきた」');
-                          await sayDevice('「…なんだ、すべて話されてしまったみたいだな」');
+                          await sayDemon('「……結局我々を殺さず、お前は何をしにきたんだ？あの法螺吹きにけしかけられて、わらわたちを滅ぼしに来たんだろう？」');
+                          
+                          await new Promise(res => {
+                              this.showChoice([
+                                  { text: '1. 殺す必要がないと思った', callback: () => { MOT.Audio.playSelect(); res(); } },
+                                  { text: '2. 博士を信じられない', callback: () => { MOT.Audio.playSelect(); res(); } }
+                              ]);
+                          });
+                          
+                          await sayDemon('「そうか……英断だな…。」');
+                          await sayDemon('「そしてここから話すのは、信じるも信じないもお前の自由だ。」');
+                          await sayDemon('「お前は、あいつに”魔王が世界を滅ぼそうとしている”とでも言われたのだろう？だが、残念なことに、それはわらわたちを滅ぼすための方便にすぎぬ。」');
+                          await sayDemon('「あいつはこの世界に人間以上の存在がいることが許せないのだ。わらわはやつに襲われていた魔族を保護し、あいつとながい間戦ってきた。」');
+                          await sayDemon('「ながい、ながい戦いだった。……やつは気の毒な奴じゃ。だが、それはわらわたちを滅ぼす理由にはならない。」');
+                          
+                          await sayDevice('「…はははは。すべて話されてしまったみたいだな」');
                           await sayHero('「！」');
-                          await sayDevice('「だが、気づくのが遅い。お前たちがのんきに弾幕で遊んでいる間にこちらの準備は整った」');
+                          await sayDevice('「だが、気づくのが遅い。お前たちがのんきに弾幕で遊んでいる間にこちらの準備はすべて整った」');
+                          await sayDevice('「これまで集めたデータ、実験、検証。すべて申し分ない。」');
                           await sayDemon('「なんだ？！」', 'demon_lord_shock');
+                          if (this.inunekoImage && this.inunekoImage.active) {
+                              const localSayInuneko = (text) => new Promise(res => { this.tweens.add({ targets: dimBg, alpha: 0.6, duration: 300 }); if(this.heroImage) this.tweens.add({targets: this.heroImage, alpha: 0.4, duration: 300}); if(this.inunekoImage) this.tweens.add({targets: this.inunekoImage, alpha: 1, duration: 300}); if(this.demonImage) this.tweens.add({targets: this.demonImage, alpha: 0.4, duration: 300}); this.showDialogue('犬猫☆すたー', text, res); });
+                              await localSayInuneko('「にゃわわ！？」');
+                          }
                           await sayDevice('「さぁ、最終決戦といこうじゃないか！」');
                           this.bossQueue.push('doctor');
                           this.proceedToNextArea(boss, true);
@@ -2370,24 +2390,23 @@ class BossScene extends Phaser.Scene {
             (async () => {
               let c = await askChoice('1. 殺さない', '2. 殺せない');
               if (c === 1) {
-                await sayDevice('「なんだ、ここでも殺さないのか。わかっているのか？その女の言う通り、私はお前を騙していたんだ。」');
-                await sayHero('「あなたがやったことは許せない。だけど、ここであなたを殺したら同じになる。」');
-                await sayDevice('「ずいぶんな言いようだな。」');
+                await sayDevice('「…なんだ、ここでも殺さないのか。わかっているのか？その女の言う通り、私はお前を騙していたんだ。」');
+                await sayDevice('「お前は”勇者”なんかじゃない、俺の最高傑作のはずだったんだがな。」');
+                await sayHero('「あなたがやったことは許せない。だけど、ここであなたを殺したら僕はあなた同じになってしまう。」');
+                await sayDevice('「そうか……。」');
+                await sayDevice('「ついぞ俺の実験が成功することはなかった。もうここには用はない。さらばだ011101。」');
               } else {
                 await sayDevice('「驚いた...まさかお前がここまでやるとはな」');
                 await sayHero('「…」');
-                await sayDevice('「なにをしている？早くとどめを刺せ」');
+                await sayDevice('「なにをしている？早くとどめを刺せ。同情などいらん。何の足しにもならないからな。」');
                 await sayHero('「できない...。あなたがやったことは許せないが、それでもあなたは僕の...」');
-                await sayDevice('「全く...本当にどうしようもない欠陥品だな」');
+                await sayDevice('「全く...本当にどうしようもない欠陥品だな。」');
+                await sayDevice('「さらばだ、011101。もう、お前に用はない。」');
               }
-              const sayDemon = (text) => new Promise(res => { this.tweens.add({ targets: dimBg, alpha: 0.6, duration: 300 }); this.tweens.add({targets: this.heroImage, alpha: 0.4, duration: 300}); this.showDialogue('魔王', text, res); });
-              await sayDemon('「安心しろ、わらわは誰も殺さない。」');
-              await sayDemon('「すべてを許し、そして…すべてをわらわのしもべとして生かしてやろう！」');
-              await sayDevice('「な、何を…！ぐわあああっ！！」');
-              MOT.Audio.playSelect();
-              await sayHero('「……」');
+              await sayHero('「！」');
+              MOT.Audio.playSelect(); // 銃声
               
-              MOT.flags.finalEnding = 'hidden_truedemon';
+              MOT.flags.finalEnding = 'normal_orphan';
               this.proceedToNextArea(boss, false);
             })();
           } else {
