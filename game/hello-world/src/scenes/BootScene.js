@@ -44,8 +44,7 @@ class BootScene extends Phaser.Scene {
     // 幹部2戦闘狂（添付画像）
     this.load.image('boss2_combat', window.BOSS2_B64);
     
-    // 博士の顔アイコン
-    this.load.image('doctor_face', window.DOCTOR_B64);
+    // 博士の顔アイコン (assets/images から読み込むためBase64は削除)
 
     const v = window.GAME_VERSION || 'v1';
     
@@ -99,7 +98,7 @@ class BootScene extends Phaser.Scene {
     // Doctor
     this.load.image('doctor_normal', 'assets/images/doctor_normal.png?v=' + v);
     this.load.image('doctor_open_eyes', 'assets/images/doctor_open_eyes.png?v=' + v);
-    this.load.image('doctor_face', 'assets/images/doctor_face.jpg?v=' + v);
+    this.load.image('doctor_face', 'assets/images/doctor_face.png?v=' + v);
 
     // Inuneko Star
     this.load.image('inuneko_stand', 'assets/images/inuneko_stand.png?v=' + v);
