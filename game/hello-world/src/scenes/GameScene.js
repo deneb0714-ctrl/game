@@ -1045,8 +1045,8 @@ class GameScene extends Phaser.Scene {
         this.dialogActive = true;
         this.showDeviceDialogue('「よくやった。」', () => {
           this.showDeviceDialogue('「それと、今くらいの敵なら問題ないと思うが、魔王城に近づくにつれて敵の攻撃も強くなる。」', () => {
-            this.showDeviceDialogue('「よけきれないときはシールドを貼るんだ。パソコンはスペース、スマホは長押しだ。タイミング良く敵の攻撃にシールドを貼れた場合、反撃することもできるだろう。」', () => {
-              this.showDeviceDialogue('「気を付けないといけないのは、シールドはすぐに何度も張り直しはできない。左上の緑の円がクールタイムだ。それが溜まりきれば貼れる状態になっている。」', () => {
+            this.showDeviceDialogue('「よけきれないときはシールドを張るんだ。パソコンはスペース、スマホは長押しだ。タイミング良く敵の攻撃にシールドを張れた場合、反撃することもできるだろう。」', () => {
+              this.showDeviceDialogue('「気を付けないといけないのは、シールドはすぐに何度も張り直しはできない。左上の緑の円がクールタイムだ。それが溜まりきれば張れる状態になっている。」', () => {
                 this.dialogActive = false;
                 this.tutorialPhase = 3;
               }, { x: 360, y: 92, radius: 26 });
