@@ -231,7 +231,7 @@ class BossScene extends Phaser.Scene {
         choices: []
       },
       doctor: {
-        texture: 'doctor_face', name: '博士', hp: 250, scale: 0.15,
+        texture: 'doctor_face', name: '博士', hp: 180, scale: 0.15,
         intro: '「さぁ、最終決戦といこうじゃないか！」',
         defeat: '「驚いた...まさかお前がここまでやるとはな」',
         choices: []
@@ -885,7 +885,7 @@ class BossScene extends Phaser.Scene {
       var interval = this.bossHP < this.bossMaxHP * 0.5 ? 600 : 1000;
       if (this.inunekoBoostActive) interval = Math.floor(interval * 0.5); // 犬猫スター弾幕加速
       if (this.currentBoss.configKey === 'boss3_twins') interval = 1200; // 兄の攻撃頻度を上げる
-      if (this.currentBoss.configKey === 'doctor') interval = this.bossHP < this.bossMaxHP * 0.5 ? 400 : 700; // 博士の攻撃頻度は高く
+      if (this.currentBoss.configKey === 'doctor') interval = this.bossHP < this.bossMaxHP * 0.5 ? 750 : 1100; // 博士の攻撃頻度を少し緩和
       
       if (this.bossAttackTimer >= interval) {
         this.bossAttackTimer = 0;
@@ -1022,27 +1022,32 @@ class BossScene extends Phaser.Scene {
     if (this.currentBoss.configKey === 'doctor') {
       let docPattern = Phaser.Math.Between(0, 4);
       if (docPattern === 0) {
-        MOT.fireFan(this, x - 30, y, 9, 350, 180, 120);
+        // Reduced fan bullets from 9 to 7, spread from 120 to 140
+        MOT.fireFan(this, x - 30, y, 7, 300, 180, 140);
       } else if (docPattern === 1) {
-        MOT.fireHoming(this, x, y, 1600, this.player, 0xff0000, 'bullet_laser');
-        this.time.delayedCall(300, () => MOT.fireHoming(this, x, y, 1600, this.player, 0xff0000, 'bullet_laser'));
+        // Reduced homing laser speed from 1600 to 900
+        MOT.fireHoming(this, x, y, 900, this.player, 0xff0000, 'bullet_laser');
+        this.time.delayedCall(400, () => MOT.fireHoming(this, x, y, 900, this.player, 0xff0000, 'bullet_laser'));
       } else if (docPattern === 2) {
-        MOT.fireCircle(this, x, y, 16, 250);
-        this.time.delayedCall(200, () => MOT.fireCircle(this, x, y, 16, 300));
+        // Reduced circle bullets from 16 to 12
+        MOT.fireCircle(this, x, y, 12, 220);
+        this.time.delayedCall(300, () => MOT.fireCircle(this, x, y, 12, 260));
       } else if (docPattern === 3) {
+        // Increased warning time from 600 to 1200
         for (let i = 0; i < 3; i++) {
           let warnY = [220, 460, 700][Phaser.Math.Between(0, 2)];
           let warnRect = this.add.rectangle(1920/2, warnY, 1920, 80, 0xff0000, 0.3).setDepth(8);
-          this.tweens.add({ targets: warnRect, alpha: 0, duration: 600, onComplete: () => {
+          this.tweens.add({ targets: warnRect, alpha: 0, duration: 1200, onComplete: () => {
             if(warnRect) warnRect.destroy();
-            let b = MOT.fireLinear(this, x, warnY, -1200, 0, 0xff0000, 'bullet_laser');
+            let b = MOT.fireLinear(this, x, warnY, -900, 0, 0xff0000, 'bullet_laser');
             // 以前のレーザーは全体判定なのでそのまま
           }});
         }
       } else {
-        for (let i = 0; i < 5; i++) {
-          this.time.delayedCall(i * 100, function () {
-            MOT.fireFan(this, x - 30, y, 5, 400, 180, 45);
+        // Reduced consecutive fans from 5 to 3, increased delay from 100 to 200
+        for (let i = 0; i < 3; i++) {
+          this.time.delayedCall(i * 200, function () {
+            MOT.fireFan(this, x - 30, y, 5, 300, 180, 45);
           }, [], this);
         }
       }
