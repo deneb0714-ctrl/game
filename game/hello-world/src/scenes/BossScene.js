@@ -877,7 +877,7 @@ class BossScene extends Phaser.Scene {
       this.sisterAttackTimer += delta;
       if (this.sisterAttackTimer >= 2000) {
         this.sisterAttackTimer = 0;
-        MOT.fireCircle(this, this.sisterBoss.x, this.sisterBoss.y, 8, 200, 0x7CFF00);
+        MOT.fireCircle(this, this.sisterBoss.x, this.sisterBoss.y, 8, 200, 0x7CFF00, 'bullet_star');
       }
     }
 
@@ -983,7 +983,7 @@ class BossScene extends Phaser.Scene {
     
     // boss3_twins（兄）は追尾弾
     if (this.currentBoss.configKey === 'boss3_twins') {
-      MOT.fireHoming(this, x, y, 200, this.player, 0x4FD1FF);
+      MOT.fireHoming(this, x, y, 200, this.player, 0x4FD1FF, 'bullet_laser');
       return;
     }
 

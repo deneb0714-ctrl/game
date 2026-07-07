@@ -476,6 +476,29 @@ class BootScene extends Phaser.Scene {
     gh.fillCircle(8, 8, 5);
     gh.generateTexture('bullet_homing_white', 16, 16);
     gh.destroy();
+
+    // Star bullet for twin sister
+    const gs = this.make.graphics({ add: false });
+    gs.fillStyle(0xffffff, 1);
+    // Draw a star shape
+    gs.beginPath();
+    for (let i = 0; i < 5; i++) {
+      gs.lineTo(10 + 10 * Math.cos(18 + i * 72 * Math.PI / 180), 10 - 10 * Math.sin(18 + i * 72 * Math.PI / 180));
+      gs.lineTo(10 + 4 * Math.cos(54 + i * 72 * Math.PI / 180), 10 - 4 * Math.sin(54 + i * 72 * Math.PI / 180));
+    }
+    gs.closePath();
+    gs.fillPath();
+    gs.generateTexture('bullet_star', 20, 20);
+    gs.destroy();
+
+    // Laser bullet for twin brother
+    const gl = this.make.graphics({ add: false });
+    gl.fillStyle(0xffffff, 1);
+    gl.fillRect(0, 4, 30, 4); // Thin, wide line
+    gl.fillStyle(0xffffff, 0.5);
+    gl.fillRect(0, 2, 30, 8); // Glow
+    gl.generateTexture('bullet_laser', 30, 12);
+    gl.destroy();
   }
 
   // --- Slash attack texture (斬撃弾) ---
