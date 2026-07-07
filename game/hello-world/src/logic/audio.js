@@ -199,6 +199,25 @@ MOT.Audio = (function () {
           osc.stop(ctx.currentTime + 0.4);
         }, i * 80);
       });
+    },
+    // ジャストガード時の音階再生（シドレミファソラシ）
+    playJustGuardNote: function (index) {
+      resume();
+      // B4, C5, D5, E5, F5, G5, A5, B5
+      const scale = [493.88, 523.25, 587.33, 659.25, 698.46, 783.99, 880.00, 987.77];
+      const freq = scale[index % 8];
+      
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = 'square';
+      osc.frequency.setValueAtTime(freq, ctx.currentTime);
+      gain.gain.setValueAtTime(0.15, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.1);
+      
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start();
+      osc.stop(ctx.currentTime + 0.1);
     }
   };
 })();

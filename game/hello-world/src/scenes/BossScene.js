@@ -1121,17 +1121,38 @@ class BossScene extends Phaser.Scene {
           });
         }
 
-        // 反射弾を発射 (威力と速度が高い)
-        const reflectBullet = this.playerBullets.create(player.x + 30, player.y, 'bullet_player');
-        if (reflectBullet) {
-          reflectBullet.setVelocityX(1200);
-          reflectBullet.setScale(3);
-          reflectBullet.setTint(0xFFD700); // ゴールドに光る
-          reflectBullet.damage = 3; // ダメージ3倍
-          this.time.delayedCall(2000, function () {
-            if (reflectBullet.active) reflectBullet.destroy();
-          });
-        }
+        // 反射弾幕を発射（シドレミファソラシの音階付き）
+        let noteIndex = 0;
+        this.time.addEvent({
+          delay: 80, // 80ms間隔で発射
+          repeat: 15, // 計16発（2周）
+          callback: () => {
+            if (!this.player || !this.player.active) return;
+            
+            // シ(0), ド(1), レ(2), ミ(3) -> 黄色
+            // ファ(4), ソ(5), ラ(6), シ(7) -> 赤色
+            let isRed = (noteIndex % 8) >= 4; 
+            let color = isRed ? 0xff0000 : 0xffff00;
+            
+            if (MOT.Audio.playJustGuardNote) MOT.Audio.playJustGuardNote(noteIndex);
+            
+            // 扇状に3発同時発射で弾幕感を出す
+            for (let angleOffset of [-0.08, 0, 0.08]) {
+              const reflectBullet = this.playerBullets.create(player.x + 30, player.y, 'bullet_player');
+              if (reflectBullet) {
+                let speed = 1200;
+                reflectBullet.setVelocity(Math.cos(angleOffset) * speed, Math.sin(angleOffset) * speed);
+                reflectBullet.setScale(2); // 少し小さくして数を増やす
+                reflectBullet.setTint(color); 
+                reflectBullet.damage = 1; // 1発あたりのダメージは1（合計ヒットで大ダメージ）
+                this.time.delayedCall(2000, function () {
+                  if (reflectBullet.active) reflectBullet.destroy();
+                });
+              }
+            }
+            noteIndex++;
+          }
+        });
       } else {
         // 通常のバリア（緑のエフェクト）
         for (let i = 0; i < 8; i++) {
