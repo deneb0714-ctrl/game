@@ -1305,6 +1305,36 @@ class BossScene extends Phaser.Scene {
       onComplete: function () { player.setAlpha(1); player.clearTint(); this.playerInvincible = false; }.bind(this)
     });
     if (MOT.flags.playerHP <= 0) {
+      if (this.currentBoss && this.currentBoss.configKey === 'doctor' && Phaser.Math.Between(0, 100) < 50) {
+        // 兄が確率で助けてくれる
+        MOT.flags.playerHP = 1;
+        this.playerInvincible = true;
+        this.time.delayedCall(3000, () => { this.playerInvincible = false; });
+        
+        MOT.Audio.playBleep();
+        let w = 1920, h = 1080;
+        if (this.assistDialog) {
+          this.assistDialog.destroy();
+          this.assistText.destroy();
+          if (this.assistImage) this.assistImage.destroy();
+        }
+        this.assistDialog = this.add.rectangle(w / 2, h - 80, 1200, 120, 0x0a0a14).setStrokeStyle(4, 0x4FD1FF).setDepth(200);
+        this.assistText = this.add.text(w / 2 - 400, h - 110, '兄「勝手に死なれると妹が悲しむからな…立て！」\n【効果：HP1で復活】', { fontFamily: '"DotGothic16"', fontSize: '28px', color: '#fff', wordWrap: { width: 900 } }).setOrigin(0, 0).setDepth(201);
+        this.assistImage = this.add.image(w / 2 - 500, h - 80, 'boss3').setScale(1.5).setDepth(201);
+        
+        this.time.delayedCall(3000, () => {
+          if (this.assistDialog) {
+            this.tweens.add({ targets: [this.assistDialog, this.assistText, this.assistImage], alpha: 0, duration: 500, onComplete: () => {
+              if (this.assistDialog) this.assistDialog.destroy();
+              if (this.assistText) this.assistText.destroy();
+              if (this.assistImage) this.assistImage.destroy();
+              this.assistDialog = null;
+            }});
+          }
+        });
+        return; // 死亡処理をスキップして続行
+      }
+      
       MOT.flags.diedCount++;
       this.cameras.main.fadeOut(1000, 0, 0, 0);
       this.time.delayedCall(1000, function () { this.scene.start('EndingScene'); }, [], this);
