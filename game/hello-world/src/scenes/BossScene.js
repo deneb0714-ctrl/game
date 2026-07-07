@@ -1891,9 +1891,6 @@ class BossScene extends Phaser.Scene {
                    let angle = (i / numMainBranches) * Math.PI * 2 + Phaser.Math.FloatBetween(-0.3, 0.3);
                    generateBranch(startX, startY, angle, Phaser.Math.Between(2, 4), Phaser.Math.Between(20, 50) * scale, 3);
                 }
-                
-                crackGraphics.fillStyle(0xffffff, 1);
-                crackGraphics.fillCircle(startX, startY, 4);
               };
 
               const shatterOption1 = () => {
@@ -1959,7 +1956,13 @@ class BossScene extends Phaser.Scene {
                       if (downPresses >= 10 && downPresses < 20) {
                         let scale = (downPresses - 9) * 0.5; // 0.5, 1.0, 1.5...
                         drawCrack(w/2, y2 - 40, scale);
-                        this.cameras.main.shake(150, 0.005 * scale);
+                        
+                        // 揺れは後半から徐々に大きくする
+                        let shakeIntensity = downPresses - 12; // 13回目以降から揺れる
+                        if (shakeIntensity > 0) {
+                          this.cameras.main.shake(100 + shakeIntensity * 10, 0.005 * shakeIntensity);
+                        }
+                        
                         if (MOT.Audio.playBleep) MOT.Audio.playBleep();
                       }
                       
