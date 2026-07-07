@@ -1030,7 +1030,7 @@ class GameScene extends Phaser.Scene {
               this.showDeviceDialogue('「気を付けないといけないのは、シールドはすぐに何度も張り直しはできない。左上の緑の円がクールタイムだ。それが溜まりきれば貼れる状態になっている。」', () => {
                 this.dialogActive = false;
                 this.tutorialPhase = 3;
-              }, { x: 260, y: 88, width: 44, height: 44 });
+              }, { x: 360, y: 92, radius: 26 });
             });
           });
         });

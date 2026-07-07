@@ -14,7 +14,8 @@ MOT.spawnBasicEnemy = function (scene, x, y, texture) {
     delay: Phaser.Math.Between(1200, 2000),
     callback: function () {
       if (enemy.active) {
-        MOT.fireLinear(scene, enemy.x, enemy.y, -350, 0);
+        let b = MOT.fireLinear(scene, enemy.x, enemy.y, -350, 0);
+        if (b) b.shooter = enemy;
       }
     },
     loop: true

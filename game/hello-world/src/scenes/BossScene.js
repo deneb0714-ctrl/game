@@ -417,7 +417,7 @@ class BossScene extends Phaser.Scene {
                yoyo: true, repeat: -1, duration: 900, ease: 'Sine.easeInOut'
              });
              e.fireTimer = this.time.addEvent({
-               delay: 1500, callback: () => { if (e.active) MOT.fireLinear(this, e.x, e.y, -300, 0); }, loop: true, callbackScope: this
+               delay: 1500, callback: () => { if (e.active) { let b = MOT.fireLinear(this, e.x, e.y, -300, 0); if(b) b.shooter = e; } }, loop: true, callbackScope: this
              });
              e.on('destroy', () => { if (e.fireTimer) e.fireTimer.destroy(); });
            }, [], this);
@@ -1194,6 +1194,13 @@ class BossScene extends Phaser.Scene {
           this.showExplosion(boss.x, boss.y);
           if (Phaser.Math.Between(0, 100) < 40) MOT.spawnEnergyItem(this, boss.x, boss.y);
         }
+        
+        // 倒された敵が発射した弾を消去する
+        this.enemyBullets.getChildren().forEach(function(b) {
+          if (b.shooter === boss) {
+            b.destroy();
+          }
+        });
         
         const isScenario = boss.isScenarioMinion;
         boss.destroy();
@@ -2812,7 +2819,7 @@ class BossScene extends Phaser.Scene {
           // 周期的に弾を撃つ
           e.fireTimer = self.time.addEvent({
             delay: Phaser.Math.Between(1000, 1800),
-            callback: function () { if (e.active) MOT.fireLinear(self, e.x, e.y, -320, 0); },
+            callback: function () { if (e.active) { let b = MOT.fireLinear(self, e.x, e.y, -320, 0); if(b) b.shooter = e; } },
             loop: true
           });
           e.on('destroy', function () { if (e.fireTimer) e.fireTimer.destroy(); });
