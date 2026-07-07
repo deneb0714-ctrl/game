@@ -2009,7 +2009,7 @@ class BossScene extends Phaser.Scene {
                   MOT.flags.killedDemonLord = false;
                   
                   // 生かした場合の分岐演出 (True Demon Lord or others)
-                  if (Kills === 0 && Satsui >= 100 && DP <= 100) {
+                  if (Kills === 0 && Satsui >= 100 && DP < 100) {
                       // 真の魔王エンドの特別演出（博士のラボへ移行）
                           
                           // フェードアウト
