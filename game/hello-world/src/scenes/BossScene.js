@@ -1859,7 +1859,7 @@ class BossScene extends Phaser.Scene {
               
               var redBarrier = null;
 
-              const drawCrack = (startX, startY) => {
+              const drawCrack = (startX, startY, scale) => {
                 // メインの枝を生成する再帰関数
                 const generateBranch = (x, y, angle, depth, length, thickness) => {
                   if (depth === 0) return;
@@ -1872,24 +1872,24 @@ class BossScene extends Phaser.Scene {
                   
                   let endX = x + Math.cos(angle) * length;
                   let endY = y + Math.sin(angle) * length;
-                  endX += Phaser.Math.Between(-15, 15);
-                  endY += Phaser.Math.Between(-15, 15);
+                  endX += Phaser.Math.Between(-10, 10);
+                  endY += Phaser.Math.Between(-10, 10);
                   
                   crackGraphics.lineTo(endX, endY);
                   crackGraphics.strokePath();
                   
                   let numBranches = Phaser.Math.Between(1, 3);
                   for (let i = 0; i < numBranches; i++) {
-                    let newAngle = angle + Phaser.Math.FloatBetween(-0.8, 0.8);
+                    let newAngle = angle + Phaser.Math.FloatBetween(-0.5, 0.5);
                     generateBranch(endX, endY, newAngle, depth - 1, length * 0.7, Math.max(1, thickness - 1));
                   }
                 };
 
                 // 放射状のひび割れを生成
-                let numMainBranches = Phaser.Math.Between(3, 6);
+                let numMainBranches = Phaser.Math.Between(2, 4);
                 for (let i = 0; i < numMainBranches; i++) {
-                   let angle = (i / numMainBranches) * Math.PI * 2 + Phaser.Math.FloatBetween(-0.5, 0.5);
-                   generateBranch(startX, startY, angle, Phaser.Math.Between(3, 5), Phaser.Math.Between(40, 90), 4);
+                   let angle = (i / numMainBranches) * Math.PI * 2 + Phaser.Math.FloatBetween(-0.3, 0.3);
+                   generateBranch(startX, startY, angle, Phaser.Math.Between(2, 4), Phaser.Math.Between(20, 50) * scale, 3);
                 }
                 
                 crackGraphics.fillStyle(0xffffff, 1);
@@ -1953,9 +1953,17 @@ class BossScene extends Phaser.Scene {
                     } else {
                       // 2回目以降の抵抗（ひび割れ）
                       downPresses++;
-                      if (redBarrier) redBarrier.setAlpha(0.1 + (downPresses / 15) * 0.6); // どんどん赤く強く発光する
+                      if (redBarrier) redBarrier.setAlpha(0.1 + (downPresses / 20) * 0.6); // どんどん赤く強く発光する
                       
-                      if (downPresses >= 15) {
+                      // 10回目以降からヒビが入り、徐々に広がる
+                      if (downPresses >= 10 && downPresses < 20) {
+                        let scale = (downPresses - 9) * 0.5; // 0.5, 1.0, 1.5...
+                        drawCrack(w/2, y2 - 40, scale);
+                        this.cameras.main.shake(150, 0.005 * scale);
+                        if (MOT.Audio.playBleep) MOT.Audio.playBleep();
+                      }
+                      
+                      if (downPresses >= 20) {
                         isAnimating = true;
                         shattered = true;
                         // ブレイクスルー演出
