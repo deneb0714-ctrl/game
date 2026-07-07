@@ -1535,9 +1535,11 @@ class BossScene extends Phaser.Scene {
                 this.proceedToNextArea(boss, false);
               } else {
                 MOT.flags.killedBoss1 = false;
-                // 見逃されたので驚き顔に切り替え
+                // 「なんで殺さない？」のセリフのときだけ驚き顔
                 boss1DefImg.setTexture('boss1_dying');
                 await sayEnemyB1('「なんで殺さない…？お前はあいつの指示に従ってるんじゃないのか？」');
+                // 次のセリフから怒り顔に戻す
+                boss1DefImg.setTexture('boss1_hurt_angry');
                 await sayEnemyB1('「お前が魔王様に従うなら、協力する」');
                 await new Promise(r => this.tweens.add({ targets: boss, x: 2200, duration: 1500, ease: 'Power2', onComplete: r }));
                 boss1DefImg.destroy();
