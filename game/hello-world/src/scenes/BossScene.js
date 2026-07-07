@@ -1628,87 +1628,132 @@ class BossScene extends Phaser.Scene {
               this.choiceContainer.add(title);
               var y1 = h / 2 - 20;
               var y2 = h / 2 + 80;
+              
               var box1 = this.add.rectangle(w / 2, y1, 500, 80, 0x1F2933, 0.8).setStrokeStyle(2, 0x4FD1FF);
               var txt1 = this.add.text(w / 2, y1, label1, { fontFamily: '"DotGothic16"', fontSize: '32px', color: '#ffffff' }).setOrigin(0.5);
               var box2 = this.add.rectangle(w / 2, y2, 500, 80, 0x1F2933, 0.8).setStrokeStyle(2, 0x4FD1FF);
               var txt2 = this.add.text(w / 2, y2, label2, { fontFamily: '"DotGothic16"', fontSize: '32px', color: '#ffffff' }).setOrigin(0.5);
               this.choiceContainer.add([box1, txt1, box2, txt2]);
+              
               var cursor = this.add.text(w / 2 - 280, y1, '▶', { fontFamily: '"DotGothic16"', fontSize: '32px', color: '#39FF14' }).setOrigin(0.5);
               this.choiceContainer.add(cursor);
               
               var currentIndex = 1;
               var downPresses = 0;
               var shattered = false;
+              var isBlocked = false;
+              var isAnimating = false;
               
-              const keyHandler = (event) => {
-                if (event.key === 'ArrowUp' || event.key === 'w') handleInput('UP');
-                else if (event.key === 'ArrowDown' || event.key === 's') handleInput('DOWN');
-                else if (event.key === 'Enter' || event.key === ' ') handleInput('ENTER');
+              // ひび割れ（Crack）エフェクトを描画するグラフィックス
+              var crackGraphics = this.add.graphics();
+              this.choiceContainer.add(crackGraphics);
+
+              const drawCrack = (x, y) => {
+                crackGraphics.lineStyle(2, 0xff0000, 0.8);
+                crackGraphics.beginPath();
+                crackGraphics.moveTo(x, y);
+                for(let i=0; i<3; i++){
+                  x += Phaser.Math.Between(-30, 30);
+                  y += Phaser.Math.Between(-30, 30);
+                  crackGraphics.lineTo(x, y);
+                }
+                crackGraphics.strokePath();
               };
 
-              const handleInput = async (dir) => {
-                if (shattered) {
-                  if (dir === 'ENTER') {
-                    this.input.keyboard.off('keydown', keyHandler);
-                    if (this.miniGameTimer) this.miniGameTimer.destroy();
-                    this.choiceContainer.destroy();
-                    res(2);
-                  }
-                  return;
+              const shatterOption1 = () => {
+                // box1とtxt1を隠す
+                box1.setVisible(false);
+                txt1.setVisible(false);
+                
+                // 破片パーティクルを生成
+                for (let i = 0; i < 20; i++) {
+                  let shard = this.add.rectangle(w/2 + Phaser.Math.Between(-200, 200), y1 + Phaser.Math.Between(-30, 30), Phaser.Math.Between(10, 40), Phaser.Math.Between(10, 40), 0x4FD1FF);
+                  this.choiceContainer.add(shard);
+                  this.tweens.add({
+                    targets: shard,
+                    x: shard.x + Phaser.Math.Between(-300, 300),
+                    y: shard.y + Phaser.Math.Between(100, 500),
+                    rotation: Phaser.Math.Between(-10, 10),
+                    alpha: 0,
+                    duration: 1500,
+                    ease: 'Cubic.easeOut',
+                    onComplete: () => shard.destroy()
+                  });
                 }
-                if (dir === 'DOWN') {
+              };
+
+              const keyHandler = async (event) => {
+                if (isAnimating) return;
+                
+                if (event.key === 'ArrowUp' || event.key === 'w') {
+                  if (!shattered) {
+                    currentIndex = 1;
+                    cursor.setY(y1);
+                  }
+                } else if (event.key === 'ArrowDown' || event.key === 's') {
+                  if (shattered) return; // 破壊後は1(殺す)が消えているので2に固定
+                  
                   if (canShatter) {
-                    downPresses++;
-                    if (downPresses === 1) {
+                    if (!isBlocked) {
+                      isAnimating = true;
+                      isBlocked = true;
+                      // 初回の阻止演出
                       this.input.keyboard.off('keydown', keyHandler);
-                      await sayHero('「……魔王は……殺さなきゃ……」');
-                      await sayDevice('「お前はさっきから、ろくな選択をしない。だから必ず殺すよう制御させてもらった。」');
                       await sayDevice('「魔王を生かすことなんてさせないからな。」');
-                      
-                      let timeRemaining = 5000;
-                      let timeText = this.add.text(w/2, h/2 - 220, '残り時間: 5.0', { fontFamily: '"DotGothic16"', fontSize: '32px', color: '#ff0000' }).setOrigin(0.5);
-                      this.choiceContainer.add(timeText);
-                      this.miniGameTimer = this.time.addEvent({
-                        delay: 100, loop: true,
-                        callback: () => {
-                          if (shattered) { this.miniGameTimer.destroy(); return; }
-                          timeRemaining -= 100;
-                          timeText.setText('残り時間: ' + (timeRemaining/1000).toFixed(1));
-                          if (timeRemaining <= 0) {
-                            this.miniGameTimer.destroy();
-                            timeText.setText('TIME UP');
-                            this.input.keyboard.off('keydown', keyHandler);
-                            this.time.delayedCall(1000, () => {
-                              this.choiceContainer.destroy();
-                              res(1);
-                            });
-                          }
-                        }
-                      });
+                      box2.setFillStyle(0x333333, 0.8);
+                      box2.setStrokeStyle(2, 0x555555);
+                      txt2.setColor('#777777');
                       this.input.keyboard.on('keydown', keyHandler);
-                    } else if (downPresses >= 10) {
-                      shattered = true;
-                      this.cameras.main.shake(500, 0.05);
-                      MOT.Audio.playSelect();
-                      this.tweens.add({ targets: [box1, txt1], y: y1 + 100, alpha: 0, rotation: 0.5, duration: 1000, ease: 'Power2' });
-                      currentIndex = 2;
-                      cursor.setY(y2);
-                      this.input.keyboard.off('keydown', keyHandler);
-                      await sayHero('「……それでも僕は、殺したくない……！！」');
-                      this.input.keyboard.on('keydown', keyHandler);
+                      isAnimating = false;
+                      // カーソルは1に戻される
+                      currentIndex = 1;
+                      cursor.setY(y1);
+                    } else {
+                      // 2回目以降の抵抗（ひび割れ）
+                      downPresses++;
+                      if (downPresses >= 15) {
+                        isAnimating = true;
+                        shattered = true;
+                        // ブレイクスルー演出
+                        this.cameras.main.shake(800, 0.05);
+                        if (MOT.Audio.playShatter) MOT.Audio.playShatter();
+                        else MOT.Audio.playExplosion();
+                        
+                        shatterOption1(); // 殺す選択肢を粉砕
+                        crackGraphics.clear(); // ヒビ割れクリア
+                        
+                        // 見逃す選択肢が復活
+                        box2.setFillStyle(0x1F2933, 0.8);
+                        box2.setStrokeStyle(2, 0x4FD1FF);
+                        txt2.setColor('#ffffff');
+                        
+                        currentIndex = 2;
+                        cursor.setY(y2);
+                        
+                        this.input.keyboard.off('keydown', keyHandler);
+                        await sayHero('「……それでも僕は、殺したくない……！！」');
+                        this.input.keyboard.on('keydown', keyHandler);
+                        isAnimating = false;
+                      } else {
+                        // ヒビを入れる
+                        this.cameras.main.shake(100, 0.01);
+                        if (MOT.Audio.playCrack) MOT.Audio.playCrack();
+                        drawCrack(w/2 + Phaser.Math.Between(-250, 250), y1 + 50 + Phaser.Math.Between(-100, 100));
+                        // 抵抗中はカーソルは1に押し留められる
+                        currentIndex = 1;
+                        cursor.setY(y1);
+                      }
                     }
                   } else {
                     currentIndex = 2;
                     cursor.setY(y2);
                   }
-                } else if (dir === 'UP') {
-                  if (!shattered) {
-                    currentIndex = 1;
-                    cursor.setY(y1);
+                } else if (event.key === 'Enter' || event.key === ' ') {
+                  if (isBlocked && !shattered && currentIndex === 2) {
+                    // グレーアウト状態では選べない
+                    return;
                   }
-                } else if (dir === 'ENTER') {
                   this.input.keyboard.off('keydown', keyHandler);
-                  if (this.miniGameTimer) this.miniGameTimer.destroy();
                   this.choiceContainer.destroy();
                   res(currentIndex);
                 }
