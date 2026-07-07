@@ -52,7 +52,7 @@ MOT.spawnWave = function (scene, count, ySpread, speed) {
  * Fire a linear bullet from position.
  */
 MOT.fireLinear = function (scene, x, y, vx, vy, color) {
-  if (scene.dialogActive) return;
+  if (scene.dialogActive) return null;
   const texture = (color !== undefined) ? 'bullet_enemy_white' : 'bullet_enemy';
   const bullet = scene.enemyBullets.create(x, y, texture);
   if (bullet) {
@@ -63,7 +63,9 @@ MOT.fireLinear = function (scene, x, y, vx, vy, color) {
     scene.time.delayedCall(5000, function () {
       if (bullet.active) bullet.destroy();
     });
+    return bullet;
   }
+  return null;
 };
 
 /**

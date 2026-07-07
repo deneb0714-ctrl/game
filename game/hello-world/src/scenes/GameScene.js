@@ -767,6 +767,12 @@ class GameScene extends Phaser.Scene {
           MOT.spawnEnergyItem(this, enemy.x, enemy.y); // 40%でエネルギー
         }
       }
+      // 倒された敵が発射した弾を消去する
+      this.enemyBullets.getChildren().forEach(function(b) {
+        if (b.shooter === enemy) {
+          b.destroy();
+        }
+      });
       enemy.destroy();
     }
   }
@@ -975,7 +981,8 @@ class GameScene extends Phaser.Scene {
       delay: Phaser.Math.Between(1500, 2500),
       callback: () => {
         if (enemy.active) {
-          MOT.fireLinear(this, enemy.x, enemy.y, -300, 0);
+          let b = MOT.fireLinear(this, enemy.x, enemy.y, -300, 0);
+          if (b) b.shooter = enemy;
         }
       },
       loop: true
@@ -997,7 +1004,7 @@ class GameScene extends Phaser.Scene {
           this.physics.resume();
           
           let e = this.spawnTutorialEnemy(0, 0);
-          e.x = 1700;
+          e.x = 1300;
           
           this.time.delayedCall(500, () => {
             this.physics.pause();
@@ -1033,7 +1040,7 @@ class GameScene extends Phaser.Scene {
       
       for(let i=0; i<3; i++) {
         let e = this.spawnTutorialEnemy(i, 0);
-        e.x = 1700 + Phaser.Math.Between(0, 100);
+        e.x = 1300 + Phaser.Math.Between(0, 100);
         e.tutorialDrop = true;
         e.tutorialRed = (i === 1);
       }
@@ -1057,7 +1064,7 @@ class GameScene extends Phaser.Scene {
             this.dialogActive = false;
             this.tutorialPhase = 5;
             this.physics.resume();
-          }, { x: 130, y: 70, width: 220, height: 70 });
+          }, { x: 180, y: 75, width: 340, height: 75 });
         });
       }
     } else if (this.tutorialPhase === 5) {
