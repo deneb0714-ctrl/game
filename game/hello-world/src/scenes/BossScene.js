@@ -983,6 +983,8 @@ class BossScene extends Phaser.Scene {
     
     // boss3_twins（兄）の攻撃パターン
     if (this.currentBoss.configKey === 'boss3_twins') {
+      if (this.isLaneBeamActive) return; // 薙ぎ払いビーム中は通常弾幕を出さない
+      
       let pattern = Phaser.Math.Between(0, 2);
       if (pattern === 0 || pattern === 1) {
         // 高速の追尾レーザー
@@ -1044,6 +1046,8 @@ class BossScene extends Phaser.Scene {
   // 5秒間の警告のあと、レーン全体を薙ぎ払う極太レーザー
   fireLaneBeam() {
     if (this.dialogActive) return;
+    this.isLaneBeamActive = true;
+    
     const laneYs = [220, 460, 700];
     const targetY = laneYs[Phaser.Math.Between(0, 2)];
     
@@ -1060,10 +1064,6 @@ class BossScene extends Phaser.Scene {
     // 5秒後に極太レーザー発射
     this.time.delayedCall(5000, () => {
       if (warningRect) warningRect.destroy();
-      
-      // カメラを揺らし、爆発音
-      this.cameras.main.shake(500, 0.02);
-      if (MOT.Audio.playExplosion) MOT.Audio.playExplosion();
       
       // レーザー実体
       let beam = this.add.rectangle(1920 / 2, targetY, 1920, 100, 0x4FD1FF, 1).setDepth(9);
@@ -1084,6 +1084,7 @@ class BossScene extends Phaser.Scene {
         onComplete: () => {
           collider.destroy();
           beam.destroy();
+          this.isLaneBeamActive = false;
         }
       });
     });
@@ -1661,6 +1662,8 @@ class BossScene extends Phaser.Scene {
                 this.proceedToNextArea(boss, true);
               }
             })();
+          } else if (key === 'boss3_twins') {
+            this.onTwinsDefeated();
           } else if (key === 'demon_lord') {
             var f = MOT.flags;
             
