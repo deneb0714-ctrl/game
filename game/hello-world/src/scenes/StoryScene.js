@@ -45,8 +45,8 @@ class StoryScene extends Phaser.Scene {
     this.isWaitingForChoice = false;
 
     // Portraits Layer
-    // Hero portrait (now on the right)
-    this.heroImage = this.add.image(w - 300, h / 2, 'hero_stand').setAlpha(0);
+    // Hero portrait (now on the left)
+    this.heroImage = this.add.image(300, h / 2, 'hero_stand').setAlpha(0);
     
     var hScale = 750 / this.heroImage.width;
     this.heroImage.setScale(hScale);
@@ -54,8 +54,8 @@ class StoryScene extends Phaser.Scene {
     
     this.heroGroup = [this.heroImage];
 
-    // Doctor portrait (now on the left)
-    this.doctorImage = this.add.image(300, h / 2, 'doctor_normal').setAlpha(0);
+    // Doctor portrait (now on the right)
+    this.doctorImage = this.add.image(w - 300, h / 2, 'doctor_normal').setAlpha(0);
     this.textures.get('doctor_normal').setFilter(Phaser.Textures.FilterMode.LINEAR);
     
     var imgW = this.textures.get('doctor_normal').getSourceImage().width;
