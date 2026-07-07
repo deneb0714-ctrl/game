@@ -2128,7 +2128,8 @@ class BossScene extends Phaser.Scene {
                           this.proceedToNextArea(boss, true);
                           return;
                       } else {
-                          await sayHero('「…魔王は悪いやつじゃなかった。僕は殺さない。」');
+                          await sayDemon('「わらわを見逃して何が望みだ？しもべたちを殺しているんだ。和平を求めて居るわけではないのであろう？」');
+                          await sayDemon('「わらわは、しもべを殺された恨みを忘れることはできん。何が目的であれ、お前を許すことはできないだろう。」');
                           ending('normal_useless');
                       }
                   }
