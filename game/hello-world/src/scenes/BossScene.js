@@ -10,10 +10,20 @@ class BossScene extends Phaser.Scene {
     this.startData = data;
     this.bossQueue = ['boss1', 'boss2', 'boss3_twins', 'demon_lord'];
     this.currentBossIndex = 0;
+    let isSkipping = false;
     if (data && data.bossIndex !== undefined) {
       this.currentBossIndex = data.bossIndex;
+      isSkipping = true;
     } else if (data && data.startBossIndex !== undefined) {
       this.currentBossIndex = data.startBossIndex;
+      isSkipping = true;
+    }
+
+    if (isSkipping || (data && data.jumpToEndingSetup)) {
+      if (!MOT.flags) MOT.flags = {};
+      MOT.flags.playerMaxHP = MOT.flags.playerMaxHP || 5;
+      MOT.flags.playerHP = MOT.flags.playerMaxHP;
+      MOT.flags.energy = 0;
     }
     
 
