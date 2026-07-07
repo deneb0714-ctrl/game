@@ -57,9 +57,9 @@ MOT.ENDINGS = {
   },
   hidden_truedemon: {
     key: 'hidden_truedemon',
-    title: 'TRUE END',
+    title: '？？？エンド',
     subtitle: '— 真なる魔王 —',
-    description: '魔王は約束通り誰も殺さなかった。\nしかし、それは慈悲ではなかった。\n\n博士を含め、全ては洗脳され、魔王の忠実なしもべとなった。\n新たな支配者のもと、歪な平和が訪れたのである。',
+    description: '',
     color: 0xFFD700,
     bgColor: '#1a1a00'
   },
