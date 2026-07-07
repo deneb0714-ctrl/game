@@ -1957,11 +1957,10 @@ class BossScene extends Phaser.Scene {
                         let scale = (downPresses - 9) * 0.5; // 0.5, 1.0, 1.5...
                         drawCrack(w/2, y2 - 40, scale);
                         
-                        // 揺れは後半から徐々に大きくする
-                        let shakeIntensity = downPresses - 12; // 13回目以降から揺れる
-                        if (shakeIntensity > 0) {
-                          this.cameras.main.shake(100 + shakeIntensity * 10, 0.005 * shakeIntensity);
-                        }
+                        // 揺れは最初はほとんどなく、後半に急激に大きくなる
+                        let shakeLevel = downPresses - 9; // 1〜10
+                        let shakeIntensity = 0.0002 * Math.pow(shakeLevel, 1.8);
+                        this.cameras.main.shake(100 + shakeLevel * 15, shakeIntensity);
                         
                         if (MOT.Audio.playBleep) MOT.Audio.playBleep();
                       }
