@@ -2022,10 +2022,23 @@ class BossScene extends Phaser.Scene {
                   if (Kills === 0 && Satsui >= 100 && DP < 100) {
                       // 真の魔王エンドの特別演出（博士のラボへ移行）
                           
+                          const localSayDevice = (text) => new Promise(res => { this.tweens.add({ targets: this.dimBg, alpha: 0.6, duration: 300 }); if(this.heroImage) this.tweens.add({targets: this.heroImage, alpha: 0.4, duration: 300}); if(this.inunekoImage) this.tweens.add({targets: this.inunekoImage, alpha: 0.4, duration: 300}); if(this.demonImage) this.tweens.add({targets: this.demonImage, alpha: 0.4, duration: 300}); this.showDeviceDialogue(text, res); });
+                          const sayHero = (text) => new Promise(res => { this.tweens.add({ targets: this.dimBg, alpha: 0.6, duration: 300 }); if(this.demonImage) this.tweens.add({targets: this.demonImage, alpha: 0.4, duration: 300}); if(this.inunekoImage) this.tweens.add({targets: this.inunekoImage, alpha: 0.4, duration: 300}); if(this.heroImage) this.tweens.add({targets: this.heroImage, alpha: 1, duration: 300}); this.showDialogue('勇者', text, res); });
+
+                          await localSayDevice('「よくやった。さぁ早くとどめを！」');
+                          await sayHero('「…」');
+
                           // フェードアウト
                           this.cameras.main.fadeOut(1000);
                           await new Promise(r => this.time.delayedCall(1000, r));
                           
+                          let blackText = this.add.text(1920/2, 1080/2, '一言も発さず、皆を洗脳しながら博士の研究室に戻る。', {fontFamily: '"DotGothic16"', fontSize: '32px', color: '#fff'}).setOrigin(0.5).setDepth(300).setAlpha(0);
+                          this.tweens.add({targets: blackText, alpha: 1, duration: 1000});
+                          await new Promise(r => this.time.delayedCall(3000, r));
+                          this.tweens.add({targets: blackText, alpha: 0, duration: 1000});
+                          await new Promise(r => this.time.delayedCall(1000, r));
+                          blackText.destroy();
+
                           // 戦闘UIとオブジェクトを全て隠す
                           if (this.player) { this.player.setVisible(false); this.player.setActive(false); }
                           if (this.playerHitboxGraphics) this.playerHitboxGraphics.setVisible(false);
@@ -2037,6 +2050,9 @@ class BossScene extends Phaser.Scene {
                           if (this.hpText) this.hpText.setVisible(false);
                           if (this.energyText) this.energyText.setVisible(false);
                           if (this.energyBar) this.energyBar.setVisible(false);
+                          if (this.energyBarBgObj) this.energyBarBgObj.setVisible(false);
+                          if (this.energyBarFgObj) this.energyBarFgObj.setVisible(false);
+                          if (this.energyBarOutline) this.energyBarOutline.setVisible(false);
                           if (this.barrierIconBg) this.barrierIconBg.setVisible(false);
                           if (this.barrierIconFg) this.barrierIconFg.setVisible(false);
                           if (this.bossHPText) this.bossHPText.setVisible(false);
@@ -2079,13 +2095,15 @@ class BossScene extends Phaser.Scene {
                           this.cameras.main.fadeIn(1000);
                           await new Promise(r => this.time.delayedCall(1000, r));
                           
-                          const sayDoctorLab = (text) => new Promise(res => { this.tweens.add({ targets: dimBg, alpha: 0.6, duration: 300 }); this.tweens.add({targets: this.heroImage, alpha: 0.4, duration: 300}); this.tweens.add({ targets: this.doctorImage, alpha: 1, duration: 300 }); this.showDialogue('博士', text, res); });
-                          const sayHeroLab = (text) => new Promise(res => { this.tweens.add({ targets: dimBg, alpha: 0.6, duration: 300 }); this.tweens.add({targets: this.heroImage, alpha: 1, duration: 300}); this.tweens.add({ targets: this.doctorImage, alpha: 0.4, duration: 300 }); this.showDialogue('勇者', text, res); });
+                          if (!this.dimBg) {
+                              this.dimBg = this.add.rectangle(1920/2, 1080/2, 1920, 1080, 0x000000).setAlpha(0).setDepth(80);
+                          }
+                          const sayDoctorLab = (text) => new Promise(res => { this.tweens.add({ targets: this.dimBg, alpha: 0.6, duration: 300 }); this.tweens.add({targets: this.heroImage, alpha: 0.4, duration: 300}); this.tweens.add({ targets: this.doctorImage, alpha: 1, duration: 300 }); this.showDialogue('博士', text, res); });
+                          const sayHeroLab = (text) => new Promise(res => { this.tweens.add({ targets: this.dimBg, alpha: 0.6, duration: 300 }); this.tweens.add({targets: this.heroImage, alpha: 1, duration: 300}); this.tweens.add({ targets: this.doctorImage, alpha: 0.4, duration: 300 }); this.showDialogue('勇者', text, res); });
                           
-                          await sayDoctorLab('「貴様……システムに逆らうというのか！」');
-                          await sayDoctorLab('「……！？」');
+                          await sayHeroLab('「…」');
                           
-                          // 5つの選択肢
+                          // 4つの選択肢
                           if (this.choiceContainer) this.choiceContainer.destroy();
                           this.choiceContainer = this.add.container(0, 0).setDepth(200);
                           var w = 1920, h = 1080;
@@ -2095,9 +2113,10 @@ class BossScene extends Phaser.Scene {
                           this.choiceContainer.add(titleChoice);
                           
                           let yStart = h / 2 - 120;
-                          for(let i=0; i<5; i++){
+                          for(let i=0; i<4; i++){
+                              let numTxt = ['1', '2', '３', '４'][i];
                               let box = this.add.rectangle(w / 2, yStart + i * 60, 500, 50, 0x1F2933, 0.8).setStrokeStyle(2, 0x4FD1FF);
-                              let txt = this.add.text(w / 2, yStart + i * 60, '博士を殺す', { fontFamily: '"DotGothic16"', fontSize: '24px', color: '#ffffff' }).setOrigin(0.5);
+                              let txt = this.add.text(w / 2, yStart + i * 60, numTxt + '博士を倒す', { fontFamily: '"DotGothic16"', fontSize: '24px', color: '#ffffff' }).setOrigin(0.5);
                               this.choiceContainer.add([box, txt]);
                           }
                           await new Promise(res => {
@@ -2106,7 +2125,7 @@ class BossScene extends Phaser.Scene {
                               let idx = 0;
                               const kh = (e) => {
                                   if(e.key==='ArrowUp' || e.key==='w') { idx = Math.max(0, idx-1); cursor.setY(yStart + idx*60); }
-                                  if(e.key==='ArrowDown' || e.key==='s') { idx = Math.min(4, idx+1); cursor.setY(yStart + idx*60); }
+                                  if(e.key==='ArrowDown' || e.key==='s') { idx = Math.min(3, idx+1); cursor.setY(yStart + idx*60); }
                                   if(e.key==='Enter' || e.key===' ') {
                                       this.input.keyboard.off('keydown', kh);
                                       this.choiceContainer.destroy();
@@ -2116,7 +2135,15 @@ class BossScene extends Phaser.Scene {
                               this.input.keyboard.on('keydown', kh);
                           });
                           
+                          await sayHeroLab('「…」');
+                          await sayHeroLab('「…」');
+                          await sayDoctorLab('「こちらに銃を構えてどうした？私を倒したいとでも言うのか。」');
+                          await sayDoctorLab('「残念だが、お前にその権限はない。」');
+                          await sayDoctorLab('「反抗するのならお前を……」');
+                          await sayDoctorLab('「……！？」');
                           await sayHeroLab('「いつまでも自分が優位に立てるとは思わない方がいい」');
+                          await sayHeroLab('「僕にこれだけの力を与えたのは貴方だ。」');
+                          await sayHeroLab('「そして今、僕はその力を掌握した。それが意味することは……分かっているでしょう？」');
                           
                           this.cameras.main.shake(1000, 0.05);
                           MOT.Audio.playSelect();
