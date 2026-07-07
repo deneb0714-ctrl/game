@@ -1647,17 +1647,44 @@ class BossScene extends Phaser.Scene {
               // ひび割れ（Crack）エフェクトを描画するグラフィックス
               var crackGraphics = this.add.graphics();
               this.choiceContainer.add(crackGraphics);
+              
+              var redBarrier = null;
 
-              const drawCrack = (x, y) => {
-                crackGraphics.lineStyle(2, 0xff0000, 0.8);
-                crackGraphics.beginPath();
-                crackGraphics.moveTo(x, y);
-                for(let i=0; i<3; i++){
-                  x += Phaser.Math.Between(-30, 30);
-                  y += Phaser.Math.Between(-30, 30);
-                  crackGraphics.lineTo(x, y);
+              const drawCrack = (startX, startY) => {
+                // メインの枝を生成する再帰関数
+                const generateBranch = (x, y, angle, depth, length, thickness) => {
+                  if (depth === 0) return;
+                  
+                  // 赤と白を交えた鋭い線
+                  let color = Math.random() > 0.7 ? 0xffffff : 0xff0000;
+                  crackGraphics.lineStyle(thickness, color, Math.random() * 0.5 + 0.5);
+                  crackGraphics.beginPath();
+                  crackGraphics.moveTo(x, y);
+                  
+                  let endX = x + Math.cos(angle) * length;
+                  let endY = y + Math.sin(angle) * length;
+                  endX += Phaser.Math.Between(-15, 15);
+                  endY += Phaser.Math.Between(-15, 15);
+                  
+                  crackGraphics.lineTo(endX, endY);
+                  crackGraphics.strokePath();
+                  
+                  let numBranches = Phaser.Math.Between(1, 3);
+                  for (let i = 0; i < numBranches; i++) {
+                    let newAngle = angle + Phaser.Math.FloatBetween(-0.8, 0.8);
+                    generateBranch(endX, endY, newAngle, depth - 1, length * 0.7, Math.max(1, thickness - 1));
+                  }
+                };
+
+                // 放射状のひび割れを生成
+                let numMainBranches = Phaser.Math.Between(3, 6);
+                for (let i = 0; i < numMainBranches; i++) {
+                   let angle = (i / numMainBranches) * Math.PI * 2 + Phaser.Math.FloatBetween(-0.5, 0.5);
+                   generateBranch(startX, startY, angle, Phaser.Math.Between(3, 5), Phaser.Math.Between(40, 90), 4);
                 }
-                crackGraphics.strokePath();
+                
+                crackGraphics.fillStyle(0xffffff, 1);
+                crackGraphics.fillCircle(startX, startY, 4);
               };
 
               const shatterOption1 = () => {
@@ -1665,17 +1692,18 @@ class BossScene extends Phaser.Scene {
                 box1.setVisible(false);
                 txt1.setVisible(false);
                 
-                // 破片パーティクルを生成
-                for (let i = 0; i < 20; i++) {
-                  let shard = this.add.rectangle(w/2 + Phaser.Math.Between(-200, 200), y1 + Phaser.Math.Between(-30, 30), Phaser.Math.Between(10, 40), Phaser.Math.Between(10, 40), 0x4FD1FF);
+                // 大量の破片パーティクルを生成
+                for (let i = 0; i < 40; i++) {
+                  let color = Math.random() > 0.5 ? 0x4FD1FF : 0xffffff;
+                  let shard = this.add.rectangle(w/2 + Phaser.Math.Between(-250, 250), y1 + Phaser.Math.Between(-40, 40), Phaser.Math.Between(5, 30), Phaser.Math.Between(5, 30), color);
                   this.choiceContainer.add(shard);
                   this.tweens.add({
                     targets: shard,
-                    x: shard.x + Phaser.Math.Between(-300, 300),
-                    y: shard.y + Phaser.Math.Between(100, 500),
-                    rotation: Phaser.Math.Between(-10, 10),
+                    x: shard.x + Phaser.Math.Between(-500, 500),
+                    y: shard.y + Phaser.Math.Between(-200, 800),
+                    rotation: Phaser.Math.Between(-15, 15),
                     alpha: 0,
-                    duration: 1500,
+                    duration: 1500 + Phaser.Math.Between(0, 1000),
                     ease: 'Cubic.easeOut',
                     onComplete: () => shard.destroy()
                   });
@@ -1697,6 +1725,11 @@ class BossScene extends Phaser.Scene {
                     if (!isBlocked) {
                       isAnimating = true;
                       isBlocked = true;
+                      
+                      // 赤いバリアオーバーレイを生成
+                      redBarrier = this.add.rectangle(w/2, h/2, w, h, 0xff0000, 0.1).setBlendMode(Phaser.BlendModes.ADD);
+                      this.choiceContainer.addAt(redBarrier, 1); // 背景のすぐ上に追加
+                      
                       // 初回の阻止演出
                       this.input.keyboard.off('keydown', keyHandler);
                       await sayDevice('「魔王を生かすことなんてさせないからな。」');
@@ -1711,6 +1744,8 @@ class BossScene extends Phaser.Scene {
                     } else {
                       // 2回目以降の抵抗（ひび割れ）
                       downPresses++;
+                      if (redBarrier) redBarrier.setAlpha(0.1 + (downPresses / 15) * 0.6); // どんどん赤く強く発光する
+                      
                       if (downPresses >= 15) {
                         isAnimating = true;
                         shattered = true;
@@ -1721,6 +1756,17 @@ class BossScene extends Phaser.Scene {
                         
                         shatterOption1(); // 殺す選択肢を粉砕
                         crackGraphics.clear(); // ヒビ割れクリア
+                        
+                        // バリア破壊演出
+                        if (redBarrier) {
+                          this.tweens.add({
+                            targets: redBarrier,
+                            alpha: 0,
+                            scale: 1.5,
+                            duration: 500,
+                            onComplete: () => { redBarrier.destroy(); }
+                          });
+                        }
                         
                         // 見逃す選択肢が復活
                         box2.setFillStyle(0x1F2933, 0.8);
@@ -1736,9 +1782,9 @@ class BossScene extends Phaser.Scene {
                         isAnimating = false;
                       } else {
                         // ヒビを入れる
-                        this.cameras.main.shake(100, 0.01);
+                        this.cameras.main.shake(150, 0.015);
                         if (MOT.Audio.playCrack) MOT.Audio.playCrack();
-                        drawCrack(w/2 + Phaser.Math.Between(-250, 250), y1 + 50 + Phaser.Math.Between(-100, 100));
+                        drawCrack(w/2 + Phaser.Math.Between(-300, 300), y1 + 50 + Phaser.Math.Between(-150, 150));
                         // 抵抗中はカーソルは1に押し留められる
                         currentIndex = 1;
                         cursor.setY(y1);

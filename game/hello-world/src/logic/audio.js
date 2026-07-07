@@ -99,53 +99,87 @@ MOT.Audio = (function () {
       osc.start();
       osc.stop(ctx.currentTime + 1.2);
     },
-    // Crack sound (high-pitch short click)
+    // Crack sound (high-pitch glass snap)
     playCrack: function () {
       resume();
-      const osc = ctx.createOscillator();
-      const gain = ctx.createGain();
-      osc.type = 'square';
-      osc.frequency.setValueAtTime(8000, ctx.currentTime);
-      osc.frequency.exponentialRampToValueAtTime(1000, ctx.currentTime + 0.05);
-      gain.gain.setValueAtTime(0.3, ctx.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.05);
-      osc.connect(gain);
-      gain.connect(ctx.destination);
-      osc.start();
-      osc.stop(ctx.currentTime + 0.05);
-    },
-    // Shatter sound (white noise + multiple high pitch metallic frequencies)
-    playShatter: function () {
-      resume();
-      // Noise burst
+      // Short noise burst for the snap
       const noiseGain = ctx.createGain();
       const noise = ctx.createBufferSource();
-      const bufferSize = ctx.sampleRate * 0.3;
+      const bufferSize = ctx.sampleRate * 0.05;
       const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
       const data = buffer.getChannelData(0);
       for (let i = 0; i < bufferSize; i++) {
         data[i] = Math.random() * 2 - 1;
       }
       noise.buffer = buffer;
-      noiseGain.gain.setValueAtTime(0.4, ctx.currentTime);
-      noiseGain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.3);
+      noiseGain.gain.setValueAtTime(0.5, ctx.currentTime);
+      noiseGain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.05);
       noise.connect(noiseGain);
       noiseGain.connect(ctx.destination);
       noise.start();
 
-      // High pitch metallic tones
-      [4000, 6000, 8000].forEach((freq, idx) => {
+      // Sharp high-frequency metallic snaps
+      [6000, 8500, 11000].forEach((freq) => {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = 'square';
+        osc.frequency.setValueAtTime(freq + Math.random()*1000, ctx.currentTime);
+        gain.gain.setValueAtTime(0.2, ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.03 + Math.random()*0.02);
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start();
+        osc.stop(ctx.currentTime + 0.06);
+      });
+    },
+    // Shatter sound (Heavy glass break with impact)
+    playShatter: function () {
+      resume();
+      
+      // Impact thump
+      const thumpOsc = ctx.createOscillator();
+      const thumpGain = ctx.createGain();
+      thumpOsc.type = 'sine';
+      thumpOsc.frequency.setValueAtTime(150, ctx.currentTime);
+      thumpOsc.frequency.exponentialRampToValueAtTime(20, ctx.currentTime + 0.2);
+      thumpGain.gain.setValueAtTime(0.8, ctx.currentTime);
+      thumpGain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.2);
+      thumpOsc.connect(thumpGain);
+      thumpGain.connect(ctx.destination);
+      thumpOsc.start();
+      thumpOsc.stop(ctx.currentTime + 0.2);
+
+      // Noise burst for glass scattering
+      const noiseGain = ctx.createGain();
+      const noise = ctx.createBufferSource();
+      const bufferSize = ctx.sampleRate * 0.5;
+      const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+      const data = buffer.getChannelData(0);
+      for (let i = 0; i < bufferSize; i++) {
+        data[i] = Math.random() * 2 - 1;
+      }
+      noise.buffer = buffer;
+      noiseGain.gain.setValueAtTime(0.6, ctx.currentTime);
+      noiseGain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.4);
+      noise.connect(noiseGain);
+      noiseGain.connect(ctx.destination);
+      noise.start();
+
+      // Multiple glass shards tinkling
+      for (let i = 0; i < 8; i++) {
+        let delay = Math.random() * 0.15;
+        let freq = 4000 + Math.random() * 6000;
         const osc = ctx.createOscillator();
         const gain = ctx.createGain();
         osc.type = 'triangle';
-        osc.frequency.setValueAtTime(freq + Math.random()*500, ctx.currentTime);
-        gain.gain.setValueAtTime(0.1, ctx.currentTime + idx * 0.02);
-        gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.3);
+        osc.frequency.setValueAtTime(freq, ctx.currentTime + delay);
+        gain.gain.setValueAtTime(0.2, ctx.currentTime + delay);
+        gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + delay + 0.2 + Math.random()*0.2);
         osc.connect(gain);
         gain.connect(ctx.destination);
-        osc.start(ctx.currentTime + idx * 0.02);
-        osc.stop(ctx.currentTime + 0.3);
-      });
+        osc.start(ctx.currentTime + delay);
+        osc.stop(ctx.currentTime + delay + 0.5);
+      }
     },
     // 犬猫スター補助魔法音（不思議な鈴のような音）
     playMagic: function () {
