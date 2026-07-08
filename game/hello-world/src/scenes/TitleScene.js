@@ -17,9 +17,9 @@ class TitleScene extends Phaser.Scene {
       // 強制シャットダウン後の特殊タイトル
       this.add.image(w / 2, h / 2, '404_bg').setDisplaySize(w, h).setDepth(0);
       let notFoundImg = this.add.image(0, h / 2, 'not_found_text').setOrigin(0, 0.5).setDepth(1);
-      let scaleY = h / notFoundImg.height * 0.95;
-      let scaleX = (w / 2) / notFoundImg.width * 0.95;
-      notFoundImg.setScale(Math.min(scaleX, scaleY));
+      // 画面の高さにぴったり合わせる
+      let scaleY = h / notFoundImg.height;
+      notFoundImg.setScale(scaleY);
       this.heroGif = null;
       this.matrixTextObj = null;
     } else if (!isGlitch) {
@@ -69,34 +69,38 @@ class TitleScene extends Phaser.Scene {
       this.matrixTextObj = null;
     }
 
-    // 砂嵐（ノイズ）用のテクスチャを動的に生成
-    if (!this.textures.exists('tv_noise')) {
-      const size = 256;
-      const canvas = document.createElement('canvas');
-      canvas.width = size;
-      canvas.height = size;
-      const ctx = canvas.getContext('2d');
-      const imgData = ctx.createImageData(size, size);
-      for (let i = 0; i < imgData.data.length; i += 4) {
-        const val = Math.floor(Math.random() * 255);
-        imgData.data[i] = val;     // R
-        imgData.data[i+1] = val;   // G
-        imgData.data[i+2] = val;   // B
-        imgData.data[i+3] = 255;   // A (はっきりと見せるため不透明に)
+    if (!isShutdown) {
+      // 砂嵐（ノイズ）用のテクスチャを動的に生成
+      if (!this.textures.exists('tv_noise')) {
+        const size = 256;
+        const canvas = document.createElement('canvas');
+        canvas.width = size;
+        canvas.height = size;
+        const ctx = canvas.getContext('2d');
+        const imgData = ctx.createImageData(size, size);
+        for (let i = 0; i < imgData.data.length; i += 4) {
+          const val = Math.floor(Math.random() * 255);
+          imgData.data[i] = val;     // R
+          imgData.data[i+1] = val;   // G
+          imgData.data[i+2] = val;   // B
+          imgData.data[i+3] = 255;   // A (はっきりと見せるため不透明に)
+        }
+        ctx.putImageData(imgData, 0, 0);
+        this.textures.addCanvas('tv_noise', canvas);
       }
-      ctx.putImageData(imgData, 0, 0);
-      this.textures.addCanvas('tv_noise', canvas);
-    }
 
-    // ノイズ用のTileSpriteを画面全体に配置
-    this.noiseSprite = this.add.tileSprite(w / 2, h / 2, w, h, 'tv_noise').setDepth(8).setAlpha(0);
-    if (!isGlitch && this.helloImg) {
-      // 全体のノイズを消し、hello world.png のみにノイズを走らせるためのマスクを設定
-      const mask = this.helloImg.createBitmapMask();
-      this.noiseSprite.setMask(mask);
+      // ノイズ用のTileSpriteを画面全体に配置
+      this.noiseSprite = this.add.tileSprite(w / 2, h / 2, w, h, 'tv_noise').setDepth(8).setAlpha(0);
+      if (!isGlitch && this.helloImg) {
+        // 全体のノイズを消し、hello world.png のみにノイズを走らせるためのマスクを設定
+        const mask = this.helloImg.createBitmapMask();
+        this.noiseSprite.setMask(mask);
+      }
+      this.isNoisy = false;
+      this.noiseTimer = Phaser.Math.Between(2000, 5000); // 最初のノイズまでの時間
+    } else {
+      this.noiseSprite = null;
     }
-    this.isNoisy = false;
-    this.noiseTimer = Phaser.Math.Between(2000, 5000); // 最初のノイズまでの時間
 
     // Fade in camera
     this.cameras.main.fadeIn(600, 5, 8, 20);
