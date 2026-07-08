@@ -1067,7 +1067,12 @@ class BossScene extends Phaser.Scene {
 
     // demon_lord（魔王）の攻撃パターン
     if (this.currentBoss.configKey === 'demon_lord') {
-      let pattern = Phaser.Math.Between(0, 1);
+      if (this.currentBoss.demonPatternIdx === undefined) {
+        this.currentBoss.demonPatternIdx = 0;
+      } else {
+        this.currentBoss.demonPatternIdx = (this.currentBoss.demonPatternIdx + 1) % 2;
+      }
+      let pattern = this.currentBoss.demonPatternIdx;
       
       if (pattern === 0) {
         // パターンA: 分裂する紫色の球
