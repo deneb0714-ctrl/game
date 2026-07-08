@@ -16,7 +16,10 @@ class TitleScene extends Phaser.Scene {
     if (isShutdown) {
       // 強制シャットダウン後の特殊タイトル
       this.add.image(w / 2, h / 2, '404_bg').setDisplaySize(w, h).setDepth(0);
-      this.add.image(0, h / 2, 'not_found_text').setOrigin(0, 0.5).setDepth(1);
+      let notFoundImg = this.add.image(0, h / 2, 'not_found_text').setOrigin(0, 0.5).setDepth(1);
+      let scaleY = h / notFoundImg.height * 0.95;
+      let scaleX = (w / 2) / notFoundImg.width * 0.95;
+      notFoundImg.setScale(Math.min(scaleX, scaleY));
       this.heroGif = null;
       this.matrixTextObj = null;
     } else if (!isGlitch) {
