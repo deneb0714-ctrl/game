@@ -923,7 +923,9 @@ class BossScene extends Phaser.Scene {
       }
     }.bind(this));
 
+    let now = this.time.now;
     this.enemyBullets.getChildren().forEach(function (b) {
+      if (b.updateBehavior) b.updateBehavior(now, delta);
       if (b.x < -50 || b.x > 2000 || b.y < -50 || b.y > 1130) b.destroy();
     });
     this.playerBullets.getChildren().forEach(function (b) {
@@ -1058,6 +1060,80 @@ class BossScene extends Phaser.Scene {
           this.time.delayedCall(i * 200, function () {
             MOT.fireFan(this, x - 30, y, 5, 300, 180, 45);
           }, [], this);
+        }
+      }
+      return;
+    }
+
+    // demon_lord（魔王）の攻撃パターン
+    if (this.currentBoss.configKey === 'demon_lord') {
+      let pattern = Phaser.Math.Between(0, 1);
+      
+      if (pattern === 0) {
+        // パターンA: 分裂する紫色の球
+        let ball = MOT.fireLinear(this, x, y, -400, 0, 0xd000ff, 'bullet_enemy_white');
+        if (ball) {
+          ball.setScale(3);
+          let self = this;
+          let splitType = Phaser.Math.Between(0, 2); 
+          
+          ball.updateBehavior = function(now, delta) {
+            // 勇者と魔王の中間付近 (x < 1100) で分裂
+            if (this.x < 1100 && !this.hasSplit) {
+              this.hasSplit = true;
+              let bx = this.x;
+              let by = this.y;
+              this.destroy();
+              
+              MOT.Audio.playShot();
+              
+              let targetAngle = Phaser.Math.Angle.Between(bx, by, self.player.x, self.player.y);
+              let spread = 0.4;
+              
+              for (let i = 0; i < 3; i++) {
+                let angle = targetAngle - spread + spread * i;
+                let b = MOT.fireLinear(self, bx, by, Math.cos(angle)*400, Math.sin(angle)*400, 0xff00ff, 'bullet_enemy_white');
+                if (b) {
+                  b.setScale(1.5);
+                  b.spawnTime = now;
+                  b.baseAngle = angle;
+                  
+                  if (splitType === 1) {
+                    // 蛇行（ウェーブ）軌道
+                    b.updateBehavior = function(t, d) {
+                      let elapsed = t - this.spawnTime;
+                      let currentAngle = this.baseAngle + Math.sin(elapsed * 0.01) * 0.6;
+                      this.setVelocity(Math.cos(currentAngle)*400, Math.sin(currentAngle)*400);
+                    };
+                  } else if (splitType === 2) {
+                    // 透明化
+                    b.updateBehavior = function(t, d) {
+                      let elapsed = t - this.spawnTime;
+                      if (elapsed > 300) {
+                        this.alpha = Math.max(0.1, Math.abs(Math.cos(elapsed * 0.008)));
+                      }
+                    };
+                  }
+                }
+              }
+            }
+          };
+        }
+      } else {
+        // パターンB: 螺旋弾幕
+        let spiralCount = 30;
+        let delayPerShot = 80;
+        let baseAngle = Phaser.Math.FloatBetween(0, Math.PI * 2);
+        let direction = Phaser.Math.Between(0, 1) === 0 ? 1 : -1;
+        
+        for (let i = 0; i < spiralCount; i++) {
+          this.time.delayedCall(i * delayPerShot, () => {
+             if (!this.currentBoss || !this.currentBoss.active) return;
+             let angle = baseAngle + i * 0.3 * direction;
+             let b = MOT.fireLinear(this, this.currentBoss.x, this.currentBoss.y, Math.cos(angle)*350, Math.sin(angle)*350, 0xaa00ff, 'bullet_enemy_white');
+             if (b) b.setScale(1.2);
+             if (i % 3 === 0) MOT.Audio.playShot();
+          });
         }
       }
       return;
