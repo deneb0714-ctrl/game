@@ -52,6 +52,12 @@ class TitleScene extends Phaser.Scene {
       
       this.helloImg = this.add.image(w / 2, h / 2, 'title_1x_hello_world').setDisplaySize(w, h).setDepth(3);
       this.add.image(w / 2, h / 2, 'title_1x_baria').setDisplaySize(w, h).setDepth(3);
+    } else if (window.MOT && window.MOT.flags && window.MOT.flags.finalEnding === 'bad_shutdown') {
+      // 強制シャットダウン後の特殊タイトル
+      this.add.image(w / 2, h / 2, '404_bg').setDisplaySize(w, h).setDepth(0);
+      this.add.image(0, h / 2, 'not_found_text').setOrigin(0, 0.5).setDepth(1);
+      this.heroGif = null;
+      this.matrixTextObj = null;
     } else {
       // エラータイトルの場合は静止画とSTARTボタンのみ
       this.add.image(w / 2, h / 2, 'title_bg_glitch').setDisplaySize(w, h).setDepth(0);

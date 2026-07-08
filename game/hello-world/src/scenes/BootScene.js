@@ -136,6 +136,10 @@ class BootScene extends Phaser.Scene {
     
     // Title background (Glitch)
     this.load.image('title_bg_glitch', window.TITLE_BG_GLITCH_B64);
+    
+    // 強制シャットダウン用タイトル画像
+    this.load.image('404_bg', 'assets/images/404_bg.png?v=' + v);
+    this.load.image('not_found_text', 'assets/images/not_found_text.png?v=' + v);
 
     // Hero Title GIF (SpriteSheet)
     this.load.spritesheet('hero_title_anim', 'assets/images/hero_title_sheet.png?v=' + v, {
