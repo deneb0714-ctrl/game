@@ -1,0 +1,8 @@
+{
+  "name": "deneb-game-repo",
+  "version": "1.0.0",
+  "description": "Repo root package.json for Vercel build",
+  "scripts": {
+    "build": "node inject-env.js"
+  }
+}
