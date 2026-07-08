@@ -143,7 +143,7 @@ class BossScene extends Phaser.Scene {
     // ── デバッグ用ショートカット ──
     // Q/E/R/8/9/0: 旧エンディング直行（条件なし）
     this.input.keyboard.on('keydown-Q', () => { MOT.flags.finalEnding = 'END_USELESS'; this.scene.start('EndingScene'); });
-    this.input.keyboard.on('keydown-E', () => { MOT.flags.finalEnding = 'END_SHUTDOWN'; this.scene.start('EndingScene'); });
+    this.input.keyboard.on('keydown-E', () => { MOT.flags.finalEnding = 'bad_shutdown'; this.scene.start('EndingScene'); });
     this.input.keyboard.on('keydown-R', () => { MOT.flags.finalEnding = 'END_TRUE_DEMON_LORD'; this.scene.start('EndingScene'); });
     this.input.keyboard.on('keydown-EIGHT', () => { MOT.flags.finalEnding = 'END_ORPHAN'; this.scene.start('EndingScene'); });
     this.input.keyboard.on('keydown-NINE', () => { MOT.flags.finalEnding = 'END_PUPPET'; this.scene.start('EndingScene'); });
@@ -3108,7 +3108,7 @@ class BossScene extends Phaser.Scene {
             } else if (event.key === 'q') {
               MOT.flags.finalEnding = 'END_USELESS'; this.scene.start('EndingScene');
             } else if (event.key === 'e') {
-              MOT.flags.finalEnding = 'END_SHUTDOWN'; this.scene.start('EndingScene');
+              MOT.flags.finalEnding = 'bad_shutdown'; this.scene.start('EndingScene');
             } else if (event.key === 'r') {
               MOT.flags.finalEnding = 'END_TRUE_DEMON_LORD'; this.scene.start('EndingScene');
             } else if (event.key === '1') {
