@@ -32,11 +32,8 @@ class TitleScene extends Phaser.Scene {
             frameRate: 12.5,
             repeat: 0
           });
-        }
-        
-        // 通常時は 2.25 倍、グリッチタイトル時は少し小さめに設定 (1.6倍など)
-        let scaleVal = isGlitch ? 1.6 : 2.25;
-        this.heroGif = this.add.sprite(0, h, 'hero_title_anim', 0).setOrigin(0, 1).setScale(scaleVal).setDepth(2);
+        // 通常タイトルと同じサイズ(2.25倍)に統一
+        this.heroGif = this.add.sprite(0, h, 'hero_title_anim', 0).setOrigin(0, 1).setScale(2.25).setDepth(2);
       } else {
         this.heroGif = null;
       }
