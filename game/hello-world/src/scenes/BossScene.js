@@ -1791,7 +1791,11 @@ class BossScene extends Phaser.Scene {
               this.dialogActive = false;
               this.physics.resume();
               this.startBossLaneMovement();
-              if (key === 'boss3_twins') this.startSisterLaneMovement();
+              if (key === 'boss3_twins') {
+                this.startSisterLaneMovement();
+                this.twinsBgm = this.sound.add('twins_bgm', { loop: true, volume: 0.5 });
+                this.twinsBgm.play();
+              }
             })();
           }
 } else {
@@ -3067,6 +3071,9 @@ class BossScene extends Phaser.Scene {
 
   // 双子撃破後の処理
   onTwinsDefeated() {
+    if (this.twinsBgm) {
+      this.twinsBgm.stop();
+    }
     this.dialogActive = true;
     this.physics.pause();
     if (this.bossLaneTimer) this.bossLaneTimer.destroy();
