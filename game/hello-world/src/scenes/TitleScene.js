@@ -33,9 +33,14 @@ class TitleScene extends Phaser.Scene {
             repeat: 0
           });
         }
-        // サイズをさらに大きく(2.6倍)し、左の空白を埋めるためにx座標をマイナスに調整 (-80)
-        // 拡大することで、スプライトシートの上端で見切れているアホ毛を画面外に隠す効果もあります
-        this.heroGif = this.add.sprite(-80, h, 'hero_title_anim', 0).setOrigin(0, 1).setScale(2.6).setDepth(2);
+        
+        if (isGlitch) {
+          // エラータイトル: 少し大きくし、左へ寄せる (画面上部が見切れない程度に)
+          this.heroGif = this.add.sprite(-30, h, 'hero_title_anim', 0).setOrigin(0, 1).setScale(2.35).setDepth(2);
+        } else {
+          // 通常タイトル: 元の完全なサイズ・位置
+          this.heroGif = this.add.sprite(0, h, 'hero_title_anim', 0).setOrigin(0, 1).setScale(2.25).setDepth(2);
+        }
       } else {
         this.heroGif = null;
       }
