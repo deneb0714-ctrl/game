@@ -1111,8 +1111,9 @@ class BossScene extends Phaser.Scene {
       } else if (docPattern === 5) {
         // 妹のダイヤ弾幕（シルバー化）
         let ty = Phaser.Math.Between(100, 980);
-        MOT.fireCircle(this, x, ty, 10, 260, silver, 'bullet_star');
-        this.time.delayedCall(300, () => MOT.fireCircle(this, x, ty, 10, 320, silver, 'bullet_star'));
+        let bx = this.currentBoss ? this.currentBoss.x : 1600;
+        MOT.fireCircle(this, bx, ty, 10, 260, silver, 'bullet_star');
+        this.time.delayedCall(300, () => MOT.fireCircle(this, bx, ty, 10, 320, silver, 'bullet_star'));
       } else {
         // 新技：斜め極太ブラスター（顔なし）
         let numBlasters = Phaser.Math.Between(4, 6); // 4〜6体に増加
