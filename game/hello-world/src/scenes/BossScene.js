@@ -1764,6 +1764,9 @@ class BossScene extends Phaser.Scene {
                 await sayHero('「（……やっぱり脳筋だったのか）」');
                 
               } else if (key === 'boss3_twins') {
+                this.twinsBgm = this.sound.add('twins_bgm', { loop: true, volume: 0.5 });
+                this.twinsBgm.play();
+                
                 await sayEnemyUnknown('「…来たか」');
                 await sayEnemyUnknown('「来たわね。兄様」');
                 await sayDevice('「…!?お前たちは…」');
@@ -1793,8 +1796,6 @@ class BossScene extends Phaser.Scene {
               this.startBossLaneMovement();
               if (key === 'boss3_twins') {
                 this.startSisterLaneMovement();
-                this.twinsBgm = this.sound.add('twins_bgm', { loop: true, volume: 0.5 });
-                this.twinsBgm.play();
               }
             })();
           }
