@@ -495,6 +495,28 @@ class BootScene extends Phaser.Scene {
     gs.lineTo(0, 10);  // Left
     gs.closePath();
     gs.fillPath();
+    gs.generateTexture('bullet_diamond', 20, 20);
+    gs.clear();
+
+    // Draw a true 5-pointed star shape
+    gs.beginPath();
+    let cx = 10, cy = 10, spikes = 5, outerRadius = 10, innerRadius = 4;
+    let rot = Math.PI / 2 * 3;
+    let step = Math.PI / spikes;
+    gs.moveTo(cx, cy - outerRadius);
+    for (let i = 0; i < spikes; i++) {
+      let x = cx + Math.cos(rot) * outerRadius;
+      let y = cy + Math.sin(rot) * outerRadius;
+      gs.lineTo(x, y);
+      rot += step;
+      x = cx + Math.cos(rot) * innerRadius;
+      y = cy + Math.sin(rot) * innerRadius;
+      gs.lineTo(x, y);
+      rot += step;
+    }
+    gs.lineTo(cx, cy - outerRadius);
+    gs.closePath();
+    gs.fillPath();
     gs.generateTexture('bullet_star', 20, 20);
     gs.destroy();
 

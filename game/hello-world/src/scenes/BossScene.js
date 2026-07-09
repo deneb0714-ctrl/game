@@ -810,6 +810,34 @@ class BossScene extends Phaser.Scene {
 
 
   update(time, delta) {
+    // レーザー全体でのカスタム当たり判定
+    if (this.player && this.player.active && this.player.alpha > 0 && !this.player.isInvincible) {
+      if (this.enemyBullets) {
+        this.enemyBullets.getChildren().forEach(b => {
+          if (b.active && b.texture.key === 'bullet_laser') {
+            let px = this.player.body.center.x;
+            let py = this.player.body.center.y;
+            let pr = Math.max(this.player.body.width, this.player.body.height) / 2;
+            
+            let dx = px - b.x;
+            let dy = py - b.y;
+            let lx = Math.cos(b.rotation);
+            let ly = Math.sin(b.rotation);
+            
+            let t = dx * lx + dy * ly;
+            if (t >= 0 && t <= 400) {
+              let projX = b.x + t * lx;
+              let projY = b.y + t * ly;
+              let distSq = (px - projX) * (px - projX) + (py - projY) * (py - projY);
+              if (distSq <= (pr + 6) * (pr + 6)) {
+                this.hitHero(this.player, b);
+              }
+            }
+          }
+        });
+      }
+    }
+
     // 当たり判定の描画（常にプレイヤーのbodyに追従する水色の線）
     if (this.playerHitboxGraphics) {
       this.playerHitboxGraphics.clear();
@@ -1115,8 +1143,8 @@ class BossScene extends Phaser.Scene {
         // 妹のダイヤ弾幕（シルバー化）
         let ty = Phaser.Math.Between(100, 980);
         let bx = this.currentBoss ? this.currentBoss.x : 1600;
-        MOT.fireCircle(this, bx, ty, 10, 260, silver, 'bullet_star');
-        this.time.delayedCall(300, () => MOT.fireCircle(this, bx, ty, 10, 320, silver, 'bullet_star'));
+        MOT.fireCircle(this, bx, ty, 10, 260, silver, 'bullet_diamond');
+        this.time.delayedCall(300, () => MOT.fireCircle(this, bx, ty, 10, 320, silver, 'bullet_diamond'));
       } else {
         // 新技：斜め極太ブラスター（顔なし）
         let numBlasters = Phaser.Math.Between(4, 6); // 4〜6体に増加

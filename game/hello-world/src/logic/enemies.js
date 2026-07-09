@@ -64,6 +64,7 @@ MOT.fireLinear = function (scene, x, y, vx, vy, color, tex) {
     // For laser, align rotation with velocity
     if (tex === 'bullet_laser') {
       bullet.setRotation(Math.atan2(vy, vx));
+      bullet.body.checkCollision.none = true;
     }
 
     // Auto-destroy when off-screen
@@ -106,6 +107,7 @@ MOT.fireHoming = function (scene, x, y, speed, player, color, tex) {
       // レーザーの起点を左端に
       bullet.setOrigin(0, 0.5);
       bullet.setRotation(angle);
+      bullet.body.checkCollision.none = true;
     }
     
     scene.time.delayedCall(4000, function () {
