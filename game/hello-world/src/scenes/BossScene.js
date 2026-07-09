@@ -895,7 +895,7 @@ class BossScene extends Phaser.Scene {
       var interval = this.bossHP < this.bossMaxHP * 0.5 ? 600 : 1000;
       if (this.inunekoBoostActive) interval = Math.floor(interval * 0.5); // 犬猫スター弾幕加速
       if (this.currentBoss.configKey === 'boss3_twins') interval = 1200; // 兄の攻撃頻度を上げる
-      if (this.currentBoss.configKey === 'doctor') interval = this.bossHP < this.bossMaxHP * 0.5 ? 2000 : 2500; // 博士の攻撃頻度を緩和
+      if (this.currentBoss.configKey === 'doctor') interval = this.bossHP < this.bossMaxHP * 0.5 ? 1400 : 1800; // 博士の攻撃頻度を上げる
       if (this.currentBoss.configKey === 'demon_lord') interval = this.bossHP < this.bossMaxHP * 0.5 ? 2500 : 3000; // 魔王の螺旋弾幕（2.4秒）と重ならないように大幅緩和
       
       if (this.bossAttackTimer >= interval) {
@@ -1042,7 +1042,7 @@ class BossScene extends Phaser.Scene {
         let ty = laneYs[Phaser.Math.Between(0, 2)];
         var slash = this.enemyBullets.create(x, ty, 'slash_attack');
         if (slash) {
-          slash.setVelocityX(-400); slash.setScale(2); slash.setDepth(9); slash.setTint(silver);
+          slash.setVelocityX(-400); slash.setScale(2); slash.setDepth(9); slash.setTintFill(silver);
           this.time.delayedCall(5000, () => { if (slash.active) slash.destroy(); });
         }
       } else if (docPattern === 1) {
