@@ -233,7 +233,7 @@ class BossScene extends Phaser.Scene {
         // Intro and defeat are handled custom via playTwinsIntro and post-battle logic
       },
       demon_lord: {
-        texture: 'demon_stand_combat', name: '魔王 – ヴェリタス', hp: 60, scale: 0.5,
+        texture: 'demon_stand_combat', name: '魔王 – ヴェリタス', hp: 120, scale: 0.5,
         intro: '「…来たか、博士の人形よ。\nお前に真実を伝えなければならない。」',
         defeat: '「聞いてくれ。博士こそが…この世界を壊そうとしている。\n俺は…それを止めたかっただけだ。」',
         choices: []
@@ -740,15 +740,16 @@ class BossScene extends Phaser.Scene {
       loop: true,
       callback: () => {
         if (this.dialogActive || !this.inunekoEnemy || !this.inunekoEnemy.visible) return;
-        const angleDeg = Phaser.Math.RadToDeg(Phaser.Math.Angle.Between(this.inunekoEnemy.x, this.inunekoEnemy.y, this.player.x, this.player.y));
-        MOT.fireFan(this, this.inunekoEnemy.x, this.inunekoEnemy.y, 3, 250, angleDeg, 40);
+        // 攻撃しないようにコメントアウト
+        // const angleDeg = Phaser.Math.RadToDeg(Phaser.Math.Angle.Between(this.inunekoEnemy.x, this.inunekoEnemy.y, this.player.x, this.player.y));
+        // MOT.fireFan(this, this.inunekoEnemy.x, this.inunekoEnemy.y, 3, 250, angleDeg, 40);
       }
     });
 
-    // 補助魔法（20〜35秒ごとにランダムで弾幕加速 or バリア）
+    // 補助魔法（8〜15秒ごとにランダムで弾幕加速 or バリア）
     const supportAction = () => {
       if (this.dialogActive || !this.inunekoEnemy || !this.inunekoEnemy.visible) {
-        this.time.delayedCall(Phaser.Math.Between(20000, 35000), supportAction);
+        this.time.delayedCall(Phaser.Math.Between(8000, 15000), supportAction);
         return;
       }
       const action = Phaser.Math.Between(0, 1);
@@ -757,9 +758,9 @@ class BossScene extends Phaser.Scene {
       } else {
         this.inunekoBarrier(boss);
       }
-      this.time.delayedCall(Phaser.Math.Between(20000, 35000), supportAction);
+      this.time.delayedCall(Phaser.Math.Between(8000, 15000), supportAction);
     };
-    this.time.delayedCall(Phaser.Math.Between(20000, 35000), supportAction);
+    this.time.delayedCall(Phaser.Math.Between(8000, 15000), supportAction);
   }
 
   // 補助魔法1: 弾幕加速（8秒間ボスの攻撃間隔を短縮）
