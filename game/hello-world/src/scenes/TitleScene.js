@@ -34,13 +34,8 @@ class TitleScene extends Phaser.Scene {
           });
         }
         
-        if (isGlitch) {
-          // エラータイトル: xを0にすると左に隙間ができ、-30にすると顔が切れすぎるため、間をとって-15に微調整
-          this.heroGif = this.add.sprite(-15, h, 'hero_title_anim', 0).setOrigin(0, 1).setScale(2.35).setDepth(2);
-        } else {
-          // 通常タイトル: 元の完全なサイズ・位置
-          this.heroGif = this.add.sprite(0, h, 'hero_title_anim', 0).setOrigin(0, 1).setScale(2.25).setDepth(2);
-        }
+        // エラータイトル・通常タイトルともに全く同じ位置・サイズ（x=0, scale=2.25）に統一
+        this.heroGif = this.add.sprite(0, h, 'hero_title_anim', 0).setOrigin(0, 1).setScale(2.25).setDepth(2);
       } else {
         this.heroGif = null;
       }
