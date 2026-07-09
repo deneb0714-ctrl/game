@@ -3489,9 +3489,9 @@ class BossScene extends Phaser.Scene {
     });
     this.dialogContainer.add(bodyText);
 
-    var contText = this.add.text(w - 280, boxY + boxH - 40, '▶ [SPACE]', {
+    var contText = this.add.text(w - 100, boxY + boxH - 40, '▶ [SPACE]', {
       fontFamily: '"Press Start 2P"', fontSize: '20px', color: '#9CA3AF'
-    }).setAlpha(0);
+    }).setOrigin(1, 0).setAlpha(0);
     this.dialogContainer.add(contText);
 
     var charIndex = 0;
@@ -3621,9 +3621,9 @@ class BossScene extends Phaser.Scene {
     });
     this.dialogContainer.add(bodyText);
 
-    var contText = this.add.text(w - 280, boxY + boxH - 40, '▶ [SPACE]', {
+    var contText = this.add.text(w - 100, boxY + boxH - 40, '▶ [SPACE]', {
       fontFamily: '"Press Start 2P"', fontSize: '20px', color: '#9CA3AF'
-    }).setAlpha(0);
+    }).setOrigin(1, 0).setAlpha(0);
     this.dialogContainer.add(contText);
 
     var charIndex = 0;
@@ -3697,11 +3697,11 @@ class BossScene extends Phaser.Scene {
     elements.push(overlay);
 
     // [ENTER] KEY ガイドテキストを右下に追加
-    const contText = this.add.text(w - 280, h - 60, '▶ [ENTER] KEY', {
+    const contText = this.add.text(w - 100, h - 60, '▶ [ENTER] KEY', {
       fontFamily: '"Press Start 2P"',
       fontSize: '20px',
       color: '#9CA3AF'
-    }).setDepth(151);
+    }).setOrigin(1, 0.5).setDepth(151);
     this.tweens.add({ targets: contText, alpha: 0.3, yoyo: true, repeat: -1, duration: 500 });
     elements.push(contText);
 
