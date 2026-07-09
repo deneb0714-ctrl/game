@@ -74,8 +74,12 @@ class TitleScene extends Phaser.Scene {
         // 色を反転して不気味な演出にする
         if (this.heroGif) {
           try {
-            if (this.heroGif.preFX) {
+            // preFXによるテクスチャ境界での見切れ（アホ毛のカット）を防ぐため postFX を使用
+            if (this.heroGif.postFX) {
+              this.heroGif.postFX.addColorMatrix().negative();
+            } else if (this.heroGif.preFX) {
               this.heroGif.preFX.addColorMatrix().negative();
+              this.heroGif.preFX.setPadding(32); // 見切れ防止
             } else {
               this.heroGif.setTint(0xff0000);
             }
