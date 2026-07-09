@@ -22,30 +22,8 @@ class TitleScene extends Phaser.Scene {
       notFoundImg.setScale(scaleY);
       this.heroGif = null;
       this.matrixTextObj = null;
-    } else if (!isGlitch) {
-      this.add.image(w / 2, h / 2, 'title_1x_back').setDisplaySize(w, h).setDepth(0);
-      this.add.image(w / 2, h / 2, 'title_1x_back').setDisplaySize(w, h).setDepth(0);
-      
-      // プログラムによる動的なマトリックス風・文字降らしエフェクト（単一テキスト・完全整列版）
-      const sourceSeq = "01010100 01010010 01010101 01010011 01010100 00100000 01001110 01001111 00100000 01001111 01001110 01000101 00100000 01011001 01001111 01010101 00100000 01000001 01010010 01000101 00100000 01001110 01001111 01010100 00100000 01000001 00100000 01000100 01001111 01001100 01001100 ";
-      this.sourceSeq = sourceSeq;
-      // 左右に動かすため、画面幅より少し広く（72文字＝8単語分）確保して見切れを防ぐ
-      this.matrixCols = 72; 
-      this.matrixRows = Math.ceil(h / 68) + 3; 
-
-      this.matrixTextObj = this.add.text(w / 2, 0, "", {
-        fontFamily: '"HG 明朝B", "HG Mincho B", "MS Mincho", serif',
-        fontSize: '60px', 
-        fontWeight: 'bold',
-        color: '#044f60', 
-        align: 'center',
-        lineSpacing: 8
-      }).setOrigin(0.5, 0).setDepth(1);
-
-      this.matrixTimer = 0;
-      this.matrixXOffset = 0; // Yの代わりにXオフセットを使用
-      this.matrixStartIdx = 0;
-      
+    } else {
+      // 共通: 主人公のアニメーションをロード
       if (this.textures.exists('hero_title_anim')) {
         if (!this.anims.exists('play_hero_title')) {
           this.anims.create({
@@ -59,14 +37,52 @@ class TitleScene extends Phaser.Scene {
       } else {
         this.heroGif = null;
       }
-      
-      this.helloImg = this.add.image(w / 2, h / 2, 'title_1x_hello_world').setDisplaySize(w, h).setDepth(3);
-      this.add.image(w / 2, h / 2, 'title_1x_baria').setDisplaySize(w, h).setDepth(3);
-    } else {
-      // エラータイトルの場合は静止画とSTARTボタンのみ
-      this.add.image(w / 2, h / 2, 'title_bg_glitch').setDisplaySize(w, h).setDepth(0);
-      this.heroGif = null;
-      this.matrixTextObj = null;
+
+      if (!isGlitch) {
+        this.add.image(w / 2, h / 2, 'title_1x_back').setDisplaySize(w, h).setDepth(0);
+        this.add.image(w / 2, h / 2, 'title_1x_back').setDisplaySize(w, h).setDepth(0);
+        
+        // プログラムによる動的なマトリックス風・文字降らしエフェクト（単一テキスト・完全整列版）
+        const sourceSeq = "01010100 01010010 01010101 01010011 01010100 00100000 01001110 01001111 00100000 01001111 01001110 01000101 00100000 01011001 01001111 01010101 00100000 01000001 01010010 01000101 00100000 01001110 01001111 01010100 00100000 01000001 00100000 01000100 01001111 01001100 01001100 ";
+        this.sourceSeq = sourceSeq;
+        // 左右に動かすため、画面幅より少し広く（72文字＝8単語分）確保して見切れを防ぐ
+        this.matrixCols = 72; 
+        this.matrixRows = Math.ceil(h / 68) + 3; 
+
+        this.matrixTextObj = this.add.text(w / 2, 0, "", {
+          fontFamily: '"HG 明朝B", "HG Mincho B", "MS Mincho", serif',
+          fontSize: '60px', 
+          fontWeight: 'bold',
+          color: '#044f60', 
+          align: 'center',
+          lineSpacing: 8
+        }).setOrigin(0.5, 0).setDepth(1);
+
+        this.matrixTimer = 0;
+        this.matrixXOffset = 0; // Yの代わりにXオフセットを使用
+        this.matrixStartIdx = 0;
+        
+        this.helloImg = this.add.image(w / 2, h / 2, 'title_1x_hello_world').setDisplaySize(w, h).setDepth(3);
+        this.add.image(w / 2, h / 2, 'title_1x_baria').setDisplaySize(w, h).setDepth(3);
+      } else {
+        // エラータイトルの場合
+        this.add.image(w / 2, h / 2, 'title_bg_glitch').setDisplaySize(w, h).setDepth(0);
+        this.matrixTextObj = null;
+        
+        // 色を反転して不気味な演出にする
+        if (this.heroGif) {
+          try {
+            if (this.heroGif.preFX) {
+              this.heroGif.preFX.addColorMatrix().negative();
+            } else {
+              this.heroGif.setTint(0xff0000);
+            }
+          } catch (e) {
+            console.warn("Negative FX failed:", e);
+            this.heroGif.setTint(0xff0000);
+          }
+        }
+      }
     }
 
     if (!isShutdown) {
