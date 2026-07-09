@@ -49,7 +49,7 @@ class BootScene extends Phaser.Scene {
     const v = window.GAME_VERSION || 'v1';
     
     // 双子用BGM
-    this.load.audio('twins_bgm', 'assets/audio/twins_bgm.wav');
+    this.load.audio('twins_bgm', 'assets/audio/twins_bgm.mp3');
 
     // 博士の立ち絵
     this.load.image('doctor_stand', 'assets/images/doctor_normal.png?v=' + v);
