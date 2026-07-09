@@ -1094,21 +1094,35 @@ class BossScene extends Phaser.Scene {
         MOT.fireCircle(this, x, ty, 10, 260, silver, 'bullet_star');
         this.time.delayedCall(300, () => MOT.fireCircle(this, x, ty, 10, 320, silver, 'bullet_star'));
       } else {
-        // 新技：没ボスたちの顔ブラスター（サンズ戦風）
+        // 新技：没ボスたちの顔ブラスター（斜め撃ち対応）
         let faces = ['boss1', 'boss2', 'boss3', 'demon_lord'];
-        let numBlasters = Phaser.Math.Between(3, 5); // 3〜5体の顔が出現
+        let numBlasters = Phaser.Math.Between(4, 6); // 4〜6体に増加
         
         for (let i = 0; i < numBlasters; i++) {
-          this.time.delayedCall(i * 350, () => {
+          this.time.delayedCall(i * 300, () => {
             if (!this.currentBoss || !this.currentBoss.active) return;
             
-            // プレイヤーの現在Y座標を狙う確率高め
-            let targetY = Phaser.Math.Between(0, 100) < 60 ? this.player.y : Phaser.Math.Between(100, 980);
-            let spawnX = 1700 + Phaser.Math.Between(-50, 50);
+            // 出現位置を画面の右・上・下のいずれかの端にランダム配置
+            let edge = Phaser.Math.Between(0, 2);
+            let spawnX, spawnY;
+            if (edge === 0) { // 右端
+              spawnX = Phaser.Math.Between(1700, 1850);
+              spawnY = Phaser.Math.Between(100, 980);
+            } else if (edge === 1) { // 上端（右寄り）
+              spawnX = Phaser.Math.Between(1000, 1800);
+              spawnY = Phaser.Math.Between(50, 150);
+            } else { // 下端（右寄り）
+              spawnX = Phaser.Math.Between(1000, 1800);
+              spawnY = Phaser.Math.Between(930, 1030);
+            }
             
             let faceKey = Phaser.Utils.Array.GetRandom(faces);
-            let faceSprite = this.add.sprite(spawnX, targetY, faceKey).setDepth(10).setScale(0);
+            let faceSprite = this.add.sprite(spawnX, spawnY, faceKey).setDepth(10).setScale(0);
             faceSprite.setTintFill(silver); // 無機質なシルバーに
+            
+            // プレイヤーを狙う角度
+            let targetAngle = Phaser.Math.Angle.Between(spawnX, spawnY, this.player.x, this.player.y);
+            faceSprite.setRotation(targetAngle);
             
             // 顔がフェードイン＆拡大
             this.tweens.add({
@@ -1118,29 +1132,47 @@ class BossScene extends Phaser.Scene {
               duration: 400,
               ease: 'Back.easeOut',
               onComplete: () => {
-                // 発射前の警告線
-                let warnRect = this.add.rectangle(spawnX/2, targetY, spawnX, 100, 0xff0000, 0.4).setDepth(8);
+                // 発射前の警告線（ビジュアルのみ）
+                let beamLength = 2500;
+                let warnRect = this.add.rectangle(spawnX, spawnY, beamLength, 150, 0xff0000, 0.4).setDepth(8);
+                warnRect.setOrigin(0, 0.5);
+                warnRect.setRotation(targetAngle);
                 
                 this.tweens.add({
                   targets: warnRect, alpha: 0, duration: 600, onComplete: () => {
                     if (warnRect) warnRect.destroy();
                     if (!this.currentBoss || !this.currentBoss.active) return;
                     
-                    // 極太レーザー発射
+                    // 極太レーザー発射 (ビジュアル)
                     MOT.Audio.playShot();
-                    let beam = this.add.rectangle(spawnX/2, targetY, spawnX, 100, silver, 1).setDepth(9);
-                    this.physics.add.existing(beam);
-                    beam.body.setAllowGravity(false);
-                    beam.body.setImmovable(true);
+                    let beamThickness = 150;
+                    let beam = this.add.rectangle(spawnX, spawnY, beamLength, beamThickness, silver, 1).setDepth(9);
+                    beam.setOrigin(0, 0.5);
+                    beam.setRotation(targetAngle);
                     
-                    let collider = this.physics.add.overlap(this.player, beam, (p, b) => {
-                      this.onPlayerHit(p, { destroy: () => {} });
-                    });
+                    // 斜め対応の当たり判定（見えない円をレーザー上に並べる）
+                    let hitboxes = [];
+                    let numCircles = 30; // 約80px間隔
+                    for (let j = 0; j <= numCircles; j++) {
+                      let cx = spawnX + Math.cos(targetAngle) * (beamLength * (j / numCircles));
+                      let cy = spawnY + Math.sin(targetAngle) * (beamLength * (j / numCircles));
+                      let hitbox = this.add.circle(cx, cy, beamThickness / 2, 0x000000, 0); // 透明
+                      this.physics.add.existing(hitbox);
+                      hitbox.body.setCircle(beamThickness / 2);
+                      hitbox.body.setAllowGravity(false);
+                      hitbox.body.setImmovable(true);
+                      
+                      let col = this.physics.add.overlap(this.player, hitbox, (p, b) => {
+                        this.onPlayerHit(p, { destroy: () => {} });
+                      });
+                      hitboxes.push({ obj: hitbox, col: col });
+                    }
                     
                     // 顔の反動とフェードアウト
                     this.tweens.add({
                       targets: faceSprite,
-                      x: spawnX + 150, // 反動で後ろへ
+                      x: spawnX - Math.cos(targetAngle) * 150, // 反動で少し後ろへ
+                      y: spawnY - Math.sin(targetAngle) * 150,
                       alpha: 0,
                       duration: 500,
                       onComplete: () => faceSprite.destroy()
@@ -1148,7 +1180,9 @@ class BossScene extends Phaser.Scene {
                     
                     this.tweens.add({
                       targets: beam, alpha: 0, duration: 500, onComplete: () => {
-                        collider.destroy(); beam.destroy();
+                        beam.destroy();
+                        // 当たり判定の円も全て削除
+                        hitboxes.forEach(h => { h.col.destroy(); h.obj.destroy(); });
                       }
                     });
                   }

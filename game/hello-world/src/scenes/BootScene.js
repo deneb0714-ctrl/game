@@ -484,12 +484,12 @@ class BootScene extends Phaser.Scene {
     // Star bullet for twin sister
     const gs = this.make.graphics({ add: false });
     gs.fillStyle(0xffffff, 1);
-    // Draw a star shape
+    // Draw a diamond shape
     gs.beginPath();
-    for (let i = 0; i < 5; i++) {
-      gs.lineTo(10 + 10 * Math.cos(18 + i * 72 * Math.PI / 180), 10 - 10 * Math.sin(18 + i * 72 * Math.PI / 180));
-      gs.lineTo(10 + 4 * Math.cos(54 + i * 72 * Math.PI / 180), 10 - 4 * Math.sin(54 + i * 72 * Math.PI / 180));
-    }
+    gs.moveTo(10, 0);  // Top
+    gs.lineTo(20, 10); // Right
+    gs.lineTo(10, 20); // Bottom
+    gs.lineTo(0, 10);  // Left
     gs.closePath();
     gs.fillPath();
     gs.generateTexture('bullet_star', 20, 20);
