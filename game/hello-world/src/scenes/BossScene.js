@@ -1106,19 +1106,20 @@ class BossScene extends Phaser.Scene {
             let edge = Phaser.Math.Between(0, 2);
             let spawnX, spawnY;
             if (edge === 0) { // 右端
-              spawnX = Phaser.Math.Between(1700, 1850);
+              spawnX = Phaser.Math.Between(1550, 1700);
               spawnY = Phaser.Math.Between(100, 980);
             } else if (edge === 1) { // 上端（右寄り）
-              spawnX = Phaser.Math.Between(1000, 1800);
-              spawnY = Phaser.Math.Between(50, 150);
+              spawnX = Phaser.Math.Between(1000, 1700);
+              spawnY = Phaser.Math.Between(100, 200);
             } else { // 下端（右寄り）
-              spawnX = Phaser.Math.Between(1000, 1800);
-              spawnY = Phaser.Math.Between(930, 1030);
+              spawnX = Phaser.Math.Between(1000, 1700);
+              spawnY = Phaser.Math.Between(880, 980);
             }
             
             let faceKey = Phaser.Utils.Array.GetRandom(faces);
             let faceSprite = this.add.sprite(spawnX, spawnY, faceKey).setDepth(10).setScale(0);
-            faceSprite.setTintFill(silver); // 無機質なシルバーに
+            if (faceSprite.postFX) faceSprite.postFX.addGrayscale(1); // モノクロ化（白ベタ塗りではなくする）
+            faceSprite.setTint(0xE0E0E0); // シルバーがかった色合いに
             
             // プレイヤーを狙う角度
             let targetAngle = Phaser.Math.Angle.Between(spawnX, spawnY, this.player.x, this.player.y);
@@ -1127,7 +1128,7 @@ class BossScene extends Phaser.Scene {
             // 顔がフェードイン＆拡大
             this.tweens.add({
               targets: faceSprite,
-              scale: 6, // ドット絵を巨大化
+              scale: 3.5, // 画面から見切れないように縮小 (6 -> 3.5)
               alpha: 1,
               duration: 400,
               ease: 'Back.easeOut',
@@ -2986,7 +2987,7 @@ class BossScene extends Phaser.Scene {
       this.showDialogue('犬猫☆すたー', text, res);
     });
 
-    const sayHero = (text) => new Promise(res => { this.tweens.add({ targets: dimBg, alpha: 0.6, duration: 300 }); this.tweens.add({targets: this.heroImage, alpha: 1, duration: 300});  if (text === '「……」' || text === '「……。」' || text === '「…」') {        this.heroImage.setTexture('hero_stand_silent');      } else {        this.heroImage.setTexture('hero_stand');      }     this.heroImage.setScale(750 / this.heroImage.width);     this.heroImage.setY(100 + (this.heroImage.height * this.heroImage.scaleY) / 2);      this.showDialogue('勇者', text, res); });
+    const sayHero = (text) => new Promise(res => { this.tweens.add({ targets: dimBg, alpha: 0.6, duration: 300 }); this.tweens.add({targets: this.heroImage, alpha: 1, duration: 300});  if (text === '「……」' || text === '「……。」' || text === '「…」') {        this.heroImage.setTexture('hero_stand_silent');      } else if (text === '「！」') {        this.heroImage.setTexture('hero_cry');      } else {        this.heroImage.setTexture('hero_stand');      }     this.heroImage.setScale(750 / this.heroImage.width);     this.heroImage.setY(100 + (this.heroImage.height * this.heroImage.scaleY) / 2);      this.showDialogue('勇者', text, res); });
             const askChoice = (label1, label2) => new Promise(res => {
               this.showChoice([
                 { text: label1, callback: () => { MOT.Audio.playSelect(); res(1); } },
