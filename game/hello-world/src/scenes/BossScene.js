@@ -895,7 +895,7 @@ class BossScene extends Phaser.Scene {
       var interval = this.bossHP < this.bossMaxHP * 0.5 ? 600 : 1000;
       if (this.inunekoBoostActive) interval = Math.floor(interval * 0.5); // 犬猫スター弾幕加速
       if (this.currentBoss.configKey === 'boss3_twins') interval = 1200; // 兄の攻撃頻度を上げる
-      if (this.currentBoss.configKey === 'doctor') interval = this.bossHP < this.bossMaxHP * 0.5 ? 750 : 1100; // 博士の攻撃頻度を少し緩和
+      if (this.currentBoss.configKey === 'doctor') interval = this.bossHP < this.bossMaxHP * 0.5 ? 2000 : 2500; // 博士の攻撃頻度を緩和
       if (this.currentBoss.configKey === 'demon_lord') interval = this.bossHP < this.bossMaxHP * 0.5 ? 2500 : 3000; // 魔王の螺旋弾幕（2.4秒）と重ならないように大幅緩和
       
       if (this.bossAttackTimer >= interval) {
@@ -1033,36 +1033,82 @@ class BossScene extends Phaser.Scene {
 
     // doctor（博士）の攻撃パターン
     if (this.currentBoss.configKey === 'doctor') {
-      let docPattern = Phaser.Math.Between(0, 4);
+      let silver = 0xE0E0E0; // 白よりのシルバー
+      let docPattern = Phaser.Math.Between(0, 5);
+      
       if (docPattern === 0) {
-        // Reduced fan bullets from 9 to 7, spread from 120 to 140
-        MOT.fireFan(this, x - 30, y, 7, 300, 180, 140);
+        // 幹部1の斬撃（シルバー化）
+        var laneYs = [220, 460, 700];
+        let ty = laneYs[Phaser.Math.Between(0, 2)];
+        var slash = this.enemyBullets.create(x, ty, 'slash_attack');
+        if (slash) {
+          slash.setVelocityX(-400); slash.setScale(2); slash.setDepth(9); slash.setTint(silver);
+          this.time.delayedCall(5000, () => { if (slash.active) slash.destroy(); });
+        }
       } else if (docPattern === 1) {
-        // Reduced homing laser speed from 1600 to 900
-        MOT.fireHoming(this, x, y, 900, this.player, 0xff0000, 'bullet_laser');
-        this.time.delayedCall(400, () => MOT.fireHoming(this, x, y, 900, this.player, 0xff0000, 'bullet_laser'));
+        // 幹部2の銃弾（シルバー化）
+        var laneYs = [220, 460, 700];
+        let ty = laneYs[Phaser.Math.Between(0, 2)];
+        MOT.fireLinear(this, x, ty, -800, 0, silver, 'bullet_enemy_white');
+        this.time.delayedCall(200, () => MOT.fireLinear(this, x, ty, -800, 0, silver, 'bullet_enemy_white'));
       } else if (docPattern === 2) {
-        // Reduced circle bullets from 16 to 12
-        MOT.fireCircle(this, x, y, 12, 220);
-        this.time.delayedCall(300, () => MOT.fireCircle(this, x, y, 12, 260));
+        // 兄のレーザー（シルバー化）
+        MOT.fireHoming(this, x, y, 1400, this.player, silver, 'bullet_laser');
+        this.time.delayedCall(300, () => MOT.fireHoming(this, x, y, 1400, this.player, silver, 'bullet_laser'));
       } else if (docPattern === 3) {
-        // Increased warning time from 600 to 1200
-        for (let i = 0; i < 3; i++) {
-          let warnY = [220, 460, 700][Phaser.Math.Between(0, 2)];
-          let warnRect = this.add.rectangle(1920/2, warnY, 1920, 80, 0xff0000, 0.3).setDepth(8);
-          this.tweens.add({ targets: warnRect, alpha: 0, duration: 1200, onComplete: () => {
-            if(warnRect) warnRect.destroy();
-            let b = MOT.fireLinear(this, x, warnY, -900, 0, 0xff0000, 'bullet_laser');
-            // 以前のレーザーは全体判定なのでそのまま
-          }});
+        // 魔王の分裂球（シルバー化）
+        let ball = MOT.fireLinear(this, x, y, -400, 0, silver, 'bullet_enemy_white');
+        if (ball) {
+          ball.setScale(3);
+          let self = this;
+          ball.updateBehavior = function(now, delta) {
+            if (this.x < 1100 && !this.hasSplit) {
+              this.hasSplit = true;
+              let bx = this.x, by = this.y;
+              this.destroy(); MOT.Audio.playShot();
+              let targetAngle = Phaser.Math.Angle.Between(bx, by, self.player.x, self.player.y);
+              for (let i = 0; i < 3; i++) {
+                let angle = targetAngle - 0.4 + 0.4 * i;
+                let b = MOT.fireLinear(self, bx, by, Math.cos(angle)*400, Math.sin(angle)*400, silver, 'bullet_enemy_white');
+                if(b) b.setScale(1.5);
+              }
+            }
+          };
+        }
+      } else if (docPattern === 4) {
+        // 魔王の螺旋弾幕（シルバー化）
+        let spiralCount = 20; 
+        let baseAngle = Phaser.Math.FloatBetween(0, Math.PI * 2);
+        let direction = Phaser.Math.Between(0, 1) === 0 ? 1 : -1;
+        for (let i = 0; i < spiralCount; i++) {
+          this.time.delayedCall(i * 80, () => {
+             if (!this.currentBoss || !this.currentBoss.active) return;
+             let angle = baseAngle + i * 0.3 * direction;
+             let b = MOT.fireLinear(this, this.currentBoss.x, this.currentBoss.y, Math.cos(angle)*400, Math.sin(angle)*400, silver, 'bullet_enemy_white');
+             if (b) b.setScale(1.2);
+          });
         }
       } else {
-        // Reduced consecutive fans from 5 to 3, increased delay from 100 to 200
-        for (let i = 0; i < 3; i++) {
-          this.time.delayedCall(i * 200, function () {
-            MOT.fireFan(this, x - 30, y, 5, 300, 180, 45);
-          }, [], this);
-        }
+        // 新技：極太ブラスター（シルバー）
+        let warnY = this.player.y; // プレイヤーの現在位置を狙う
+        let warnRect = this.add.rectangle(1920/2, warnY, 1920, 150, 0xff0000, 0.3).setDepth(8);
+        this.tweens.add({ targets: warnRect, alpha: 0, duration: 1000, onComplete: () => {
+          if(warnRect) warnRect.destroy();
+          if(!this.currentBoss || !this.currentBoss.active) return;
+          MOT.Audio.playShot();
+          let beam = this.add.rectangle(1920 / 2, warnY, 1920, 150, silver, 1).setDepth(9);
+          this.physics.add.existing(beam);
+          beam.body.setAllowGravity(false);
+          beam.body.setImmovable(true);
+          let collider = this.physics.add.overlap(this.player, beam, (p, b) => {
+            this.onPlayerHit(p, { destroy: () => {} });
+          });
+          this.tweens.add({
+            targets: beam, alpha: 0, duration: 600, onComplete: () => {
+              collider.destroy(); beam.destroy();
+            }
+          });
+        }});
       }
       return;
     }
