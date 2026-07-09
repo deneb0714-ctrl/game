@@ -1034,7 +1034,7 @@ class BossScene extends Phaser.Scene {
     // doctor（博士）の攻撃パターン
     if (this.currentBoss.configKey === 'doctor') {
       let silver = 0xE0E0E0; // 白よりのシルバー
-      let docPattern = Phaser.Math.Between(0, 5);
+      let docPattern = Phaser.Math.Between(0, 6); // パターンを7種類に増加
       
       if (docPattern === 0) {
         // 幹部1の斬撃（シルバー化）
@@ -1088,27 +1088,75 @@ class BossScene extends Phaser.Scene {
              if (b) b.setScale(1.2);
           });
         }
+      } else if (docPattern === 5) {
+        // 妹のダイヤ弾幕（シルバー化）
+        let ty = Phaser.Math.Between(100, 980);
+        MOT.fireCircle(this, x, ty, 10, 260, silver, 'bullet_star');
+        this.time.delayedCall(300, () => MOT.fireCircle(this, x, ty, 10, 320, silver, 'bullet_star'));
       } else {
-        // 新技：極太ブラスター（シルバー）
-        let warnY = this.player.y; // プレイヤーの現在位置を狙う
-        let warnRect = this.add.rectangle(1920/2, warnY, 1920, 150, 0xff0000, 0.3).setDepth(8);
-        this.tweens.add({ targets: warnRect, alpha: 0, duration: 1000, onComplete: () => {
-          if(warnRect) warnRect.destroy();
-          if(!this.currentBoss || !this.currentBoss.active) return;
-          MOT.Audio.playShot();
-          let beam = this.add.rectangle(1920 / 2, warnY, 1920, 150, silver, 1).setDepth(9);
-          this.physics.add.existing(beam);
-          beam.body.setAllowGravity(false);
-          beam.body.setImmovable(true);
-          let collider = this.physics.add.overlap(this.player, beam, (p, b) => {
-            this.onPlayerHit(p, { destroy: () => {} });
+        // 新技：没ボスたちの顔ブラスター（サンズ戦風）
+        let faces = ['boss1', 'boss2', 'boss3', 'demon_lord'];
+        let numBlasters = Phaser.Math.Between(3, 5); // 3〜5体の顔が出現
+        
+        for (let i = 0; i < numBlasters; i++) {
+          this.time.delayedCall(i * 350, () => {
+            if (!this.currentBoss || !this.currentBoss.active) return;
+            
+            // プレイヤーの現在Y座標を狙う確率高め
+            let targetY = Phaser.Math.Between(0, 100) < 60 ? this.player.y : Phaser.Math.Between(100, 980);
+            let spawnX = 1700 + Phaser.Math.Between(-50, 50);
+            
+            let faceKey = Phaser.Utils.Array.GetRandom(faces);
+            let faceSprite = this.add.sprite(spawnX, targetY, faceKey).setDepth(10).setScale(0);
+            faceSprite.setTintFill(silver); // 無機質なシルバーに
+            
+            // 顔がフェードイン＆拡大
+            this.tweens.add({
+              targets: faceSprite,
+              scale: 6, // ドット絵を巨大化
+              alpha: 1,
+              duration: 400,
+              ease: 'Back.easeOut',
+              onComplete: () => {
+                // 発射前の警告線
+                let warnRect = this.add.rectangle(spawnX/2, targetY, spawnX, 100, 0xff0000, 0.4).setDepth(8);
+                
+                this.tweens.add({
+                  targets: warnRect, alpha: 0, duration: 600, onComplete: () => {
+                    if (warnRect) warnRect.destroy();
+                    if (!this.currentBoss || !this.currentBoss.active) return;
+                    
+                    // 極太レーザー発射
+                    MOT.Audio.playShot();
+                    let beam = this.add.rectangle(spawnX/2, targetY, spawnX, 100, silver, 1).setDepth(9);
+                    this.physics.add.existing(beam);
+                    beam.body.setAllowGravity(false);
+                    beam.body.setImmovable(true);
+                    
+                    let collider = this.physics.add.overlap(this.player, beam, (p, b) => {
+                      this.onPlayerHit(p, { destroy: () => {} });
+                    });
+                    
+                    // 顔の反動とフェードアウト
+                    this.tweens.add({
+                      targets: faceSprite,
+                      x: spawnX + 150, // 反動で後ろへ
+                      alpha: 0,
+                      duration: 500,
+                      onComplete: () => faceSprite.destroy()
+                    });
+                    
+                    this.tweens.add({
+                      targets: beam, alpha: 0, duration: 500, onComplete: () => {
+                        collider.destroy(); beam.destroy();
+                      }
+                    });
+                  }
+                });
+              }
+            });
           });
-          this.tweens.add({
-            targets: beam, alpha: 0, duration: 600, onComplete: () => {
-              collider.destroy(); beam.destroy();
-            }
-          });
-        }});
+        }
       }
       return;
     }
