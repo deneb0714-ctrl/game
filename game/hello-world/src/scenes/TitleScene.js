@@ -32,6 +32,7 @@ class TitleScene extends Phaser.Scene {
             frameRate: 12.5,
             repeat: 0
           });
+        }
         // 通常タイトルと同じサイズ(2.25倍)に統一
         this.heroGif = this.add.sprite(0, h, 'hero_title_anim', 0).setOrigin(0, 1).setScale(2.25).setDepth(2);
       } else {
