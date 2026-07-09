@@ -33,8 +33,9 @@ class TitleScene extends Phaser.Scene {
             repeat: 0
           });
         }
-        // 通常タイトルと同じサイズ(2.25倍)に統一
-        this.heroGif = this.add.sprite(0, h, 'hero_title_anim', 0).setOrigin(0, 1).setScale(2.25).setDepth(2);
+        // サイズをさらに大きく(2.6倍)し、左の空白を埋めるためにx座標をマイナスに調整 (-80)
+        // 拡大することで、スプライトシートの上端で見切れているアホ毛を画面外に隠す効果もあります
+        this.heroGif = this.add.sprite(-80, h, 'hero_title_anim', 0).setOrigin(0, 1).setScale(2.6).setDepth(2);
       } else {
         this.heroGif = null;
       }
