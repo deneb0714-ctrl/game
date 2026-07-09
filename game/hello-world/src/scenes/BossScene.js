@@ -842,6 +842,26 @@ class BossScene extends Phaser.Scene {
 
     if (this.dialogActive) return;
 
+    // 軽量なレーザー当たり判定
+    if (this.activeLasers) {
+      for (let laser of this.activeLasers) {
+        if (!laser.active) continue;
+        let px = this.player.x;
+        let py = this.player.y;
+        let l2 = (laser.x2 - laser.x1)**2 + (laser.y2 - laser.y1)**2;
+        if (l2 === 0) continue;
+        let t = ((px - laser.x1) * (laser.x2 - laser.x1) + (py - laser.y1) * (laser.y2 - laser.y1)) / l2;
+        t = Math.max(0, Math.min(1, t));
+        let projX = laser.x1 + t * (laser.x2 - laser.x1);
+        let projY = laser.y1 + t * (laser.y2 - laser.y1);
+        let dist = Math.sqrt((px - projX)**2 + (py - projY)**2);
+        if (dist < laser.thickness / 2) {
+          this.onPlayerHit(this.player, { destroy: () => {} });
+        }
+      }
+      this.activeLasers = this.activeLasers.filter(l => l.active);
+    }
+
     MOT.handleMovement(this, this.player);
 
     // 博士戦の味方支援システム
@@ -1137,29 +1157,22 @@ class BossScene extends Phaser.Scene {
                 beam.setOrigin(0, 0.5);
                 beam.setRotation(targetAngle);
                 
-                // 斜め対応の当たり判定（見えない円をレーザー上に並べる）
-                let hitboxes = [];
-                let numCircles = 30; // 約80px間隔
-                for (let j = 0; j <= numCircles; j++) {
-                  let cx = spawnX + Math.cos(targetAngle) * (beamLength * (j / numCircles));
-                  let cy = spawnY + Math.sin(targetAngle) * (beamLength * (j / numCircles));
-                  let hitbox = this.add.circle(cx, cy, beamThickness / 2, 0x000000, 0); // 透明
-                  this.physics.add.existing(hitbox);
-                  hitbox.body.setCircle(beamThickness / 2);
-                  hitbox.body.setAllowGravity(false);
-                  hitbox.body.setImmovable(true);
-                  
-                  let col = this.physics.add.overlap(this.player, hitbox, (p, b) => {
-                    this.onPlayerHit(p, { destroy: () => {} });
-                  });
-                  hitboxes.push({ obj: hitbox, col: col });
-                }
+                // 軽量な線分当たり判定用データを登録
+                if (!this.activeLasers) this.activeLasers = [];
+                let laserData = {
+                  x1: spawnX,
+                  y1: spawnY,
+                  x2: spawnX + Math.cos(targetAngle) * beamLength,
+                  y2: spawnY + Math.sin(targetAngle) * beamLength,
+                  thickness: beamThickness,
+                  active: true
+                };
+                this.activeLasers.push(laserData);
                 
                 this.tweens.add({
                   targets: beam, alpha: 0, duration: 500, onComplete: () => {
                     beam.destroy();
-                    // 当たり判定の円も全て削除
-                    hitboxes.forEach(h => { h.col.destroy(); h.obj.destroy(); });
+                    laserData.active = false;
                   }
                 });
               }
