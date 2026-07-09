@@ -1118,7 +1118,11 @@ class BossScene extends Phaser.Scene {
             
             let faceKey = Phaser.Utils.Array.GetRandom(faces);
             let faceSprite = this.add.sprite(spawnX, spawnY, faceKey).setDepth(10).setScale(0);
-            if (faceSprite.postFX) faceSprite.postFX.addGrayscale(1); // モノクロ化（白ベタ塗りではなくする）
+            try {
+              if (faceSprite.preFX) faceSprite.preFX.addColorMatrix().grayscale(1);
+            } catch(e) {
+              console.warn("Grayscale FX failed:", e);
+            }
             faceSprite.setTint(0xE0E0E0); // シルバーがかった色合いに
             
             // プレイヤーを狙う角度
