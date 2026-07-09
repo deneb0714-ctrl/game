@@ -33,7 +33,10 @@ class TitleScene extends Phaser.Scene {
             repeat: 0
           });
         }
-        this.heroGif = this.add.sprite(0, h, 'hero_title_anim', 0).setOrigin(0, 1).setScale(2.25).setDepth(2);
+        
+        // 通常時は 2.25 倍、グリッチタイトル時は少し小さめに設定 (1.6倍など)
+        let scaleVal = isGlitch ? 1.6 : 2.25;
+        this.heroGif = this.add.sprite(0, h, 'hero_title_anim', 0).setOrigin(0, 1).setScale(scaleVal).setDepth(2);
       } else {
         this.heroGif = null;
       }
