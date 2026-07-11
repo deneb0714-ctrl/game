@@ -50,6 +50,8 @@ class BootScene extends Phaser.Scene {
     
     // 双子用BGM
     this.load.audio('twins_bgm', 'assets/audio/twins_bgm.mp3');
+    // 道中用BGM
+    this.load.audio('bgm_stage', 'assets/audio/bgm_stage.mp3');
 
     // 博士の立ち絵
     this.load.image('doctor_stand', 'assets/images/doctor_normal.png?v=' + v);

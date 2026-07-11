@@ -38,6 +38,13 @@ class GameScene extends Phaser.Scene {
   }
 
   create() {
+    this.events.on('shutdown', () => {
+      if (this.stageBgm) this.stageBgm.stop();
+    });
+
+    this.stageBgm = this.sound.add('bgm_stage', { loop: true, volume: 0.4 });
+    this.stageBgm.play();
+
     const w = 1920, h = 1080;
 
     // Background (scrolling)
