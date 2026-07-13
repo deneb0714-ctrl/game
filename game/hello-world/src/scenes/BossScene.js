@@ -2028,12 +2028,12 @@ class BossScene extends Phaser.Scene {
               }
             })();
           } else if (key === 'boss2') {
-            var boss2DefImg = this.add.image(w - 300, h / 2, 'boss2_normal_dying').setAlpha(0).setDepth(90);
+            var boss2DefImg = this.add.image(w - 300, h / 2, 'boss2_surprised_dying').setAlpha(0).setDepth(90);
             var b2dW = boss2DefImg.width || 576;
             var b2dH = boss2DefImg.height || 1024;
             var b2dScale = 750 / b2dW;
-            if (this.textures.exists('boss2_normal_dying')) {
-              var t2 = this.textures.get('boss2_normal_dying').getSourceImage();
+            if (this.textures.exists('boss2_surprised_dying')) {
+              var t2 = this.textures.get('boss2_surprised_dying').getSourceImage();
               if (t2 && t2.width > 0) b2dScale = 750 / t2.width;
             }
             boss2DefImg.setScale(b2dScale);
@@ -2081,11 +2081,11 @@ class BossScene extends Phaser.Scene {
               let c = await askChoice('1. 心臓を打ち抜く', '2. 見逃す');
               if (c === 1) { MOT.flags.dollPoints++; MOT.flags.killedTwins = true; MOT.flags.killedBoss2 = true;
                 if (MOT.flags.killedBoss1) {
-                  await sayEnemyB2('「はは…あいつと同じで負けるのはむかつくけど、戦いは楽しかったしまあいいかな」', 'boss2_eyes_closed_dying');
+                  await sayEnemyB2('「はは…あいつと同じで負けるのはむかつくけど、戦いは楽しかったしまあいいかな」', 'boss2_normal_dying');
                   MOT.Audio.playSelect();
                   await sayDeviceB2('「よくやった。また一歩平和に近づいたな。幹部は残り二人だ。気を抜かずそのまま進んでいくといい」');
                 } else {
-                  await sayEnemyB2('「はは…負けたのはむかつくけど、戦いは楽しかったしまあいいかな」', 'boss2_eyes_closed_dying');
+                  await sayEnemyB2('「はは…負けたのはむかつくけど、戦いは楽しかったしまあいいかな」', 'boss2_normal_dying');
                   MOT.Audio.playSelect();
                   await sayDeviceB2('「それでいい。そのまま進んで残りの幹部も魔王も倒すんだ」');
                 }
