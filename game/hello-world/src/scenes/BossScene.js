@@ -1680,7 +1680,7 @@ class BossScene extends Phaser.Scene {
             // Add sisterImage for boss3_twins scenario intro
             var sisterImage = null;
             if (this.currentBoss && this.currentBoss.configKey === 'boss3_twins') {
-              sisterImage = this.add.image(w - 200, h / 2, 'sister_normal').setAlpha(0).setDepth(90);
+              sisterImage = this.add.image(w - 450, h / 2, 'sister_normal').setAlpha(0).setDepth(90);
               var sScale = 750 / 600; 
               if (this.textures.exists('sister_normal')) {
                 var tex = this.textures.get('sister_normal').getSourceImage();
@@ -1688,7 +1688,7 @@ class BossScene extends Phaser.Scene {
               }
               sisterImage.setScale(sScale);
               sisterImage.setY(100 + (sisterImage.height * sScale) / 2);
-              bossImage.setX(w - 400); // 兄を左へ
+              bossImage.setX(w - 200); // 兄を右へ
               
               this.time.addEvent({
                 delay: 3000, loop: true, callback: () => {
