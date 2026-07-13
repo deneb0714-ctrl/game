@@ -4071,7 +4071,7 @@ class BossScene extends Phaser.Scene {
       this.iconPersonFill = this.add.image(390, 44, 'icon_person').setOrigin(0, 0).setTint(0xFFFF00).setDepth(100).setScrollFactor(0).setScale(1.5);
       
       this.iconBatteryBg = this.add.image(450, 44, 'icon_battery').setOrigin(0, 0).setTint(0x555555).setDepth(100).setScrollFactor(0).setScale(1.5);
-      this.iconBatteryFillRect = this.add.rectangle(462, 122, 24, 60, 0xFF0000).setOrigin(0, 1).setDepth(99).setScrollFactor(0);
+      this.iconBatteryFillRect = this.add.rectangle(462, 62, 36, 60, 0xFF0000).setOrigin(0, 0).setDepth(99).setScrollFactor(0);
       this.iconBatteryFill = this.add.image(450, 44, 'icon_battery').setOrigin(0, 0).setTint(0xFF0000).setDepth(100).setScrollFactor(0).setScale(1.5);
     }
 
@@ -4096,22 +4096,37 @@ class BossScene extends Phaser.Scene {
     // Doll Points update
     const dollValue = MOT.flags.dollPoints || 0;
     const dollPct = Phaser.Math.Clamp(dollValue / 100, 0, 1);
-    const pW = this.iconPersonFill.width || 32;
-    const pH = this.iconPersonFill.height || 64;
-    const dollH = Math.max(0.01, pH * dollPct);
-    this.iconPersonFill.setCrop(0, pH - dollH, pW, dollH);
+    if (dollPct <= 0) {
+      this.iconPersonFill.setVisible(false);
+    } else {
+      this.iconPersonFill.setVisible(true);
+      const cropY = 60 - 60 * dollPct;
+      this.iconPersonFill.setCrop(0, cropY, 32, 64 - cropY);
+    }
 
     // Killing Intent update
     const intentValue = MOT.flags.killingIntent || 0;
     const intentPct = Phaser.Math.Clamp(intentValue / 100, 0, 1);
-    if (this.iconBatteryFillRect) {
-      this.iconBatteryFillRect.scaleY = Math.max(0.001, intentPct);
-    }
-    if (this.iconBatteryFill) {
-      const bW = this.iconBatteryFill.width || 32;
-      const bH = this.iconBatteryFill.height || 64;
-      const intentH = Math.max(0.01, bH * intentPct);
-      this.iconBatteryFill.setCrop(0, bH - intentH, bW, intentH);
+    if (intentPct <= 0) {
+      if (this.iconBatteryFillRect) this.iconBatteryFillRect.setVisible(false);
+      if (this.iconBatteryFill) this.iconBatteryFill.setVisible(false);
+    } else {
+      if (this.iconBatteryFill) this.iconBatteryFill.setVisible(true);
+      const cropY = 56 - 54 * intentPct;
+      if (this.iconBatteryFill) {
+        this.iconBatteryFill.setCrop(0, cropY, 32, 64 - cropY);
+      }
+      if (this.iconBatteryFillRect) {
+        const rectTop = Math.max(12, cropY);
+        const rectHeight = 52 - rectTop;
+        if (rectHeight > 0) {
+          this.iconBatteryFillRect.setVisible(true);
+          this.iconBatteryFillRect.y = 44 + rectTop * 1.5;
+          this.iconBatteryFillRect.setDisplaySize(36, rectHeight * 1.5);
+        } else {
+          this.iconBatteryFillRect.setVisible(false);
+        }
+      }
     }
 
     const iconX = 360;
