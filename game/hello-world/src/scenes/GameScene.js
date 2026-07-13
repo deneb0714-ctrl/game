@@ -853,7 +853,7 @@ class GameScene extends Phaser.Scene {
       this.iconPersonFill = this.add.image(390, 44, 'icon_person').setOrigin(0, 0).setTint(0xFFFF00).setDepth(100).setScrollFactor(0).setScale(1.5);
       
       this.iconBatteryBg = this.add.image(450, 44, 'icon_battery').setOrigin(0, 0).setTint(0x555555).setDepth(100).setScrollFactor(0).setScale(1.5);
-      this.iconBatteryFill = this.add.image(450, 44, 'icon_battery').setOrigin(0, 0).setTint(0xFF0000).setDepth(100).setScrollFactor(0).setScale(1.5);
+      this.iconBatteryFillRect = this.add.rectangle(450 + 6, 44 + 88, 36, 82, 0xFF0000).setOrigin(0, 1).setDepth(99).setScrollFactor(0);
     }
 
     // Energy bar update (using scaleX instead of clear/fillRect)
@@ -883,10 +883,9 @@ class GameScene extends Phaser.Scene {
     // Killing Intent update
     const intentValue = MOT.flags.killingIntent || 0;
     const intentPct = Phaser.Math.Clamp(intentValue / 100, 0, 1);
-    const bW = this.iconBatteryFill.width || 32;
-    const bH = this.iconBatteryFill.height || 64;
-    const intentH = Math.max(0.01, bH * intentPct);
-    this.iconBatteryFill.setCrop(0, bH - intentH, bW, intentH);
+    if (this.iconBatteryFillRect) {
+      this.iconBatteryFillRect.scaleY = Math.max(0.001, intentPct);
+    }
 
     const iconX = 360;
     const iconY = 92;
