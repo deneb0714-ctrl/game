@@ -1654,7 +1654,6 @@ class BossScene extends Phaser.Scene {
               bossImage.setY(100 + (bossImage.height * bScale) / 2);
               
               if (this.currentBoss.configKey === 'boss3_twins') {
-                bossImage.setX(w - 600);
                 this.time.addEvent({
                   delay: 3500, loop: true, callback: () => {
                     if (bossImage && bossImage.active && bossImage.alpha > 0) {
@@ -1681,7 +1680,7 @@ class BossScene extends Phaser.Scene {
             // Add sisterImage for boss3_twins scenario intro
             var sisterImage = null;
             if (this.currentBoss && this.currentBoss.configKey === 'boss3_twins') {
-              sisterImage = this.add.image(w - 300, h / 2, 'sister_normal').setAlpha(0).setDepth(90);
+              sisterImage = this.add.image(w - 200, h / 2, 'sister_normal').setAlpha(0).setDepth(90);
               var sScale = 750 / 600; 
               if (this.textures.exists('sister_normal')) {
                 var tex = this.textures.get('sister_normal').getSourceImage();
@@ -1689,6 +1688,7 @@ class BossScene extends Phaser.Scene {
               }
               sisterImage.setScale(sScale);
               sisterImage.setY(100 + (sisterImage.height * sScale) / 2);
+              bossImage.setX(w - 400); // 兄を左へ
               
               this.time.addEvent({
                 delay: 3000, loop: true, callback: () => {
@@ -1713,15 +1713,9 @@ class BossScene extends Phaser.Scene {
             const sayDevice = (text) => new Promise(res => {
               this.tweens.add({ targets: dimBg, alpha: 0.6, duration: 300 });
               this.tweens.add({targets: this.heroImage, alpha: 0.4, duration: 300});
-              if (lastEnemySpeaker === '女' && sisterImage) {
-                if (bossImage) this.tweens.add({ targets: bossImage, alpha: 0, duration: 300 });
-                else this.tweens.add({ targets: [enemyFrame, enemyLabel], alpha: 0, duration: 300 });
-                this.tweens.add({ targets: sisterImage, alpha: 0.4, duration: 300 });
-              } else {
-                if (bossImage) this.tweens.add({ targets: bossImage, alpha: 0.4, duration: 300 });
-                else this.tweens.add({ targets: [enemyFrame, enemyLabel], alpha: 0.4, duration: 300 });
-                if(sisterImage) this.tweens.add({ targets: sisterImage, alpha: 0, duration: 300 });
-              }
+              if (bossImage) this.tweens.add({ targets: bossImage, alpha: 0.4, duration: 300 });
+              else this.tweens.add({ targets: [enemyFrame, enemyLabel], alpha: 0, duration: 300 });
+              if(sisterImage) this.tweens.add({ targets: sisterImage, alpha: 0.4, duration: 300 });
               this.showDeviceDialogue(text, res);
             });
             const sayEnemyUnknown = (text, tex = null, speaker = '男') => new Promise(res => {
@@ -1734,17 +1728,19 @@ class BossScene extends Phaser.Scene {
               }
               this.tweens.add({ targets: dimBg, alpha: 0.6, duration: 300 });
               if (lastEnemySpeaker === '女' && sisterImage) {
-                if (bossImage) this.tweens.add({ targets: bossImage, alpha: 0.4, duration: 300 });
+                if (bossImage) { this.tweens.add({ targets: bossImage, alpha: 0.4, duration: 300 }); bossImage.setDepth(90); }
                 this.tweens.add({ targets: sisterImage, alpha: 1, duration: 300 });
+                sisterImage.setDepth(91);
               } else {
                 if (bossImage) {
                   this.tweens.add({ targets: bossImage, alpha: 1, duration: 300 });
                   bossImage.setTexture(useTex);
+                  bossImage.setDepth(91);
                 } else {
                   this.tweens.add({ targets: [enemyFrame, enemyLabel], alpha: 1, duration: 300 });
                   enemyLabel.setText('???');
                 }
-                if(sisterImage) this.tweens.add({targets: sisterImage, alpha: 0.4, duration: 300});
+                if(sisterImage) { this.tweens.add({targets: sisterImage, alpha: 0.4, duration: 300}); sisterImage.setDepth(90); }
               }
               this.tweens.add({targets: this.heroImage, alpha: 0.4, duration: 300});
               this.showDialogue('???', text, res);
@@ -1760,18 +1756,20 @@ class BossScene extends Phaser.Scene {
               this.tweens.add({ targets: dimBg, alpha: 0.6, duration: 300 });
               this.tweens.add({targets: this.heroImage, alpha: 0.4, duration: 300});
               if (lastEnemySpeaker === '女' && sisterImage) {
-                if (bossImage) this.tweens.add({ targets: bossImage, alpha: 0.4, duration: 300 });
+                if (bossImage) { this.tweens.add({ targets: bossImage, alpha: 0.4, duration: 300 }); bossImage.setDepth(90); }
                 else this.tweens.add({ targets: [enemyFrame, enemyLabel], alpha: 0, duration: 300 });
                 this.tweens.add({ targets: sisterImage, alpha: 1, duration: 300 });
+                sisterImage.setDepth(91);
               } else {
                 if (bossImage) {
                   this.tweens.add({ targets: bossImage, alpha: 1, duration: 300 });
                   bossImage.setTexture(useTex);
+                  bossImage.setDepth(91);
                 } else {
                   this.tweens.add({ targets: [enemyFrame, enemyLabel], alpha: 1, duration: 300 });
                   enemyLabel.setText(name);
                 }
-                if(sisterImage) this.tweens.add({ targets: sisterImage, alpha: 0.4, duration: 300 });
+                if(sisterImage) { this.tweens.add({ targets: sisterImage, alpha: 0.4, duration: 300 }); sisterImage.setDepth(90); }
               }
               this.showDialogue(name, text, res);
             });
@@ -3229,7 +3227,7 @@ class BossScene extends Phaser.Scene {
         this.heroImage.setY(100 + (this.heroImage.height * hScale) / 2);
 
         // Sister Portrait (Default to 'sister_hurt' for post-defeat)
-        this.sisterImage = this.add.image(1920 - 300, h / 2, 'sister_hurt').setAlpha(0).setDepth(90);
+        this.sisterImage = this.add.image(1920 - 600, h / 2, 'sister_hurt').setAlpha(0).setDepth(90);
         // Fallback scale if texture not loaded, otherwise dynamic
         var sScale = 750 / 600; 
         if (this.textures.exists('sister_hurt')) {
@@ -3240,7 +3238,7 @@ class BossScene extends Phaser.Scene {
         this.sisterImage.setY(100 + (this.sisterImage.height * sScale) / 2);
 
         // Brother Portrait (Default to 'brother_dying' for post-defeat)
-        this.brotherImage = this.add.image(1920 - 600, h / 2, 'brother_dying').setAlpha(0).setDepth(90);
+        this.brotherImage = this.add.image(1920 - 300, h / 2, 'brother_dying').setAlpha(0).setDepth(90);
         var bScale = 750 / 600;
         if (this.textures.exists('brother_dying')) {
           var tex2 = this.textures.get('brother_dying').getSourceImage();
@@ -3288,8 +3286,8 @@ class BossScene extends Phaser.Scene {
         const sayDevice = (text) => new Promise(res => { this.tweens.add({ targets: dimBg, alpha: 0.6, duration: 300 }); this.tweens.add({targets: this.heroImage, alpha: 0.4, duration: 300}); if(this.sisterImage) this.tweens.add({targets: this.sisterImage, alpha: 0.4, duration: 300}); if(this.brotherImage) this.tweens.add({targets: this.brotherImage, alpha: 0.4, duration: 300}); this.showDeviceDialogue(text, res); });
         
         const sayHero = (text) => new Promise(res => { this.tweens.add({ targets: dimBg, alpha: 0.6, duration: 300 }); this.tweens.add({targets: this.heroImage, alpha: 1, duration: 300}); if(this.sisterImage) this.tweens.add({targets: this.sisterImage, alpha: 0.4, duration: 300}); if(this.brotherImage) this.tweens.add({targets: this.brotherImage, alpha: 0.4, duration: 300}); if (text === '「……」' || text === '「……。」' || text === '「…」') { this.heroImage.setTexture('hero_stand_silent'); } else { this.heroImage.setTexture('hero_stand'); } this.heroImage.setScale(750 / this.heroImage.width); this.heroImage.setY(100 + (this.heroImage.height * this.heroImage.scaleY) / 2); this.showDialogue('勇者', text, res); });
-        const sayMan = (text) => new Promise(res => { this.tweens.add({ targets: dimBg, alpha: 0.6, duration: 300 }); this.tweens.add({targets: this.heroImage, alpha: 0.4, duration: 300}); if(this.sisterImage) this.tweens.add({targets: this.sisterImage, alpha: 0.4, duration: 300}); if(this.brotherImage) this.tweens.add({targets: this.brotherImage, alpha: 1, duration: 300}); this.showDialogue('男', text, res); });
-        const sayWoman = (text) => new Promise(res => { this.tweens.add({ targets: dimBg, alpha: 0.6, duration: 300 }); this.tweens.add({targets: this.heroImage, alpha: 0.4, duration: 300}); if(this.sisterImage) this.tweens.add({targets: this.sisterImage, alpha: 1, duration: 300}); if(this.brotherImage) this.tweens.add({targets: this.brotherImage, alpha: 0.4, duration: 300}); this.showDialogue('女', text, res); });
+        const sayMan = (text) => new Promise(res => { this.tweens.add({ targets: dimBg, alpha: 0.6, duration: 300 }); this.tweens.add({targets: this.heroImage, alpha: 0.4, duration: 300}); if(this.sisterImage) { this.tweens.add({targets: this.sisterImage, alpha: 0.4, duration: 300}); this.sisterImage.setDepth(90); } if(this.brotherImage) { this.tweens.add({targets: this.brotherImage, alpha: 1, duration: 300}); this.brotherImage.setDepth(91); } this.showDialogue('男', text, res); });
+        const sayWoman = (text) => new Promise(res => { this.tweens.add({ targets: dimBg, alpha: 0.6, duration: 300 }); this.tweens.add({targets: this.heroImage, alpha: 0.4, duration: 300}); if(this.sisterImage) { this.tweens.add({targets: this.sisterImage, alpha: 1, duration: 300}); this.sisterImage.setDepth(91); } if(this.brotherImage) { this.tweens.add({targets: this.brotherImage, alpha: 0.4, duration: 300}); this.brotherImage.setDepth(90); } this.showDialogue('女', text, res); });
 
         (async () => {
           await sayDevice('「さぁ早くとどめを刺せ！」');
