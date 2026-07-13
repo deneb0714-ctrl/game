@@ -1639,12 +1639,17 @@ class BossScene extends Phaser.Scene {
             var enemyFrame = this.add.rectangle(w - 300, h / 2, 400, 600, 0x1F2933).setAlpha(0).setDepth(90).setStrokeStyle(4, 0xffffff);
             var enemyLabel = this.add.text(w - 300, h / 2, '???', { fontFamily: '"DotGothic16"', fontSize: '40px', color: '#ffffff' }).setOrigin(0.5).setAlpha(0).setDepth(90);
 
-            var boss1Image = null;
-            if (this.currentBoss && this.currentBoss.configKey === 'boss1') {
-              boss1Image = this.add.image(w - 300, h / 2, 'boss1_normal').setAlpha(0).setDepth(90);
-              var b1Scale = 750 / boss1Image.width;
-              boss1Image.setScale(b1Scale);
-              boss1Image.setY(100 + (boss1Image.height * b1Scale) / 2);
+            var bossImage = null;
+            if (this.currentBoss && (this.currentBoss.configKey === 'boss1' || this.currentBoss.configKey === 'boss2')) {
+              var defaultTex = this.currentBoss.configKey === 'boss1' ? 'boss1_normal' : 'boss2_normal';
+              bossImage = this.add.image(w - 300, h / 2, defaultTex).setAlpha(0).setDepth(90);
+              var bScale = 750 / bossImage.width;
+              if (this.textures.exists(defaultTex)) {
+                var tmpTex = this.textures.get(defaultTex).getSourceImage();
+                if (tmpTex && tmpTex.width > 0) bScale = 750 / tmpTex.width;
+              }
+              bossImage.setScale(bScale);
+              bossImage.setY(100 + (bossImage.height * bScale) / 2);
               
               enemyFrame.setVisible(false);
               enemyLabel.setVisible(false);
@@ -1686,22 +1691,26 @@ class BossScene extends Phaser.Scene {
               this.tweens.add({ targets: dimBg, alpha: 0.6, duration: 300 });
               this.tweens.add({targets: this.heroImage, alpha: 0.4, duration: 300});
               if (lastEnemySpeaker === '女' && sisterImage) {
-                if (boss1Image) this.tweens.add({ targets: boss1Image, alpha: 0, duration: 300 });
+                if (bossImage) this.tweens.add({ targets: bossImage, alpha: 0, duration: 300 });
                 else this.tweens.add({ targets: [enemyFrame, enemyLabel], alpha: 0, duration: 300 });
                 this.tweens.add({ targets: sisterImage, alpha: 0.4, duration: 300 });
               } else {
-                if (boss1Image) this.tweens.add({ targets: boss1Image, alpha: 0.4, duration: 300 });
+                if (bossImage) this.tweens.add({ targets: bossImage, alpha: 0.4, duration: 300 });
                 else this.tweens.add({ targets: [enemyFrame, enemyLabel], alpha: 0.4, duration: 300 });
                 if(sisterImage) this.tweens.add({ targets: sisterImage, alpha: 0, duration: 300 });
               }
               this.showDeviceDialogue(text, res);
             });
-            const sayEnemyUnknown = (text, tex = 'boss1_normal') => new Promise(res => {
+            const sayEnemyUnknown = (text, tex = null) => new Promise(res => {
               lastEnemySpeaker = '男';
+              let useTex = tex;
+              if (useTex === null) {
+                 useTex = (this.currentBoss && this.currentBoss.configKey === 'boss1') ? 'boss1_normal' : 'boss2_normal';
+              }
               this.tweens.add({ targets: dimBg, alpha: 0.6, duration: 300 });
-              if (boss1Image) {
-                this.tweens.add({ targets: boss1Image, alpha: 1, duration: 300 });
-                boss1Image.setTexture(tex);
+              if (bossImage) {
+                this.tweens.add({ targets: bossImage, alpha: 1, duration: 300 });
+                bossImage.setTexture(useTex);
               } else {
                 this.tweens.add({ targets: [enemyFrame, enemyLabel], alpha: 1, duration: 300 });
                 enemyLabel.setText('???');
@@ -1710,18 +1719,22 @@ class BossScene extends Phaser.Scene {
               if(sisterImage) this.tweens.add({targets: sisterImage, alpha: 0, duration: 300});
               this.showDialogue('???', text, res);
             });
-            const sayEnemyName = (name, text, tex = 'boss1_normal') => new Promise(res => {
+            const sayEnemyName = (name, text, tex = null) => new Promise(res => {
               if (name === '女' || name === '男') lastEnemySpeaker = name;
+              let useTex = tex;
+              if (useTex === null) {
+                 useTex = (this.currentBoss && this.currentBoss.configKey === 'boss1') ? 'boss1_normal' : 'boss2_normal';
+              }
               this.tweens.add({ targets: dimBg, alpha: 0.6, duration: 300 });
               this.tweens.add({targets: this.heroImage, alpha: 0.4, duration: 300});
               if (lastEnemySpeaker === '女' && sisterImage) {
-                if (boss1Image) this.tweens.add({ targets: boss1Image, alpha: 0, duration: 300 });
+                if (bossImage) this.tweens.add({ targets: bossImage, alpha: 0, duration: 300 });
                 else this.tweens.add({ targets: [enemyFrame, enemyLabel], alpha: 0, duration: 300 });
                 this.tweens.add({ targets: sisterImage, alpha: 1, duration: 300 });
               } else {
-                if (boss1Image) {
-                  this.tweens.add({ targets: boss1Image, alpha: 1, duration: 300 });
-                  boss1Image.setTexture(tex);
+                if (bossImage) {
+                  this.tweens.add({ targets: bossImage, alpha: 1, duration: 300 });
+                  bossImage.setTexture(useTex);
                 } else {
                   this.tweens.add({ targets: [enemyFrame, enemyLabel], alpha: 1, duration: 300 });
                   enemyLabel.setText(name);
@@ -1745,11 +1758,11 @@ class BossScene extends Phaser.Scene {
       this.tweens.add({ targets: dimBg, alpha: 0.6, duration: 300 });
       this.tweens.add({targets: this.heroImage, alpha: 1, duration: 300});
       if (lastEnemySpeaker === '女' && sisterImage) {
-        if (boss1Image) this.tweens.add({ targets: boss1Image, alpha: 0, duration: 300 });
+        if (bossImage) this.tweens.add({ targets: bossImage, alpha: 0, duration: 300 });
         else this.tweens.add({ targets: [enemyFrame, enemyLabel], alpha: 0, duration: 300 });
         this.tweens.add({ targets: sisterImage, alpha: 0.4, duration: 300 });
       } else {
-        if (boss1Image) this.tweens.add({ targets: boss1Image, alpha: 0.4, duration: 300 });
+        if (bossImage) this.tweens.add({ targets: bossImage, alpha: 0.4, duration: 300 });
         else this.tweens.add({ targets: [enemyFrame, enemyLabel], alpha: 0.4, duration: 300 });
         if(sisterImage) this.tweens.add({ targets: sisterImage, alpha: 0, duration: 300 });
       }
@@ -1783,7 +1796,7 @@ class BossScene extends Phaser.Scene {
                 await sayHero('「つまり、脳ｋ……」');
                 
               } else if (key === 'boss2') {
-                await sayEnemyUnknown('「あは、お客さんだ！」');
+                await sayEnemyUnknown('「あは、お客さんだ！」', 'boss2_normal');
                 await sayDevice('「やはり来たか。奴は○○。魔王の狂犬だ。若くして魔王軍に入ったが、魔王の言うこと以外は聞かない。奴は2丁の拳銃を使って戦う。片方だけに気を取られるなよ」');
                 
                 this.currentBoss.setVisible(true); this.currentBoss.body.enable = true;
@@ -1791,7 +1804,7 @@ class BossScene extends Phaser.Scene {
                 await new Promise(r => this.tweens.add({ targets: this.currentBoss, x: 1400, duration: 1200, ease: 'Power2', onComplete: r }));
                 this.tweens.add({ targets: this.currentBoss, y: this.currentBoss.y - 30, yoyo: true, repeat: -1, duration: 1000, ease: 'Sine.easeInOut' });
                 
-                await sayEnemyName('敵幹部2', '「××（敵幹部１）はやられたみたいだね。あいつ力はあるくせに馬鹿だから負けるんだよ。まぁいいや。さっさと君を倒して魔王様に褒めてもらおう」');
+                await sayEnemyName('敵幹部2', '「××（敵幹部１）はやられたみたいだね。あいつ力はあるくせに馬鹿だから負けるんだよ。まぁいいや。さっさと君を倒して魔王様に褒めてもらおう」', 'boss2_normal_dying');
                 await sayHero('「（……やっぱり脳筋だったのか）」');
                 
               } else if (key === 'boss3_twins') {
@@ -2015,37 +2028,88 @@ class BossScene extends Phaser.Scene {
               }
             })();
           } else if (key === 'boss2') {
-            const sayEnemy = (text) => new Promise(res => { this.tweens.add({ targets: dimBg, alpha: 0.6, duration: 300 }); this.tweens.add({targets: this.heroImage, alpha: 0.4, duration: 300}); this.showDialogue('敵幹部2', text, res); });
-            (async () => {
-              if (MOT.flags.killedBoss1) {
-                await sayDevice('「先ほどと同じように、止めを刺すんだ。こいつを倒せば幹部は残り半分になる。」');
+            var boss2DefImg = this.add.image(w - 300, h / 2, 'boss2_normal_dying').setAlpha(0).setDepth(90);
+            var b2dW = boss2DefImg.width || 576;
+            var b2dH = boss2DefImg.height || 1024;
+            var b2dScale = 750 / b2dW;
+            if (this.textures.exists('boss2_normal_dying')) {
+              var t2 = this.textures.get('boss2_normal_dying').getSourceImage();
+              if (t2 && t2.width > 0) b2dScale = 750 / t2.width;
+            }
+            boss2DefImg.setScale(b2dScale);
+            boss2DefImg.setY(100 + (b2dH * b2dScale) / 2);
+
+            const sayEnemyB2 = (text, tex = 'boss2_normal_dying') => new Promise(res => {
+              this.tweens.add({ targets: dimBg, alpha: 0.6, duration: 300 });
+              this.tweens.add({ targets: boss2DefImg, alpha: 1, duration: 300 });
+              this.tweens.add({ targets: this.heroImage, alpha: 0.4, duration: 300 });
+              boss2DefImg.setTexture(tex);
+              this.showDialogue('敵幹部2', text, res);
+            });
+            const sayHeroB2 = (text) => new Promise(res => {
+              this.tweens.add({ targets: dimBg, alpha: 0.6, duration: 300 });
+              this.tweens.add({ targets: this.heroImage, alpha: 1, duration: 300 });
+              this.tweens.add({ targets: boss2DefImg, alpha: 0.4, duration: 300 });
+              if (text === '「……」' || text === '「……。」' || text === '「…」') {
+                this.heroImage.setTexture('hero_stand_silent');
               } else {
-                await sayDevice('「今回はわかっているな？世界のために、逃がさないで止めを刺せ。」');
+                this.heroImage.setTexture('hero_stand');
+              }
+              this.heroImage.setScale(750 / this.heroImage.width);
+              this.heroImage.setY(100 + (this.heroImage.height * this.heroImage.scaleY) / 2);
+              this.showDialogue('勇者', text, res);
+            });
+            const sayDeviceB2 = (text) => new Promise(res => {
+              this.tweens.add({ targets: dimBg, alpha: 0.6, duration: 300 });
+              this.tweens.add({ targets: this.heroImage, alpha: 0.4, duration: 300 });
+              this.tweens.add({ targets: boss2DefImg, alpha: 0.4, duration: 300 });
+              this.showDeviceDialogue(text, res);
+            });
+
+            (async () => {
+              // 立ち絵フェードイン
+              this.tweens.add({ targets: dimBg, alpha: 0.6, duration: 400 });
+              this.tweens.add({ targets: this.heroImage, alpha: 0.4, duration: 400 });
+              this.tweens.add({ targets: boss2DefImg, alpha: 1, duration: 400 });
+              await new Promise(r => this.time.delayedCall(500, r));
+
+              if (MOT.flags.killedBoss1) {
+                await sayDeviceB2('「先ほどと同じように、止めを刺すんだ。こいつを倒せば幹部は残り半分になる。」');
+              } else {
+                await sayDeviceB2('「今回はわかっているな？世界のために、逃がさないで止めを刺せ。」');
               }
               let c = await askChoice('1. 心臓を打ち抜く', '2. 見逃す');
               if (c === 1) { MOT.flags.dollPoints++; MOT.flags.killedTwins = true; MOT.flags.killedBoss2 = true;
                 if (MOT.flags.killedBoss1) {
-                  await sayEnemy('「はは…あいつと同じで負けるのはむかつくけど、戦いは楽しかったしまあいいかな」');
+                  await sayEnemyB2('「はは…あいつと同じで負けるのはむかつくけど、戦いは楽しかったしまあいいかな」', 'boss2_eyes_closed_dying');
                   MOT.Audio.playSelect();
-                  await sayDevice('「よくやった。また一歩平和に近づいたな。幹部は残り二人だ。気を抜かずそのまま進んでいくといい」');
+                  await sayDeviceB2('「よくやった。また一歩平和に近づいたな。幹部は残り二人だ。気を抜かずそのまま進んでいくといい」');
                 } else {
-                  await sayEnemy('「はは…負けたのはむかつくけど、戦いは楽しかったしまあいいかな」');
+                  await sayEnemyB2('「はは…負けたのはむかつくけど、戦いは楽しかったしまあいいかな」', 'boss2_eyes_closed_dying');
                   MOT.Audio.playSelect();
-                  await sayDevice('「それでいい。そのまま進んで残りの幹部も魔王も倒すんだ」');
+                  await sayDeviceB2('「それでいい。そのまま進んで残りの幹部も魔王も倒すんだ」');
                 }
+                boss2DefImg.destroy();
                 this.proceedToNextArea(boss, false);
               } else {
                 MOT.flags.killedBoss2 = false;
                 if (MOT.flags.killedBoss1) {
-                  await sayEnemy('「なんで殺さない？あの脳筋野郎にしたように僕も殺せばいい。それとも、僕には殺す価値すらもないって言いたいの？ま、事実負けちゃったからどうこう言う資格なんてないんだけど……ね。」');
+                  await sayEnemyB2('「なんで殺さない？」', 'boss2_angry_dying');
+                  await sayEnemyB2('「あの脳筋野郎にしたように僕も殺せばいい。それとも、僕には殺す価値すらもないって言いたいの？」', 'boss2_angry_dying');
+                  await sayEnemyB2('「ま、事実負けちゃったからどうこう言う資格なんてないんだけど……ね。」', 'boss2_eyes_closed_dying');
+                  
                   await new Promise(r => this.tweens.add({ targets: boss, x: 2200, duration: 1500, ease: 'Power2', onComplete: r }));
-                  await sayDevice('「おい、何をしている？なぜ止めを刺さなかった。」');
+                  boss2DefImg.destroy();
+                  await sayDeviceB2('「おい、何をしている？なぜ止めを刺さなかった。」');
                 } else {
-                  await sayEnemy('「はは、君はやっぱり殺さないんだ。舐めてるの？とはいえ、僕も今は限界だから引こうかな。次は負けないから！」');
+                  await sayEnemyB2('「はは、君はやっぱり殺さないんだ。舐めてるの？」', 'boss2_normal_dying');
+                  await sayEnemyB2('「とはいえ、僕も今は限界だから引こうかな。次は負けないから！」', 'boss2_eyes_closed_dying');
+                  
                   await new Promise(r => this.tweens.add({ targets: boss, x: 2200, duration: 1500, ease: 'Power2', onComplete: r }));
-                  await sayDevice('「またか。お前は何がしたい？この世界を終わらせたいのか？」');
-                  await sayDevice('「それとも、役立たずとして処分でもされたいのか？」');
-                  await sayHero('「……。」');
+                  boss2DefImg.destroy();
+                  await sayDeviceB2('「またか。お前は何がしたい？この世界を終わらせたいのか？」');
+                  await sayDeviceB2('「それとも、役立たずとして処分でもされたいのか？」');
+                  await sayHeroB2('「……。」');
                 }
                 this.proceedToNextArea(boss, true);
               }
