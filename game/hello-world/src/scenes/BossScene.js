@@ -4093,16 +4093,16 @@ class BossScene extends Phaser.Scene {
     this.energyText.setText('EN: ' + MOT.flags.energy + '/' + MOT.flags.maxEnergyThreshold);
 
     // Doll Points update
-    const dollValue = MOT.flags.dollPoints || 0;
-    const dollPct = Phaser.Math.Clamp(dollValue / 100, 0, 1);
+    const dollValue = MOT.flags.obeyDoctor || 0;
+    const dollPct = Phaser.Math.Clamp(dollValue / 5, 0, 1);
     const pW = this.iconPersonFill.width || 32;
     const pH = this.iconPersonFill.height || 64;
     const dollH = Math.max(0.01, pH * dollPct);
     this.iconPersonFill.setCrop(0, pH - dollH, pW, dollH);
 
     // Killing Intent update
-    const intentValue = MOT.flags.killingIntent || 0;
-    const intentPct = Phaser.Math.Clamp(intentValue / 100, 0, 1);
+    const intentValue = MOT.flags.brutality || 0;
+    const intentPct = Phaser.Math.Clamp(intentValue / 5, 0, 1);
     const bW = this.iconBatteryFill.width || 32;
     const bH = this.iconBatteryFill.height || 64;
     const intentH = Math.max(0.01, bH * intentPct);
@@ -4179,9 +4179,11 @@ class BossScene extends Phaser.Scene {
       } else {
         if (this.sisterHPText) this.sisterHPText.setVisible(false);
         this.bossHPText.setText(cfg.name);
-        var bpct = this.bossHP / this.bossMaxHP;
+        var bpct = Math.max(0, this.bossHP) / this.bossMaxHP;
         this.bossHPBar.fillStyle(0x1F2933, 1); this.bossHPBar.fillRect(560, 50, 800, 20);
-        this.bossHPBar.fillStyle(0xFF2E2E, 1); this.bossHPBar.fillRect(562, 52, 796 * bpct, 16);
+        if (bpct > 0) {
+          this.bossHPBar.fillStyle(0xFF2E2E, 1); this.bossHPBar.fillRect(562, 52, 796 * bpct, 16);
+        }
         this.bossHPBar.lineStyle(1, 0xFF2E2E, 0.6); this.bossHPBar.strokeRect(560, 50, 800, 20);
       }
     } else {
