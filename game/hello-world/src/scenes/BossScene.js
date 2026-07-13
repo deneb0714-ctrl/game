@@ -1651,26 +1651,6 @@ class BossScene extends Phaser.Scene {
               bossImage.setScale(bScale);
               bossImage.setY(100 + (bossImage.height * bScale) / 2);
               
-              if (this.currentBoss.configKey === 'boss2') {
-                this.time.addEvent({
-                  delay: 3500, loop: true, callback: () => {
-                    if (bossImage && bossImage.active && bossImage.alpha > 0) {
-                      let k = bossImage.texture.key;
-                      let blinkTo = null;
-                      if (k === 'boss2_normal') blinkTo = 'boss2_eyes_closed';
-                      if (blinkTo) {
-                        bossImage.setTexture(blinkTo);
-                        this.time.delayedCall(150, () => {
-                          if (bossImage && bossImage.active && bossImage.texture.key === blinkTo) {
-                            bossImage.setTexture(k);
-                          }
-                        });
-                      }
-                    }
-                  }
-                });
-              }
-
               enemyFrame.setVisible(false);
               enemyLabel.setVisible(false);
             }
@@ -1824,7 +1804,7 @@ class BossScene extends Phaser.Scene {
                 await new Promise(r => this.tweens.add({ targets: this.currentBoss, x: 1400, duration: 1200, ease: 'Power2', onComplete: r }));
                 this.tweens.add({ targets: this.currentBoss, y: this.currentBoss.y - 30, yoyo: true, repeat: -1, duration: 1000, ease: 'Sine.easeInOut' });
                 
-                await sayEnemyName('敵幹部2', '「××（敵幹部１）はやられたみたいだね。あいつ力はあるくせに馬鹿だから負けるんだよ。まぁいいや。さっさと君を倒して魔王様に褒めてもらおう」', 'boss2_normal');
+                await sayEnemyName('敵幹部2', '「××（敵幹部１）はやられたみたいだね。あいつ力はあるくせに馬鹿だから負けるんだよ。まぁいいや。さっさと君を倒して魔王様に褒めてもらおう」', 'boss2_eyes_closed');
                 await sayHero('「（……やっぱり脳筋だったのか）」');
                 
               } else if (key === 'boss3_twins') {
@@ -1848,8 +1828,8 @@ class BossScene extends Phaser.Scene {
               }
               
               this.tweens.add({
-                targets: [dimBg, enemyFrame, enemyLabel, boss1Image, this.heroImage].filter(Boolean), alpha: 0, duration: 500,
-                onComplete: () => { dimBg.destroy(); enemyFrame.destroy(); enemyLabel.destroy(); if(boss1Image) boss1Image.destroy(); if(this.heroImage) this.heroImage.destroy(); if(sisterImage) sisterImage.destroy(); }
+                targets: [dimBg, enemyFrame, enemyLabel, bossImage, this.heroImage].filter(Boolean), alpha: 0, duration: 500,
+                onComplete: () => { dimBg.destroy(); enemyFrame.destroy(); enemyLabel.destroy(); if(bossImage) bossImage.destroy(); if(this.heroImage) this.heroImage.destroy(); if(sisterImage) sisterImage.destroy(); }
               });
               if(sisterImage) this.tweens.add({ targets: sisterImage, alpha: 0, duration: 500 });
               this.dialogActive = false;
@@ -2059,28 +2039,6 @@ class BossScene extends Phaser.Scene {
             boss2DefImg.setScale(b2dScale);
             boss2DefImg.setY(100 + (b2dH * b2dScale) / 2);
 
-            this.boss2DefBlinkEvent = this.time.addEvent({
-              delay: 3500, loop: true, callback: () => {
-                if (boss2DefImg && boss2DefImg.active && boss2DefImg.alpha > 0) {
-                  let k = boss2DefImg.texture.key;
-                  let blinkTo = null;
-                  if (k === 'boss2_normal_dying') blinkTo = 'boss2_eyes_closed_dying';
-                  else if (k === 'boss2_angry_dying') blinkTo = 'boss2_eyes_closed_dying';
-                  else if (k === 'boss2_normal') blinkTo = 'boss2_eyes_closed';
-                  else if (k === 'boss2_angry') blinkTo = 'boss2_eyes_closed';
-                  
-                  if (blinkTo) {
-                    boss2DefImg.setTexture(blinkTo);
-                    this.time.delayedCall(150, () => {
-                      if (boss2DefImg && boss2DefImg.active && boss2DefImg.texture.key === blinkTo) {
-                        boss2DefImg.setTexture(k);
-                      }
-                    });
-                  }
-                }
-              }
-            });
-
             const sayEnemyB2 = (text, tex = 'boss2_normal_dying') => new Promise(res => {
               this.tweens.add({ targets: dimBg, alpha: 0.6, duration: 300 });
               this.tweens.add({ targets: boss2DefImg, alpha: 1, duration: 300 });
@@ -2123,15 +2081,14 @@ class BossScene extends Phaser.Scene {
               let c = await askChoice('1. 心臓を打ち抜く', '2. 見逃す');
               if (c === 1) { MOT.flags.dollPoints++; MOT.flags.killedTwins = true; MOT.flags.killedBoss2 = true;
                 if (MOT.flags.killedBoss1) {
-                  await sayEnemyB2('「はは…あいつと同じで負けるのはむかつくけど、戦いは楽しかったしまあいいかな」', 'boss2_normal_dying');
+                  await sayEnemyB2('「はは…あいつと同じで負けるのはむかつくけど、戦いは楽しかったしまあいいかな」', 'boss2_eyes_closed_dying');
                   MOT.Audio.playSelect();
                   await sayDeviceB2('「よくやった。また一歩平和に近づいたな。幹部は残り二人だ。気を抜かずそのまま進んでいくといい」');
                 } else {
-                  await sayEnemyB2('「はは…負けたのはむかつくけど、戦いは楽しかったしまあいいかな」', 'boss2_normal_dying');
+                  await sayEnemyB2('「はは…負けたのはむかつくけど、戦いは楽しかったしまあいいかな」', 'boss2_eyes_closed_dying');
                   MOT.Audio.playSelect();
                   await sayDeviceB2('「それでいい。そのまま進んで残りの幹部も魔王も倒すんだ」');
                 }
-                if (this.boss2DefBlinkEvent) this.boss2DefBlinkEvent.destroy();
                 boss2DefImg.destroy();
                 this.proceedToNextArea(boss, false);
               } else {
@@ -2139,18 +2096,16 @@ class BossScene extends Phaser.Scene {
                 if (MOT.flags.killedBoss1) {
                   await sayEnemyB2('「なんで殺さない？」', 'boss2_angry_dying');
                   await sayEnemyB2('「あの脳筋野郎にしたように僕も殺せばいい。それとも、僕には殺す価値すらもないって言いたいの？」', 'boss2_angry_dying');
-                  await sayEnemyB2('「ま、事実負けちゃったからどうこう言う資格なんてないんだけど……ね。」', 'boss2_normal_dying');
+                  await sayEnemyB2('「ま、事実負けちゃったからどうこう言う資格なんてないんだけど……ね。」', 'boss2_eyes_closed_dying');
                   
                   await new Promise(r => this.tweens.add({ targets: boss, x: 2200, duration: 1500, ease: 'Power2', onComplete: r }));
-                  if (this.boss2DefBlinkEvent) this.boss2DefBlinkEvent.destroy();
                   boss2DefImg.destroy();
                   await sayDeviceB2('「おい、何をしている？なぜ止めを刺さなかった。」');
                 } else {
                   await sayEnemyB2('「はは、君はやっぱり殺さないんだ。舐めてるの？」', 'boss2_normal_dying');
-                  await sayEnemyB2('「とはいえ、僕も今は限界だから引こうかな。次は負けないから！」', 'boss2_normal_dying');
+                  await sayEnemyB2('「とはいえ、僕も今は限界だから引こうかな。次は負けないから！」', 'boss2_eyes_closed_dying');
                   
                   await new Promise(r => this.tweens.add({ targets: boss, x: 2200, duration: 1500, ease: 'Power2', onComplete: r }));
-                  if (this.boss2DefBlinkEvent) this.boss2DefBlinkEvent.destroy();
                   boss2DefImg.destroy();
                   await sayDeviceB2('「またか。お前は何がしたい？この世界を終わらせたいのか？」');
                   await sayDeviceB2('「それとも、役立たずとして処分でもされたいのか？」');
