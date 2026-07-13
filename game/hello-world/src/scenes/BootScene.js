@@ -121,6 +121,12 @@ class BootScene extends Phaser.Scene {
     this.load.image('sister_normal', 'assets/images/sister_normal.png?v=' + v);
     this.load.image('sister_blink', 'assets/images/sister_blink.png?v=' + v);
     this.load.image('sister_hurt', 'assets/images/sister_hurt.png?v=' + v);
+    this.load.image('brother_normal', 'assets/images/brother_normal.png?v=' + v);
+    this.load.image('brother_closed', 'assets/images/brother_closed.png?v=' + v);
+    this.load.image('brother_dying', 'assets/images/brother_dying.png?v=' + v);
+    this.load.image('brother_dying_closed', 'assets/images/brother_dying_closed.png?v=' + v);
+    this.load.image('brother_hurt', 'assets/images/brother_hurt.png?v=' + v);
+    this.load.image('brother_hurt_closed', 'assets/images/brother_hurt_closed.png?v=' + v);
 
 
     // Hero New
