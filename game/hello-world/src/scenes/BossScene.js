@@ -1787,15 +1787,9 @@ class BossScene extends Phaser.Scene {
     const sayHero = (text) => new Promise(res => {
       this.tweens.add({ targets: dimBg, alpha: 0.6, duration: 300 });
       this.tweens.add({targets: this.heroImage, alpha: 1, duration: 300});
-      if (lastEnemySpeaker === '女' && sisterImage) {
-        if (bossImage) this.tweens.add({ targets: bossImage, alpha: 0, duration: 300 });
-        else this.tweens.add({ targets: [enemyFrame, enemyLabel], alpha: 0, duration: 300 });
-        this.tweens.add({ targets: sisterImage, alpha: 0.4, duration: 300 });
-      } else {
-        if (bossImage) this.tweens.add({ targets: bossImage, alpha: 0.4, duration: 300 });
-        else this.tweens.add({ targets: [enemyFrame, enemyLabel], alpha: 0.4, duration: 300 });
-        if(sisterImage) this.tweens.add({ targets: sisterImage, alpha: 0, duration: 300 });
-      }
+      if (bossImage) this.tweens.add({ targets: bossImage, alpha: 0.4, duration: 300 });
+      else this.tweens.add({ targets: [enemyFrame, enemyLabel], alpha: 0, duration: 300 });
+      if(sisterImage) this.tweens.add({ targets: sisterImage, alpha: 0.4, duration: 300 });
       if (text === '「……」' || text === '「……。」' || text === '「…」') {
         this.heroImage.setTexture('hero_stand_silent');
       } else {
@@ -1813,7 +1807,7 @@ class BossScene extends Phaser.Scene {
                 await sayEnemyUnknown('「おいおい、こんなところで何してんだ？今引き返すっていうなら見逃してやるぜ？」', 'boss1_normal');
                 await sayDevice('「まずい。魔王軍のやつらに気付かれた。だが、勇者の君なら倒せるだろう。」');
                 
-                this.tweens.add({ targets: [dimBg, enemyFrame, enemyLabel, bossImage, sisterImage, this.heroImage].filter(Boolean), alpha: 0, duration: 300 });
+                this.tweens.add({ targets: [dimBg, enemyFrame, enemyLabel, bossImage, sisterImage].filter(Boolean), alpha: 0, duration: 1200 });
                 // Show boss
                 this.currentBoss.setVisible(true); this.currentBoss.body.enable = true;
                 this.cameras.main.shake(400, 0.015);
@@ -1830,7 +1824,7 @@ class BossScene extends Phaser.Scene {
                 await sayEnemyUnknown('「あは、お客さんだ！」', 'boss2_normal');
                 await sayDevice('「やはり来たか。奴は○○。魔王の狂犬だ。若くして魔王軍に入ったが、魔王の言うこと以外は聞かない。奴は2丁の拳銃を使って戦う。片方だけに気を取られるなよ」');
                 
-                this.tweens.add({ targets: [dimBg, enemyFrame, enemyLabel, bossImage, sisterImage, this.heroImage].filter(Boolean), alpha: 0, duration: 300 });
+                this.tweens.add({ targets: [dimBg, enemyFrame, enemyLabel, bossImage, sisterImage].filter(Boolean), alpha: 0, duration: 1200 });
                 this.currentBoss.setVisible(true); this.currentBoss.body.enable = true;
                 this.cameras.main.shake(400, 0.015);
                 await new Promise(r => this.tweens.add({ targets: this.currentBoss, x: 1400, duration: 1200, ease: 'Power2', onComplete: r }));
@@ -1845,7 +1839,7 @@ class BossScene extends Phaser.Scene {
                 await sayDevice('「…!?お前たちは…」');
                 await sayHero('「？」');
                 
-                this.tweens.add({ targets: [dimBg, enemyFrame, enemyLabel, bossImage, sisterImage, this.heroImage].filter(Boolean), alpha: 0, duration: 300 });
+                this.tweens.add({ targets: [dimBg, enemyFrame, enemyLabel, bossImage, sisterImage].filter(Boolean), alpha: 0, duration: 1200 });
                 this.currentBoss.setVisible(true); this.currentBoss.body.enable = true;
                 this.sisterBoss.setVisible(true); this.sisterBoss.body.enable = true;
                 this.cameras.main.shake(400, 0.015);
