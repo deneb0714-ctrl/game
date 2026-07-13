@@ -1796,7 +1796,7 @@ class BossScene extends Phaser.Scene {
                 await sayHero('「つまり、脳ｋ……」');
                 
               } else if (key === 'boss2') {
-                await sayEnemyUnknown('「あは、お客さんだ！」', 'boss2_normal');
+                await sayEnemyUnknown('「あは、お客さんだ！」', 'boss2_eyes_closed');
                 await sayDevice('「やはり来たか。奴は○○。魔王の狂犬だ。若くして魔王軍に入ったが、魔王の言うこと以外は聞かない。奴は2丁の拳銃を使って戦う。片方だけに気を取られるなよ」');
                 
                 this.currentBoss.setVisible(true); this.currentBoss.body.enable = true;
@@ -1804,7 +1804,7 @@ class BossScene extends Phaser.Scene {
                 await new Promise(r => this.tweens.add({ targets: this.currentBoss, x: 1400, duration: 1200, ease: 'Power2', onComplete: r }));
                 this.tweens.add({ targets: this.currentBoss, y: this.currentBoss.y - 30, yoyo: true, repeat: -1, duration: 1000, ease: 'Sine.easeInOut' });
                 
-                await sayEnemyName('敵幹部2', '「××（敵幹部１）はやられたみたいだね。あいつ力はあるくせに馬鹿だから負けるんだよ。まぁいいや。さっさと君を倒して魔王様に褒めてもらおう」', 'boss2_normal_dying');
+                await sayEnemyName('敵幹部2', '「××（敵幹部１）はやられたみたいだね。あいつ力はあるくせに馬鹿だから負けるんだよ。まぁいいや。さっさと君を倒して魔王様に褒めてもらおう」', 'boss2_normal');
                 await sayHero('「（……やっぱり脳筋だったのか）」');
                 
               } else if (key === 'boss3_twins') {
