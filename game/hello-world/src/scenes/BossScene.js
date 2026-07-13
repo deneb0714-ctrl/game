@@ -213,7 +213,7 @@ class BossScene extends Phaser.Scene {
   getBossConfig(key) {
     var configs = {
       boss1: {
-        texture: 'boss1_muscle', name: '幹部1 – 筋肉', hp: 30, scale: 0.15,
+        texture: 'boss1_combat', name: '幹部1 – 筋肉', hp: 30, scale: 1,
         intro: '「貴様が博士の人形か。\nこの俺の拳で叩き潰してやる！」',
         defeat: '「馬鹿な…この俺が…！」',
         choices: [
@@ -1711,7 +1711,9 @@ class BossScene extends Phaser.Scene {
             this.tweens.add({ targets: [dimBg, enemyFrame, enemyLabel], alpha: 1, duration: 500 });
             
             const sayDevice = (text) => new Promise(res => {
-              [dimBg, enemyFrame, enemyLabel, bossImage, sisterImage, this.heroImage].filter(Boolean).forEach(t => t.setVisible(true));
+              [dimBg, bossImage, sisterImage, this.heroImage].filter(Boolean).forEach(t => t.setVisible(true));
+              if (!bossImage) { if (enemyFrame) enemyFrame.setVisible(true); if (enemyLabel) enemyLabel.setVisible(true); }
+              else { if (enemyFrame) enemyFrame.setVisible(false); if (enemyLabel) enemyLabel.setVisible(false); }
               this.tweens.add({ targets: dimBg, alpha: 0.6, duration: 300 });
               this.tweens.add({targets: this.heroImage, alpha: 0.4, duration: 300});
               if (bossImage) this.tweens.add({ targets: bossImage, alpha: 0.4, duration: 300 });
@@ -1720,7 +1722,9 @@ class BossScene extends Phaser.Scene {
               this.showDeviceDialogue(text, res);
             });
             const sayEnemyUnknown = (text, tex = null, speaker = '男') => new Promise(res => {
-              [dimBg, enemyFrame, enemyLabel, bossImage, sisterImage, this.heroImage].filter(Boolean).forEach(t => t.setVisible(true));
+              [dimBg, bossImage, sisterImage, this.heroImage].filter(Boolean).forEach(t => t.setVisible(true));
+              if (!bossImage) { if (enemyFrame) enemyFrame.setVisible(true); if (enemyLabel) enemyLabel.setVisible(true); }
+              else { if (enemyFrame) enemyFrame.setVisible(false); if (enemyLabel) enemyLabel.setVisible(false); }
               lastEnemySpeaker = speaker;
               let useTex = tex;
               if (useTex === null) {
@@ -1744,13 +1748,15 @@ class BossScene extends Phaser.Scene {
                 }
                 if(sisterImage) { this.tweens.add({targets: sisterImage, alpha: 0.4, duration: 300}); sisterImage.setDepth(90); }
               }
-              if (bossImage) bossImage.setTintFill(0x000000);
-              if (sisterImage) sisterImage.setTintFill(0x000000);
+              if (bossImage) bossImage.setTintFill(0x444455);
+              if (sisterImage) sisterImage.setTintFill(0x444455);
               this.tweens.add({targets: this.heroImage, alpha: 0.4, duration: 300});
               this.showDialogue('???', text, res);
             });
             const sayEnemyName = (name, text, tex = null) => new Promise(res => {
-              [dimBg, enemyFrame, enemyLabel, bossImage, sisterImage, this.heroImage].filter(Boolean).forEach(t => t.setVisible(true));
+              [dimBg, bossImage, sisterImage, this.heroImage].filter(Boolean).forEach(t => t.setVisible(true));
+              if (!bossImage) { if (enemyFrame) enemyFrame.setVisible(true); if (enemyLabel) enemyLabel.setVisible(true); }
+              else { if (enemyFrame) enemyFrame.setVisible(false); if (enemyLabel) enemyLabel.setVisible(false); }
               if (name === '女' || name === '男') lastEnemySpeaker = name;
               let useTex = tex;
               if (useTex === null) {
@@ -1781,7 +1787,9 @@ class BossScene extends Phaser.Scene {
               this.showDialogue(name, text, res);
             });
             const sayInuneko = (text, tex = 'inuneko_stand') => new Promise(res => {
-      [dimBg, enemyFrame, enemyLabel, bossImage, sisterImage, this.heroImage, this.demonImage, this.inunekoImage].filter(Boolean).forEach(t => t.setVisible(true));
+      [dimBg, bossImage, sisterImage, this.heroImage, this.demonImage, this.inunekoImage].filter(Boolean).forEach(t => t.setVisible(true));
+      if (!bossImage) { if (enemyFrame) enemyFrame.setVisible(true); if (enemyLabel) enemyLabel.setVisible(true); }
+      else { if (enemyFrame) enemyFrame.setVisible(false); if (enemyLabel) enemyLabel.setVisible(false); }
       this.tweens.add({ targets: dimBg, alpha: 0.6, duration: 300 });
       this.tweens.add({ targets: this.heroImage, alpha: 0.4, duration: 300 });
       if(this.demonImage) this.tweens.add({ targets: this.demonImage, alpha: 0.4, duration: 300 });
@@ -1793,7 +1801,9 @@ class BossScene extends Phaser.Scene {
     });
 
     const sayHero = (text) => new Promise(res => {
-      [dimBg, enemyFrame, enemyLabel, bossImage, sisterImage, this.heroImage].filter(Boolean).forEach(t => t.setVisible(true));
+      [dimBg, bossImage, sisterImage, this.heroImage].filter(Boolean).forEach(t => t.setVisible(true));
+      if (!bossImage) { if (enemyFrame) enemyFrame.setVisible(true); if (enemyLabel) enemyLabel.setVisible(true); }
+      else { if (enemyFrame) enemyFrame.setVisible(false); if (enemyLabel) enemyLabel.setVisible(false); }
       this.tweens.add({ targets: dimBg, alpha: 0.6, duration: 300 });
       this.tweens.add({targets: this.heroImage, alpha: 1, duration: 300});
       if (bossImage) this.tweens.add({ targets: bossImage, alpha: 0.4, duration: 300 });

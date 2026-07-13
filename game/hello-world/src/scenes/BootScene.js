@@ -92,6 +92,7 @@ class BootScene extends Phaser.Scene {
     this.load.image('boss1_dying', 'assets/images/boss1_hurt_normal.png?v=' + v);
     this.load.image('boss1_sweat', 'assets/images/boss1_sweat.png?v=' + v);
     this.load.image('boss1_hurt_angry', 'assets/images/boss1_hurt_angry.png?v=' + v);
+    this.load.image('boss1_combat', 'assets/images/boss1_combat.png?v=' + v);
     this.load.image('boss2_combat', 'assets/images/boss2_combat.jpg?v=' + v);
     this.load.image('boss2_normal', 'assets/images/boss2_normal.png?v=' + v);
     this.load.image('boss2_normal_dying', 'assets/images/boss2_normal_dying.png?v=' + v);
