@@ -38,12 +38,6 @@ class BootScene extends Phaser.Scene {
     // All real textures are generated procedurally in create()
     this.load.image('_placeholder', 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==');
 
-    // 幹部1筋肉（添付画像）
-    this.load.image('boss1_muscle', window.BOSS1_B64);
-    
-    // 幹部2戦闘狂（添付画像）
-    this.load.image('boss2_combat', window.BOSS2_B64);
-    
     // 博士の顔アイコン (assets/images から読み込むためBase64は削除)
 
     const v = window.GAME_VERSION || 'v1';
@@ -57,8 +51,7 @@ class BootScene extends Phaser.Scene {
     this.load.image('doctor_stand', 'assets/images/doctor_normal.png?v=' + v);
     this.load.image('doctor_stand_open', 'assets/images/doctor_open_eyes.png?v=' + v);
     
-    // 主人公の立ち絵
-    this.load.image('hero_stand', window.HERO_STAND_B64);
+    // 主人公の立ち絵は以下で読み込みます
     
     // 主人公の戦闘時・他者との会話時の立ち絵
     this.load.spritesheet('hero_stand_combat', 'assets/images/hero_combat_sheet.png?v=' + v, {
@@ -71,7 +64,7 @@ class BootScene extends Phaser.Scene {
     });
 
     // 主人公の瞬き（表情切り替え用）
-    this.load.image('hero_stand_blink', window.HERO_STAND_BLINK_B64);
+    this.load.image('hero_stand_blink', 'assets/images/hero_stand_blink.png?v=' + v);
     this.load.image('hero_stand', 'assets/images/hero_stand.png?v=' + v);
     this.load.image('hero_stand_silent', 'assets/images/hero_stand_silent.png?v=' + v);
     this.load.image('hero_stand_corrupted', 'assets/images/hero_stand_corrupted.png?v=' + v);
@@ -138,23 +131,17 @@ class BootScene extends Phaser.Scene {
     this.load.image('icon_battery', 'assets/images/icon_battery.png?v=' + v);
 
     // Title background (Hello World)
-    this.load.image('title_bg', window.TITLE_BG_B64);
+    this.load.image('title_bg', 'assets/images/title_bg.png?v=' + v);
     
     // Title 1X assets
-    this.load.image('title_1x_back', window.TITLE_1X_BACK_B64);
-    this.load.image('title_1x_number', window.TITLE_1X_NUMBER_B64);
-    if (typeof window.TITLE_1X_HELLO_WORLD_B64 !== 'undefined') {
-      this.load.image('title_1x_hello_world', window.TITLE_1X_HELLO_WORLD_B64);
-    }
-    if (typeof window.TITLE_1X_BARIA_B64 !== 'undefined') {
-      this.load.image('title_1x_baria', window.TITLE_1X_BARIA_B64);
-    }
-    if (typeof window.GAME_OVER_IMG_B64 !== 'undefined') {
-      this.load.image('game_over_img', window.GAME_OVER_IMG_B64);
-    }
+    this.load.image('title_1x_back', 'assets/images/title_1x_back.png?v=' + v);
+    this.load.image('title_1x_number', 'assets/images/title_1x_number.png?v=' + v);
+    this.load.image('title_1x_hello_world', 'assets/images/title_1x_hello_world.png?v=' + v);
+    this.load.image('title_1x_baria', 'assets/images/title_1x_baria.png?v=' + v);
+    this.load.image('game_over_img', 'assets/images/game_over_img.png?v=' + v);
     
     // Title background (Glitch)
-    this.load.image('title_bg_glitch', window.TITLE_BG_GLITCH_B64);
+    this.load.image('title_bg_glitch', 'assets/images/title_bg_glitch.png?v=' + v);
     
     // 強制シャットダウン用タイトル画像
     this.load.image('404_bg', 'assets/images/404_bg.png?v=' + v);
