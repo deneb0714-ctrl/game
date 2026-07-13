@@ -1748,8 +1748,8 @@ class BossScene extends Phaser.Scene {
                 }
                 if(sisterImage) { this.tweens.add({targets: sisterImage, alpha: 0.4, duration: 300}); sisterImage.setDepth(90); }
               }
-              if (bossImage) bossImage.setTintFill(0x444455);
-              if (sisterImage) sisterImage.setTintFill(0x444455);
+              if (bossImage) bossImage.setTintFill(0x444444);
+              if (sisterImage) sisterImage.setTintFill(0x444444);
               this.tweens.add({targets: this.heroImage, alpha: 0.4, duration: 300});
               this.showDialogue('???', text, res);
             });
