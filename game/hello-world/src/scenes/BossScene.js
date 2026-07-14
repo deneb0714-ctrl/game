@@ -77,8 +77,14 @@ class BossScene extends Phaser.Scene {
     if (this.currentBossIndex === 1) bgKey = 'bg_boss_stage3';
     else if (this.currentBossIndex === 2) bgKey = 'bg_boss_stage4';
     else if (this.currentBossIndex === 3) bgKey = 'bg_boss_stage5';
-    this.bg = this.add.image(0, 0, bgKey).setOrigin(0, 0);
-    this.bg.setScale(4);
+    if (this.currentBossIndex === 0 && this.textures.exists('bg_boss1_static') && this.textures.get('bg_boss1_static').key !== '__MISSING') {
+      this.bg = this.add.image(w / 2, h / 2, 'bg_boss1_static').setOrigin(0.5, 0.5);
+      let scale = Math.max(1920 / this.bg.width, 1080 / this.bg.height);
+      this.bg.setScale(scale);
+    } else {
+      this.bg = this.add.image(0, 0, bgKey).setOrigin(0, 0);
+      this.bg.setScale(4);
+    }
 
     // Groups
     this.playerBullets = this.physics.add.group({ maxSize: 500 });

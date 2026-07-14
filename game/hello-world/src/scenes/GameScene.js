@@ -50,14 +50,24 @@ class GameScene extends Phaser.Scene {
 
     // Background (scrolling)
     let bgKey = 'bg_stage1';
-    if (this.currentStage >= 2 && this.currentStage <= 5) {
-      bgKey = 'bg_stage' + this.currentStage;
-    }
-    this.bg1 = this.add.image(0, 0, bgKey).setOrigin(0, 0).setScale(4);
-    this.bg2 = this.add.image(w, 0, bgKey).setOrigin(0, 0).setScale(4);
+    if (this.currentStage === 2) bgKey = 'bg_stage2';
+    if (this.currentStage === 3) bgKey = 'bg_stage3';
+    if (this.currentStage === 4) bgKey = 'bg_stage4';
 
-    // Groups
-    this.playerBullets = this.physics.add.group({ maxSize: 500, runChildUpdate: true });
+    this.bgWidth = 1920;
+    if (this.currentStage === 1 && this.textures.exists('bg_stage1_scroll') && this.textures.get('bg_stage1_scroll').key !== '__MISSING') {
+      this.bg1 = this.add.image(0, 0, 'bg_stage1_scroll').setOrigin(0, 0).setDepth(0);
+      let scale = 1080 / this.bg1.height;
+      this.bg1.setScale(scale);
+      this.bgWidth = this.bg1.width * scale;
+      this.bg2 = this.add.image(this.bgWidth, 0, 'bg_stage1_scroll').setOrigin(0, 0).setDepth(0);
+      this.bg2.setScale(scale);
+    } else {
+      this.bg1 = this.add.image(0, 0, bgKey).setOrigin(0, 0).setDepth(0);
+      this.bg1.setScale(1920 / 480);
+      this.bg2 = this.add.image(1920, 0, bgKey).setOrigin(0, 0).setDepth(0);
+      this.bg2.setScale(1920 / 480);
+    }  this.playerBullets = this.physics.add.group({ maxSize: 500, runChildUpdate: true });
     this.enemyBullets = this.physics.add.group({ maxSize: 1000, runChildUpdate: true });
     this.enemyGroup = this.physics.add.group();
     this.itemGroup = this.physics.add.group();
@@ -203,8 +213,8 @@ class GameScene extends Phaser.Scene {
     const scrollSpeed = 2;
     this.bg1.x -= scrollSpeed;
     this.bg2.x -= scrollSpeed;
-    if (this.bg1.x <= -1920) this.bg1.x = this.bg2.x + 1920;
-    if (this.bg2.x <= -1920) this.bg2.x = this.bg1.x + 1920;
+    if (this.bg1.x <= -this.bgWidth) this.bg1.x = this.bg2.x + this.bgWidth;
+    if (this.bg2.x <= -this.bgWidth) this.bg2.x = this.bg1.x + this.bgWidth;
 
     // Player movement (keyboard)
     MOT.handleMovement(this, this.player);
@@ -1081,11 +1091,12 @@ class GameScene extends Phaser.Scene {
     } else if (this.tutorialPhase === 3) {
       this.tutorialPhase = 3.1;
       
-      for(let i=0; i<3; i++) {
-        let e = this.spawnTutorialEnemy(i, 0);
-        e.x = 1300 + Phaser.Math.Between(0, 100);
+      for(let i=0; i<15; i++) {
+        let laneIndex = Phaser.Math.Between(0, 2);
+        let e = this.spawnTutorialEnemy(laneIndex, 120 + Phaser.Math.Between(-20, 20));
+        e.x = 1300 + (i * 250) + Phaser.Math.Between(0, 50);
         e.tutorialDrop = true;
-        e.tutorialRed = (i === 1);
+        e.tutorialRed = (i % 3 === 0);
       }
       
       this.time.delayedCall(500, () => {
