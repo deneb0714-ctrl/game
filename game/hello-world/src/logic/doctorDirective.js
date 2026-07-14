@@ -87,6 +87,7 @@ MOT.DoctorDirective = {
     var scaleRatio = 750 / face.height; 
     face.setScale(scaleRatio);
     var maskShape = scene.make.graphics();
+    this.currentMaskShape = maskShape;
     maskShape.fillStyle(0xffffff);
     maskShape.fillCircle(140, boxY + 100, 75);
     var mask = maskShape.createGeometryMask();
@@ -147,7 +148,13 @@ MOT.DoctorDirective = {
       var c = this.directiveContainer;
       scene.tweens.add({
         targets: c, alpha: 0, duration: 400,
-        onComplete: function() { if (c) c.destroy(); }
+        onComplete: () => { 
+          if (c) c.destroy(); 
+          if (this.currentMaskShape) {
+            this.currentMaskShape.destroy();
+            this.currentMaskShape = null;
+          }
+        }
       });
       this.directiveContainer = null;
     }
@@ -206,6 +213,10 @@ MOT.DoctorDirective = {
         this.directiveContainer.destroy();
         this.directiveContainer = null;
       }
+      if (this.currentMaskShape) {
+        this.currentMaskShape.destroy();
+        this.currentMaskShape = null;
+      }
       this.currentDirective = null;
       this.isWaiting = true;
       this.waitTimer = 0;
@@ -250,6 +261,10 @@ MOT.DoctorDirective = {
     if (this.directiveContainer) {
       this.directiveContainer.destroy();
       this.directiveContainer = null;
+    }
+    if (this.currentMaskShape) {
+      this.currentMaskShape.destroy();
+      this.currentMaskShape = null;
     }
     this.currentDirective = null;
   }
