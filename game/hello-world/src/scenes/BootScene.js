@@ -95,6 +95,7 @@ class BootScene extends Phaser.Scene {
     this.load.image('boss1_combat', 'assets/images/boss1_combat.jpg?v=' + v);
     this.load.image('boss2_combat', 'assets/images/boss2_combat.jpg?v=' + v);
     this.load.spritesheet('boss2_battle_anim', 'assets/images/boss2_battle.png?v=' + v, { frameWidth: 543, frameHeight: 560 });
+    this.load.spritesheet('boss3_battle_anim', 'assets/images/boss3_battle.png?v=' + v, { frameWidth: 560, frameHeight: 533 });
     this.load.image('boss2_normal', 'assets/images/boss2_normal.png?v=' + v);
     this.load.image('boss2_normal_dying', 'assets/images/boss2_normal_dying.png?v=' + v);
     this.load.image('boss2_angry', 'assets/images/boss2_angry.png?v=' + v);
@@ -170,6 +171,13 @@ class BootScene extends Phaser.Scene {
     });
 
     this.anims.create({
+      key: 'boss3_battle_play',
+      frames: this.anims.generateFrameNumbers('boss3_battle_anim', { start: 0, end: 19 }),
+      frameRate: 15,
+      repeat: -1
+    });
+
+    this.anims.create({
       key: 'hero_combat_anim',
       frames: this.anims.generateFrameNumbers('hero_stand_combat', { start: 0, end: 59 }),
       frameRate: 15,
@@ -205,7 +213,6 @@ class BootScene extends Phaser.Scene {
     this.makeEnemyBasic();
     this.makeMinion1();
     this.makeBoss1();
-    this.makeBoss3();
     this.makeBoss3Sister();
     this.makeWingLeft();
     this.makeWingRight();
@@ -308,28 +315,6 @@ class BootScene extends Phaser.Scene {
   }
 
 
-
-  // --- Boss3 (三男, 冷静) ---
-  makeBoss3() {
-    const g = this.make.graphics({ add: false });
-    const s = 4;
-    const data = [
-      '..IIII..',
-      '.IIIIII.',
-      'IIWIIIWI',
-      'IIIIIIII',
-      '.IIIIII.',
-      '.IIIIII.',
-      'IIDDDDII',
-      'IIDDDDII',
-      '.II..II.',
-      '.II..II.',
-    ];
-    const colors = { 'I': 0x334466, 'D': 0x2a2a4a, 'W': 0x99ddff, '.': -1 };
-    this.drawPixelArt(g, data, colors, s, 0, 0);
-    g.generateTexture('boss3', 32, 40);
-    g.destroy();
-  }
 
   // --- Boss 3 Sister (赤・ピンク系) ---
   makeBoss3Sister() {

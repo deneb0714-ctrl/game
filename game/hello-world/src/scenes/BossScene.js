@@ -231,7 +231,7 @@ class BossScene extends Phaser.Scene {
         ]
       },
       boss3_twins: {
-        texture: 'boss3', name: '男（兄）', hp: 50, scale: 3,
+        texture: 'boss3_battle_anim', name: '男（兄）', hp: 50, scale: 0.25,
         texture2: 'boss3_sister', name2: '女（妹）', hp2: 50, scale2: 3,
         // Intro and defeat are handled custom via playTwinsIntro and post-battle logic
       },
@@ -270,6 +270,7 @@ class BossScene extends Phaser.Scene {
     var boss = this.physics.add.sprite(1920, 460, cfg.texture);
     if (key === 'demon_lord') boss.play('demon_combat_anim');
     if (key === 'boss2') boss.play('boss2_battle_play');
+    if (key === 'boss3_twins') boss.play('boss3_battle_play');
     boss.setScale(cfg.scale);
     boss.setDepth(8);
     this.enemyGroup.add(boss);
@@ -1561,7 +1562,8 @@ class BossScene extends Phaser.Scene {
         }
         this.assistDialog = this.add.rectangle(w / 2, h - 80, 1200, 120, 0x0a0a14).setStrokeStyle(4, 0x4FD1FF).setDepth(200);
         this.assistText = this.add.text(w / 2 - 400, h - 110, '兄「勝手に死なれると妹が悲しむからな…立て！」\n【効果：HP1で復活】', { fontFamily: '"DotGothic16"', fontSize: '28px', color: '#fff', wordWrap: { width: 900 } }).setOrigin(0, 0).setDepth(201);
-        this.assistImage = this.add.image(w / 2 - 500, h - 80, 'boss3').setScale(1.5).setDepth(201);
+        this.assistImage = this.add.sprite(w / 2 - 500, h - 80, 'boss3_battle_anim').setScale(0.25).setDepth(201);
+        this.assistImage.play('boss3_battle_play');
         
         this.time.delayedCall(3000, () => {
           if (this.assistDialog) {
