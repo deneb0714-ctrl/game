@@ -44,7 +44,9 @@ class GameScene extends Phaser.Scene {
     });
 
     this.stageBgm = this.sound.add('bgm_stage', { loop: true, volume: 0.15 });
-    this.stageBgm.play();
+    if (this.currentStage > 1) {
+      this.stageBgm.play();
+    }
 
     const w = 1920, h = 1080;
 
@@ -167,11 +169,11 @@ class GameScene extends Phaser.Scene {
       return [];
     } else if (this.currentStage === 2) {
       return [
-        { time: 2000, action: 'wave', count: 15, speed: 200 },
-        { time: 6000, action: 'wave', count: 20, speed: 220 },
+        { time: 2000, action: 'wave', count: 6, speed: 200 },
+        { time: 6000, action: 'wave', count: 8, speed: 220 },
         { time: 10000, action: 'items' },
-        { time: 12000, action: 'wave', count: 25, speed: 250 },
-        { time: 17000, action: 'wave', count: 30, speed: 260 },
+        { time: 12000, action: 'wave', count: 10, speed: 250 },
+        { time: 17000, action: 'wave', count: 12, speed: 260 },
         { time: 22000, action: 'items' },
         { time: 25000, action: 'stage_end' }
       ];

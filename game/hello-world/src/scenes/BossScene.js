@@ -435,23 +435,32 @@ class BossScene extends Phaser.Scene {
     } else {
          // Minion phase
          this.minionBattleActive = true;
-         this.minionsToKill = 3;
-         var laneYs = [220, 460, 700];
-         for(let i = 0; i < 3; i++) {
-           this.time.delayedCall(1000 + i * 800, () => {
-             var e = this.enemyGroup.create(1920 + 50, laneYs[Phaser.Math.Between(0, 2)], 'enemy_basic');
-             e.setVelocityX(-200);
-             e.hp = (key === 'boss3_twins') ? 2 : 3;
-             e.isScenarioMinion = true;
-             this.tweens.add({
-               targets: e, y: e.y + Phaser.Math.Between(-40, 40),
-               yoyo: true, repeat: -1, duration: 900, ease: 'Sine.easeInOut'
-             });
-             e.fireTimer = this.time.addEvent({
-               delay: 1500, callback: () => { if (e.active) { let b = MOT.fireLinear(this, e.x, e.y, -300, 0); if(b) b.shooter = e; } }, loop: true, callbackScope: this
-             });
-             e.on('destroy', () => { if (e.fireTimer) e.fireTimer.destroy(); });
-           }, [], this);
+         if (key === 'boss1') {
+           this.minionsToKill = 1;
+           this.time.delayedCall(100, () => {
+             var dummy = this.enemyGroup.create(-1000, -1000, 'enemy_basic');
+             dummy.isScenarioMinion = true;
+             this.onBossHit({ active: true, damage: 9999, silent: true, destroy: () => {} }, dummy);
+           });
+         } else {
+           this.minionsToKill = 3;
+           var laneYs = [220, 460, 700];
+           for(let i = 0; i < 3; i++) {
+             this.time.delayedCall(1000 + i * 800, () => {
+               var e = this.enemyGroup.create(1920 + 50, laneYs[Phaser.Math.Between(0, 2)], 'enemy_basic');
+               e.setVelocityX(-200);
+               e.hp = (key === 'boss3_twins') ? 2 : 3;
+               e.isScenarioMinion = true;
+               this.tweens.add({
+                 targets: e, y: e.y + Phaser.Math.Between(-40, 40),
+                 yoyo: true, repeat: -1, duration: 900, ease: 'Sine.easeInOut'
+               });
+               e.fireTimer = this.time.addEvent({
+                 delay: 1500, callback: () => { if (e.active) { let b = MOT.fireLinear(this, e.x, e.y, -300, 0); if(b) b.shooter = e; } }, loop: true, callbackScope: this
+               });
+               e.on('destroy', () => { if (e.fireTimer) e.fireTimer.destroy(); });
+             }, [], this);
+           }
          }
       }
   }
