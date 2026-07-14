@@ -60,6 +60,11 @@ class BossScene extends Phaser.Scene {
     this.iconBatteryBg = null;
     this.iconBatteryFill = null;
     this.intentText = null;
+    this.events.on('shutdown', () => {
+      if (this.boss1Bgm) this.boss1Bgm.stop();
+      if (this.boss2Bgm) this.boss2Bgm.stop();
+      if (this.twinsBgm) this.twinsBgm.stop();
+    });
   }
 
   create() {
@@ -1884,6 +1889,14 @@ class BossScene extends Phaser.Scene {
               this.dialogActive = false;
               this.physics.resume();
               this.startBossLaneMovement();
+              if (key === 'boss1') {
+                this.boss1Bgm = this.sound.add('boss1_bgm', { loop: true, volume: 0.2 });
+                this.boss1Bgm.play();
+              }
+              if (key === 'boss2') {
+                this.boss2Bgm = this.sound.add('boss2_bgm', { loop: true, volume: 0.2 });
+                this.boss2Bgm.play();
+              }
               if (key === 'boss3_twins') {
                 this.startSisterLaneMovement();
                 this.twinsBgm = this.sound.add('twins_bgm', { loop: true, volume: 0.2 });
@@ -3197,6 +3210,9 @@ class BossScene extends Phaser.Scene {
                            if(bossImage) bossImage.destroy();
                            if(enemyFrame) enemyFrame.destroy();
                            if(enemyLabel) enemyLabel.destroy();
+                           if(this.boss1Bgm) this.boss1Bgm.stop();
+                           if(this.boss2Bgm) this.boss2Bgm.stop();
+                           if(this.twinsBgm) this.twinsBgm.stop();
                            this.proceedToNextArea(boss, isSpared);
                         }
                       });
