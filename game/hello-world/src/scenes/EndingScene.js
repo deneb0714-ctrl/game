@@ -7,6 +7,7 @@ class EndingScene extends Phaser.Scene {
   }
 
   create() {
+    this.sound.stopAll();
     var w = 1920, h = 1080;
     var endingKey = MOT.flags.finalEnding || MOT.decideEnding().key;
     var ending = MOT.ENDINGS[endingKey] || MOT.ENDINGS.normal_daily;

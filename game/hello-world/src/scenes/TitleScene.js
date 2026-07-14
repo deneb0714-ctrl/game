@@ -7,6 +7,7 @@ class TitleScene extends Phaser.Scene {
   }
 
   create() {
+    this.sound.stopAll();
     const w = this.cameras.main.width;
     const h = this.cameras.main.height;
 
