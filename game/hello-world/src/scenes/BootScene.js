@@ -158,7 +158,7 @@ class BootScene extends Phaser.Scene {
     });
     
     // Custom Backgrounds
-    this.load.image('bg_stage1_scroll', 'assets/images/bg_stage1_scroll.png?v=' + v);
+    this.load.image('bg_stage1_scroll', 'assets/images/bg_stage1_scroll.jpg?v=' + v);
     this.load.image('bg_boss1_static', 'assets/images/bg_boss1_static.png?v=' + v);
     
     this.load.image('bg_lab', 'assets/bg_lab.png');
