@@ -68,6 +68,7 @@ class BossScene extends Phaser.Scene {
   }
 
   create() {
+    this.sound.stopAll();
     this.events.on('shutdown', () => {
       if (this.twinsBgm) this.twinsBgm.stop();
     });
@@ -77,6 +78,7 @@ class BossScene extends Phaser.Scene {
     else if (this.currentBossIndex === 2) bgKey = 'bg_boss_stage4';
     else if (this.currentBossIndex === 3) bgKey = 'bg_boss_stage5';
     this.bg = this.add.image(0, 0, bgKey).setOrigin(0, 0);
+    this.bg.setScale(4);
 
     // Groups
     this.playerBullets = this.physics.add.group({ maxSize: 500 });

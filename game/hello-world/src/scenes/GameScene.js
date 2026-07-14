@@ -53,8 +53,8 @@ class GameScene extends Phaser.Scene {
     if (this.currentStage >= 2 && this.currentStage <= 5) {
       bgKey = 'bg_stage' + this.currentStage;
     }
-    this.bg1 = this.add.image(0, 0, bgKey).setOrigin(0, 0);
-    this.bg2 = this.add.image(w, 0, bgKey).setOrigin(0, 0);
+    this.bg1 = this.add.image(0, 0, bgKey).setOrigin(0, 0).setScale(4);
+    this.bg2 = this.add.image(w, 0, bgKey).setOrigin(0, 0).setScale(4);
 
     // Groups
     this.playerBullets = this.physics.add.group({ maxSize: 500, runChildUpdate: true });

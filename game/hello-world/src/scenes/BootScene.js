@@ -571,45 +571,48 @@ class BootScene extends Phaser.Scene {
 
   // --- Scrolling backgrounds ---
   makeBackgrounds() {
+    const w = 480;
+    const h = 270;
+
     // Stage 1: Lab / Wasteland (dark blue with grid lines)
     const g1 = this.make.graphics({ add: false });
     g1.fillStyle(0x050814, 1);
-    g1.fillRect(0, 0, 1920, 1080);
+    g1.fillRect(0, 0, 480, 270);
     // Grid
-    g1.lineStyle(1, 0x0a1428, 0.5);
-    for (let x = 0; x < 1920; x += 64) { g1.lineBetween(x, 0, x, 1080); }
-    for (let y = 0; y < 1080; y += 64) { g1.lineBetween(0, y, 1920, y); }
+    g1.lineStyle(2, 0x0a1428, 0.5);
+    for (let x = 0; x <= 480; x += 16) { g1.lineBetween(x, 0, x, 270); }
+    for (let y = 0; y <= 270; y += 16) { g1.lineBetween(0, y, 480, y); }
     // Machinery
     g1.fillStyle(0x1F2933, 0.8);
     for (let i = 0; i < 8; i++) {
-      const rx = Phaser.Math.Between(100, 1800);
-      const ry = Phaser.Math.Between(100, 980);
-      g1.fillRect(rx, ry, Phaser.Math.Between(30, 80), Phaser.Math.Between(20, 60));
+      const rx = Phaser.Math.Between(25, 450);
+      const ry = Phaser.Math.Between(25, 245);
+      g1.fillRect(rx, ry, Phaser.Math.Between(7, 20), Phaser.Math.Between(5, 15));
     }
     // Accent lights
-    g1.fillStyle(0x4FD1FF, 0.3);
+    g1.fillStyle(0x4FD1FF, 0.8);
     for (let i = 0; i < 12; i++) {
-      g1.fillCircle(Phaser.Math.Between(0, 1920), Phaser.Math.Between(0, 1080), Phaser.Math.Between(2, 5));
+      g1.fillCircle(Phaser.Math.Between(0, 480), Phaser.Math.Between(0, 270), Phaser.Math.Between(1, 2));
     }
-    g1.generateTexture('bg_stage1', 1920, 1080);
+    g1.generateTexture('bg_stage1', w, h);
     g1.destroy();
 
     // Stage 2: Road to Demon Castle (Yellow/Orange) - Outside
     const g2 = this.make.graphics({ add: false });
     g2.fillStyle(0x1a1500, 1);
-    g2.fillRect(0, 0, 1920, 1080);
+    g2.fillRect(0, 0, 480, 270);
     // Mountains silhouette
     g2.fillStyle(0x332600, 1);
-    for (let x = 0; x < 1920; x += 120) {
-      const h = Phaser.Math.Between(200, 500);
-      g2.fillTriangle(x, 1080, x + 60, 1080 - h, x + 120, 1080);
+    for (let x = 0; x < 480; x += 30) {
+      const h_mtn = Phaser.Math.Between(50, 125);
+      g2.fillTriangle(x, 270, x + 15, 270 - h_mtn, x + 30, 270);
     }
     // Stars
-    g2.fillStyle(0xE5E7EB, 0.6);
+    g2.fillStyle(0xE5E7EB, 0.8);
     for (let i = 0; i < 50; i++) {
-      g2.fillCircle(Phaser.Math.Between(0, 1920), Phaser.Math.Between(0, 600), 1);
+      g2.fillCircle(Phaser.Math.Between(0, 480), Phaser.Math.Between(0, 150), 1);
     }
-    g2.generateTexture('bg_stage2', 1920, 1080);
+    g2.generateTexture('bg_stage2', w, h);
     g2.destroy();
 
     // Boss stages: Inside Demon Castle (Throne room style with different colors)
@@ -623,20 +626,20 @@ class BootScene extends Phaser.Scene {
     bossColors.forEach(bc => {
       const g3 = this.make.graphics({ add: false });
       g3.fillStyle(bc.bg, 1);
-      g3.fillRect(0, 0, 1920, 1080);
+      g3.fillRect(0, 0, 480, 270);
       // Columns
       g3.fillStyle(bc.column, 1);
-      for (let x = 200; x < 1920; x += 400) {
-        g3.fillRect(x, 100, 40, 880);
-        g3.fillRect(x - 10, 80, 60, 30);
-        g3.fillRect(x - 10, 980, 60, 30);
+      for (let x = 50; x < 480; x += 100) {
+        g3.fillRect(x, 25, 10, 220);
+        g3.fillRect(x - 2, 20, 14, 8);
+        g3.fillRect(x - 2, 245, 14, 8);
       }
       // Dark vortex center
       g3.fillStyle(bc.vortex, 0.08);
-      g3.fillCircle(960, 540, 300);
+      g3.fillCircle(240, 135, 75);
       g3.fillStyle(bc.vortex, 0.05);
-      g3.fillCircle(960, 540, 450);
-      g3.generateTexture(bc.key, 1920, 1080);
+      g3.fillCircle(240, 135, 112);
+      g3.generateTexture(bc.key, w, h);
       g3.destroy();
     });
   }
