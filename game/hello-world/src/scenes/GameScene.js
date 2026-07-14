@@ -42,7 +42,7 @@ class GameScene extends Phaser.Scene {
       if (this.stageBgm) this.stageBgm.stop();
     });
 
-    this.stageBgm = this.sound.add('bgm_stage', { loop: true, volume: 0.4 });
+    this.stageBgm = this.sound.add('bgm_stage', { loop: true, volume: 0.15 });
     this.stageBgm.play();
 
     const w = 1920, h = 1080;

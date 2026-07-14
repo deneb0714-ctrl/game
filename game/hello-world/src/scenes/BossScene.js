@@ -1886,7 +1886,7 @@ class BossScene extends Phaser.Scene {
               this.startBossLaneMovement();
               if (key === 'boss3_twins') {
                 this.startSisterLaneMovement();
-                this.twinsBgm = this.sound.add('twins_bgm', { loop: true, volume: 0.5 });
+                this.twinsBgm = this.sound.add('twins_bgm', { loop: true, volume: 0.2 });
                 this.twinsBgm.play();
               }
             })();
