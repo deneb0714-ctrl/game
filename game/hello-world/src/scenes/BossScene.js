@@ -1904,6 +1904,10 @@ class BossScene extends Phaser.Scene {
                 this.twinsBgm = this.sound.add('twins_bgm', { loop: true, volume: 0.2 });
                 this.twinsBgm.play();
               }
+              if (key === 'demon_lord') {
+                this.boss4Bgm = this.sound.add('bgm_stage', { loop: true, volume: 0.15 });
+                this.boss4Bgm.play();
+              }
             })();
           }
 } else {
@@ -1974,6 +1978,9 @@ class BossScene extends Phaser.Scene {
 
     if (this.bossHP <= 0 && !this.bossDefeated) {
       this.bossDefeated = true; // Prevent multiple triggers
+      if (this.boss1Bgm) this.boss1Bgm.stop();
+      if (this.boss2Bgm) this.boss2Bgm.stop();
+      if (this.boss4Bgm) this.boss4Bgm.stop();
       this.dialogActive = true;
       this.physics.pause();
       if (this.bossLaneTimer) {
