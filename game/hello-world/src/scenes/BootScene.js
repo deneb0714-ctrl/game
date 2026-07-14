@@ -94,6 +94,7 @@ class BootScene extends Phaser.Scene {
     this.load.image('boss1_hurt_angry', 'assets/images/boss1_hurt_angry.png?v=' + v);
     this.load.image('boss1_combat', 'assets/images/boss1_combat.jpg?v=' + v);
     this.load.image('boss2_combat', 'assets/images/boss2_combat.jpg?v=' + v);
+    this.load.spritesheet('boss2_battle_anim', 'assets/images/boss2_battle.png?v=' + v, { frameWidth: 543, frameHeight: 560 });
     this.load.image('boss2_normal', 'assets/images/boss2_normal.png?v=' + v);
     this.load.image('boss2_normal_dying', 'assets/images/boss2_normal_dying.png?v=' + v);
     this.load.image('boss2_angry', 'assets/images/boss2_angry.png?v=' + v);
@@ -160,6 +161,20 @@ class BootScene extends Phaser.Scene {
     this.generateAllTextures();
     
     // アニメーションの作成
+    this.anims.create({
+      key: 'inuneko_anim',
+      frames: this.anims.generateFrameNumbers('inuneko', { start: 0, end: 1 }),
+      frameRate: 4,
+      repeat: -1
+    });
+
+    this.anims.create({
+      key: 'boss2_battle_play',
+      frames: this.anims.generateFrameNumbers('boss2_battle_anim', { start: 0, end: 28 }),
+      frameRate: 15,
+      repeat: -1
+    });
+
     this.anims.create({
       key: 'hero_combat_anim',
       frames: this.anims.generateFrameNumbers('hero_stand_combat', { start: 0, end: 59 }),

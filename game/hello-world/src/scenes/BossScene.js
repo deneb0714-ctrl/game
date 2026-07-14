@@ -222,7 +222,7 @@ class BossScene extends Phaser.Scene {
         ]
       },
       boss2: {
-        texture: 'boss2_combat', name: '幹部2 – 戦闘狂', hp: 35, scale: 0.15,
+        texture: 'boss2_battle_anim', name: '幹部2 – 戦闘狂', hp: 35, scale: 0.3,
         intro: '「ヒャハハ！ 踊れ踊れぇ！！\n俺の双銃から逃げられるかなぁ！？」',
         defeat: '「アハハハハ…最高にイカれた気分だぜ…」',
         choices: [
@@ -269,6 +269,7 @@ class BossScene extends Phaser.Scene {
     // Spawn boss (hidden initially)
     var boss = this.physics.add.sprite(1920, 460, cfg.texture);
     if (key === 'demon_lord') boss.play('demon_combat_anim');
+    if (key === 'boss2') boss.play('boss2_battle_play');
     boss.setScale(cfg.scale);
     boss.setDepth(8);
     this.enemyGroup.add(boss);
@@ -4013,7 +4014,7 @@ class BossScene extends Phaser.Scene {
         this.barrierVisual.setDepth(9);
       }
     } else if (chosen === 'boss2') {
-      tex = 'boss2_combat';
+      tex = 'boss2_battle_anim';
       msg = '戦闘狂「もっと速く、もっと激しく撃ちまくれぇ！！」\n【効果：連射速度超UP】';
       this.heroAttackSpeedBoost = true;
       this.time.delayedCall(8000, () => { this.heroAttackSpeedBoost = false; });
@@ -4024,10 +4025,14 @@ class BossScene extends Phaser.Scene {
       this.time.delayedCall(8000, () => { this.heroFirepowerBoost = false; });
     }
     
-    this.assistImage = this.add.image(w / 2 - 500, h - 80, tex).setScale(0.15).setDepth(201);
-    // boss3_sister scale correction
+    this.assistImage = this.add.sprite(w / 2 - 500, h - 80, tex).setScale(0.15).setDepth(201);
+    // scale and animation correction
     if (chosen === 'twins') this.assistImage.setScale(1.5);
     else if (chosen === 'demon') this.assistImage.setScale(0.25);
+    else if (chosen === 'boss2') {
+      this.assistImage.setScale(0.3);
+      this.assistImage.play('boss2_battle_play');
+    }
     
     this.assistText.setText(msg);
     MOT.Audio.playBleep(); 
