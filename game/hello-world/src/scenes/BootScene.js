@@ -476,6 +476,7 @@ class BootScene extends Phaser.Scene {
     gs.clear();
 
     // Draw a true 5-pointed star shape
+    gs.fillStyle(0xffffff, 1);
     gs.beginPath();
     let cx = 10, cy = 10, spikes = 5, outerRadius = 10, innerRadius = 4;
     let rot = Math.PI / 2 * 3;

@@ -832,7 +832,7 @@ class BossScene extends Phaser.Scene {
               let projY = b.y + t * ly;
               let distSq = (px - projX) * (px - projX) + (py - projY) * (py - projY);
               if (distSq <= (pr + 6) * (pr + 6)) {
-                this.hitHero(this.player, b);
+                this.onPlayerHit(this.player, b);
               }
             }
           }
