@@ -161,12 +161,6 @@ class BootScene extends Phaser.Scene {
     this.generateAllTextures();
     
     // アニメーションの作成
-    this.anims.create({
-      key: 'inuneko_anim',
-      frames: this.anims.generateFrameNumbers('inuneko', { start: 0, end: 1 }),
-      frameRate: 4,
-      repeat: -1
-    });
 
     this.anims.create({
       key: 'boss2_battle_play',
@@ -211,7 +205,6 @@ class BootScene extends Phaser.Scene {
     this.makeEnemyBasic();
     this.makeMinion1();
     this.makeBoss1();
-    this.makeBoss2();
     this.makeBoss3();
     this.makeBoss3Sister();
     this.makeWingLeft();
@@ -314,27 +307,7 @@ class BootScene extends Phaser.Scene {
     g.destroy();
   }
 
-  // --- Boss2 (次男, 炎モチーフ) ---
-  makeBoss2() {
-    const g = this.make.graphics({ add: false });
-    const s = 4;
-    const data = [
-      '..OOOO..',
-      '.OOOOOO.',
-      'OOWOOWOOO',
-      'OOOOOOOOO',
-      '.OOYOOOO.',
-      'RROOOORR.',
-      'RROOOORRR',
-      'RRRRRRRRR',
-      '.RROORR..',
-      '.RR..RR..',
-    ];
-    const colors = { 'O': 0xFF8C00, 'R': 0xFF2E2E, 'W': 0xffffff, 'Y': 0xFFFF00, '.': -1 };
-    this.drawPixelArt(g, data, colors, s, 0, 0);
-    g.generateTexture('boss2', 36, 40);
-    g.destroy();
-  }
+
 
   // --- Boss3 (三男, 冷静) ---
   makeBoss3() {
