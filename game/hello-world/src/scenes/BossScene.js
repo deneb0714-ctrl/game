@@ -1758,8 +1758,8 @@ class BossScene extends Phaser.Scene {
                 }
                 if(sisterImage) { this.tweens.add({targets: sisterImage, alpha: 0.4, duration: 300}); sisterImage.setDepth(90); }
               }
-              if (bossImage) bossImage.setTintFill(0x444444);
-              if (sisterImage) sisterImage.setTintFill(0x444444);
+              if (bossImage) bossImage.setTint(0x000000);
+              if (sisterImage) sisterImage.setTint(0x000000);
               this.tweens.add({targets: this.heroImage, alpha: 0.4, duration: 300});
               this.showDialogue('???', text, res);
             });
@@ -4102,9 +4102,7 @@ class BossScene extends Phaser.Scene {
       this.iconPersonBg = this.add.image(390, 44, 'icon_person').setOrigin(0, 0).setTint(0x555555).setDepth(100).setScrollFactor(0).setScale(1.5);
       this.iconPersonFill = this.add.image(390, 44, 'icon_person').setOrigin(0, 0).setTint(0xFFFF00).setDepth(100).setScrollFactor(0).setScale(1.5);
       
-      this.iconBatteryBg = this.add.image(450, 44, 'icon_battery').setOrigin(0, 0).setTint(0x555555).setDepth(100).setScrollFactor(0).setScale(1.5);
-      this.iconBatteryFillRect = this.add.rectangle(462, 62, 36, 60, 0xFF0000).setOrigin(0, 0).setDepth(99).setScrollFactor(0);
-      this.iconBatteryFill = this.add.image(450, 44, 'icon_battery').setOrigin(0, 0).setTint(0xFF0000).setDepth(100).setScrollFactor(0).setScale(1.5);
+      this.batteryUI = this.add.graphics().setDepth(100).setScrollFactor(0);
     }
 
     // Energy bar update (using scaleX instead of clear/fillRect)
@@ -4139,25 +4137,22 @@ class BossScene extends Phaser.Scene {
     // Killing Intent update
     const intentValue = MOT.flags.killingIntent || 0;
     const intentPct = Phaser.Math.Clamp(intentValue / 100, 0, 1);
-    if (intentPct <= 0) {
-      if (this.iconBatteryFillRect) this.iconBatteryFillRect.setVisible(false);
-      if (this.iconBatteryFill) this.iconBatteryFill.setVisible(false);
-    } else {
-      if (this.iconBatteryFill) this.iconBatteryFill.setVisible(true);
-      const cropY = 56 - 54 * intentPct;
-      if (this.iconBatteryFill) {
-        this.iconBatteryFill.setCrop(0, cropY, 32, 64 - cropY);
-      }
-      if (this.iconBatteryFillRect) {
-        const rectTop = Math.max(12, cropY);
-        const rectHeight = 52 - rectTop;
-        if (rectHeight > 0) {
-          this.iconBatteryFillRect.setVisible(true);
-          this.iconBatteryFillRect.y = 44 + rectTop * 1.5;
-          this.iconBatteryFillRect.setDisplaySize(36, rectHeight * 1.5);
-        } else {
-          this.iconBatteryFillRect.setVisible(false);
-        }
+    if (this.batteryUI) {
+      this.batteryUI.clear();
+      // 電池のキャップ部分
+      this.batteryUI.fillStyle(0x555555, 1);
+      this.batteryUI.fillRect(450 + 12, 44, 24, 6);
+      // 電池の枠線
+      this.batteryUI.lineStyle(3, 0x555555, 1);
+      this.batteryUI.strokeRect(450 + 3, 44 + 6, 42, 87);
+      
+      // 赤い中身（殺意ゲージ）
+      if (intentPct > 0) {
+        this.batteryUI.fillStyle(0xFF0000, 1);
+        const fillMaxHeight = 81;
+        const fillH = fillMaxHeight * intentPct;
+        const fillY = (44 + 6 + 84) - fillH;
+        this.batteryUI.fillRect(450 + 6, fillY, 36, fillH);
       }
     }
 
