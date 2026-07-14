@@ -53,9 +53,8 @@ class GameScene extends Phaser.Scene {
     if (this.currentStage === 2) bgKey = 'bg_stage2';
     if (this.currentStage === 3) bgKey = 'bg_stage3';
     if (this.currentStage === 4) bgKey = 'bg_stage4';
-
     this.bgWidth = 1920;
-    if (this.currentStage === 1 && this.textures.exists('bg_stage1_scroll') && this.textures.get('bg_stage1_scroll').key !== '__MISSING') {
+    if (this.currentStage === 2 && this.textures.exists('bg_stage1_scroll') && this.textures.get('bg_stage1_scroll').key !== '__MISSING') {
       this.bg1 = this.add.image(0, 0, 'bg_stage1_scroll').setOrigin(0, 0).setDepth(0);
       let scale = 1080 / this.bg1.height;
       this.bg1.setScale(scale);
@@ -166,6 +165,16 @@ class GameScene extends Phaser.Scene {
     if (this.currentStage === 1) {
       // Tutorial stage handles spawning manually in updateTutorial
       return [];
+    } else if (this.currentStage === 2) {
+      return [
+        { time: 2000, action: 'wave', count: 15, speed: 200 },
+        { time: 6000, action: 'wave', count: 20, speed: 220 },
+        { time: 10000, action: 'items' },
+        { time: 12000, action: 'wave', count: 25, speed: 250 },
+        { time: 17000, action: 'wave', count: 30, speed: 260 },
+        { time: 22000, action: 'items' },
+        { time: 25000, action: 'stage_end' }
+      ];
     } else {
       return [
         { time: 2000, action: 'wave', count: 5, speed: 200 },
@@ -1091,12 +1100,11 @@ class GameScene extends Phaser.Scene {
     } else if (this.tutorialPhase === 3) {
       this.tutorialPhase = 3.1;
       
-      for(let i=0; i<15; i++) {
-        let laneIndex = Phaser.Math.Between(0, 2);
-        let e = this.spawnTutorialEnemy(laneIndex, 120 + Phaser.Math.Between(-20, 20));
-        e.x = 1300 + (i * 250) + Phaser.Math.Between(0, 50);
+      for(let i=0; i<3; i++) {
+        let e = this.spawnTutorialEnemy(i, 0);
+        e.x = 1300 + Phaser.Math.Between(0, 100);
         e.tutorialDrop = true;
-        e.tutorialRed = (i % 3 === 0);
+        e.tutorialRed = (i === 1);
       }
       
       this.time.delayedCall(500, () => {
