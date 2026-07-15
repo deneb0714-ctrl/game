@@ -853,6 +853,18 @@ class GameScene extends Phaser.Scene {
     this.barrierIconBg = this.add.graphics().setDepth(100).setScrollFactor(0);
     this.barrierIconFg = this.add.graphics().setDepth(100).setScrollFactor(0);
     this.isEnergyHighlighted = false;
+
+    let areaText = '';
+    if (this.currentStage === 2) areaText = '黄昏の荒野';
+    else if (this.currentStage === 3) areaText = '宵闇の森';
+    else if (this.currentStage === 4) areaText = '子夜の城塞';
+    
+    if (areaText !== '') {
+      this.areaNameText = this.add.text(1920 - 30, 20, areaText, {
+        fontFamily: '"DotGothic16"', fontSize: '32px', color: '#FFFFFF',
+        backgroundColor: 'rgba(0,0,0,0.5)', padding: { x: 10, y: 5 }
+      }).setOrigin(1, 0).setDepth(100).setScrollFactor(0);
+    }
   }
 
   updateHUD() {
