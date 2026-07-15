@@ -1074,25 +1074,12 @@ class GameScene extends Phaser.Scene {
       this.tutorialPhase = 1.1;
       this.physics.pause();
       this.dialogActive = true;
-      this.showDeviceDialogue('「そこは始まりの村だ。お前はまだまだ目覚めたばかりで戦いには慣れていないだろう。」', () => {
-        this.showDeviceDialogue('「ここで戦闘慣れしていくといい。」', () => {
+      this.showDeviceDialogue('「敵がやってきたな。お前は敵の前に移動して撃ち殺すんだ。」', () => {
+        this.showDeviceDialogue('「移動方法は、パソコンなら矢印キーで移動できる。スマホなら画面をスライドしろ。」', () => {
           this.dialogActive = false;
           this.physics.resume();
-          
-          let e = this.spawnTutorialEnemy(0, 0);
-          e.x = 1300;
-          
-          this.time.delayedCall(500, () => {
-            this.physics.pause();
-            this.dialogActive = true;
-            this.showDeviceDialogue('「敵がやってきたな。お前は敵の前に移動して撃ち殺すんだ。」', () => {
-              this.showDeviceDialogue('「移動方法は、パソコンなら矢印キーで移動できる。スマホなら画面をスライドしろ。」', () => {
-                this.dialogActive = false;
-                this.tutorialPhase = 2;
-                this.physics.resume();
-              });
-            }, { x: 300, y: 260, radius: 60, color: 0x4FD1FF });
-          });
+          this.spawnTutorialEnemy(1, 100);
+          this.tutorialPhase = 2;
         });
       });
     } else if (this.tutorialPhase === 2) {
@@ -1102,8 +1089,8 @@ class GameScene extends Phaser.Scene {
         this.dialogActive = true;
         this.showDeviceDialogue('「よくやった。」', () => {
           this.showDeviceDialogue('「それと、今くらいの敵なら問題ないと思うが、魔王城に近づくにつれて敵の攻撃も強くなる。」', () => {
-            this.showDeviceDialogue('「よけきれないときはシールドを張るんだ。パソコンはスペース、スマホは長押しだ。タイミング良く敵の攻撃にシールドを張れた場合、反撃することもできるだろう。」', () => {
-              this.showDeviceDialogue('「気を付けないといけないのは、シールドはすぐに何度も張り直しはできない。左上の緑の円がクールタイムだ。それが溜まりきれば張れる状態になっている。」', () => {
+            this.showDeviceDialogue('「よけきれないときはシールドを貼るんだ。パソコンはスペース、スマホは長押しだ。タイミング良く敵の攻撃にシールドを晴れた場合、反撃することもできるだろう。」', () => {
+              this.showDeviceDialogue('「気を付けないといけないのは、シールドはすぐに何度も張り直しはできない。左上の緑の円がクールタイムだ。それが溜まりきれば貼れる状態になっている。」', () => {
                 this.dialogActive = false;
                 this.tutorialPhase = 3;
               }, { x: 360, y: 92, radius: 26 });
@@ -1114,11 +1101,11 @@ class GameScene extends Phaser.Scene {
     } else if (this.tutorialPhase === 3) {
       this.tutorialPhase = 3.1;
       
-      for(let i=0; i<3; i++) {
-        let e = this.spawnTutorialEnemy(i, 0);
-        e.x = 1300 + Phaser.Math.Between(0, 100);
+      for(let i=0; i<9; i++) {
+        let e = this.spawnTutorialEnemy(i % 3, 0);
+        e.x = 1300 + Math.floor(i / 3) * 150 + Phaser.Math.Between(0, 50);
         e.tutorialDrop = true;
-        e.tutorialRed = (i === 1);
+        e.tutorialRed = (i === 4); // 真ん中に赤いダイヤ
       }
       
       this.time.delayedCall(500, () => {
@@ -1136,38 +1123,36 @@ class GameScene extends Phaser.Scene {
         this.physics.pause();
         this.dialogActive = true;
         this.showDeviceDialogue('「よくやった。今、倒したときに青と赤のダイヤがドロップしただろう？」', () => {
-          this.showDeviceDialogue('「それを拾うことで左上にある必殺技ゲージを貯めることができる。赤の方がドロップ確率は低いが、ゲージを多く溜まる。うまく拾っていくんだな。」', () => {
-            this.dialogActive = false;
-            this.tutorialPhase = 5;
-            this.physics.resume();
-          }, { x: 180, y: 75, width: 340, height: 75 });
+          this.showDeviceDialogue('「このダイヤはお前の意志の力だ」', () => {
+            this.showDeviceDialogue('「それを拾うことで左上にある必殺技ゲージを貯めることができる。赤の方がドロップ確率は低いが、ゲージを多く溜まる。うまく拾っていくんだな。」', () => {
+              this.showDeviceDialogue('「赤いダイヤを拾うとここのアイコンが溜まる。意思の力が高まることでお前の秘められた力が解放されるかもしれない」', () => {
+                this.dialogActive = false;
+                this.tutorialPhase = 5;
+                this.physics.resume();
+              }, { x: 474, y: 92, width: 60, height: 110 }); // 殺意アイコン(Battery)をハイライト
+            });
+          });
         });
       }
     } else if (this.tutorialPhase === 5) {
       if (!this.tutorialPhase5Timer) this.tutorialPhase5Timer = 0;
       this.tutorialPhase5Timer += delta;
 
-      if (MOT.flags.energy >= 100 || this.tutorialPhase5Timer >= 3000) {
+      // フェールセーフ：15秒経ってもゲージがMaxにならなければ強制Maxにする
+      if (this.tutorialPhase5Timer > 15000 && !MOT.flags.maxEnergy) {
+        MOT.addEnergy(100);
+      }
+
+      if (MOT.flags.maxEnergy) {
         this.tutorialPhase = 5.1;
         this.physics.pause();
         this.dialogActive = true;
-
-        // ハイライトを有効にする（まだエネルギーは満タンにしない）
-        this.isEnergyHighlighted = true;
-        
-        this.showDeviceDialogue('「最初は私が代わりに必殺技ゲージを貯めてやろう。」', () => {
-          // 「ゲージが溜まったな」のセリフの直前に、エネルギーを満タンにする
-          MOT.flags.energy = 100;
-          MOT.flags.maxEnergy = true;
-
-          this.showDeviceDialogue('「ゲージが溜まったな。それが溜まると必殺技を打つことができる。パソコンならエンター、スマホならダブルタップで打てる。試してみろ。」', () => {
-            this.dialogActive = false;
-            this.tutorialPhase = 6;
-            this.physics.resume();
-            this.tutorialWaitSpecial = true;
-            // 博士のセリフが終わったのでハイライトを無効にする
-            this.isEnergyHighlighted = false;
-          });
+        this.showDeviceDialogue('「ゲージが溜まったな。それが溜まると必殺技を打つことができる。パソコンならエンター、スマホならダブルタップで打てる。試してみろ。」', () => {
+          this.dialogActive = false;
+          this.tutorialPhase = 6;
+          this.physics.resume();
+          this.tutorialWaitSpecial = true;
+          this.isEnergyHighlighted = false;
         });
       }
     } else if (this.tutorialPhase === 6) {
@@ -1203,14 +1188,16 @@ class GameScene extends Phaser.Scene {
           this.dialogActive = true;
           this.showDeviceDialogue('「使えたな。戦闘中、上手く使ってこのまま敵を倒していくといい。」', () => {
             this.showDeviceDialogue('「ああそうだ。戦闘中に進むべき道の指示を出す。ちゃんと従うんだ。」', () => {
-              this.dialogActive = false;
-              this.physics.pause(); // 物理演算を止める
-              this.player.setCollideWorldBounds(false);
-              this.tweens.add({ targets: this.player, x: 2100, duration: 1000, ease: 'Power2' });
-              this.cameras.main.fadeOut(1000, 0,0,0);
-              this.time.delayedCall(1000, () => {
-                this.scene.start('GameScene', { stage: 2 });
-              });
+              this.showDeviceDialogue('「従った回数によってここのアイコンが溜まる。ちゃんと見てるからな」', () => {
+                this.dialogActive = false;
+                this.physics.pause(); // 物理演算を止める
+                this.player.setCollideWorldBounds(false);
+                this.tweens.add({ targets: this.player, x: 2100, duration: 1000, ease: 'Power2' });
+                this.cameras.main.fadeOut(1000, 0,0,0);
+                this.time.delayedCall(1000, () => {
+                  this.scene.start('GameScene', { stage: 2 });
+                });
+              }, { x: 414, y: 92, width: 60, height: 110 }); // ドルポアイコン(Person)をハイライト
             });
           });
         });
