@@ -433,7 +433,7 @@ class GameScene extends Phaser.Scene {
     // Spawn minion1
     const minion = this.physics.add.sprite(1400, 460, 'minion1').setScale(3);
     minion.setAlpha(0);
-    minion.hp = 15;
+    minion.hp = 50;
     this.minion1 = minion;
     this.enemyGroup.add(minion);
 

@@ -9,7 +9,8 @@ window.MOT = window.MOT || {};
 MOT.spawnBasicEnemy = function (scene, x, y, texture) {
   const enemy = scene.enemyGroup.create(x, y, texture || 'enemy_basic');
   enemy.setVelocityX(-Phaser.Math.Between(100, 250));
-  enemy.hp = 3;
+  const stage = scene.currentStage || 1;
+  enemy.hp = stage > 1 ? 3 * (stage - 1) * 2 : 1; // Stage 1(tutorial): 1, Stage 2: 6, Stage 3: 12, Stage 4: 18
   enemy.fireTimer = scene.time.addEvent({
     delay: Phaser.Math.Between(1200, 2000),
     callback: function () {
@@ -36,7 +37,8 @@ MOT.spawnWave = function (scene, count, ySpread, speed) {
     const laneY = laneYs[Phaser.Math.Between(0, 2)];
     const enemy = scene.enemyGroup.create(startX + i * 60, laneY, 'enemy_basic');
     enemy.setVelocityX(-(speed || 150));
-    enemy.hp = 2;
+    const stage = scene.currentStage || 1;
+    enemy.hp = stage > 1 ? 2 * (stage - 1) * 2 : 1; // Stage 1: 1, Stage 2: 4, Stage 3: 8, Stage 4: 12
     // Slight float wobble to keep them dynamic but restricted to their lane
     scene.tweens.add({
       targets: enemy,

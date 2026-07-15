@@ -228,7 +228,7 @@ class BossScene extends Phaser.Scene {
   getBossConfig(key) {
     var configs = {
       boss1: {
-        texture: 'boss1_combat', name: '幹部1 – 筋肉', hp: 30, scale: 0.15,
+        texture: 'boss1_combat', name: '幹部1 – 筋肉', hp: 150, scale: 0.15,
         intro: '「貴様が博士の人形か。\nこの俺の拳で叩き潰してやる！」',
         defeat: '「馬鹿な…この俺が…！」',
         choices: [
@@ -237,7 +237,7 @@ class BossScene extends Phaser.Scene {
         ]
       },
       boss2: {
-        texture: 'boss2_battle_anim', name: '幹部2 – 戦闘狂', hp: 35, scale: 0.3,
+        texture: 'boss2_battle_anim', name: '幹部2 – 戦闘狂', hp: 250, scale: 0.3,
         intro: '「ヒャハハ！ 踊れ踊れぇ！！\n俺の双銃から逃げられるかなぁ！？」',
         defeat: '「アハハハハ…最高にイカれた気分だぜ…」',
         choices: [
@@ -246,18 +246,18 @@ class BossScene extends Phaser.Scene {
         ]
       },
       boss3_twins: {
-        texture: 'boss3_battle_anim', name: '男（兄）', hp: 50, scale: 0.25,
-        texture2: 'boss3_sister', name2: '女（妹）', hp2: 50, scale2: 3,
+        texture: 'boss3_battle_anim', name: '男（兄）', hp: 350, scale: 0.25,
+        texture2: 'boss3_sister', name2: '女（妹）', hp2: 350, scale2: 3,
         // Intro and defeat are handled custom via playTwinsIntro and post-battle logic
       },
       demon_lord: {
-        texture: 'demon_stand_combat', name: '魔王 – ヴェリタス', hp: 120, scale: 0.5,
+        texture: 'demon_stand_combat', name: '魔王 – ヴェリタス', hp: 600, scale: 0.5,
         intro: '「…来たか、博士の人形よ。\nお前に真実を伝えなければならない。」',
         defeat: '「聞いてくれ。博士こそが…この世界を壊そうとしている。\n俺は…それを止めたかっただけだ。」',
         choices: []
       },
       doctor: {
-        texture: 'doctor_face', name: '博士', hp: 180, scale: 0.15,
+        texture: 'doctor_face', name: '博士', hp: 1000, scale: 0.15,
         intro: '「さぁ、最終決戦といこうじゃないか！」',
         defeat: '「驚いた...まさかお前がここまでやるとはな」',
         choices: []
