@@ -330,7 +330,7 @@ class BossScene extends Phaser.Scene {
     }
 
     let areaText = '';
-    if (key === 'boss1') areaText = '「次のエリアに着いたか。そこは、黄昏の荒野だ。魔王城までまだ距離があるからそこまで敵は強くないが気は抜くなよ。」';
+    if (key === 'boss1') areaText = ''; // Removed redundant dialogue
     else if (key === 'boss2') areaText = '「次のエリアに着いたか。そこは、宵闇の森だ。」';
     else if (key === 'boss3_twins') areaText = '「次のエリアに着いたか。そこは、子夜の城塞 だ。そろそろ魔王城に着くだろう。敵も強くなっている。気を付けてくれ」';
     else if (key === 'demon_lord') areaText = '「とうとう魔王城に着いたか。そこには魔王がいるはずだ。警戒を怠らないように」';
