@@ -269,42 +269,6 @@ class GameScene extends Phaser.Scene {
       }
     }
 
-    // Minion 1 Battle Logic
-    if (this.minionBattleActive && this.minion1 && this.minion1.active) {
-      this.minion1.fireTimer = (this.minion1.fireTimer || 0) + delta;
-      if (this.minion1.fireTimer >= 1000) {
-        this.minion1.fireTimer = 0;
-        MOT.fireFan(this, this.minion1.x, this.minion1.y, 3, 300, 180, 40);
-      }
-      
-      // Periodically move to a random lane Y
-      this.minion1.laneChangeTimer = (this.minion1.laneChangeTimer || 0) + delta;
-      if (this.minion1.laneChangeTimer >= 3000) {
-        this.minion1.laneChangeTimer = 0;
-        const laneYs = [220, 460, 700];
-        const targetY = laneYs[Phaser.Math.Between(0, 2)];
-        this.tweens.killTweensOf(this.minion1);
-        this.tweens.add({
-          targets: this.minion1,
-          y: targetY,
-          duration: 600,
-          ease: 'Cubic.easeInOut',
-          onComplete: function () {
-            if (this.minion1 && this.minion1.active) {
-              this.tweens.add({
-                targets: this.minion1,
-                y: targetY - 10,
-                yoyo: true,
-                repeat: -1,
-                duration: 1000,
-                ease: 'Sine.easeInOut'
-              });
-            }
-          }.bind(this)
-        });
-      }
-    }
-
     // Process wave schedule
     this.processWaves();
 
@@ -411,9 +375,7 @@ class GameScene extends Phaser.Scene {
             MOT.spawnHealthItem(this, 1950, healthLaneY);
           }
           break;
-        case 'minion1_encounter':
-          this.triggerMinion1Encounter();
-          break;
+
         case 'stage_end':
           this.endStage();
           break;
