@@ -27,8 +27,10 @@ class BossScene extends Phaser.Scene {
     if (isSkipping || (data && data.jumpToEndingSetup)) {
       if (!MOT.flags) MOT.flags = {};
       MOT.flags.playerMaxHP = MOT.flags.playerMaxHP || 5;
-      MOT.flags.playerHP = MOT.flags.playerMaxHP;
-      MOT.flags.energy = 0;
+      if (!data || !data.normalTransition) {
+        MOT.flags.playerHP = MOT.flags.playerMaxHP;
+        MOT.flags.energy = 0;
+      }
     }
     
 
