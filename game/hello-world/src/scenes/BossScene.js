@@ -3637,7 +3637,13 @@ class BossScene extends Phaser.Scene {
         self.time.delayedCall(event.time, () => {
           if (!self.intermissionActive) return;
           if (event.action === 'wave') {
-            if (MOT.spawnWave) MOT.spawnWave(self, event.count, 200, event.speed);
+            if (MOT.spawnWave) {
+              MOT.spawnWave(self, event.count, 200, event.speed);
+              // 追加された敵（ボス以外）にisIntermissionEnemyフラグを付与
+              self.enemyGroup.getChildren().forEach(e => {
+                if (!e.configKey) e.isIntermissionEnemy = true;
+              });
+            }
           } else if (event.action === 'items') {
             if (MOT.spawnHealthItem) MOT.spawnHealthItem(self, 1920, Phaser.Math.Between(300, 700));
           } else if (event.action === 'stage_end') {
