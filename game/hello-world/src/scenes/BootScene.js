@@ -46,12 +46,16 @@ class BootScene extends Phaser.Scene {
       "...reconnecting..."
     ];
     
-    const textObj = this.add.text(40, 40, '', {
+    // 画面中央付近に配置するための計算
+    const startX = w / 2 - 450;
+    const startY = h / 2 - 350;
+
+    const textObj = this.add.text(startX, startY, '', {
       fontFamily: '"Courier New", Courier, monospace',
-      fontSize: '24px',
+      fontSize: '36px',
       color: '#00FF00',
       fontStyle: 'bold',
-      lineSpacing: 10
+      lineSpacing: 20
     });
 
     this.isTypingDone = false;
