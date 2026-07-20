@@ -9,11 +9,11 @@ class BootScene extends Phaser.Scene {
   }
 
   preload() {
-    // Loading bar
+    // Loading bar (moved to bottom right)
     const w = this.cameras.main.width;
     const h = this.cameras.main.height;
-    const barW = 400, barH = 30;
-    const barX = (w - barW) / 2, barY = h / 2;
+    const barW = 300, barH = 20;
+    const barX = w - barW - 40, barY = h - barH - 40;
 
     const bg = this.add.graphics();
     bg.fillStyle(0x1F2933, 1);
@@ -23,11 +23,12 @@ class BootScene extends Phaser.Scene {
     this.load.on('progress', function (v) {
       bar.clear();
       bar.fillStyle(0x4FD1FF, 1);
+      // Real load might be fast, but we show it anyway
       bar.fillRect(barX + 4, barY + 4, (barW - 8) * v, barH - 8);
     });
 
-    const loadText = this.add.text(w / 2, barY - 40, 'LOADING...', {
-      fontFamily: '"Press Start 2P"', fontSize: '20px', color: '#4FD1FF'
+    const loadText = this.add.text(barX + barW / 2, barY - 20, 'LOADING...', {
+      fontFamily: '"Press Start 2P"', fontSize: '14px', color: '#4FD1FF'
     }).setOrigin(0.5);
 
     this.load.on('complete', function () {
@@ -247,6 +248,20 @@ class BootScene extends Phaser.Scene {
       "...reconnecting..."
     ];
     
+    // Fake loading bar in bottom right to continue the loading illusion
+    const barW = 300, barH = 20;
+    const barX = w - barW - 40, barY = h - barH - 40;
+    
+    const bgBar = this.add.graphics().setDepth(10000);
+    bgBar.fillStyle(0x1F2933, 1);
+    bgBar.fillRect(barX, barY, barW, barH);
+    
+    const fillBar = this.add.graphics().setDepth(10000);
+    
+    const loadText = this.add.text(barX + barW / 2, barY - 20, 'LOADING...', {
+      fontFamily: '"Press Start 2P"', fontSize: '14px', color: '#4FD1FF'
+    }).setOrigin(0.5).setDepth(10000);
+
     const textObj = this.add.text(40, 40, '', {
       fontFamily: '"Courier New", Courier, monospace',
       fontSize: '24px',
@@ -260,6 +275,13 @@ class BootScene extends Phaser.Scene {
     let displayText = "";
     
     const typeNextChar = () => {
+      // Update fake progress bar
+      let progress = (currentLine + (currentChar / (lines[currentLine] ? lines[currentLine].length : 1))) / lines.length;
+      if (progress > 1) progress = 1;
+      fillBar.clear();
+      fillBar.fillStyle(0x4FD1FF, 1);
+      fillBar.fillRect(barX + 4, barY + 4, (barW - 8) * progress, barH - 8);
+
       if (currentLine >= lines.length) {
         // 全て表示し終わったら少し待ってタイトルへ
         this.time.delayedCall(2000, () => {
