@@ -168,24 +168,23 @@ class GameScene extends Phaser.Scene {
       // Tutorial stage handles spawning manually in updateTutorial
       return [];
     } else if (this.currentStage === 2) {
+      // ボス1の前の雑魚戦（少し減らす）
       return [
-        { time: 2000, action: 'wave', count: 6, speed: 200 },
-        { time: 6000, action: 'wave', count: 8, speed: 220 },
+        { time: 2000, action: 'wave', count: 5, speed: 200 },
+        { time: 6000, action: 'wave', count: 7, speed: 220 },
         { time: 10000, action: 'items' },
-        { time: 12000, action: 'wave', count: 10, speed: 250 },
-        { time: 17000, action: 'wave', count: 12, speed: 260 },
-        { time: 22000, action: 'items' },
-        { time: 25000, action: 'stage_end' }
+        { time: 12000, action: 'wave', count: 8, speed: 250 },
+        { time: 16000, action: 'items' },
+        { time: 18000, action: 'stage_end' }
       ];
     } else {
       return [
         { time: 2000, action: 'wave', count: 5, speed: 200 },
-        { time: 6000, action: 'wave', count: 6, speed: 220 },
+        { time: 6000, action: 'wave', count: 7, speed: 220 },
         { time: 10000, action: 'items' },
-        { time: 12000, action: 'wave', count: 7, speed: 250 },
-        { time: 17000, action: 'wave', count: 8, speed: 260 },
-        { time: 22000, action: 'items' },
-        { time: 25000, action: 'stage_end' }
+        { time: 12000, action: 'wave', count: 8, speed: 250 },
+        { time: 16000, action: 'items' },
+        { time: 18000, action: 'stage_end' }
       ];
     }
   }

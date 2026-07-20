@@ -3616,38 +3616,38 @@ class BossScene extends Phaser.Scene {
       }
     });
 
-    // 幕間カウンター（雑魚の残数を管理）
-    this.intermissionKills = 0;
-    this.intermissionTotal = 5; // 雑魚5体
+    // HPスケールのために仮想的なステージ数を設定する
+    this.currentStage = this.currentBossIndex + 2;
 
-    // 1.5秒後に雑魚スポーン開始
+    // 幕間フラグ
+    this.intermissionActive = true;
+
+    // 1.5秒後に雑魚スポーン開始（GameSceneと同じウェーブ形式）
     this.time.delayedCall(1500, function () {
-      var laneYs = [220, 460, 700];
-      for (var i = 0; i < self.intermissionTotal; i++) {
-        self.time.delayedCall(i * 600, function () {
-          if (!self.intermissionActive) return;
-          var laneY = laneYs[Phaser.Math.Between(0, 2)];
-          var e = self.enemyGroup.create(w + 50, laneY, 'enemy_basic');
-          e.setVelocityX(-200);
-          e.hp = 3;
-          e.isIntermissionEnemy = true;
-          // 左右にふわふわ動く
-          self.tweens.add({
-            targets: e, y: laneY + Phaser.Math.Between(-40, 40),
-            yoyo: true, repeat: -1, duration: 900, ease: 'Sine.easeInOut'
-          });
-          // 周期的に弾を撃つ
-          e.fireTimer = self.time.addEvent({
-            delay: Phaser.Math.Between(1000, 1800),
-            callback: function () { if (e.active) { let b = MOT.fireLinear(self, e.x, e.y, -320, 0); if(b) b.shooter = e; } },
-            loop: true
-          });
-          e.on('destroy', function () { if (e.fireTimer) e.fireTimer.destroy(); });
-        });
-      }
+      let schedule = [
+        { time: 500, action: 'wave', count: 5, speed: 200 },
+        { time: 4500, action: 'wave', count: 7, speed: 220 },
+        { time: 8500, action: 'items' },
+        { time: 10500, action: 'wave', count: 8, speed: 250 },
+        { time: 14500, action: 'items' },
+        { time: 16500, action: 'stage_end' }
+      ];
 
-      // タイムアウト保険：12秒後に残っていても次へ進む
-      self.intermissionTimeout = self.time.delayedCall(12000, function () {
+      schedule.forEach(event => {
+        self.time.delayedCall(event.time, () => {
+          if (!self.intermissionActive) return;
+          if (event.action === 'wave') {
+            if (MOT.spawnWave) MOT.spawnWave(self, event.count, 200, event.speed);
+          } else if (event.action === 'items') {
+            if (MOT.spawnHealthItem) MOT.spawnHealthItem(self, 1920, Phaser.Math.Between(300, 700));
+          } else if (event.action === 'stage_end') {
+            self.endIntermission();
+          }
+        });
+      });
+      
+      // タイムアウト保険：20秒後に強制進行
+      self.intermissionTimeout = self.time.delayedCall(20000, function () {
         self.endIntermission();
       });
     });
