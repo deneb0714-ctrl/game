@@ -211,7 +211,87 @@ class BootScene extends Phaser.Scene {
       }
     });
 
-    this.scene.start('TitleScene');
+    this.playTerminalIntro();
+  }
+
+  playTerminalIntro() {
+    const w = this.cameras.main.width;
+    const h = this.cameras.main.height;
+    
+    // 背景を暗くする
+    this.add.rectangle(0, 0, w, h, 0x080808).setOrigin(0).setDepth(9999);
+    
+    // スクショのような雰囲気を出すため、右側にうっすらとキャラクターを配置
+    if (this.textures.exists('sister_normal')) {
+      const sister = this.add.image(w - 200, h / 2, 'sister_normal').setAlpha(0.15).setDepth(9999);
+      sister.setScale(600 / sister.height);
+    }
+    if (this.textures.exists('hero_stand_corrupted')) {
+      const hero = this.add.image(200, h / 2, 'hero_stand_corrupted').setAlpha(0.1).setDepth(9999);
+      hero.setScale(600 / hero.height);
+    }
+
+    const lines = [
+      "...link established",
+      "...signal drift: 0.03",
+      "",
+      "こんにちは。『GGS』よ。",
+      "",
+      "世界構造の誤差、観測値より逸脱。",
+      "あなたには、それを正すだけの力がある。",
+      "",
+      "悪性因子、未除去。",
+      "この世界を救う宿命を背負いなさい。",
+      "",
+      "...trace lost",
+      "...reconnecting..."
+    ];
+    
+    const textObj = this.add.text(40, 40, '', {
+      fontFamily: '"Courier New", Courier, monospace',
+      fontSize: '24px',
+      color: '#00FF00',
+      fontStyle: 'bold',
+      lineSpacing: 10
+    }).setDepth(10000);
+    
+    let currentLine = 0;
+    let currentChar = 0;
+    let displayText = "";
+    
+    const typeNextChar = () => {
+      if (currentLine >= lines.length) {
+        // 全て表示し終わったら少し待ってタイトルへ
+        this.time.delayedCall(2000, () => {
+          this.scene.start('TitleScene');
+        });
+        return;
+      }
+      
+      const lineText = lines[currentLine];
+      if (currentChar < lineText.length) {
+        displayText += lineText[currentChar];
+        textObj.setText(displayText);
+        currentChar++;
+        
+        let delay = 30; // タイピング速度
+        if (lineText[currentChar - 1] === '。' || lineText[currentChar - 1] === '、') delay = 250;
+        
+        this.time.delayedCall(delay, typeNextChar);
+      } else {
+        displayText += "\n";
+        textObj.setText(displayText);
+        currentLine++;
+        currentChar = 0;
+        
+        let delay = 300; // 行間の待機
+        if (lineText === "") delay = 100;
+        
+        this.time.delayedCall(delay, typeNextChar);
+      }
+    };
+    
+    this.time.delayedCall(800, typeNextChar);
   }
 
   generateAllTextures() {
