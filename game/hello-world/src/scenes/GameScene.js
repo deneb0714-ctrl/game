@@ -376,7 +376,21 @@ class GameScene extends Phaser.Scene {
           break;
 
         case 'stage_end':
-          this.endStage();
+          this.checkStageEndTimer = this.time.addEvent({
+            delay: 500,
+            loop: true,
+            callback: () => {
+              let hasEnemies = false;
+              this.enemyGroup.getChildren().forEach(e => {
+                // まだ画面内にいるアクティブな敵がいれば待機
+                if (e.active && e.x > -100) hasEnemies = true;
+              });
+              if (!hasEnemies) {
+                this.checkStageEndTimer.destroy();
+                this.endStage();
+              }
+            }
+          });
           break;
       }
     }

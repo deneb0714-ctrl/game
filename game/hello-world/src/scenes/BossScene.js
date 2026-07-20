@@ -1775,8 +1775,8 @@ class BossScene extends Phaser.Scene {
                 }
                 if(sisterImage) { this.tweens.add({targets: sisterImage, alpha: 0.4, duration: 300}); sisterImage.setDepth(90); }
               }
-              if (bossImage) bossImage.setTint(0x000000);
-              if (sisterImage) sisterImage.setTint(0x000000);
+              if (bossImage) bossImage.setTint(0x444444);
+              if (sisterImage) sisterImage.setTint(0x444444);
               this.tweens.add({targets: this.heroImage, alpha: 0.4, duration: 300});
               this.showDialogue('???', text, res);
             });
@@ -3650,7 +3650,20 @@ class BossScene extends Phaser.Scene {
           } else if (event.action === 'items') {
             if (MOT.spawnHealthItem) MOT.spawnHealthItem(self, 1920, Phaser.Math.Between(300, 700));
           } else if (event.action === 'stage_end') {
-            self.endIntermission();
+            self.checkIntermissionEndTimer = self.time.addEvent({
+              delay: 500,
+              loop: true,
+              callback: () => {
+                let hasEnemies = false;
+                self.enemyGroup.getChildren().forEach(e => {
+                  if (e.isIntermissionEnemy && e.active && e.x > -100) hasEnemies = true;
+                });
+                if (!hasEnemies) {
+                  self.checkIntermissionEndTimer.destroy();
+                  self.endIntermission();
+                }
+              }
+            });
           }
         });
       });
