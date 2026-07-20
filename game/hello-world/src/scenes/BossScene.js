@@ -1775,8 +1775,8 @@ class BossScene extends Phaser.Scene {
                 }
                 if(sisterImage) { this.tweens.add({targets: sisterImage, alpha: 0.4, duration: 300}); sisterImage.setDepth(90); }
               }
-              if (bossImage) bossImage.setTint(0x444444);
-              if (sisterImage) sisterImage.setTint(0x444444);
+              if (bossImage) bossImage.setTint(0x000000);
+              if (sisterImage) sisterImage.setTint(0x000000);
               this.tweens.add({targets: this.heroImage, alpha: 0.4, duration: 300});
               this.showDialogue('???', text, res);
             });
