@@ -129,10 +129,10 @@ class GameScene extends Phaser.Scene {
     this.createHUD();
 
     // Stage info text
-    let stageLabel = 'STAGE 1 – 始まりの村';
-    if (this.currentStage === 2) stageLabel = 'STAGE 2 – 黄昏の荒野';
-    if (this.currentStage === 3) stageLabel = 'STAGE 3 – 宵闇の森';
-    if (this.currentStage === 4) stageLabel = 'STAGE 4 – 子夜の城塞';
+    let stageLabel = 'TUTORIAL – 始まりの村';
+    if (this.currentStage === 2) stageLabel = 'STAGE 1 – 黄昏の荒野';
+    if (this.currentStage === 3) stageLabel = 'STAGE 2 – 宵闇の森';
+    if (this.currentStage === 4) stageLabel = 'STAGE 3 – 子夜の城塞';
     const stageText = this.add.text(w / 2, h / 2, stageLabel, {
       fontFamily: '"Press Start 2P"',
       fontSize: '28px',

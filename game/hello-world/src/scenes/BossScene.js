@@ -3601,20 +3601,7 @@ class BossScene extends Phaser.Scene {
     var self = this;
     var w = 1920, h = 1080;
 
-    // 「次の敵が来るぞ」テキストを一瞬表示
-    var warnText = this.add.text(w / 2, h / 2 - 100,
-      '── 次の幹部が迫っている！ ──',
-      { fontFamily: '"DotGothic16"', fontSize: '28px', color: '#FF4B6E' }
-    ).setOrigin(0.5).setDepth(110).setAlpha(0);
-    this.tweens.add({
-      targets: warnText, alpha: 1, duration: 400,
-      onComplete: function () {
-        self.tweens.add({
-          targets: warnText, alpha: 0, duration: 400, delay: 1500,
-          onComplete: function () { warnText.destroy(); }
-        });
-      }
-    });
+
 
     // HPスケールのために仮想的なステージ数を設定する
     this.currentStage = this.currentBossIndex + 2;
