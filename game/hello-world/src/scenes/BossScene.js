@@ -3639,9 +3639,12 @@ class BossScene extends Phaser.Scene {
           if (event.action === 'wave') {
             if (MOT.spawnWave) {
               MOT.spawnWave(self, event.count, 200, event.speed);
-              // 追加された敵（ボス以外）にisIntermissionEnemyフラグを付与
+              // 追加された敵（ボス以外）にisIntermissionEnemyフラグを付与し、HPを3に固定
               self.enemyGroup.getChildren().forEach(e => {
-                if (!e.configKey) e.isIntermissionEnemy = true;
+                if (!e.configKey) {
+                  e.isIntermissionEnemy = true;
+                  e.hp = 3;
+                }
               });
             }
           } else if (event.action === 'items') {

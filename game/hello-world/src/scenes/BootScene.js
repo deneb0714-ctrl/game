@@ -342,18 +342,20 @@ class BootScene extends Phaser.Scene {
     const g = this.make.graphics({ add: false });
     const s = 4;
     const data = [
-      '..RRRR..',
-      '.RRRRRRR',
-      'RRDRRDRR',
-      'RRRRRRRR',
-      'RRRRRRRR',
-      '.RRRRRRR',
-      '..RRRR..',
-      '...RR...',
+      '...KKKK...',
+      '..KRRRRK..',
+      '.KRRRRRRK.',
+      'KRRDRRDRRK',
+      'KRRRRRRRRK',
+      'KRRRRRRRRK',
+      '.KRRRRRRK.',
+      '..KRRRRK..',
+      '...KRRK...',
+      '....KK....'
     ];
-    const colors = { 'R': 0x993333, 'D': 0x220000, '.': -1 };
+    const colors = { 'R': 0x993333, 'D': 0x220000, 'K': 0x000000, '.': -1 };
     this.drawPixelArt(g, data, colors, s, 0, 0);
-    g.generateTexture('enemy_basic', 32, 32);
+    g.generateTexture('enemy_basic', 40, 40);
     g.destroy();
   }
 
