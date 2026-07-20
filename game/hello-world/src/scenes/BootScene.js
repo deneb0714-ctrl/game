@@ -46,7 +46,7 @@ class BootScene extends Phaser.Scene {
       "...reconnecting..."
     ];
     
-    const textObj = this.add.text(40, 40, lines.join('\n'), {
+    const textObj = this.add.text(40, 40, '', {
       fontFamily: '"Courier New", Courier, monospace',
       fontSize: '24px',
       color: '#00FF00',
@@ -54,12 +54,56 @@ class BootScene extends Phaser.Scene {
       lineSpacing: 10
     });
 
+    this.isTypingDone = false;
+    this.isLoadDone = false;
+
+    let currentLine = 0;
+    let currentChar = 0;
+    let displayText = "";
+
+    const typeNextChar = () => {
+      if (currentLine >= lines.length) {
+        this.isTypingDone = true;
+        if (this.isLoadDone) {
+          this.time.delayedCall(1500, () => {
+            this.scene.start('TitleScene');
+          });
+        }
+        return;
+      }
+      
+      const lineText = lines[currentLine];
+      if (currentChar < lineText.length) {
+        displayText += lineText[currentChar];
+        textObj.setText(displayText);
+        currentChar++;
+        
+        let delay = 30; 
+        if (lineText[currentChar - 1] === '。' || lineText[currentChar - 1] === '、') delay = 250;
+        
+        this.time.delayedCall(delay, typeNextChar);
+      } else {
+        displayText += "\n";
+        textObj.setText(displayText);
+        currentLine++;
+        currentChar = 0;
+        
+        let delay = 300; 
+        if (lineText === "") delay = 100;
+        
+        this.time.delayedCall(delay, typeNextChar);
+      }
+    };
+    
+    // タイピング開始
+    this.time.delayedCall(500, typeNextChar);
+
     const loadText = this.add.text(barX + barW / 2, barY - 20, 'LOADING...', {
       fontFamily: '"Press Start 2P"', fontSize: '14px', color: '#4FD1FF'
     }).setOrigin(0.5);
 
-    this.load.on('complete', function () {
-      bar.destroy(); bg.destroy(); loadText.destroy(); textObj.destroy();
+    this.load.on('complete', () => {
+      bar.destroy(); bg.destroy(); loadText.destroy();
     });
 
     // Load a tiny transparent pixel just to have something to load
@@ -239,7 +283,12 @@ class BootScene extends Phaser.Scene {
       }
     });
 
-    this.scene.start('TitleScene');
+    this.isLoadDone = true;
+    if (this.isTypingDone) {
+      this.time.delayedCall(1500, () => {
+        this.scene.start('TitleScene');
+      });
+    }
   }
 
   generateAllTextures() {
