@@ -34,7 +34,7 @@ class BootScene extends Phaser.Scene {
       "...link established",
       "...signal drift: 0.03",
       "",
-      "こんにちは。『GGS』よ。",
+      "こんにちは。『\ufffdGGS 』よ。",
       "",
       "世界構造の誤差、観測値より逸脱。",
       "あなたには、それを正すだけの力がある。",
