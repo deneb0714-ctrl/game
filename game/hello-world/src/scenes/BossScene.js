@@ -1370,7 +1370,7 @@ class BossScene extends Phaser.Scene {
   }
 
   fire3WaySlash(fromX, fromY, angleDeg) {
-    var slash = this.enemyBullets.create(fromX, fromY, 'slash_attack');
+    var slash = this.enemyBullets.create(fromX, fromY, 'boss1_wind_slash');
     if (!slash) return;
     slash.damage = 2; // ボス1の斬撃ダメージ
     
