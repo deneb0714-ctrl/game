@@ -86,9 +86,9 @@ MOT.collectItem = function (scene, player, item) {
     
     if (item.itemType === 'energy_murderous') {
       if (MOT.incrementMurderousOrb) MOT.incrementMurderousOrb();
-      MOT.showPickupText(scene, item.x, item.y, '+' + item.value + ' EN', 0xFF0000);
+      // MOT.showPickupText(scene, item.x, item.y, '+' + item.value + ' EN', 0xFF0000);
     } else {
-      MOT.showPickupText(scene, item.x, item.y, '+' + item.value + ' EN', 0x4FD1FF);
+      // MOT.showPickupText(scene, item.x, item.y, '+' + item.value + ' EN', 0x4FD1FF);
     }
   } else if (item.itemType === 'health') {
     MOT.flags.playerHP = Math.min(MOT.flags.playerHP + item.value, MOT.flags.playerMaxHP);
@@ -96,7 +96,7 @@ MOT.collectItem = function (scene, player, item) {
   } else if (item.itemType === 'red_diamond') {
     MOT.flags.killingIntent = Math.min(100, MOT.flags.killingIntent + item.value);
     MOT.addEnergy(15);
-    MOT.showPickupText(scene, item.x, item.y, '殺意 +' + item.value + ' / EN +15', 0xFF0000);
+    // MOT.showPickupText(scene, item.x, item.y, '殺意 +' + item.value + ' / EN +15', 0xFF0000);
   }
   item.destroy();
 };
