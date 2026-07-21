@@ -1085,13 +1085,19 @@ class BossScene extends Phaser.Scene {
 
     // boss1（筋肉）は斬撃攻撃
     if (this.currentBoss.configKey === 'boss1') {
-      this.currentBoss.play('boss1_attack');
+      if (this.currentBoss.attackSide === undefined) this.currentBoss.attackSide = 'right';
+      
+      let animKey = this.currentBoss.attackSide === 'right' ? 'boss1_attack_right' : 'boss1_attack_left';
+      this.currentBoss.play(animKey);
       this.currentBoss.once('animationcomplete', () => {
          if (this.currentBoss && this.currentBoss.active) {
             this.currentBoss.play('boss1_idle');
          }
       });
-      this.attackSlash(x, y);
+      
+      this.attackSlash(x, y, this.currentBoss.attackSide);
+      
+      this.currentBoss.attackSide = this.currentBoss.attackSide === 'right' ? 'left' : 'right';
       return;
     }
 
@@ -1346,33 +1352,40 @@ class BossScene extends Phaser.Scene {
   }
 
   // 斬撃攻撃（幹部1筋肉用）
-  attackSlash(bx, by) {
-    var self = this;
-    var laneYs = [220, 460, 700];
-    var pattern = Phaser.Math.Between(0, 2);
-
-    if (pattern === 0) {
-      // 1本の斬撃が飛んでくる
-      var targetY = laneYs[Phaser.Math.Between(0, 2)];
-      self.fireSlash(bx, targetY);
-    } else if (pattern === 1) {
-      // 2本連続で同じレーンに（よりゆっくり間隔をあける）
-      var idx = Phaser.Math.Between(0, 2);
-      self.fireSlash(bx, laneYs[idx]);
-      self.time.delayedCall(1000, function () {
-        if (self.currentBoss && self.currentBoss.active) self.fireSlash(bx, laneYs[idx]);
-      });
+  attackSlash(bx, by, side) {
+    var originY = by;
+    // 右振りは上から、左振りは下から
+    if (side === 'right') {
+      originY -= 150; // ボスの頭上
     } else {
-      // 2本連続で別のレーンへ（非常にゆっくり）
-      var idx1 = Phaser.Math.Between(0, 2);
-      var idx2 = (idx1 + 1) % 3;
-      self.fireSlash(bx, laneYs[idx1]);
-      self.time.delayedCall(1200, function () {
-        if (self.currentBoss && self.currentBoss.active) {
-          self.fireSlash(bx, laneYs[idx2]);
-        }
-      });
+      originY += 150; // ボスの足元
     }
+
+    // 進行方向（左）を中心に、上下に少し角度を付けた3WAY
+    // Phaserでは0が右、180が左
+    var angles = [180 - 15, 180, 180 + 15]; 
+    angles.forEach(angle => {
+      this.fire3WaySlash(bx, originY, angle);
+    });
+  }
+
+  fire3WaySlash(fromX, fromY, angleDeg) {
+    var slash = this.enemyBullets.create(fromX, fromY, 'slash_attack');
+    if (!slash) return;
+    slash.damage = 2; // ボス1の斬撃ダメージ
+    slash.setScale(2);
+    slash.setDepth(9);
+    
+    // 角度に合わせて回転させる
+    slash.setAngle(angleDeg);
+    
+    // 速度設定
+    var speed = 350;
+    var rad = Phaser.Math.DegToRad(angleDeg);
+    slash.setVelocity(Math.cos(rad) * speed, Math.sin(rad) * speed);
+
+    // 7秒後に自動破棄
+    this.time.delayedCall(7000, function () { if (slash.active) slash.destroy(); });
   }
 
   // 5秒間の警告のあと、レーン全体を薙ぎ払う極太レーザー

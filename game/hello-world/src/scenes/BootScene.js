@@ -252,8 +252,15 @@ class BootScene extends Phaser.Scene {
     });
 
     this.anims.create({
-      key: 'boss1_attack',
-      frames: this.anims.generateFrameNumbers('boss1_combat', { start: 2, end: 7 }),
+      key: 'boss1_attack_right',
+      frames: this.anims.generateFrameNumbers('boss1_combat', { frames: [4, 5, 2, 3] }),
+      frameRate: 6,
+      repeat: 0
+    });
+
+    this.anims.create({
+      key: 'boss1_attack_left',
+      frames: this.anims.generateFrameNumbers('boss1_combat', { frames: [0, 1, 6, 7] }),
       frameRate: 6,
       repeat: 0
     });
