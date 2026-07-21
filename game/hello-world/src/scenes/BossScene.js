@@ -1505,10 +1505,12 @@ class BossScene extends Phaser.Scene {
   // 単一拳銃弾を発射する
   fireGunBullet(fromX, fromY) {
     if (this.dialogActive) return;
-    var b = this.enemyBullets.create(fromX, fromY, 'bullet_enemy');
+    var b = this.enemyBullets.create(fromX, fromY, 'boss2_bullet');
     if (b) {
       b.setVelocityX(-800); // 高速の弾丸（難易度アップ）
-      b.setScale(1.5);
+      b.setScale(1.2);
+      b.setAngle(-90); // 左向きになるように角度調整（画像によっては180等に変える）
+      b.setBlendMode(Phaser.BlendModes.ADD); // 光るエフェクト
       b.setDepth(9);
       this.time.delayedCall(4000, function () { if (b.active) b.destroy(); });
     }
