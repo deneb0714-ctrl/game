@@ -169,7 +169,7 @@ class BootScene extends Phaser.Scene {
     this.load.image('boss1_dying', 'assets/images/boss1_hurt_normal.png?v=' + v);
     this.load.image('boss1_sweat', 'assets/images/boss1_sweat.png?v=' + v);
     this.load.image('boss1_hurt_angry', 'assets/images/boss1_hurt_angry.png?v=' + v);
-    this.load.image('boss1_combat', 'assets/images/boss1_combat.jpg?v=' + v);
+    this.load.spritesheet('boss1_combat', 'assets/images/boss1_combat_sheet.png?v=' + v, { frameWidth: 100, frameHeight: 100 });
     this.load.image('boss2_combat', 'assets/images/boss2_combat.jpg?v=' + v);
     this.load.spritesheet('boss2_battle_anim', 'assets/images/boss2_battle.png?v=' + v, { frameWidth: 543, frameHeight: 560 });
     this.load.spritesheet('boss3_battle_anim', 'assets/images/boss3_battle.png?v=' + v, { frameWidth: 560, frameHeight: 533 });
@@ -244,6 +244,19 @@ class BootScene extends Phaser.Scene {
     this.generateAllTextures();
     
     // アニメーションの作成
+    this.anims.create({
+      key: 'boss1_idle',
+      frames: this.anims.generateFrameNumbers('boss1_combat', { start: 0, end: 1 }),
+      frameRate: 2,
+      repeat: -1
+    });
+
+    this.anims.create({
+      key: 'boss1_attack',
+      frames: this.anims.generateFrameNumbers('boss1_combat', { start: 2, end: 7 }),
+      frameRate: 12,
+      repeat: 0
+    });
 
     this.anims.create({
       key: 'boss2_battle_play',

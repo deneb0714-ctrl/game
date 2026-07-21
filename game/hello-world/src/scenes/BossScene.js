@@ -283,6 +283,7 @@ class BossScene extends Phaser.Scene {
 
     // Spawn boss (hidden initially)
     var boss = this.physics.add.sprite(1920, 460, cfg.texture);
+    if (key === 'boss1') boss.play('boss1_idle');
     if (key === 'demon_lord') boss.play('demon_combat_anim');
     if (key === 'boss2') boss.play('boss2_battle_play');
     if (key === 'boss3_twins') boss.play('boss3_battle_play');
@@ -970,6 +971,7 @@ class BossScene extends Phaser.Scene {
     if (this.currentBoss && this.currentBoss.active && this.currentBoss.visible) {
       this.bossAttackTimer += delta;
       var interval = this.bossHP < this.bossMaxHP * 0.5 ? 600 : 1000;
+      if (this.currentBoss.configKey === 'boss1') interval = 3000; // ボス1の攻撃頻度を下げる
       if (this.inunekoBoostActive) interval = Math.floor(interval * 0.5); // 犬猫スター弾幕加速
       if (this.currentBoss.configKey === 'boss3_twins') interval = 1200; // 兄の攻撃頻度を上げる
       if (this.currentBoss.configKey === 'doctor') interval = this.bossHP < this.bossMaxHP * 0.5 ? 1400 : 1800; // 博士の攻撃頻度を上げる
@@ -1083,6 +1085,12 @@ class BossScene extends Phaser.Scene {
 
     // boss1（筋肉）は斬撃攻撃
     if (this.currentBoss.configKey === 'boss1') {
+      this.currentBoss.play('boss1_attack');
+      this.currentBoss.once('animationcomplete', () => {
+         if (this.currentBoss && this.currentBoss.active) {
+            this.currentBoss.play('boss1_idle');
+         }
+      });
       this.attackSlash(x, y);
       return;
     }
@@ -1418,6 +1426,7 @@ class BossScene extends Phaser.Scene {
   fireSlash(fromX, fromY) {
     var slash = this.enemyBullets.create(fromX, fromY, 'slash_attack');
     if (!slash) return;
+    slash.damage = 2; // ボス1の斬撃ダメージを2にする
     slash.setVelocityX(-300); // 左方向に低速（大幅に緩和）
     slash.setScale(2);        // 縦長の斬撃を少し拡大
     slash.setDepth(9);
@@ -1562,7 +1571,8 @@ class BossScene extends Phaser.Scene {
     }
 
     obj.destroy();
-    MOT.flags.playerHP--;
+    let dmg = obj.damage || 1;
+    MOT.flags.playerHP -= dmg;
     this.cameras.main.shake(150, 0.008);
     this.playerInvincible = true;
     player.setTint(0xFF4B6E);
