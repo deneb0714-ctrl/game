@@ -228,7 +228,7 @@ class BossScene extends Phaser.Scene {
   getBossConfig(key) {
     var configs = {
       boss1: {
-        texture: 'boss1_combat', name: '幹部1 – 筋肉', hp: 80, scale: 0.15,
+        texture: 'boss1_combat', name: '幹部1 – 筋肉', hp: 80, scale: 3.5,
         intro: '「貴様が博士の人形か。\nこの俺の拳で叩き潰してやる！」',
         defeat: '「馬鹿な…この俺が…！」',
         choices: [
