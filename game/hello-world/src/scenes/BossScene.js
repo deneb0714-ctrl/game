@@ -1373,11 +1373,27 @@ class BossScene extends Phaser.Scene {
     var slash = this.enemyBullets.create(fromX, fromY, 'slash_attack');
     if (!slash) return;
     slash.damage = 2; // ボス1の斬撃ダメージ
-    slash.setScale(2);
+    
+    // 風圧っぽさを出すための調整
+    slash.setScale(1.5, 3.5); // 縦方向に大きく伸ばして風の刃を表現
+    slash.setAlpha(0.7); // 少し透かす
+    slash.setBlendMode(Phaser.BlendModes.ADD); // 加算合成で白っぽく光る風圧感を出す
     slash.setDepth(9);
     
     // 角度に合わせて回転させる
     slash.setAngle(angleDeg);
+    
+    // 風の揺らぎ（脈動）を表現するアニメーション
+    this.tweens.add({
+      targets: slash,
+      scaleX: 2.5,
+      scaleY: 4.5,
+      alpha: 0.4,
+      duration: 200,
+      yoyo: true,
+      repeat: -1,
+      ease: 'Sine.easeInOut'
+    });
     
     // 速度設定
     var speed = 350;
