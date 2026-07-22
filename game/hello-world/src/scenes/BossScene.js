@@ -406,12 +406,12 @@ class BossScene extends Phaser.Scene {
              // Doctor intro
              var w = 1920, h = 1080;
              var dimBg = this.add.rectangle(w/2, h/2, w, h, 0x000000, 0.6).setAlpha(0).setDepth(89);
-             this.heroImage = this.add.image(300, h / 2, 'hero_stand').setAlpha(0).setDepth(90);
+              this.heroImage = this.add.image(300, h / 2, 'hero_awaken_smile_weapon').setAlpha(0).setDepth(90);
              var hScale = 750 / this.heroImage.width;
              this.heroImage.setScale(hScale);
              this.heroImage.setY(100 + (this.heroImage.height * hScale) / 2);
     // removed demonImage init
-             this.doctorImage = this.add.image(w - 300, h / 2, 'doctor_stand').setAlpha(0).setDepth(90);
+              this.doctorImage = this.add.image(w - 300, h / 2, 'doctor_stand_open').setAlpha(0).setDepth(90);
              var docScale = 750 / this.doctorImage.width;
              this.doctorImage.setScale(docScale);
              this.doctorImage.setY(100 + (this.doctorImage.height * docScale) / 2);
@@ -3108,16 +3108,41 @@ class BossScene extends Phaser.Scene {
                           await sayDemon('「あいつはこの世界に人間以上の存在がいることが許せないのだ。わらわはやつに襲われていた魔族を保護し、あいつとながい間戦ってきた。」');
                           await sayDemon('「ながい、ながい戦いだった。……やつは気の毒な奴じゃ。だが、それはわらわたちを滅ぼす理由にはならない。」');
                           
-                          await sayDevice('「…はははは。すべて話されてしまったみたいだな」');
+                          if (this.heroImage && this.heroImage.active) {
+                              this.heroImage.setTexture('hero_awaken_smile_weapon');
+                              var hScale = 750 / (this.heroImage.width || 1080);
+                              this.heroImage.setScale(hScale);
+                              this.heroImage.setY(100 + ((this.heroImage.height || 1080) * hScale) / 2);
+                          }
+                          
+                          if (!this.doctorImage || !this.doctorImage.active) {
+                              this.doctorImage = this.add.image(1920 - 300, 1080 / 2, 'doctor_stand_open').setAlpha(0).setDepth(90);
+                              var docScale = 750 / (this.doctorImage.width || 600);
+                              this.doctorImage.setScale(docScale);
+                              this.doctorImage.setY(100 + ((this.doctorImage.height || 1000) * docScale) / 2);
+                          } else {
+                              this.doctorImage.setTexture('doctor_stand_open');
+                          }
+
+                          const localSayDoctor = (text) => new Promise(res => {
+                              this.tweens.add({ targets: dimBg, alpha: 0.6, duration: 300 });
+                              if(this.heroImage) this.tweens.add({targets: this.heroImage, alpha: 0.4, duration: 300});
+                              if(this.demonImage) this.tweens.add({targets: this.demonImage, alpha: 0.4, duration: 300});
+                              if(this.inunekoImage) this.tweens.add({targets: this.inunekoImage, alpha: 0.4, duration: 300});
+                              if(this.doctorImage) this.tweens.add({targets: this.doctorImage, alpha: 1, duration: 300});
+                              this.showDialogue('博士', text, res);
+                          });
+
+                          await localSayDoctor('「…はははは。すべて話されてしまったみたいだな」');
                           await sayHero('「！」');
-                          await sayDevice('「だが、気づくのが遅い。お前たちがのんきに弾幕で遊んでいる間にこちらの準備はすべて整った」');
-                          await sayDevice('「これまで集めたデータ、実験、検証。すべて申し分ない。」');
+                          await localSayDoctor('「だが、気づくのが遅い。お前たちがのんきに弾幕で遊んでいる間にこちらの準備はすべて整った」');
+                          await localSayDoctor('「これまで集めたデータ、実験、検証。すべて申し分ない。」');
                           await sayDemon('「なんだ？！」', 'demon_lord_shock');
                           if (this.inunekoImage && this.inunekoImage.active) {
                               const localSayInuneko = (text) => new Promise(res => { this.tweens.add({ targets: dimBg, alpha: 0.6, duration: 300 }); if(this.heroImage) this.tweens.add({targets: this.heroImage, alpha: 0.4, duration: 300}); if(this.inunekoImage) this.tweens.add({targets: this.inunekoImage, alpha: 1, duration: 300}); if(this.demonImage) this.tweens.add({targets: this.demonImage, alpha: 0.4, duration: 300}); this.showDialogue('犬猫☆すたー', text, res); });
                               await localSayInuneko('「にゃわわ！？」');
                           }
-                          await sayDevice('「さぁ、最終決戦といこうじゃないか！」');
+                          await localSayDoctor('「さぁ、最終決戦といこうじゃないか！」');
                           this.bossQueue.push('doctor');
                           this.proceedToNextArea(boss, true);
                           return;
