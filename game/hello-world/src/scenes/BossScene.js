@@ -406,12 +406,12 @@ class BossScene extends Phaser.Scene {
              // Doctor intro
              var w = 1920, h = 1080;
              var dimBg = this.add.rectangle(w/2, h/2, w, h, 0x000000, 0.6).setAlpha(0).setDepth(89);
-              this.heroImage = this.add.image(300, h / 2, 'hero_awaken_smile_weapon').setAlpha(0).setDepth(90);
+              this.heroImage = this.add.image(300, h / 2, 'hero_stand_corrupted').setAlpha(0).setDepth(90);
              var hScale = 750 / this.heroImage.width;
              this.heroImage.setScale(hScale);
              this.heroImage.setY(100 + (this.heroImage.height * hScale) / 2);
     // removed demonImage init
-              this.doctorImage = this.add.image(w - 300, h / 2, 'doctor_stand_open').setAlpha(0).setDepth(90);
+              this.doctorImage = this.add.image(w - 300, h / 2, 'doctor_awaken_smile_weapon').setAlpha(0).setDepth(90);
              var docScale = 750 / this.doctorImage.width;
              this.doctorImage.setScale(docScale);
              this.doctorImage.setY(100 + (this.doctorImage.height * docScale) / 2);
@@ -2819,14 +2819,14 @@ class BossScene extends Phaser.Scene {
                           
                           this.textures.get('doctor_stand').setFilter(Phaser.Textures.FilterMode.LINEAR);
                           var docScale = 750 / this.textures.get('doctor_stand').getSourceImage().width;
-                          let doctorImage = this.add.image(1920 - 300, 1080 / 2, 'doctor_stand').setAlpha(0).setDepth(90);
+                          let doctorImage = this.add.image(1920 - 300, 1080 / 2, 'doctor_awaken_straight_dying').setAlpha(0).setDepth(90);
                           doctorImage.setScale(docScale);
                           doctorImage.setY(100 + (this.textures.get('doctor_stand').getSourceImage().height * docScale) / 2);
                           
                            if (!this.heroImage || !this.heroImage.active) {
-                               this.heroImage = this.add.image(300, 1080 / 2, 'hero_awaken_straight_dying').setAlpha(0).setDepth(90);
+                               this.heroImage = this.add.image(300, 1080 / 2, 'hero_stand_silent').setAlpha(0).setDepth(90);
                            } else {
-                               this.heroImage.setTexture('hero_awaken_straight_dying');
+                               this.heroImage.setTexture('hero_stand_silent');
                            }
                            var hScale = 750 / this.heroImage.width;
                            this.heroImage.setScale(hScale);
@@ -2889,7 +2889,7 @@ class BossScene extends Phaser.Scene {
                                await sayDoctorLab('「お前は”勇者”なんかじゃない、俺の最高傑作のはずだったんだがな。」');
                                
                                // 自害直前に立ち絵を「覚醒_真顔_武器展開」に変更
-                               if (this.heroImage) this.heroImage.setTexture('hero_awaken_straight_weapon');
+                               if (doctorImage) doctorImage.setTexture('doctor_awaken_straight_weapon');
                                
                                await sayHeroLab('「あなたがやったことは許せない。だけど、ここであなたを殺したら僕はあなたと同じになってしまう。」');
                                await sayDoctorLab('「そうか……。」');
@@ -2897,7 +2897,7 @@ class BossScene extends Phaser.Scene {
                                await sayHeroLab('「！」');
                            } else {
                                // 自害直前に立ち絵を「覚醒_真顔_武器展開」に変更
-                               if (this.heroImage) this.heroImage.setTexture('hero_awaken_straight_weapon');
+                               if (doctorImage) doctorImage.setTexture('doctor_awaken_straight_weapon');
                                
                                await sayHeroLab('「できない...。あなたがやったことは許せないけど、それでもあなたは僕の...」');
                                await sayDoctorLab('「全く...本当にどうしようもない欠陥品だな。」');
@@ -3108,20 +3108,13 @@ class BossScene extends Phaser.Scene {
                           await sayDemon('「あいつはこの世界に人間以上の存在がいることが許せないのだ。わらわはやつに襲われていた魔族を保護し、あいつとながい間戦ってきた。」');
                           await sayDemon('「ながい、ながい戦いだった。……やつは気の毒な奴じゃ。だが、それはわらわたちを滅ぼす理由にはならない。」');
                           
-                          if (this.heroImage && this.heroImage.active) {
-                              this.heroImage.setTexture('hero_awaken_smile_weapon');
-                              var hScale = 750 / (this.heroImage.width || 1080);
-                              this.heroImage.setScale(hScale);
-                              this.heroImage.setY(100 + ((this.heroImage.height || 1080) * hScale) / 2);
-                          }
-                          
                           if (!this.doctorImage || !this.doctorImage.active) {
-                              this.doctorImage = this.add.image(1920 - 300, 1080 / 2, 'doctor_stand_open').setAlpha(0).setDepth(90);
-                              var docScale = 750 / (this.doctorImage.width || 600);
+                              this.doctorImage = this.add.image(1920 - 300, 1080 / 2, 'doctor_awaken_smile_weapon').setAlpha(0).setDepth(90);
+                              var docScale = 750 / (this.doctorImage.width || 750);
                               this.doctorImage.setScale(docScale);
                               this.doctorImage.setY(100 + ((this.doctorImage.height || 1000) * docScale) / 2);
                           } else {
-                              this.doctorImage.setTexture('doctor_stand_open');
+                              this.doctorImage.setTexture('doctor_awaken_smile_weapon');
                           }
 
                           const localSayDoctor = (text) => new Promise(res => {

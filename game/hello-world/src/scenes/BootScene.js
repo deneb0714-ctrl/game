@@ -146,9 +146,9 @@ class BootScene extends Phaser.Scene {
     this.load.image('hero_stand_silent', 'assets/images/hero_stand_silent.png?v=' + v);
     this.load.image('hero_stand_corrupted', 'assets/images/hero_stand_corrupted.png?v=' + v);
     this.load.image('hero_cry', 'assets/images/hero_cry.png?v=' + v);
-    this.load.image('hero_awaken_smile_weapon', 'assets/images/' + encodeURIComponent('覚醒_笑_武器展開') + '.png?v=' + v);
-    this.load.image('hero_awaken_straight_dying', 'assets/images/' + encodeURIComponent('覚醒_真顔_瀕死') + '.png?v=' + v);
-    this.load.image('hero_awaken_straight_weapon', 'assets/images/' + encodeURIComponent('覚醒_真顔_武器展開') + '.png?v=' + v);
+    this.load.image('doctor_awaken_smile_weapon', 'assets/images/' + encodeURIComponent('覚醒_笑_武器展開') + '.png?v=' + v);
+    this.load.image('doctor_awaken_straight_dying', 'assets/images/' + encodeURIComponent('覚醒_真顔_瀕死') + '.png?v=' + v);
+    this.load.image('doctor_awaken_straight_weapon', 'assets/images/' + encodeURIComponent('覚醒_真顔_武器展開') + '.png?v=' + v);
 
 
     this.load.image('demon_lord_normal', 'assets/images/demon_lord_normal.png?v=' + v);
