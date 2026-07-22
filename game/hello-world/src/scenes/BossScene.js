@@ -257,7 +257,7 @@ class BossScene extends Phaser.Scene {
         choices: []
       },
       doctor: {
-        texture: 'doctor_normal', name: '博士', hp: 450, scale: 0.5,
+        texture: 'doctor_awaken_smile_weapon', name: '博士', hp: 450, scale: 0.28,
         intro: '「さぁ、最終決戦といこうじゃないか！」',
         defeat: '「驚いた...まさかお前がここまでやるとはな」',
         choices: []
@@ -412,7 +412,7 @@ class BossScene extends Phaser.Scene {
              this.heroImage.setY(100 + (this.heroImage.height * hScale) / 2);
     // removed demonImage init
               this.doctorImage = this.add.image(w - 300, h / 2, 'doctor_awaken_smile_weapon').setAlpha(0).setDepth(90);
-             var docScale = 750 / this.doctorImage.width;
+             var docScale = 600 / this.doctorImage.width;
              this.doctorImage.setScale(docScale);
              this.doctorImage.setY(100 + (this.doctorImage.height * docScale) / 2);
              
@@ -2818,7 +2818,7 @@ class BossScene extends Phaser.Scene {
                           await new Promise(r => this.time.delayedCall(1000, r));
                           
                           this.textures.get('doctor_stand').setFilter(Phaser.Textures.FilterMode.LINEAR);
-                          var docScale = 750 / this.textures.get('doctor_stand').getSourceImage().width;
+                          var docScale = 600 / this.textures.get('doctor_stand').getSourceImage().width;
                           let doctorImage = this.add.image(1920 - 300, 1080 / 2, 'doctor_awaken_straight_dying').setAlpha(0).setDepth(90);
                           doctorImage.setScale(docScale);
                           doctorImage.setY(100 + (this.textures.get('doctor_stand').getSourceImage().height * docScale) / 2);
@@ -3010,7 +3010,7 @@ class BossScene extends Phaser.Scene {
                           
                           // 博士的立ち絵
                           this.doctorImage = this.add.image(1920 - 300, 1080 / 2, 'doctor_stand').setAlpha(0).setDepth(90);
-                          var docScale = 750 / this.doctorImage.width;
+                          var docScale = 600 / this.doctorImage.width;
                           this.doctorImage.setScale(docScale);
                           this.doctorImage.setY(100 + (this.doctorImage.height * docScale) / 2);
                           
@@ -3114,7 +3114,7 @@ class BossScene extends Phaser.Scene {
                               this.doctorImage.setTexture('doctor_awaken_smile_weapon');
                           }
                           this.textures.get('doctor_awaken_smile_weapon').setFilter(Phaser.Textures.FilterMode.LINEAR);
-                          var docScale = 750 / (this.textures.get('doctor_awaken_smile_weapon').getSourceImage().width || 750);
+                          var docScale = 600 / (this.textures.get('doctor_awaken_smile_weapon').getSourceImage().width || 750);
                           this.doctorImage.setScale(docScale);
                           this.doctorImage.setY(100 + ((this.textures.get('doctor_awaken_smile_weapon').getSourceImage().height || 1000) * docScale) / 2);
 
@@ -3262,7 +3262,7 @@ class BossScene extends Phaser.Scene {
                       // 勇者と博士の立ち絵
                       var docImg = this.add.image(1920 - 300, 1080/2, 'doctor_stand').setDepth(95);
                       this.textures.get('doctor_stand').setFilter(Phaser.Textures.FilterMode.LINEAR);
-                      var docScale = 750 / this.textures.get('doctor_stand').getSourceImage().width;
+                      var docScale = 600 / this.textures.get('doctor_stand').getSourceImage().width;
                       docImg.setScale(docScale);
                       docImg.setY(100 + (this.textures.get('doctor_stand').getSourceImage().height * docScale) / 2);
                       
