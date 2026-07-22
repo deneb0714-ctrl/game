@@ -1901,7 +1901,8 @@ class BossScene extends Phaser.Scene {
                 
               } else if (key === 'boss2') {
                 await sayEnemyUnknown('「あは、お客さんだ！」', 'boss2_normal');
-                await sayDevice('「やはり来たか。奴は○○。魔王の狂犬だ。若くして魔王軍に入ったが、魔王の言うこと以外は聞かない。奴は2丁の拳銃を使って戦う。片方だけに気を取られるなよ」');
+                await sayDevice('「やはり来たか。奴はトゥレロス。魔王のみに従う犬だ。」');
+                await sayDevice('「若くして魔王軍に入ったが、魔王の言うことしか聞かず、己の楽しさだけを求める狂人だ。奴は2丁の拳銃を使って戦う。片方だけに気を取られるなよ」');
                 
                 [dimBg, enemyFrame, enemyLabel, bossImage, sisterImage, this.heroImage].filter(Boolean).forEach(t => t.setVisible(false));
                 this.currentBoss.setVisible(true); this.currentBoss.body.enable = true;
@@ -1909,8 +1910,13 @@ class BossScene extends Phaser.Scene {
                 await new Promise(r => this.tweens.add({ targets: this.currentBoss, x: 1400, duration: 1200, ease: 'Power2', onComplete: r }));
                 this.tweens.add({ targets: this.currentBoss, y: this.currentBoss.y - 30, yoyo: true, repeat: -1, duration: 1000, ease: 'Sine.easeInOut' });
                 
-                await sayEnemyName('敵幹部2', '「××（敵幹部１）はやられたみたいだね。あいつ力はあるくせに馬鹿だから負けるんだよ。まぁいいや。さっさと君を倒して魔王様に褒めてもらおう」', 'boss2_normal');
+                await sayEnemyName('トゥレロス', '「クラトスは負けたみたいだね。あいつ力はあるくせに馬鹿だから負けるんだよ。まぁいいや。さっさと君を倒して魔王様のところに帰ろう。」', 'boss2_normal');
                 await sayHero('「（……やっぱり脳筋だったのか）」');
+                await sayHero('「倒すんじゃなくて、連れて帰るんじゃないのか？」');
+                await sayEnemyName('トゥレロス', '「うん？そういえばそうだった！でもなんで君が知ってるの？」', 'boss2_normal');
+                await sayEnemyName('トゥレロス', '「わかった。あの馬鹿が言いやがったな……。」', 'boss2_normal');
+                await sayHero('「でも、僕も負けるつもりはないよ。」');
+                await sayEnemyName('トゥレロス', '「いいね！！楽しくなりそうで嬉しいよ！」', 'boss2_normal');
                 
               } else if (key === 'boss3_twins') {
                 await sayEnemyUnknown('「…来たか」', 'brother_normal', '男');
@@ -2202,12 +2208,12 @@ class BossScene extends Phaser.Scene {
               let c = await askChoice('1. 心臓を打ち抜く', '2. 見逃す');
               if (c === 1) { MOT.flags.dollPoints++; MOT.flags.killedTwins = true; MOT.flags.killedBoss2 = true;
                 if (MOT.flags.killedBoss1) {
-                  await sayEnemyB2('「はは…あいつと同じで負けるのはむかつくけど、戦いは楽しかったしまあいいかな」', 'boss2_normal_dying');
-                  MOT.Audio.playSelect();
+                  await sayEnemyB2('「はは…！あいつと同じで負けるのはむかつくけど、戦いは楽しかったしまあいいかな」', 'boss2_normal_dying');
+                  MOT.Audio.playSelect(); // 銃声SE
                   await sayDeviceB2('「よくやった。また一歩平和に近づいたな。幹部は残り二人だ。気を抜かずそのまま進んでいくといい」');
                 } else {
-                  await sayEnemyB2('「はは…負けたのはむかつくけど、戦いは楽しかったしまあいいかな」', 'boss2_normal_dying');
-                  MOT.Audio.playSelect();
+                  await sayEnemyB2('「はは…！負けたのはむかつくけど、戦いは楽しかったしまあいいかな」', 'boss2_normal_dying');
+                  MOT.Audio.playSelect(); // 銃声SE
                   await sayDeviceB2('「それでいい。そのまま進んで残りの幹部も魔王も倒すんだ」');
                 }
                 boss2DefImg.destroy();
