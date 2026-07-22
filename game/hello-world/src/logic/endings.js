@@ -6,8 +6,8 @@ window.MOT = window.MOT || {};
 MOT.ENDINGS = {
   END_ORPHAN: {
     key: 'END_ORPHAN',
-    title: 'HAPPY END',
-    subtitle: '— 身寄りのない勇者 —',
+    title: 'Hello World',
+    subtitle: '— Hello World —',
     description: '博士は、自分に向かって引き金を引いた。\n勇者が止めようとするも間に合わず、博士は満足したかの様に自害をした。',
     postDescription: 'こうして主人公は自由の身となった。\n身寄りをなくした主人公は魔王に拾われることとなった。',
     color: 0x4FD1FF,
