@@ -282,7 +282,8 @@ class BossScene extends Phaser.Scene {
     this.bossDefeated = false;
 
     // Spawn boss (hidden initially)
-    var boss = this.physics.add.sprite(1920, 460, cfg.texture);
+    var bossSpawnY = (key === 'doctor') ? 400 : 460;
+    var boss = this.physics.add.sprite(1920, bossSpawnY, cfg.texture);
     if (key === 'boss1') boss.play('boss1_idle');
     if (key === 'demon_lord') boss.play('demon_combat_anim');
     if (key === 'boss2') boss.play('boss2_battle_play');
