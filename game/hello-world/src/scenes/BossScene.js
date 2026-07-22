@@ -406,7 +406,7 @@ class BossScene extends Phaser.Scene {
              // Doctor intro
              var w = 1920, h = 1080;
              var dimBg = this.add.rectangle(w/2, h/2, w, h, 0x000000, 0.6).setAlpha(0).setDepth(89);
-              this.heroImage = this.add.image(300, h / 2, 'hero_stand_corrupted').setAlpha(0).setDepth(90);
+              this.heroImage = this.add.image(300, h / 2, 'hero_stand').setAlpha(0).setDepth(90);
              var hScale = 750 / this.heroImage.width;
              this.heroImage.setScale(hScale);
              this.heroImage.setY(100 + (this.heroImage.height * hScale) / 2);
@@ -2648,11 +2648,11 @@ class BossScene extends Phaser.Scene {
               if (forceSpare) {
                   // 主人公の立ち絵を覚醒差分に変更
                   if (this.heroImage) {
-                      this.heroImage.setTexture('hero_stand_corrupted');
+                      this.heroImage.setTexture('hero_stand');
                       this.heroImage.setScale(750 / 1080);
                       this.heroImage.setY(100 + (1920 * (750 / 1080)) / 2);
                   } else {
-                      this.heroImage = this.add.image(300, 1080 / 2, 'hero_stand_corrupted').setAlpha(0).setDepth(90);
+                      this.heroImage = this.add.image(300, 1080 / 2, 'hero_stand').setAlpha(0).setDepth(90);
                       this.heroImage.setScale(750 / 1080);
                       this.heroImage.setY(100 + (1920 * (750 / 1080)) / 2);
                   }
@@ -3015,7 +3015,7 @@ class BossScene extends Phaser.Scene {
                           this.doctorImage.setY(100 + (this.doctorImage.height * docScale) / 2);
                           
                           // 勇者（覚醒）の立ち絵
-                          this.heroImage = this.add.image(300, 1080 / 2, 'hero_stand_corrupted').setAlpha(0).setDepth(90);
+                          this.heroImage = this.add.image(300, 1080 / 2, 'hero_stand').setAlpha(0).setDepth(90);
                           var newHeroScale = 750 / 1080; // 画像の幅が1080であることを前提に手動計算
                           this.heroImage.setScale(newHeroScale);
                           this.heroImage.setY(100 + (1920 * newHeroScale) / 2);
@@ -3110,12 +3110,13 @@ class BossScene extends Phaser.Scene {
                           
                           if (!this.doctorImage || !this.doctorImage.active) {
                               this.doctorImage = this.add.image(1920 - 300, 1080 / 2, 'doctor_awaken_smile_weapon').setAlpha(0).setDepth(90);
-                              var docScale = 750 / (this.doctorImage.width || 750);
-                              this.doctorImage.setScale(docScale);
-                              this.doctorImage.setY(100 + ((this.doctorImage.height || 1000) * docScale) / 2);
                           } else {
                               this.doctorImage.setTexture('doctor_awaken_smile_weapon');
                           }
+                          this.textures.get('doctor_awaken_smile_weapon').setFilter(Phaser.Textures.FilterMode.LINEAR);
+                          var docScale = 750 / (this.textures.get('doctor_awaken_smile_weapon').getSourceImage().width || 750);
+                          this.doctorImage.setScale(docScale);
+                          this.doctorImage.setY(100 + ((this.textures.get('doctor_awaken_smile_weapon').getSourceImage().height || 1000) * docScale) / 2);
 
                           const localSayDoctor = (text) => new Promise(res => {
                               this.tweens.add({ targets: dimBg, alpha: 0.6, duration: 300 });
