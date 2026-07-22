@@ -1027,7 +1027,7 @@ class GameScene extends Phaser.Scene {
     const laneYs = [220, 460, 700];
     const enemy = this.enemyGroup.create(1920, laneYs[laneIndex], 'enemy_basic');
     enemy.setVelocityX(-speed);
-    enemy.hp = 1;
+    enemy.hp = this.currentStage >= 3 ? 2 : 1;
     enemy.fireTimer = this.time.addEvent({
       delay: Phaser.Math.Between(1500, 2500),
       callback: () => {

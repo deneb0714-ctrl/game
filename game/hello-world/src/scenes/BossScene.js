@@ -1932,11 +1932,14 @@ class BossScene extends Phaser.Scene {
                 this.tweens.add({ targets: this.currentBoss, y: this.currentBoss.y - 30, yoyo: true, repeat: -1, duration: 1000, ease: 'Sine.easeInOut' });
                 this.tweens.add({ targets: this.sisterBoss, y: this.sisterBoss.y + 30, yoyo: true, repeat: -1, duration: 1100, ease: 'Sine.easeInOut' });
                 
-                await sayEnemyName('男', '「君は博士に騙されている。悪いことは言わないからこちらの味方になった方がいい」');
+                await sayDevice('「こいつらに名前なんてない。さっさと倒せ。」');
+                await sayEnemyName('エディオ', '「やめてよ。魔王様に付けてもらった素敵な名前があるんだ。僕がエディオで、」', 'brother_normal', '男');
+                await sayEnemyName('エナリア', '「私がエナリア。魔王様が、捨てられてた私たちを拾ってくれたの。」', 'sister_normal', '女');
+                await sayEnemyName('エディオ', '「君は博士に騙されている。悪いことは言わないからこちらの味方になった方がいい」', 'brother_normal', '男');
                 await sayDevice('「彼らの言葉に耳を傾けてはいけない。早く倒すんだ。」');
                 await sayHero('「…」');
-                await sayEnemyName('女', '「…そう。意思は硬いのね。仕方ないわ兄様」');
-                await sayEnemyName('男', '「君を彼女（魔王）の元にはいかせない。ここで食い止めるよ」');
+                await sayEnemyName('エナリア', '「…そう。意思は硬いのね。仕方ないわ兄様」', 'sister_normal', '女');
+                await sayEnemyName('エディオ', '「君を彼女の元にはいかせない。ここで食い止めるよ」', 'brother_normal', '男');
               }
               
               this.tweens.add({
@@ -3386,27 +3389,31 @@ class BossScene extends Phaser.Scene {
         const sayDevice = (text) => new Promise(res => { this.tweens.add({ targets: dimBg, alpha: 0.6, duration: 300 }); this.tweens.add({targets: this.heroImage, alpha: 0.4, duration: 300}); if(this.sisterImage) this.tweens.add({targets: this.sisterImage, alpha: 0.4, duration: 300}); if(this.brotherImage) this.tweens.add({targets: this.brotherImage, alpha: 0.4, duration: 300}); this.showDeviceDialogue(text, res); });
         
         const sayHero = (text) => new Promise(res => { this.tweens.add({ targets: dimBg, alpha: 0.6, duration: 300 }); this.tweens.add({targets: this.heroImage, alpha: 1, duration: 300}); if(this.sisterImage) this.tweens.add({targets: this.sisterImage, alpha: 0.4, duration: 300}); if(this.brotherImage) this.tweens.add({targets: this.brotherImage, alpha: 0.4, duration: 300}); if (text === '「……」' || text === '「……。」' || text === '「…」') { this.heroImage.setTexture('hero_stand_silent'); } else { this.heroImage.setTexture('hero_stand'); } this.heroImage.setScale(750 / this.heroImage.width); this.heroImage.setY(100 + (this.heroImage.height * this.heroImage.scaleY) / 2); this.showDialogue('勇者', text, res); });
-        const sayMan = (text) => new Promise(res => { this.tweens.add({ targets: dimBg, alpha: 0.6, duration: 300 }); this.tweens.add({targets: this.heroImage, alpha: 0.4, duration: 300}); if(this.sisterImage) { this.tweens.add({targets: this.sisterImage, alpha: 0.4, duration: 300}); this.sisterImage.setDepth(90); } if(this.brotherImage) { this.tweens.add({targets: this.brotherImage, alpha: 1, duration: 300}); this.brotherImage.setDepth(91); } this.showDialogue('男', text, res); });
-        const sayWoman = (text) => new Promise(res => { this.tweens.add({ targets: dimBg, alpha: 0.6, duration: 300 }); this.tweens.add({targets: this.heroImage, alpha: 0.4, duration: 300}); if(this.sisterImage) { this.tweens.add({targets: this.sisterImage, alpha: 1, duration: 300}); this.sisterImage.setDepth(91); } if(this.brotherImage) { this.tweens.add({targets: this.brotherImage, alpha: 0.4, duration: 300}); this.brotherImage.setDepth(90); } this.showDialogue('女', text, res); });
+        const sayMan = (text, name = '男') => new Promise(res => { this.tweens.add({ targets: dimBg, alpha: 0.6, duration: 300 }); this.tweens.add({targets: this.heroImage, alpha: 0.4, duration: 300}); if(this.sisterImage) { this.tweens.add({targets: this.sisterImage, alpha: 0.4, duration: 300}); this.sisterImage.setDepth(90); } if(this.brotherImage) { this.tweens.add({targets: this.brotherImage, alpha: 1, duration: 300}); this.brotherImage.setDepth(91); } this.showDialogue(name, text, res); });
+        const sayWoman = (text, name = '女') => new Promise(res => { this.tweens.add({ targets: dimBg, alpha: 0.6, duration: 300 }); this.tweens.add({targets: this.heroImage, alpha: 0.4, duration: 300}); if(this.sisterImage) { this.tweens.add({targets: this.sisterImage, alpha: 1, duration: 300}); this.sisterImage.setDepth(91); } if(this.brotherImage) { this.tweens.add({targets: this.brotherImage, alpha: 0.4, duration: 300}); this.brotherImage.setDepth(90); } this.showDialogue(name, text, res); });
 
         (async () => {
           await sayDevice('「さぁ早くとどめを刺せ！」');
           let c = await askChoice('1. 心臓を打ち抜く', '2. 見逃す');
           if (c === 1) { MOT.flags.dollPoints++; MOT.flags.killedTwins = true;
-            await sayMan('「死にボイスなんかほしい」');
-            await sayWoman('「死にボイスなんかほしい」');
-            MOT.Audio.playSelect(); MOT.Audio.playSelect(); // Gunshot x2
-            if (MOT.flags.killedBoss1 || MOT.flags.killedBoss2) {
-              await sayDevice('「まさか生きていたとはな…いや、なんでもない。そのまま進んでくれ」');
+            if (MOT.flags.killedBoss1 && MOT.flags.killedBoss2) {
+              await sayMan('「目を...覚ましてくれ...」', 'エディオ');
+              await sayWoman('「このままいけば、あなた取返しのつかないことになるわ...」', 'エナリア');
+              MOT.Audio.playSelect(); MOT.Audio.playSelect(); // 銃声SE2回
+              await sayDevice('「よくやった。君は役に立つみたいだ。こいつらとは違うな…いや、なんでもない。そのまま進んでくれ。そろそろ魔王城に着くはずだ。」');
             } else {
-              await sayDevice('「よくやった。君は役に立つじゃないか。こいつらとは違うな…いや、なんでもない。そのまま進んでくれ」');
+              await sayMan('「これも、因果なのかな...僕たちは奴から逃げきれなかった」', 'エディオ');
+              await sayWoman('「兄さま！！」', 'エナリア');
+              MOT.Audio.playSelect(); MOT.Audio.playSelect(); // 銃声SE2回
+              await sayDevice('「まさか生きていたとはな…いや、なんでもない。そのまま進んでくれ」');
+              await sayDevice('「魔王を逃がすなんてしたらわかっているな？」');
             }
             this.skipToDemonLord(false);
           } else {
             if (this.brotherImage) this.brotherImage.setTexture('brother_hurt');
             if (MOT.flags.killedBoss1 || MOT.flags.killedBoss2) {
-              await sayMan('「君も何かおかしいって気が付いて来ただろう？博士の言うことなんて聞くべきじゃない」');
-              await sayWoman('「兄さまの言う通りよ。そんな奴、従う価値もない。」');
+              await sayMan('「君も何かおかしいって気が付いて来ただろう？博士の言うことなんて聞くべきじゃない」', '男');
+              await sayWoman('「兄さまの言う通りよ。そんな奴、従う価値もない。」', '女');
               if(this.sisterImage) {
                 this.tweens.add({ targets: this.sisterImage, alpha: 0, duration: 300, onComplete: () => { if(this.sisterImage) { this.sisterImage.destroy(); this.sisterImage = null; } } });
               }
@@ -3414,10 +3421,10 @@ class BossScene extends Phaser.Scene {
                 this.tweens.add({ targets: this.brotherImage, alpha: 0, duration: 300, onComplete: () => { if(this.brotherImage) { this.brotherImage.destroy(); this.brotherImage = null; } } });
               }
               await new Promise(r => this.tweens.add({ targets: [this.currentBoss, this.sisterBoss], x: 2200, duration: 1500, ease: 'Power2', onComplete: r }));
-              await sayDevice('「なぜ殺さない！そいつらの言うことはでたらめだ。魔王軍の言うことを聞く意味なんてないんだ。」');
+              await sayDevice('「なぜ殺さない！よりによってあいつらを生かすとは！！」');
             } else {
-              await sayMan('「君は、最初から気が付いてるんじゃないか？博士がおかしいって。」');
-              await sayWoman('「あなたは誰も殺してない。だから、こっち側に来なさい。魔王様も許してくれる。」');
+              await sayMan('「君は、最初から気が付いてるんじゃないか？博士がおかしいって。」', '男');
+              await sayWoman('「あなたは誰も殺してない。だから、こっち側に来なさい。魔王様も許してくれる。」', '女');
               if(this.sisterImage) {
                 this.tweens.add({ targets: this.sisterImage, alpha: 0, duration: 300, onComplete: () => { if(this.sisterImage) { this.sisterImage.destroy(); this.sisterImage = null; } } });
               }
