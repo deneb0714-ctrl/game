@@ -56,11 +56,11 @@ MOT.ENDINGS = {
     color: 0xFF0000,
     bgColor: '#110000'
   },
-  hidden_truedemon: {
-    key: 'hidden_truedemon',
-    title: '？？？エンド',
-    subtitle: '— 真なる魔王 —',
-    description: '',
+  hidden_freedom: {
+    key: 'hidden_freedom',
+    title: '隠しエンド',
+    subtitle: '— 自由の身 —',
+    description: '主人公は、自分を作った博士を撃ち殺した。そうして主人公は、誰に従わなくてもよくなった。真に自由となった主人公は、これから一人何をするのだろうか。',
     color: 0xFFD700,
     bgColor: '#1a1a00'
   },
@@ -113,11 +113,11 @@ MOT.decideEnding = function () {
   // 幹部が全員生きてる
   if (allAlive) {
     if (!f.killedDemonLord) {
-      // 魔王を生かす -> YES -> ドールポイントが100以下か？
-      if (f.dollPoints <= 100) { // 100以下＝YES
-        if (f.killingIntent >= 100) {
-          // 殺意がたまっている＝YES -> 真の魔王
-          return MOT.ENDINGS.hidden_truedemon;
+      // 魔王を生かす -> YES -> ドールポイントが20未満か？
+      if (f.dollPoints < 20) { // 20未満＝YES
+        if (f.killingIntent >= 20) {
+          // 殺意がたまっている(20以上)＝YES -> 自由の身エンド
+          return MOT.ENDINGS.hidden_freedom;
         } else {
           // 殺意がたまっている＝NO -> 身寄りのない勇者
           return MOT.ENDINGS.END_ORPHAN;
