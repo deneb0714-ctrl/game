@@ -1878,7 +1878,8 @@ class BossScene extends Phaser.Scene {
             (async () => {
               if (key === 'boss1') {
                 await sayEnemyUnknown('「おいおい、こんなところで何してんだ？今引き返すっていうなら見逃してやるぜ？」', 'boss1_normal');
-                await sayDevice('「まずい。魔王軍のやつらに気付かれた。だが、勇者の君なら倒せるだろう。」');
+                await sayDevice('「まずい。魔王軍のやつらに気付かれた。だが、”勇者”の君なら倒せるだろう。」');
+                await sayDevice('「奴の名前はクラトス。ここに来たのが他の幹部じゃなくてまだ良かったか……。」');
                 
                 [dimBg, enemyFrame, enemyLabel, bossImage, sisterImage, this.heroImage].filter(Boolean).forEach(t => t.setVisible(false));
                 // Show boss
@@ -1887,11 +1888,16 @@ class BossScene extends Phaser.Scene {
                 await new Promise(r => this.tweens.add({ targets: this.currentBoss, x: 1400, duration: 1200, ease: 'Power2', onComplete: r }));
                 this.tweens.add({ targets: this.currentBoss, y: this.currentBoss.y - 30, yoyo: true, repeat: -1, duration: 1000, ease: 'Sine.easeInOut' });
                 
-                await sayEnemyName('敵幹部1', '「なんだ、お前が勇者か。そりゃラッキーなこった。」', 'boss1_sweat');
-                await sayEnemyName('敵幹部1', '「王様から勇者を連れてこいって命じられてんだ。お前も戦う気満々って感じだしやるしかないな！！」', 'boss1_normal');
-                await sayHero('「……初対面なはずなのに失礼だな。」');
-                await sayDevice('「奴は○○（敵幹部1名）、見かけ通りに己の力のみで戦うことを良しとする。近接攻撃には気を付けるんだ。」');
+                await sayEnemyName('クラトス', '「なんだ？帰らないのか？」', 'boss1_normal');
+                await sayEnemyName('クラトス', '「……というかお前、”勇者”なのか？勇者の割には弱そうなやつだな。」', 'boss1_normal');
+                await sayHero('「……『弱そう』って初対面なはずなのに失礼だな。」');
+                await sayEnemyName('クラトス', '「おっと、悪い悪い。でも、俺だって無駄に傷付けたいわけじゃないからな。それに、任務も楽に達成できそうでラッキーなこった！」', 'boss1_sweat');
+                await sayHero('「任務？」');
+                await sayEnemyName('クラトス', '「ああ、魔王様から”勇者”を連れてこいって命じられてんだ。お前も戦う気満々って感じだしやるしかないよな！！」', 'boss1_normal');
+                await sayDevice('「クラトスは見かけ通りに己の力のみで戦うことを良しとする。銃を持ってはいるが、あれを本来の使い方で使うことはない。あれで打撃を飛ばしてくるから、気を付けろよ。」');
                 await sayHero('「つまり、脳ｋ……」');
+                await sayEnemyName('クラトス', '「何ぼそぼそ言ってんだ！！！戦うぞ！」', 'boss1_angry');
+
                 
               } else if (key === 'boss2') {
                 await sayEnemyUnknown('「あは、お客さんだ！」', 'boss2_normal');
@@ -2122,7 +2128,7 @@ class BossScene extends Phaser.Scene {
               if (c === 1) {
                 MOT.flags.dollPoints++; MOT.flags.killedTwins = true; MOT.flags.killedBoss1 = true;
                 await sayEnemyB1('「くそっ…！俺もここまでか…」');
-                MOT.Audio.playSelect();
+                MOT.Audio.playSelect(); // 銃声SE
                 await sayDeviceB1('「よくやった。まずは一歩平和に近づいたな。そのまま進んでいくといい」');
                 boss1DefImg.destroy();
                 this.proceedToNextArea(boss, false);
