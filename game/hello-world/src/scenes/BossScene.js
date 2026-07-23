@@ -1150,7 +1150,7 @@ class BossScene extends Phaser.Scene {
       let pattern = Phaser.Math.Between(0, 2);
       if (pattern === 0 || pattern === 1) {
         // 高速の斜め追尾レーザー（速度を1400に上げてレーザー感を強調）
-        MOT.fireHoming(this, x, y, 700, this.player, 0x4FD1FF, 'bullet_laser');
+        MOT.fireHoming(this, x, y, 1000, this.player, 0x4FD1FF, 'bullet_laser');
       } else {
         // レーン丸ごと攻撃（5秒警告後）
         this.fireLaneBeam();
@@ -1180,7 +1180,7 @@ class BossScene extends Phaser.Scene {
         this.time.delayedCall(200, () => MOT.fireLinear(this, x, ty, -800, 0, silver, 'bullet_enemy_white'));
       } else if (docPattern === 2) {
         // 兄のレーザー（シルバー化）
-        MOT.fireHoming(this, x, y, 700, this.player, silver, 'bullet_laser');
+        MOT.fireHoming(this, x, y, 1000, this.player, silver, 'bullet_laser');
         this.time.delayedCall(300, () => MOT.fireHoming(this, x, y, 1400, this.player, silver, 'bullet_laser'));
       } else if (docPattern === 3) {
         // 魔王の分裂球（シルバー化）
@@ -1843,11 +1843,12 @@ class BossScene extends Phaser.Scene {
               this.tweens.add({targets: this.heroImage, alpha: 0.4, duration: 300});
               this.showDialogue('???', text, res);
             });
-            const sayEnemyName = (name, text, tex = null) => new Promise(res => {
+            const sayEnemyName = (name, text, tex = null, speakerGender = null) => new Promise(res => {
               [dimBg, bossImage, sisterImage, this.heroImage].filter(Boolean).forEach(t => t.setVisible(true));
               if (!bossImage) { if (enemyFrame) enemyFrame.setVisible(true); if (enemyLabel) enemyLabel.setVisible(true); }
               else { if (enemyFrame) enemyFrame.setVisible(false); if (enemyLabel) enemyLabel.setVisible(false); }
-              if (name === '女' || name === '男') lastEnemySpeaker = name;
+              if (speakerGender === '女' || speakerGender === '男') lastEnemySpeaker = speakerGender;
+              else if (name === '女' || name === '男') lastEnemySpeaker = name;
               let useTex = tex;
               if (useTex === null) {
                  useTex = 'boss1_normal';
