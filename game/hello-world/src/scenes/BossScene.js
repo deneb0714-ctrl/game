@@ -3094,6 +3094,7 @@ class BossScene extends Phaser.Scene {
 
                           ending('hidden_freedom');
                       } else if (Kills === 0) {
+                          if (this.heroImage) this.heroImage.setTexture('hero_stand');
                           await sayDemon('「……結局我々を殺さず、お前は何をしにきたんだ？あの法螺吹きにけしかけられて、わらわたちを滅ぼしに来たんだろう？」');
                           
                           await new Promise(res => {
@@ -3110,34 +3111,92 @@ class BossScene extends Phaser.Scene {
                           await sayDemon('「ながい、ながい戦いだった。……やつは気の毒な奴じゃ。だが、それはわらわたちを滅ぼす理由にはならない。」');
                           
                           if (!this.doctorImage || !this.doctorImage.active) {
-                              this.doctorImage = this.add.image(1920 - 300, 1080 / 2, 'doctor_awaken_smile_weapon').setAlpha(0).setDepth(90);
+                              this.doctorImage = this.add.image(1920 - 300, 1080 / 2, 'doctor_awaken_smile').setAlpha(0).setDepth(90);
                           } else {
-                              this.doctorImage.setTexture('doctor_awaken_smile_weapon');
+                              this.doctorImage.setTexture('doctor_awaken_smile');
                           }
-                          this.textures.get('doctor_awaken_smile_weapon').setFilter(Phaser.Textures.FilterMode.LINEAR);
-                          var docScale = 600 / (this.textures.get('doctor_awaken_smile_weapon').getSourceImage().width || 750);
+                          this.textures.get('doctor_awaken_smile').setFilter(Phaser.Textures.FilterMode.LINEAR);
+                          var docScale = 600 / (this.textures.get('doctor_awaken_smile').getSourceImage().width || 750);
                           this.doctorImage.setScale(docScale);
-                          this.doctorImage.setY(100 + ((this.textures.get('doctor_awaken_smile_weapon').getSourceImage().height || 1000) * docScale) / 2);
+                          this.doctorImage.setY(100 + ((this.textures.get('doctor_awaken_smile').getSourceImage().height || 1000) * docScale) / 2);
 
-                          const localSayDoctor = (text) => new Promise(res => {
+                          const localSayDoctor = (text, tex='doctor_awaken_smile') => new Promise(res => {
+                              this.doctorImage.setTexture(tex);
                               this.tweens.add({ targets: dimBg, alpha: 0.6, duration: 300 });
                               if(this.heroImage) this.tweens.add({targets: this.heroImage, alpha: 0.4, duration: 300});
-                              if(this.demonImage) this.tweens.add({targets: this.demonImage, alpha: 0.4, duration: 300});
-                              if(this.inunekoImage) this.tweens.add({targets: this.inunekoImage, alpha: 0.4, duration: 300});
+                              if(this.demonImage) this.tweens.add({targets: this.demonImage, alpha: 0, duration: 300});
+                              if(this.inunekoImage) this.tweens.add({targets: this.inunekoImage, alpha: 0, duration: 300});
                               if(this.doctorImage) this.tweens.add({targets: this.doctorImage, alpha: 1, duration: 300});
                               this.showDialogue('博士', text, res);
                           });
+                          
+                          const localSayHero = (text) => new Promise(res => {
+                              this.tweens.add({ targets: dimBg, alpha: 0.6, duration: 300 });
+                              if(this.heroImage) this.tweens.add({targets: this.heroImage, alpha: 1, duration: 300});
+                              if(this.demonImage) this.tweens.add({targets: this.demonImage, alpha: 0, duration: 300});
+                              if(this.inunekoImage) this.tweens.add({targets: this.inunekoImage, alpha: 0, duration: 300});
+                              if(this.doctorImage) this.tweens.add({targets: this.doctorImage, alpha: 0.4, duration: 300});
+                              this.showDialogue('勇者', text, res);
+                          });
+                          
+                          const localSayDemon = (text) => new Promise(res => {
+                              this.tweens.add({ targets: dimBg, alpha: 0.6, duration: 300 });
+                              if(this.heroImage) this.tweens.add({targets: this.heroImage, alpha: 0.4, duration: 300});
+                              if(this.demonImage) this.tweens.add({targets: this.demonImage, alpha: 1, duration: 300});
+                              if(this.inunekoImage) this.tweens.add({targets: this.inunekoImage, alpha: 0.4, duration: 300});
+                              if(this.doctorImage) this.tweens.add({targets: this.doctorImage, alpha: 0, duration: 300});
+                              this.showDialogue('魔王', text, res);
+                          });
+                          
+                          const localSayInuneko = (text) => new Promise(res => {
+                              this.tweens.add({ targets: dimBg, alpha: 0.6, duration: 300 });
+                              if(this.heroImage) this.tweens.add({targets: this.heroImage, alpha: 0.4, duration: 300});
+                              if(this.demonImage) this.tweens.add({targets: this.demonImage, alpha: 0.4, duration: 300});
+                              if(this.inunekoImage) this.tweens.add({targets: this.inunekoImage, alpha: 1, duration: 300});
+                              if(this.doctorImage) this.tweens.add({targets: this.doctorImage, alpha: 0, duration: 300});
+                              this.showDialogue('犬猫☆スター', text, res);
+                          });
 
                           await localSayDoctor('「…はははは。すべて話されてしまったみたいだな」');
-                          await sayHero('「！」');
-                          await localSayDoctor('「だが、気づくのが遅い。お前たちがのんきに弾幕で遊んでいる間にこちらの準備はすべて整った」');
-                          await localSayDoctor('「これまで集めたデータ、実験、検証。すべて申し分ない。」');
-                          await sayDemon('「なんだ？！」', 'demon_lord_shock');
-                          if (this.inunekoImage && this.inunekoImage.active) {
-                              const localSayInuneko = (text) => new Promise(res => { this.tweens.add({ targets: dimBg, alpha: 0.6, duration: 300 }); if(this.heroImage) this.tweens.add({targets: this.heroImage, alpha: 0.4, duration: 300}); if(this.inunekoImage) this.tweens.add({targets: this.inunekoImage, alpha: 1, duration: 300}); if(this.demonImage) this.tweens.add({targets: this.demonImage, alpha: 0.4, duration: 300}); this.showDialogue('犬猫☆すたー', text, res); });
-                              await localSayInuneko('「にゃわわ！？」');
-                          }
-                          await localSayDoctor('「さぁ、最終決戦といこうじゃないか！」');
+                          await localSayHero('「！」');
+                          await localSayHero('「僕は……ずっとあなたに嘘をつかれていたんだね。」');
+                          await localSayDoctor('「嘘？違うな、そいつらを殺せば平和な世界が訪れる。」');
+                          await localSayDoctor('「私にとってな。」');
+                          await localSayHero('「でもそれは、あなた以外にとって最悪の世界そのもの。」');
+                          await localSayDoctor('「そうだな。しかしそれがどうした？自分の望む世界を目指すのは普通のことだろう？」');
+                          await localSayDoctor('「それと、魔族に恐怖し、滅んでほしいと願う人間はごまんといる。そいつらにとっても、いい世界となるだろう？」');
+                          
+                          await localSayDemon('「わらわたちはただ生きているだけだ！むやみに人を傷つけたりせん！」');
+                          await localSayInuneko('「そうわん！魔王様は、お前とは違って優しいにゃん！！」');
+                          
+                          await localSayHero('「僕は今までの敵と戦ってきて、皆が魔王のために命を賭して戦ってきたのを見た。」');
+                          await localSayHero('「沢山の人に慕われている魔王が、悪い奴だと思えない」');
+                          
+                          await localSayDoctor('「……面白い。ただの人形であるはずのお前が、そんな感情を持つなんてな。」');
+                          await localSayHero('「人形…？」');
+                          await localSayDoctor('「そうだ。お前は、勇者でもなんでもない。ただの兵器だよ。だからこそ、命令を下し、ただ魔王を殺すだけの存在になるはずだった。」');
+                          await localSayHero('「でも、僕はみんなを殺したくないと思った。」');
+                          await localSayHero('「みんな、魔王を殺しに来ているはずの僕も殺そうとしなかった。」');
+                          await localSayHero('「僕は知った。魔族は悪い奴じゃないって。みんなを殺そうとしているあなたこそ、この世界の悪だ！！！」');
+                          await localSayHero('「だからもう、あなたに従ったりはしない。」');
+                          
+                          await localSayDoctor('「……そうか。だが、それでも理解不能だな。そもそも、お前には思考力は組み込んでいなかった。しかし、お前には思考力が備わっていた。」');
+                          await localSayDoctor('「私が何度殺せと指示をし、選択権を奪ってもお前は最後まで従わなかった。」');
+                          await localSayDoctor('「最初から可笑しかった。お前は自分を勇者と認識したら、何も聞かず、考えず戦いに行くはずだった。」');
+                          await localSayDoctor('「お前はどうだ？勇者と呼びかけた私に対し、誰だと聞いた。ただ起動に時間がかかっているだけかと思ったが、その時には既に組み換えられていたんだな。」');
+                          
+                          await localSayHero('「違う！僕の考えは、決められたものなんかじゃない！」');
+                          await localSayDoctor('「本当にそう思っているのか？」');
+                          
+                          await localSayDoctor('「もっとも、お前が誰に操られていようが、何を選ぼうと、もう関係ない。私の準備はすべて整った。」');
+                          await localSayDoctor('「これまで集めたデータ、幾度となく繰り返した実験。すべて申し分ない。」');
+                          await localSayDoctor('「私は、今この瞬間のためだけに動いてきた！」');
+                          
+                          await localSayDemon('「なんだ？！」');
+                          await localSayInuneko('「にゃわわ！？」');
+                          
+                          await localSayDoctor('「さぁ、最終決戦といこうじゃないか！」', 'doctor_awaken_straight_weapon');
+
                           this.bossQueue.push('doctor');
                           this.proceedToNextArea(boss, true);
                           return;
