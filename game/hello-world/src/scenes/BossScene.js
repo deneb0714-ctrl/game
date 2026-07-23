@@ -1150,7 +1150,7 @@ class BossScene extends Phaser.Scene {
       let pattern = Phaser.Math.Between(0, 2);
       if (pattern === 0 || pattern === 1) {
         // 高速の斜め追尾レーザー（速度を1400に上げてレーザー感を強調）
-        MOT.fireHoming(this, x, y, 1400, this.player, 0x4FD1FF, 'bullet_laser');
+        MOT.fireHoming(this, x, y, 700, this.player, 0x4FD1FF, 'bullet_laser');
       } else {
         // レーン丸ごと攻撃（5秒警告後）
         this.fireLaneBeam();
@@ -1180,7 +1180,7 @@ class BossScene extends Phaser.Scene {
         this.time.delayedCall(200, () => MOT.fireLinear(this, x, ty, -800, 0, silver, 'bullet_enemy_white'));
       } else if (docPattern === 2) {
         // 兄のレーザー（シルバー化）
-        MOT.fireHoming(this, x, y, 1400, this.player, silver, 'bullet_laser');
+        MOT.fireHoming(this, x, y, 700, this.player, silver, 'bullet_laser');
         this.time.delayedCall(300, () => MOT.fireHoming(this, x, y, 1400, this.player, silver, 'bullet_laser'));
       } else if (docPattern === 3) {
         // 魔王の分裂球（シルバー化）
@@ -3094,7 +3094,11 @@ class BossScene extends Phaser.Scene {
 
                           ending('hidden_freedom');
                       } else if (Kills === 0) {
-                          if (this.heroImage) this.heroImage.setTexture('hero_stand');
+                          if (this.heroImage) {
+                              this.heroImage.setTexture('hero_stand');
+                              this.heroImage.setScale(750 / this.heroImage.width);
+                              this.heroImage.setY(100 + (this.heroImage.height * this.heroImage.scaleY) / 2);
+                          }
                           await sayDemon('「……結局我々を殺さず、お前は何をしにきたんだ？あの法螺吹きにけしかけられて、わらわたちを滅ぼしに来たんだろう？」');
                           
                           await new Promise(res => {

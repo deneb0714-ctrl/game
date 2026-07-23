@@ -615,13 +615,20 @@ class BootScene extends Phaser.Scene {
     gs.generateTexture('bullet_star', 20, 20);
     gs.destroy();
 
-    // Laser bullet for twin brother (長めのレーザーボルト)
+    // Laser bullet for twin brother and doctor (長めのレーザーボルト)
     const gl = this.make.graphics({ add: false });
+    // Outer wide glow
+    gl.fillStyle(0xffffff, 0.3);
+    gl.fillRect(0, 0, 400, 16); 
+    // Core line
+    gl.fillStyle(0xffffff, 0.6);
+    gl.fillRect(0, 4, 400, 8);
+    // Bright nodes
     gl.fillStyle(0xffffff, 1);
-    gl.fillRect(0, 4, 400, 4); 
-    gl.fillStyle(0xffffff, 0.5);
-    gl.fillRect(0, 2, 400, 8); // Glow
-    gl.generateTexture('bullet_laser', 400, 12);
+    for (let i = 0; i < 10; i++) {
+        gl.fillCircle(20 + i * 40, 8, 6);
+    }
+    gl.generateTexture('bullet_laser', 400, 16);
     gl.destroy();
   }
 
