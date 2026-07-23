@@ -1546,6 +1546,12 @@ class BossScene extends Phaser.Scene {
 
       obj.destroy();
       this.deactivateBarrier();
+      
+      // 同時にヒットした別の弾の判定を無視するための短い無敵時間を付与
+      this.playerInvincible = true;
+      this.time.delayedCall(150, () => {
+          this.playerInvincible = false;
+      });
 
       if (isJustGuard) {
         // ジャストガード（黄色のエフェクト）
