@@ -147,14 +147,17 @@ class StoryScene extends Phaser.Scene {
       let eye = { rx: 0, ry: 0 };
       const drawIris = () => {
         eyeMask.clear();
-        eyeMask.fillStyle(0x000000, 1);
         const w = 1920, h = 1080;
-        const cx = w / 2, cy = h / 2;
+        const cx = w / 2, cy = 400; // 楕円を少し上に配置 (背景・立ち絵の中心に合わせる)
         if (eye.rx <= 0 || eye.ry <= 0) {
+          eyeMask.fillStyle(0x000000, 1);
           eyeMask.fillRect(0, 0, w, h);
           return;
         }
-        if (eye.rx >= w && eye.ry >= h) return;
+        if (eye.rx >= w * 1.5 && eye.ry >= h * 1.5) return;
+        
+        // 1. 外側を黒く塗りつぶす (水平ストリップ方式)
+        eyeMask.fillStyle(0x000000, 1);
         const step = 6;
         for (let y = 0; y < h; y += step) {
           const my = y + step / 2;
@@ -167,38 +170,53 @@ class StoryScene extends Phaser.Scene {
             if (cx + dx < w) eyeMask.fillRect(cx + dx, y, w - (cx + dx), step + 1);
           }
         }
+        
+        // 2. 境界をぼかすため、内側にグラデーション用の楕円リングを多層描画する
+        const layers = 18;
+        for (let i = 1; i <= layers; i++) {
+          const t = i / layers;
+          const alpha = 0.15 * Math.pow(1 - t, 1.5);
+          const rScale = 1.0 - t * 0.35; // 1.0から0.65までなめらかにボカシ領域を作る
+          const ringRx = eye.rx * rScale;
+          const ringRy = eye.ry * rScale;
+          if (ringRx <= 0 || ringRy <= 0) continue;
+          
+          const lineWidth = Math.max(8, (eye.rx * 0.35) / layers + 2);
+          eyeMask.lineStyle(lineWidth, 0x000000, alpha);
+          eyeMask.strokeEllipse(cx, cy, ringRx * 2, ringRy * 2);
+        }
       };
       
       drawIris();
       
-      // 1. いったん瞬きして画面中央を楕円形に見せる
+      // 1. いったん瞬きして画面中央やや上を楕円形に見せる（ゆったりとした覚醒スピード）
       this.tweens.add({
         targets: eye,
-        rx: 850,
-        ry: 320,
-        duration: 600,
+        rx: 900,
+        ry: 350,
+        duration: 1000,
         ease: 'Sine.easeOut',
         onUpdate: drawIris
       });
       
-      // 2. 瞬きして閉じる
+      // 2. ゆっくり瞬きして閉じる（半開きを見せる待機時間を800ms確保）
       this.tweens.add({
         targets: eye,
         rx: 200,
         ry: 0,
-        duration: 250,
-        delay: 1000,
-        ease: 'Sine.easeIn',
+        duration: 500,
+        delay: 1800,
+        ease: 'Sine.easeInOut',
         onUpdate: drawIris
       });
       
-      // 3. 次開くときに全体が見えるように開く
+      // 3. 次開くときに全体が見えるようにゆっくり開く（閉じた待機時間を350ms確保）
       this.tweens.add({
         targets: eye,
-        rx: 1400,
-        ry: 900,
-        duration: 700,
-        delay: 1350,
+        rx: 1500,
+        ry: 950,
+        duration: 1200,
+        delay: 2650,
         ease: 'Sine.easeOut',
         onUpdate: drawIris,
         onComplete: () => {
