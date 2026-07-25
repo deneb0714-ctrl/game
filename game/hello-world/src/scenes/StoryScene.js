@@ -190,57 +190,35 @@ class StoryScene extends Phaser.Scene {
       
       drawIris();
       
-      // 1. 1回目の半開き（薄目を開ける。小さめの楕円で顔は見えない）
+      // 1. 半開き（薄目を開ける。小さめの楕円で顔は見えない）
       // 横幅(rx)はあまり変えずに上下(ry)だけを開くことで「上下から瞼が開く瞬き感」を強調
       this.tweens.add({
         targets: eye,
+        rx: 520,
+        ry: 130,
+        duration: 800,
+        ease: 'Sine.easeOut',
+        onUpdate: drawIris
+      });
+      
+      // 2. 瞬き（上下からパタッと閉じる）
+      this.tweens.add({
+        targets: eye,
         rx: 500,
-        ry: 110,
-        duration: 700,
-        ease: 'Sine.easeOut',
-        onUpdate: drawIris
-      });
-      
-      // 2. 1回目の瞬き（上下からパタッと閉じる）
-      this.tweens.add({
-        targets: eye,
-        rx: 480,
         ry: 0,
-        duration: 300,
-        delay: 900,
-        ease: 'Sine.easeIn',
+        duration: 400,
+        delay: 1300,
+        ease: 'Sine.easeInOut',
         onUpdate: drawIris
       });
       
-      // 3. 2回目の開眼（もう少し目を開くが、まだ顔全体は隠れている）
-      this.tweens.add({
-        targets: eye,
-        rx: 620,
-        ry: 190,
-        duration: 600,
-        delay: 1350,
-        ease: 'Sine.easeOut',
-        onUpdate: drawIris
-      });
-      
-      // 4. 2回目の瞬き（再度上下から閉じる）
-      this.tweens.add({
-        targets: eye,
-        rx: 600,
-        ry: 0,
-        duration: 300,
-        delay: 2150,
-        ease: 'Sine.easeIn',
-        onUpdate: drawIris
-      });
-      
-      // 5. 最後に上下からゆっくり視界が全開になり、博士と勇者の顔が現れる
+      // 3. 最後に上下からゆっくり視界が全開になり、博士と勇者の顔が現れる
       this.tweens.add({
         targets: eye,
         rx: 1600,
         ry: 950,
         duration: 1100,
-        delay: 2600,
+        delay: 1950,
         ease: 'Sine.easeOut',
         onUpdate: drawIris,
         onComplete: () => {
