@@ -118,6 +118,7 @@ class GameScene extends Phaser.Scene {
     // Controls
     MOT.setupControls(this);
     MOT.setupTouchControls(this, this.player);
+    MOT.createVirtualGamepad(this, this.player);
 
     // Collisions
     this.physics.add.overlap(this.player, this.enemyBullets, this.onPlayerHit, null, this);

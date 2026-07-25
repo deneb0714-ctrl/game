@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <meta name="description" content="Hello World  Eドット絵2D回避シューチE��ング。�EルチエンチE��ング刁E��型アクションゲーム、E />
+  <meta name="description" content="Hello World 窶・繝峨ャ繝育ｵｵ2D蝗樣∩繧ｷ繝･繝ｼ繝・ぅ繝ｳ繧ｰ縲ゅ・繝ｫ繝√お繝ｳ繝・ぅ繝ｳ繧ｰ蛻・ｲ仙梛繧｢繧ｯ繧ｷ繝ｧ繝ｳ繧ｲ繝ｼ繝�縲・ />
   <meta name="theme-color" content="#050814" />
   <meta name="mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
@@ -25,9 +25,17 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=DotGothic16&family=Press+Start+2P&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="styles/styles.css" />
+  <link rel="stylesheet" href="styles/styles.css?v=240" />
 </head>
 <body>
+  <div id="orientation-warning">
+    <div class="warning-box">
+      <div class="warning-icon">📱 🔄</div>
+      <div class="warning-title">【横向きプレイ推奨】</div>
+      <div class="warning-text">快適にプレイいただくため、スマートフォンの画面回転をオンにして横向き（ランドスケープ）にしてお楽しみください。</div>
+      <button class="warning-btn" onclick="document.getElementById('orientation-warning').style.display='none'">[ このままプレイする ]</button>
+    </div>
+  </div>
   <div id="game-root"></div>
   <!-- Phaser 3 from CDN -->
   <script src="https://cdn.jsdelivr.net/npm/phaser@3.80.1/dist/phaser.min.js"></script>
@@ -35,26 +43,26 @@
   <!-- Base64 Images Removed (Loaded directly as PNG in BootScene) -->
 
   <!-- Game Logic -->
-  <script>window.GAME_VERSION = 'v239';</script>
-  <script src="src/logic/audio.js?v=112"></script>
-  <script src="src/logic/flags.js?v=109"></script>
-  <script src="src/logic/endings.js?v=127"></script>
-  <script src="src/logic/controls.js?v=110"></script>
-  <script src="src/logic/enemies.js?v=113"></script>
-  <script src="src/logic/items.js?v=109"></script>
-  <script src="src/logic/doctorDirective.js?v=195"></script>
+  <script>window.GAME_VERSION = 'v240';</script>
+  <script src="src/logic/audio.js?v=240"></script>
+  <script src="src/logic/flags.js?v=240"></script>
+  <script src="src/logic/endings.js?v=240"></script>
+  <script src="src/logic/controls.js?v=240"></script>
+  <script src="src/logic/enemies.js?v=240"></script>
+  <script src="src/logic/items.js?v=240"></script>
+  <script src="src/logic/doctorDirective.js?v=240"></script>
 
   <!-- Scenes -->
-  <script src="src/scenes/BootScene.js?v=195"></script>
-  <script src="src/scenes/TitleScene.js?v=195"></script>
-  <script src="src/scenes/StoryScene.js?v=195"></script>
-  <script src="src/scenes/GameScene.js?v=195"></script>
-  <script src="src/scenes/EndingScene.js?v=195"></script>
-  <script src="src/scenes/BossScene.js?v=195"></script>
+  <script src="src/scenes/BootScene.js?v=240"></script>
+  <script src="src/scenes/TitleScene.js?v=240"></script>
+  <script src="src/scenes/StoryScene.js?v=240"></script>
+  <script src="src/scenes/GameScene.js?v=240"></script>
+  <script src="src/scenes/EndingScene.js?v=240"></script>
+  <script src="src/scenes/BossScene.js?v=240"></script>
 
   <!-- Core -->
-  <script src="src/config.js?v=80"></script>
-  <script src="src/main.js?v=195"></script>
+  <script src="src/config.js?v=240"></script>
+  <script src="src/main.js?v=240"></script>
 
   <script>
     // Unregister Service Worker to clear old PWA caches and force fresh load

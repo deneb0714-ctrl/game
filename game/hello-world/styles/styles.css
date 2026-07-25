@@ -35,4 +35,82 @@ html, body {
   image-rendering: pixelated;
   image-rendering: -moz-crisp-edges;
   image-rendering: crisp-edges;
+  -webkit-tap-highlight-color: transparent;
+  outline: none;
+}
+
+/* =============================================
+   スマートフォン・タブレット向け縦向きアラート
+   ============================================= */
+#orientation-warning {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(5, 8, 20, 0.96);
+  z-index: 9999999;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  backdrop-filter: blur(8px);
+}
+
+.warning-box {
+  background: #1F2933;
+  border: 3px solid #4FD1FF;
+  box-shadow: 0 0 25px rgba(79, 209, 255, 0.4);
+  padding: 30px;
+  max-width: 480px;
+  text-align: center;
+  border-radius: 12px;
+}
+
+.warning-icon {
+  font-size: 56px;
+  margin-bottom: 16px;
+  animation: pulse 1.5s infinite ease-in-out;
+}
+
+.warning-title {
+  font-size: 24px;
+  color: #4FD1FF;
+  margin-bottom: 12px;
+  font-weight: bold;
+}
+
+.warning-text {
+  font-size: 16px;
+  color: #E5E7EB;
+  line-height: 1.6;
+  margin-bottom: 24px;
+}
+
+.warning-btn {
+  background: #050814;
+  color: #00FF88;
+  border: 2px solid #00FF88;
+  padding: 12px 24px;
+  font-family: inherit;
+  font-size: 16px;
+  cursor: pointer;
+  border-radius: 6px;
+  transition: all 0.2s;
+}
+
+.warning-btn:active, .warning-btn:hover {
+  background: #00FF88;
+  color: #050814;
+}
+
+@keyframes pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.1); }
+}
+
+@media screen and (max-aspect-ratio: 4/5) and (max-width: 900px) {
+  #orientation-warning {
+    display: flex;
+  }
 }

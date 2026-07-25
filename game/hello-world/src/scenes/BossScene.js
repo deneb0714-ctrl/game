@@ -135,6 +135,7 @@ class BossScene extends Phaser.Scene {
 
     MOT.setupControls(this);
     MOT.setupTouchControls(this, this.player);
+    MOT.createVirtualGamepad(this, this.player);
 
     this.barrierHitbox = this.physics.add.sprite(-100, 460, null).setVisible(false);
     this.barrierHitbox.body.setCircle(60);
