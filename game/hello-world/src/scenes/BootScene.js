@@ -38,7 +38,6 @@ class BootScene extends Phaser.Scene {
     }
 
     const prefix = "mmƂ̃````bbggggO: ";
-    const indent = "                    ";
     const lines = [
       prefix + "...link established",
       prefix + "...signal drift: 0.03",
@@ -46,7 +45,7 @@ class BootScene extends Phaser.Scene {
       prefix + "こんにちは。『GGS 』よ。",
       "",
       prefix + "世界構造の誤差、観測値より逸脱。",
-      indent + "あなたには、それを正すだけの力がある。",
+      prefix + "あなたには、それを正すだけの力がある。",
       "",
       prefix + "悪性因子、未除去。この世界を救う宿命を背負いなさい。",
       "",
