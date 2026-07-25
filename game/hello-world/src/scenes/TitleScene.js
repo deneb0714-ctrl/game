@@ -148,7 +148,7 @@ class TitleScene extends Phaser.Scene {
 
     // デバッグショートカットキーUI
     if (!isGlitch) {
-      this.add.text(10, 10, '[Debug Shortcuts: Endings]\n1: 傀儡エンド\n2: 強制シャットダウン\n3: 日常\n4: 身寄りのない勇者\n5: 真の魔王', {
+      this.add.text(10, 10, '[Debug Shortcuts: Endings]\n1: 傀儡エンド\n2: 強制シャットダウン\n3: 日常\n4: 身寄りのない勇者\n5: 真の魔王\n6: 博士撃破後', {
         fontFamily: '"DotGothic16"',
         fontSize: '16px',
         color: '#ffaaaa',
@@ -156,7 +156,7 @@ class TitleScene extends Phaser.Scene {
         padding: { x: 5, y: 5 }
       }).setDepth(100);
 
-      this.add.text(10, 150, '[Debug Shortcuts: Bosses]\nQ: Boss 1 (Muscle)\nW: Boss 2 (Maniac)\nE: Boss 3 (Twins)\nR: Boss 4 (Demon Lord)\nT: Boss 5 (Doctor)', {
+      this.add.text(10, 170, '[Debug Shortcuts: Bosses]\nQ: Boss 1 (Muscle)\nW: Boss 2 (Maniac)\nE: Boss 3 (Twins)\nR: Boss 4 (Demon Lord)\nT: Boss 5 (Doctor)', {
         fontFamily: '"DotGothic16"',
         fontSize: '16px',
         color: '#aaffaa',
@@ -183,6 +183,7 @@ class TitleScene extends Phaser.Scene {
       this.input.keyboard.on('keydown-THREE', () => startDebugEnding(3));
       this.input.keyboard.on('keydown-FOUR', () => startDebugEnding(4));
       this.input.keyboard.on('keydown-FIVE', () => startDebugEnding(5));
+      this.input.keyboard.on('keydown-SIX', () => startDebugEnding(6));
 
       this.input.keyboard.on('keydown-Q', () => startBoss(0));
       this.input.keyboard.on('keydown-W', () => startBoss(1));

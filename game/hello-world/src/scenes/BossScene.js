@@ -206,22 +206,70 @@ class BossScene extends Phaser.Scene {
       this.onBossHit({ active: true, damage: 9999, silent: true, destroy: function(){} }, dummyBoss);
     };
 
+    const jumpToDoctorDefeat = (setupFn) => {
+      MOT.flags.finalEnding = null;
+      delete MOT.flags.kills;
+      if (setupFn) setupFn();
+      
+      // Clear current combat
+      if (this.currentBoss) this.currentBoss.destroy();
+      this.enemyGroup.clear(true, true);
+      this.playerBullets.clear(true, true);
+      this.enemyBullets.clear(true, true);
+      this.physics.resume();
+      this.dialogActive = false;
+      if (this.choiceContainer) { this.choiceContainer.destroy(); this.choiceContainer = null; }
+      
+      this.currentBossIndex = 4;
+      if (this.bossQueue.indexOf('doctor') === -1) {
+        this.bossQueue.push('doctor');
+      }
+      this.bossDefeated = false;
+      
+      let dummyBoss = this.physics.add.sprite(1400, 1080 / 2, 'doctor_awaken_smile_weapon');
+      dummyBoss.configKey = 'doctor';
+      dummyBoss.hp = 9999;
+      this.bossHP = 9999;
+      dummyBoss.active = true;
+      this.currentBoss = dummyBoss;
+      
+      // Initialize heroImage if it doesn't exist, to prevent tweens from crashing
+      if (!this.heroImage) {
+        this.heroImage = this.add.image(300, 1080 / 2, 'hero_stand').setAlpha(0).setDepth(90);
+      }
+      
+      // Trigger doctor death sequence silently
+      this.onBossHit({ active: true, damage: 9999, silent: true, destroy: function(){} }, dummyBoss);
+    };
+
+    const triggerEndingSetup = (type) => {
+      if (type === 1) { // 1: 傀儡
+        jumpToDemonLordDefeat(() => { MOT.flags.killedBoss1 = true; MOT.flags.killedBoss2 = true; MOT.flags.killedTwins = true; });
+      } else if (type === 2) { // 2: 強制シャットダウン
+        jumpToDemonLordDefeat(() => { MOT.flags.killedBoss1 = true; MOT.flags.killedBoss2 = false; MOT.flags.killedTwins = false; MOT.flags.dollPoints = 100; });
+      } else if (type === 3) { // 3: 日常
+        jumpToDemonLordDefeat(() => { MOT.flags.killedBoss1 = true; MOT.flags.killedBoss2 = false; MOT.flags.killedTwins = false; MOT.flags.dollPoints = 0; });
+      } else if (type === 4) { // 4: 身寄りのない勇者
+        jumpToDemonLordDefeat(() => { MOT.flags.killedBoss1 = false; MOT.flags.killedBoss2 = false; MOT.flags.killedTwins = false; MOT.flags.dollPoints = 150; });
+      } else if (type === 5) { // 5: 自由の身エンド
+        jumpToDemonLordDefeat(() => { MOT.flags.killedBoss1 = false; MOT.flags.killedBoss2 = false; MOT.flags.killedTwins = false; MOT.flags.dollPoints = 0; MOT.flags.killingIntent = 20; });
+      } else if (type === 6) { // 6: 博士撃破後
+        jumpToDoctorDefeat(() => { MOT.flags.killedBoss1 = false; MOT.flags.killedBoss2 = false; MOT.flags.killedTwins = false; MOT.flags.dollPoints = 150; });
+      }
+    };
+
     if (this.startData && this.startData.jumpToEndingSetup) {
-      const type = this.startData.jumpToEndingSetup;
       this.time.delayedCall(100, () => {
-        if (type === 1) { // 1: 傀儡
-          jumpToDemonLordDefeat(() => { MOT.flags.killedBoss1 = true; MOT.flags.killedBoss2 = true; MOT.flags.killedTwins = true; });
-        } else if (type === 2) { // 2: 強制シャットダウン
-          jumpToDemonLordDefeat(() => { MOT.flags.killedBoss1 = true; MOT.flags.killedBoss2 = false; MOT.flags.killedTwins = false; MOT.flags.dollPoints = 100; });
-        } else if (type === 3) { // 3: 日常
-          jumpToDemonLordDefeat(() => { MOT.flags.killedBoss1 = true; MOT.flags.killedBoss2 = false; MOT.flags.killedTwins = false; MOT.flags.dollPoints = 0; });
-        } else if (type === 4) { // 4: 身寄りのない勇者
-          jumpToDemonLordDefeat(() => { MOT.flags.killedBoss1 = false; MOT.flags.killedBoss2 = false; MOT.flags.killedTwins = false; MOT.flags.dollPoints = 150; });
-        } else if (type === 5) { // 5: 自由の身エンド
-          jumpToDemonLordDefeat(() => { MOT.flags.killedBoss1 = false; MOT.flags.killedBoss2 = false; MOT.flags.killedTwins = false; MOT.flags.dollPoints = 0; MOT.flags.killingIntent = 20; });
-        }
+        triggerEndingSetup(this.startData.jumpToEndingSetup);
       });
     }
+
+    this.input.keyboard.on('keydown-ONE', () => triggerEndingSetup(1));
+    this.input.keyboard.on('keydown-TWO', () => triggerEndingSetup(2));
+    this.input.keyboard.on('keydown-THREE', () => triggerEndingSetup(3));
+    this.input.keyboard.on('keydown-FOUR', () => triggerEndingSetup(4));
+    this.input.keyboard.on('keydown-FIVE', () => triggerEndingSetup(5));
+    this.input.keyboard.on('keydown-SIX', () => triggerEndingSetup(6));
 
   }
 
