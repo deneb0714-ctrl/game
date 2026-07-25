@@ -25,7 +25,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=DotGothic16&family=Press+Start+2P&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="styles/styles.css?v=243" />
+  <link rel="stylesheet" href="styles/styles.css?v=244" />
 </head>
 <body>
   <div id="orientation-warning">
@@ -34,13 +34,15 @@
       <div class="warning-title">【横向きプレイ推奨】</div>
       <div class="warning-text">快適にプレイいただくため、スマートフォンの画面回転をオンにして横向き（ランドスケープ）にしてお楽しみください。</div>
       <button class="warning-btn" onclick="document.getElementById('orientation-warning').style.display='none'">[ このままプレイする ]</button>
-      <div style="margin-top: 16px;">
+      <div style="margin-top: 16px; display: flex; gap: 10px; justify-content: center; flex-wrap: wrap;">
+        <button class="warning-btn" style="border-color: #00FF88; color: #00FF88; font-size: 14px; padding: 8px 16px;" onclick="window.toggleGameFullscreen()">[ ⛶ 全画面（フルスクリーン）表示 ]</button>
         <button class="warning-btn" style="border-color: #4FD1FF; color: #4FD1FF; font-size: 14px; padding: 8px 16px;" onclick="window.forceClearCache()">[ 🔄 キャッシュ消去＆最新版へ更新 ]</button>
       </div>
     </div>
   </div>
-  <div id="floating-update-btn" style="position: fixed; top: 10px; right: 10px; z-index: 999998; opacity: 0.8;">
-    <button onclick="window.forceClearCache()" style="background: rgba(5,8,20,0.85); color: #4FD1FF; border: 1px solid #4FD1FF; border-radius: 4px; padding: 6px 10px; font-family: 'DotGothic16', sans-serif; font-size: 13px; cursor: pointer;">🔄 キャッシュ消去/最新版へ</button>
+  <div id="floating-update-btn" style="position: fixed; top: 10px; right: 10px; z-index: 999998; opacity: 0.85; display: flex; gap: 8px;">
+    <button onclick="window.toggleGameFullscreen()" style="background: rgba(5,8,20,0.85); color: #00FF88; border: 1px solid #00FF88; border-radius: 4px; padding: 6px 10px; font-family: 'DotGothic16', sans-serif; font-size: 13px; cursor: pointer;">⛶ 全画面</button>
+    <button onclick="window.forceClearCache()" style="background: rgba(5,8,20,0.85); color: #4FD1FF; border: 1px solid #4FD1FF; border-radius: 4px; padding: 6px 10px; font-family: 'DotGothic16', sans-serif; font-size: 13px; cursor: pointer;">🔄 キャッシュ消去</button>
   </div>
   <div id="game-root"></div>
   <!-- Phaser 3 from CDN -->
@@ -49,31 +51,52 @@
   <!-- Base64 Images Removed (Loaded directly as PNG in BootScene) -->
 
   <!-- Game Logic -->
-  <script>window.GAME_VERSION = 'v243';</script>
-  <script src="src/logic/audio.js?v=243"></script>
-  <script src="src/logic/flags.js?v=243"></script>
-  <script src="src/logic/endings.js?v=243"></script>
-  <script src="src/logic/controls.js?v=243"></script>
-  <script src="src/logic/enemies.js?v=243"></script>
-  <script src="src/logic/items.js?v=243"></script>
-  <script src="src/logic/doctorDirective.js?v=243"></script>
+  <script>window.GAME_VERSION = 'v244';</script>
+  <script src="src/logic/audio.js?v=244"></script>
+  <script src="src/logic/flags.js?v=244"></script>
+  <script src="src/logic/endings.js?v=244"></script>
+  <script src="src/logic/controls.js?v=244"></script>
+  <script src="src/logic/enemies.js?v=244"></script>
+  <script src="src/logic/items.js?v=244"></script>
+  <script src="src/logic/doctorDirective.js?v=244"></script>
 
   <!-- Scenes -->
-  <script src="src/scenes/BootScene.js?v=243"></script>
-  <script src="src/scenes/TitleScene.js?v=243"></script>
-  <script src="src/scenes/StoryScene.js?v=243"></script>
-  <script src="src/scenes/GameScene.js?v=243"></script>
-  <script src="src/scenes/EndingScene.js?v=243"></script>
-  <script src="src/scenes/BossScene.js?v=243"></script>
+  <script src="src/scenes/BootScene.js?v=244"></script>
+  <script src="src/scenes/TitleScene.js?v=244"></script>
+  <script src="src/scenes/StoryScene.js?v=244"></script>
+  <script src="src/scenes/GameScene.js?v=244"></script>
+  <script src="src/scenes/EndingScene.js?v=244"></script>
+  <script src="src/scenes/BossScene.js?v=244"></script>
 
   <!-- Core -->
-  <script src="src/config.js?v=243"></script>
-  <script src="src/main.js?v=243"></script>
+  <script src="src/config.js?v=244"></script>
+  <script src="src/main.js?v=244"></script>
 
   <script>
+    // 全画面表示（フルスクリーン）切り替え
+    window.toggleGameFullscreen = function() {
+      if (!document.fullscreenElement && !document.webkitFullscreenElement) {
+        let elem = document.documentElement;
+        let req = elem.requestFullscreen || elem.webkitRequestFullscreen || elem.msRequestFullscreen;
+        if (req) {
+          req.call(elem).catch(function() {
+            alert('【iPhone(iOS)などで全画面にする方法】\nSafariのアドレスバーにある「ぁあ(aA)」をタップして「ツールバーを非表示」を選択するか、ブラウザの下部メニューから「ホーム画面に追加」をしてホーム画面のアイコンから起動すると、アドレスバーの無い完全な全画面でお楽しみいただけます！');
+          });
+        } else {
+          alert('【iPhone(iOS)などで全画面にする方法】\nSafariのアドレスバーにある「ぁあ(aA)」をタップして「ツールバーを非表示」を選択するか、ブラウザの下部メニューから「ホーム画面に追加」をしてホーム画面のアイコンから起動すると、アドレスバーの無い完全な全画面でお楽しみいただけます！');
+        }
+      } else {
+        if (document.exitFullscreen) {
+          document.exitFullscreen();
+        } else if (document.webkitExitFullscreen) {
+          document.webkitExitFullscreen();
+        }
+      }
+    };
+
     // Unregister Service Worker & Clear Cache Storage to force fresh load
     window.forceClearCache = function() {
-      if (confirm('キャッシュと一時ファイルを消去して最新バージョン（v243）を再読込しますか？\n（※ゲームのセーブデータやクリア状態は消えません）')) {
+      if (confirm('キャッシュと一時ファイルを消去して最新バージョン（v244）を再読込しますか？\n（※ゲームのセーブデータやクリア状態は消えません）')) {
         let promises = [];
         if ('serviceWorker' in navigator) {
           promises.push(navigator.serviceWorker.getRegistrations().then(function(registrations) {
