@@ -104,7 +104,7 @@ class StoryScene extends Phaser.Scene {
 
     // Advance on click
     this.input.on('pointerdown', () => {
-      if (!this.isWaitingForChoice) {
+      if (!this.isWaitingForChoice && !this.isEyeOpening) {
         this.nextDialogue();
       }
     });
@@ -112,14 +112,13 @@ class StoryScene extends Phaser.Scene {
     // Advance on key press (Spaceのみ)
     this.input.keyboard.on('keydown', (event) => {
       if (event.key === ' ' || event.code === 'Space') {
-        if (!this.isWaitingForChoice) {
+        if (!this.isWaitingForChoice && !this.isEyeOpening) {
           this.nextDialogue();
         }
       }
     });
 
     // Start Scene
-    this.cameras.main.fadeIn(1000);
     this.showDialogue(this.currentIndex);
   }
 
@@ -127,12 +126,86 @@ class StoryScene extends Phaser.Scene {
     if (index >= this.dialogue.length) return;
     const data = this.dialogue[index];
 
-    // Background transition
+    // Background transition (まばたき風アイリスイン・アウト演出)
     if (data.bg === 'lab' && this.bg.alpha === 0) {
-      this.tweens.add({ targets: this.bg, alpha: 1, duration: 1000 });
-      this.tweens.add({ targets: this.heroGroup, alpha: 1, duration: 1000 });
-      this.tweens.add({ targets: this.doctorGroup, alpha: 1, duration: 1000 });
-      this.tweens.add({ targets: this.areaNameText, alpha: 1, duration: 1000 });
+      this.bg.setAlpha(1);
+      this.heroImage.setAlpha(0.4);
+      this.doctorImage.setAlpha(1);
+      this.areaNameText.setAlpha(1);
+      
+      this.isEyeOpening = true;
+      const eyeMask = this.add.graphics().setDepth(150);
+      
+      // UIをアイリスマスクの上（または見えやすい階層）にするためDepth設定
+      this.dialogBox.setDepth(200);
+      this.nameBox.setDepth(200);
+      this.nameText.setDepth(201);
+      this.messageText.setDepth(201);
+      this.contText.setDepth(201);
+      this.areaNameText.setDepth(201);
+      
+      let eye = { rx: 0, ry: 0 };
+      const drawIris = () => {
+        eyeMask.clear();
+        eyeMask.fillStyle(0x000000, 1);
+        const w = 1920, h = 1080;
+        const cx = w / 2, cy = h / 2;
+        if (eye.rx <= 0 || eye.ry <= 0) {
+          eyeMask.fillRect(0, 0, w, h);
+          return;
+        }
+        if (eye.rx >= w && eye.ry >= h) return;
+        const step = 6;
+        for (let y = 0; y < h; y += step) {
+          const my = y + step / 2;
+          const dy = Math.abs(my - cy);
+          if (dy >= eye.ry) {
+            eyeMask.fillRect(0, y, w, step + 1);
+          } else {
+            const dx = eye.rx * Math.sqrt(1 - (dy * dy) / (eye.ry * eye.ry));
+            if (cx - dx > 0) eyeMask.fillRect(0, y, cx - dx, step + 1);
+            if (cx + dx < w) eyeMask.fillRect(cx + dx, y, w - (cx + dx), step + 1);
+          }
+        }
+      };
+      
+      drawIris();
+      
+      // 1. いったん瞬きして画面中央を楕円形に見せる
+      this.tweens.add({
+        targets: eye,
+        rx: 850,
+        ry: 320,
+        duration: 600,
+        ease: 'Sine.easeOut',
+        onUpdate: drawIris
+      });
+      
+      // 2. 瞬きして閉じる
+      this.tweens.add({
+        targets: eye,
+        rx: 200,
+        ry: 0,
+        duration: 250,
+        delay: 1000,
+        ease: 'Sine.easeIn',
+        onUpdate: drawIris
+      });
+      
+      // 3. 次開くときに全体が見えるように開く
+      this.tweens.add({
+        targets: eye,
+        rx: 1400,
+        ry: 900,
+        duration: 700,
+        delay: 1350,
+        ease: 'Sine.easeOut',
+        onUpdate: drawIris,
+        onComplete: () => {
+          eyeMask.destroy();
+          this.isEyeOpening = false;
+        }
+      });
     }
 
     // Set Text
