@@ -320,7 +320,38 @@ class BossScene extends Phaser.Scene {
       this.inunekoEnemy.setDepth(9);
       this.inunekoEnemy.setVisible(false);
       // バリア状態フラグ
-      this.demonLordBarrierActive = false;
+            this.demonLordBarrierActive = false;
+
+      if (!this.anims.exists('sister_shoot_anim')) {
+        this.anims.create({
+          key: 'sister_shoot_anim',
+          frames: [
+            { key: 'sister_shoot1', duration: 1500 },
+            { key: 'sister_shoot1_blink', duration: 150 },
+            { key: 'sister_shoot1', duration: 1500 },
+            { key: 'sister_shoot1_blink', duration: 150 },
+            { key: 'sister_shoot2', duration: 1500 },
+            { key: 'sister_shoot2_blink', duration: 150 },
+            { key: 'sister_shoot2', duration: 1500 },
+            { key: 'sister_shoot2_blink', duration: 150 }
+          ],
+          repeat: -1
+        });
+      }
+      if (!this.anims.exists('sister_revive_anim')) {
+        this.anims.create({
+          key: 'sister_revive_anim',
+          frames: [
+            { key: 'sister_revive1' },
+            { key: 'sister_revive2' }
+          ],
+          frameRate: 6,
+          repeat: -1
+        });
+      }
+      if (this.sisterBoss) {
+         this.sisterBoss.play('sister_shoot_anim');
+      }
 
       if (!this.anims.exists('inuneko_anim')) {
         this.anims.create({
@@ -864,7 +895,38 @@ class BossScene extends Phaser.Scene {
     this.barrierUpdateCb = drawBarrier;
     // 5秒後に解除
     this.time.delayedCall(5000, () => {
-      this.demonLordBarrierActive = false;
+            this.demonLordBarrierActive = false;
+
+      if (!this.anims.exists('sister_shoot_anim')) {
+        this.anims.create({
+          key: 'sister_shoot_anim',
+          frames: [
+            { key: 'sister_shoot1', duration: 1500 },
+            { key: 'sister_shoot1_blink', duration: 150 },
+            { key: 'sister_shoot1', duration: 1500 },
+            { key: 'sister_shoot1_blink', duration: 150 },
+            { key: 'sister_shoot2', duration: 1500 },
+            { key: 'sister_shoot2_blink', duration: 150 },
+            { key: 'sister_shoot2', duration: 1500 },
+            { key: 'sister_shoot2_blink', duration: 150 }
+          ],
+          repeat: -1
+        });
+      }
+      if (!this.anims.exists('sister_revive_anim')) {
+        this.anims.create({
+          key: 'sister_revive_anim',
+          frames: [
+            { key: 'sister_revive1' },
+            { key: 'sister_revive2' }
+          ],
+          frameRate: 6,
+          repeat: -1
+        });
+      }
+      if (this.sisterBoss) {
+         this.sisterBoss.play('sister_shoot_anim');
+      }
       if (this.barrierGraphic) { this.barrierGraphic.destroy(); this.barrierGraphic = null; }
       this.barrierUpdateCb = null;
     });
@@ -2047,12 +2109,21 @@ class BossScene extends Phaser.Scene {
           if (this.twinReviveTimer) this.twinReviveTimer.destroy();
           this.cameras.main.shake(500, 0.01);
           
-          this.twinReviveTimer = this.time.delayedCall(5000, () => {
+          let reviveTime = 3000;
+          if (isBrotherDefeated && this.sisterBoss) {
+              this.sisterBoss.play('sister_revive_anim');
+          }
+          
+          this.twinReviveTimer = this.time.delayedCall(reviveTime, () => {
              boss.active = true;
              boss.setVisible(true);
              boss.body.enable = true;
              boss.hp = 1; // 復活時のHP
              this.showExplosion(boss.x, boss.y); 
+             
+             if (isBrotherDefeated && this.sisterBoss) {
+                 this.sisterBoss.play('sister_shoot_anim');
+             }
              
              let speakerText = isBrotherDefeated ? '妹「兄さん！起きて！」' : '兄「しっかりしろ！」';
              let speakerColor = isBrotherDefeated ? '#FF4B6E' : '#4FD1FF';

@@ -202,6 +202,14 @@ class BootScene extends Phaser.Scene {
     this.load.image('sister_normal', 'assets/images/sister_normal.png?v=' + v);
     this.load.image('sister_blink', 'assets/images/sister_blink.png?v=' + v);
     this.load.image('sister_hurt', 'assets/images/sister_hurt.png?v=' + v);
+    
+    // New sister combat images
+    this.load.image('sister_shoot1', 'assets/images/妹_撃つ1.png?v=' + v);
+    this.load.image('sister_shoot1_blink', 'assets/images/妹_撃つ1目閉じ.png?v=' + v);
+    this.load.image('sister_shoot2', 'assets/images/妹_撃つ2.png?v=' + v);
+    this.load.image('sister_shoot2_blink', 'assets/images/妹_撃つ2目閉じ.png?v=' + v);
+    this.load.image('sister_revive1', 'assets/images/妹_兄蘇生1.png?v=' + v);
+    this.load.image('sister_revive2', 'assets/images/妹_兄蘇生2.png?v=' + v);
     this.load.image('brother_normal', 'assets/images/brother_normal.png?v=' + v);
     this.load.image('brother_closed', 'assets/images/brother_closed.png?v=' + v);
     this.load.image('brother_dying', 'assets/images/brother_dying.png?v=' + v);
