@@ -3529,19 +3529,56 @@ class BossScene extends Phaser.Scene {
               */
             })();
           } else if (key === 'doctor') {
-            const sayDevice = (text) => new Promise(res => { this.tweens.add({ targets: dimBg, alpha: 0.6, duration: 300 }); this.tweens.add({targets: this.heroImage, alpha: 0.4, duration: 300}); this.showDeviceDialogue(text, res); });
-            const sayInuneko = (text, tex = 'inuneko_stand') => new Promise(res => {
-      this.tweens.add({ targets: dimBg, alpha: 0.6, duration: 300 });
-      this.tweens.add({ targets: this.heroImage, alpha: 0.4, duration: 300 });
-      if(this.demonImage) this.tweens.add({ targets: this.demonImage, alpha: 0.4, duration: 300 });
-      if(this.inunekoImage) {
-        this.tweens.add({ targets: this.inunekoImage, alpha: 1, duration: 300 });
-        this.inunekoImage.setTexture(tex);
-      }
-      this.showDialogue('犬猫☆すたー', text, res);
-    });
+            if (this.currentBoss) {
+              this.currentBoss.setVisible(false);
+              this.currentBoss.setActive(false);
+            }
+            if (this.bossHpBg) this.bossHpBg.setVisible(false);
+            if (this.bossHpBar) this.bossHpBar.setVisible(false);
+            if (this.bossHPText) this.bossHPText.setVisible(false);
 
-    const sayHero = (text) => new Promise(res => { this.tweens.add({ targets: dimBg, alpha: 0.6, duration: 300 }); this.tweens.add({targets: this.heroImage, alpha: 1, duration: 300});  if (text === '「……」' || text === '「……。」' || text === '「…」') {        this.heroImage.setTexture('hero_stand_silent');      } else if (text === '「！」') {        this.heroImage.setTexture('hero_cry');      } else {        this.heroImage.setTexture('hero_stand');      }     this.heroImage.setScale(750 / this.heroImage.width);     this.heroImage.setY(100 + (this.heroImage.height * this.heroImage.scaleY) / 2);      this.showDialogue('勇者', text, res); });
+            this.textures.get('doctor_stand').setFilter(Phaser.Textures.FilterMode.LINEAR);
+            let doctorImage = this.add.image(1920 - 300, 1080 / 2, 'doctor_awaken_normal_dying').setAlpha(0).setDepth(90);
+            var docScale = 600 / this.textures.get('doctor_stand').getSourceImage().width;
+            doctorImage.setScale(docScale);
+            doctorImage.setY(100 + (this.textures.get('doctor_stand').getSourceImage().height * docScale) / 2);
+            this.doctorImage = doctorImage;
+            this.tweens.add({ targets: doctorImage, alpha: 1, duration: 300 });
+
+            const sayDoctor = (text, tex) => new Promise(res => {
+              this.tweens.add({ targets: dimBg, alpha: 0.6, duration: 300 });
+              if (this.heroImage) this.tweens.add({ targets: this.heroImage, alpha: 0.4, duration: 300 });
+              if (doctorImage) {
+                this.tweens.add({ targets: doctorImage, alpha: 1, duration: 300 });
+                if (tex) {
+                  doctorImage.setTexture(tex);
+                  var dScale = 600 / this.textures.get('doctor_stand').getSourceImage().width;
+                  doctorImage.setScale(dScale);
+                  doctorImage.setY(100 + (this.textures.get('doctor_stand').getSourceImage().height * dScale) / 2);
+                }
+              }
+              this.showDialogue('博士', text, res);
+            });
+
+            const sayHero = (text) => new Promise(res => {
+              this.tweens.add({ targets: dimBg, alpha: 0.6, duration: 300 });
+              if (this.heroImage) {
+                this.tweens.add({ targets: this.heroImage, alpha: 1, duration: 300 });
+                if (text === '「……」' || text === '「……。」' || text === '「…」') {
+                  this.heroImage.setTexture('hero_stand_silent');
+                } else if (text === '「！」') {
+                  this.heroImage.setTexture('hero_cry');
+                } else {
+                  this.heroImage.setTexture('hero_stand');
+                }
+                var hScale = 750 / this.heroImage.width;
+                this.heroImage.setScale(hScale);
+                this.heroImage.setY(100 + (this.heroImage.height * hScale) / 2);
+              }
+              if (doctorImage) this.tweens.add({ targets: doctorImage, alpha: 0.4, duration: 300 });
+              this.showDialogue('勇者', text, res);
+            });
+
             const askChoice = (label1, label2) => new Promise(res => {
               this.showChoice([
                 { text: label1, callback: () => { MOT.Audio.playSelect(); res(1); } },
@@ -3550,25 +3587,34 @@ class BossScene extends Phaser.Scene {
             });
 
             (async () => {
+              await sayDoctor('「驚いた...まさかお前がここまでやるとはな」', 'doctor_awaken_normal_dying');
+              await sayHero('「…」');
+              await sayDoctor('「なにをしている？早くとどめを刺せ。同情などいらん。何の足しにもならないからな。」', 'doctor_awaken_normal_dying');
+
               let c = await askChoice('1. 殺さない', '2. 殺せない');
               if (c === 1) {
-                await sayDevice('「…なんだ、ここでも殺さないのか。わかっているのか？その女の言う通り、私はお前を騙していたんだ。」');
-                await sayDevice('「お前は”勇者”なんかじゃない、俺の最高傑作のはずだったんだがな。」');
-                await sayHero('「あなたがやったことは許せない。だけど、ここであなたを殺したら僕はあなた同じになってしまう。」');
-                await sayDevice('「そうか……。」');
-                await sayDevice('「ついぞ俺の実験が成功することはなかった。もうここには用はない。さらばだ011101。」');
+                await sayDoctor('「…なんだ、ここでも殺さないのか。わかっているのか？その女の言う通り、私はお前を騙していたんだ。」', 'doctor_awaken_smile_dying');
+                await sayDoctor('「お前は”勇者”なんかじゃない、俺の最高傑作のはずだったんだがな。」', 'doctor_awaken_smile_dying');
+                await sayHero('「あなたがやったことは許せない。だけど、ここであなたを殺したら僕はあなたと同じになってしまう。」');
+                await sayDoctor('「そうか……。」', 'doctor_awaken_straight_dying');
+                await sayDoctor('「ついぞ俺の実験が成功することはなかった。もうここには用はない。さらばだ011101。」', 'doctor_awaken_smile_weapon');
               } else {
-                await sayDevice('「驚いた...まさかお前がここまでやるとはな」');
-                await sayHero('「…」');
-                await sayDevice('「なにをしている？早くとどめを刺せ。同情などいらん。何の足しにもならないからな。」');
-                await sayHero('「できない...。あなたがやったことは許せないが、それでもあなたは僕の...」');
-                await sayDevice('「全く...本当にどうしようもない欠陥品だな。」');
-                await sayDevice('「さらばだ、011101。もう、お前に用はない。」');
+                await sayHero('「できない...。あなたがやったことは許せないけど、それでもあなたは僕の...」');
+                await sayDoctor('「全く...本当にどうしようもない欠陥品だな。」', 'doctor_awaken_smile_dying');
+                await sayDoctor('「私は、自分の目的のためにしか生きられない。お前が何を思っていてもな。」', 'doctor_awaken_smile_dying');
+                await sayDoctor('「さらばだ、011101。もう、お前に用はない。好きに生きるんだな。」', 'doctor_awaken_smile_weapon');
               }
               await sayHero('「！」');
-              MOT.Audio.playSelect(); // 銃声
               
-              MOT.flags.finalEnding = 'normal_orphan';
+              if (MOT.Audio && MOT.Audio.playShatter) {
+                MOT.Audio.playShatter();
+              } else if (MOT.Audio && MOT.Audio.playSelect) {
+                MOT.Audio.playSelect();
+              }
+              this.cameras.main.shake(600, 0.06);
+              await new Promise(r => this.time.delayedCall(1200, r));
+              
+              MOT.flags.finalEnding = 'END_ORPHAN';
               this.proceedToNextArea(boss, false);
             })();
           } else {

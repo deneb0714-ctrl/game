@@ -148,8 +148,13 @@ class BootScene extends Phaser.Scene {
     this.load.image('hero_cry', 'assets/images/hero_cry.png?v=' + v);
     this.load.image('doctor_awaken_smile', 'assets/images/覚醒_笑.png?v=' + v);
     this.load.image('doctor_awaken_smile_weapon', 'assets/images/覚醒_笑_武器展開.png?v=' + v);
+    this.load.image('doctor_awaken_smile_dying', 'assets/images/覚醒_笑_瀕死.png?v=' + v);
+    this.load.image('doctor_awaken_straight', 'assets/images/覚醒_真顔.png?v=' + v);
     this.load.image('doctor_awaken_straight_dying', 'assets/images/覚醒_真顔_瀕死.png?v=' + v);
     this.load.image('doctor_awaken_straight_weapon', 'assets/images/覚醒_真顔_武器展開.png?v=' + v);
+    this.load.image('doctor_awaken_normal', 'assets/images/覚醒_通常.png?v=' + v);
+    this.load.image('doctor_awaken_normal_dying', 'assets/images/覚醒_通常_瀕死.png?v=' + v);
+    this.load.image('doctor_awaken_normal_weapon', 'assets/images/覚醒_通常_武器展開.png?v=' + v);
 
 
     this.load.image('demon_lord_normal', 'assets/images/demon_lord_normal.png?v=' + v);
@@ -312,6 +317,9 @@ class BootScene extends Phaser.Scene {
     // 高解像度画像（立ち絵など）を縮小時にガビガビにならないようLINEARフィルタを一括適用
     const highResKeys = [
       'doctor_stand', 'doctor_stand_open', 'doctor_normal', 'doctor_open_eyes', 'doctor_face',
+      'doctor_awaken_smile', 'doctor_awaken_smile_weapon', 'doctor_awaken_smile_dying',
+      'doctor_awaken_straight', 'doctor_awaken_straight_dying', 'doctor_awaken_straight_weapon',
+      'doctor_awaken_normal', 'doctor_awaken_normal_dying', 'doctor_awaken_normal_weapon',
       'boss1_muscle', 'boss1_normal', 'boss1_angry', 'boss1_dying', 'boss1_sweat', 'boss1_hurt_angry', 'boss2_combat',
       'hero_stand', 'hero_stand_silent', 'hero_stand_corrupted', 'hero_stand_blink',
       'demon_lord_normal', 'demon_lord_blink', 'demon_lord_dying', 'demon_lord_shock', 'demon_lord_eyes_closed',
