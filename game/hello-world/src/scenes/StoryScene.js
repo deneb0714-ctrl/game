@@ -134,6 +134,7 @@ class StoryScene extends Phaser.Scene {
       this.areaNameText.setAlpha(1);
       
       this.isEyeOpening = true;
+      console.log('【StoryScene】覚醒まばたき演出：1回モード再生');
       const eyeMask = this.add.graphics().setDepth(150);
       
       // UIをアイリスマスクの上（または見えやすい階層）にするためDepth設定
