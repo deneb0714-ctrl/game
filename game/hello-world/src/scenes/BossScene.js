@@ -2070,27 +2070,36 @@ class BossScene extends Phaser.Scene {
         boss.body.enable = false;
         this.showExplosion(boss.x, boss.y);
         
-        // --- 復活処理（5秒） ---
+        // --- 復活処理（6秒） ---
         let otherBoss = (boss === this.currentBoss) ? this.sisterBoss : this.currentBoss;
         if (otherBoss && otherBoss.active) {
           let isBrotherDefeated = (boss === this.currentBoss);
           
           if (this.twinReviveTimer) this.twinReviveTimer.destroy();
+          if (this.twinReviveAnimTimer) this.twinReviveAnimTimer.destroy();
           this.cameras.main.shake(500, 0.01);
           
-          let reviveTime = 3000;
+          let totalReviveTime = 6000;
+          let animDuration = 2500;
+          let delayBeforeAnim = totalReviveTime - animDuration;
+
           if (isBrotherDefeated && this.sisterBoss) {
-              this.sisterBoss.play('sister_revive_anim');
+              // 蘇生直前の数秒間のみ蘇生アニメーションを再生
+              this.twinReviveAnimTimer = this.time.delayedCall(delayBeforeAnim, () => {
+                  if (this.sisterBoss && this.sisterBoss.active) {
+                      this.sisterBoss.play('sister_revive_anim');
+                  }
+              });
           }
           
-          this.twinReviveTimer = this.time.delayedCall(reviveTime, () => {
+          this.twinReviveTimer = this.time.delayedCall(totalReviveTime, () => {
              boss.active = true;
              boss.setVisible(true);
              boss.body.enable = true;
              boss.hp = 1; // 復活時のHP
              this.showExplosion(boss.x, boss.y); 
              
-             if (isBrotherDefeated && this.sisterBoss) {
+             if (isBrotherDefeated && this.sisterBoss && this.sisterBoss.active) {
                  this.sisterBoss.play('sister_shoot_anim');
              }
              
@@ -2104,6 +2113,7 @@ class BossScene extends Phaser.Scene {
       
       if (this.currentBoss.hp <= 0 && this.sisterBoss && this.sisterBoss.hp <= 0 && !this.bossDefeated) {
         if (this.twinReviveTimer) this.twinReviveTimer.destroy();
+        if (this.twinReviveAnimTimer) this.twinReviveAnimTimer.destroy();
         this.bossDefeated = true;
         this.onTwinsDefeated();
       }
