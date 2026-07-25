@@ -247,7 +247,7 @@ class BossScene extends Phaser.Scene {
       },
       boss3_twins: {
         texture: 'boss3_battle_anim', name: '男（兄）', hp: 150, scale: 0.25,
-        texture2: 'boss3_sister', name2: '女（妹）', hp2: 150, scale2: 3,
+        texture2: 'sister_shoot1', name2: '女（妹）', hp2: 150, scale2: 2.0,
         // Intro and defeat are handled custom via playTwinsIntro and post-battle logic
       },
       demon_lord: {
@@ -298,30 +298,6 @@ class BossScene extends Phaser.Scene {
     boss.body.enable = false;
 
     if (key === 'boss3_twins') {
-      var sister = this.physics.add.sprite(1920, 700, cfg.texture2);
-      sister.setScale(cfg.scale2);
-      sister.setDepth(8);
-      this.enemyGroup.add(sister);
-      this.sisterBoss = sister;
-      sister.hp = cfg.hp2;
-      sister.maxHp = cfg.hp2;
-      sister.configKey = 'boss3_twins';
-      sister.setVisible(false);
-      sister.body.enable = false;
-      boss.maxHp = cfg.hp;
-    }
-
-    this.dialogActive = true;
-    this.physics.pause();
-
-    if (key === 'demon_lord') {
-      this.inunekoEnemy = this.add.sprite(boss.x - 60, boss.y - 100, 'inuneko_combat');
-      this.inunekoEnemy.setDisplaySize(90, 160);
-      this.inunekoEnemy.setDepth(9);
-      this.inunekoEnemy.setVisible(false);
-      // バリア状態フラグ
-            this.demonLordBarrierActive = false;
-
       if (!this.anims.exists('sister_shoot_anim')) {
         this.anims.create({
           key: 'sister_shoot_anim',
@@ -349,9 +325,30 @@ class BossScene extends Phaser.Scene {
           repeat: -1
         });
       }
-      if (this.sisterBoss) {
-         this.sisterBoss.play('sister_shoot_anim');
-      }
+      var sister = this.physics.add.sprite(1920, 700, cfg.texture2);
+      sister.setScale(cfg.scale2);
+      sister.play('sister_shoot_anim');
+      sister.setDepth(8);
+      this.enemyGroup.add(sister);
+      this.sisterBoss = sister;
+      sister.hp = cfg.hp2;
+      sister.maxHp = cfg.hp2;
+      sister.configKey = 'boss3_twins';
+      sister.setVisible(false);
+      sister.body.enable = false;
+      boss.maxHp = cfg.hp;
+    }
+
+    this.dialogActive = true;
+    this.physics.pause();
+
+    if (key === 'demon_lord') {
+      this.inunekoEnemy = this.add.sprite(boss.x - 60, boss.y - 100, 'inuneko_combat');
+      this.inunekoEnemy.setDisplaySize(90, 160);
+      this.inunekoEnemy.setDepth(9);
+      this.inunekoEnemy.setVisible(false);
+      // バリア状態フラグ
+            this.demonLordBarrierActive = false;
 
       if (!this.anims.exists('inuneko_anim')) {
         this.anims.create({
@@ -896,37 +893,6 @@ class BossScene extends Phaser.Scene {
     // 5秒後に解除
     this.time.delayedCall(5000, () => {
             this.demonLordBarrierActive = false;
-
-      if (!this.anims.exists('sister_shoot_anim')) {
-        this.anims.create({
-          key: 'sister_shoot_anim',
-          frames: [
-            { key: 'sister_shoot1', duration: 1500 },
-            { key: 'sister_shoot1_blink', duration: 150 },
-            { key: 'sister_shoot1', duration: 1500 },
-            { key: 'sister_shoot1_blink', duration: 150 },
-            { key: 'sister_shoot2', duration: 1500 },
-            { key: 'sister_shoot2_blink', duration: 150 },
-            { key: 'sister_shoot2', duration: 1500 },
-            { key: 'sister_shoot2_blink', duration: 150 }
-          ],
-          repeat: -1
-        });
-      }
-      if (!this.anims.exists('sister_revive_anim')) {
-        this.anims.create({
-          key: 'sister_revive_anim',
-          frames: [
-            { key: 'sister_revive1' },
-            { key: 'sister_revive2' }
-          ],
-          frameRate: 6,
-          repeat: -1
-        });
-      }
-      if (this.sisterBoss) {
-         this.sisterBoss.play('sister_shoot_anim');
-      }
       if (this.barrierGraphic) { this.barrierGraphic.destroy(); this.barrierGraphic = null; }
       this.barrierUpdateCb = null;
     });
@@ -2055,6 +2021,9 @@ class BossScene extends Phaser.Scene {
               this.dialogActive = false;
               this.physics.resume();
               this.startBossLaneMovement();
+              if (this.sisterBoss && this.sisterBoss.active) {
+                 this.sisterBoss.play('sister_shoot_anim');
+              }
               if (key === 'boss1') {
                 this.boss1Bgm = this.sound.add('boss1_bgm', { loop: true, volume: 0.2 });
                 this.boss1Bgm.play();
