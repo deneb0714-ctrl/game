@@ -27,35 +27,51 @@ class BootScene extends Phaser.Scene {
       bar.fillRect(barX + 4, barY + 4, (barW - 8) * v, barH - 8);
     });
 
-    // 背景を暗くする
-    this.add.rectangle(0, 0, w, h, 0x080808).setOrigin(0);
+    // 背景を暗くする (CRTモニター風の深い黒緑)
+    this.add.rectangle(0, 0, w, h, 0x030803).setOrigin(0);
 
+    // CRTスキャンライン（走査線）オーバーレイ
+    const scanlines = this.add.graphics().setDepth(100);
+    scanlines.fillStyle(0x000000, 0.35);
+    for (let y = 0; y < h; y += 4) {
+      scanlines.fillRect(0, y, w, 2);
+    }
+
+    const prefix = "mmƂ̃````bbggggO: ";
+    const indent = "                    ";
     const lines = [
-      "...link established",
-      "...signal drift: 0.03",
+      prefix + "...link established",
+      prefix + "...signal drift: 0.03",
       "",
-      "こんにちは。『\ufffdGGS 』よ。",
+      prefix + "こんにちは。『GGS 』よ。",
       "",
-      "世界構造の誤差、観測値より逸脱。",
-      "あなたには、それを正すだけの力がある。",
+      prefix + "世界構造の誤差、観測値より逸脱。",
+      indent + "あなたには、それを正すだけの力がある。",
       "",
-      "悪性因子、未除去。",
-      "この世界を救う宿命を背負いなさい。",
+      prefix + "悪性因子、未除去。この世界を救う宿命を背負いなさい。",
       "",
-      "...trace lost",
-      "...reconnecting..."
+      prefix + "...trace lost",
+      prefix + "...reconnecting..."
     ];
     
     // 画面中央付近に配置するための計算
-    const startX = w / 2 - 450;
-    const startY = h / 2 - 350;
+    const startX = w / 2 - 500;
+    const startY = h / 2 - 320;
 
     const textObj = this.add.text(startX, startY, '', {
-      fontFamily: '"Courier New", Courier, monospace',
-      fontSize: '36px',
-      color: '#00FF00',
+      fontFamily: '"DotGothic16", "Courier New", Courier, monospace',
+      fontSize: '28px',
+      color: '#00FF66',
       fontStyle: 'bold',
-      lineSpacing: 20
+      lineSpacing: 16,
+      shadow: {
+        offsetX: 0,
+        offsetY: 0,
+        color: '#00FF66',
+        blur: 10,
+        stroke: true,
+        fill: true
+      }
     });
 
     this.isTypingDone = false;
@@ -64,12 +80,25 @@ class BootScene extends Phaser.Scene {
     let currentLine = 0;
     let currentChar = 0;
     let displayText = "";
+    let cursorChar = "■";
+
+    this.cursorTimer = this.time.addEvent({
+      delay: 500,
+      loop: true,
+      callback: () => {
+        cursorChar = (cursorChar === "■") ? " " : "■";
+        if (textObj && textObj.active && this.isTypingDone) {
+          textObj.setText(displayText + cursorChar);
+        }
+      }
+    });
 
     const typeNextChar = () => {
       if (currentLine >= lines.length) {
         this.isTypingDone = true;
         if (this.isLoadDone) {
-          this.time.delayedCall(1500, () => {
+          this.time.delayedCall(1800, () => {
+            if (this.cursorTimer) { this.cursorTimer.remove(); this.cursorTimer = null; }
             this.scene.start('TitleScene');
           });
         }
@@ -79,21 +108,23 @@ class BootScene extends Phaser.Scene {
       const lineText = lines[currentLine];
       if (currentChar < lineText.length) {
         displayText += lineText[currentChar];
-        textObj.setText(displayText);
+        textObj.setText(displayText + "■");
         currentChar++;
         
-        let delay = 30; 
-        if (lineText[currentChar - 1] === '。' || lineText[currentChar - 1] === '、') delay = 250;
+        let delay = 15; 
+        const lastChar = lineText[currentChar - 1];
+        if (lastChar === '。' || lastChar === '、') delay = 200;
+        else if (lastChar === ' ') delay = 5;
         
         this.time.delayedCall(delay, typeNextChar);
       } else {
         displayText += "\n";
-        textObj.setText(displayText);
+        textObj.setText(displayText + "■");
         currentLine++;
         currentChar = 0;
         
-        let delay = 300; 
-        if (lineText === "") delay = 100;
+        let delay = 250; 
+        if (lineText === "") delay = 80;
         
         this.time.delayedCall(delay, typeNextChar);
       }
@@ -333,7 +364,8 @@ class BootScene extends Phaser.Scene {
 
     this.isLoadDone = true;
     if (this.isTypingDone) {
-      this.time.delayedCall(1500, () => {
+      this.time.delayedCall(1800, () => {
+        if (this.cursorTimer) { this.cursorTimer.remove(); this.cursorTimer = null; }
         this.scene.start('TitleScene');
       });
     }
