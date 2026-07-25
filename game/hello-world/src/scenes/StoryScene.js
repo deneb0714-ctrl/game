@@ -144,7 +144,8 @@ class StoryScene extends Phaser.Scene {
       this.contText.setDepth(201);
       this.areaNameText.setDepth(201);
       
-      let eye = { rx: 0, ry: 0 };
+      // 最初は横幅を保ちつつ、上下の瞼（ry）が閉じた状態からスタート
+      let eye = { rx: 450, ry: 0 };
       const drawIris = () => {
         eyeMask.clear();
         const w = 1920, h = 1080;
@@ -189,34 +190,57 @@ class StoryScene extends Phaser.Scene {
       
       drawIris();
       
-      // 1. いったん瞬きして画面中央やや上を楕円形に見せる（ゆったりとした覚醒スピード）
+      // 1. 1回目の半開き（薄目を開ける。小さめの楕円で顔は見えない）
+      // 横幅(rx)はあまり変えずに上下(ry)だけを開くことで「上下から瞼が開く瞬き感」を強調
       this.tweens.add({
         targets: eye,
-        rx: 900,
-        ry: 350,
-        duration: 1000,
+        rx: 500,
+        ry: 110,
+        duration: 700,
         ease: 'Sine.easeOut',
         onUpdate: drawIris
       });
       
-      // 2. ゆっくり瞬きして閉じる（半開きを見せる待機時間を800ms確保）
+      // 2. 1回目の瞬き（上下からパタッと閉じる）
       this.tweens.add({
         targets: eye,
-        rx: 200,
+        rx: 480,
         ry: 0,
-        duration: 500,
-        delay: 1800,
-        ease: 'Sine.easeInOut',
+        duration: 300,
+        delay: 900,
+        ease: 'Sine.easeIn',
         onUpdate: drawIris
       });
       
-      // 3. 次開くときに全体が見えるようにゆっくり開く（閉じた待機時間を350ms確保）
+      // 3. 2回目の開眼（もう少し目を開くが、まだ顔全体は隠れている）
       this.tweens.add({
         targets: eye,
-        rx: 1500,
+        rx: 620,
+        ry: 190,
+        duration: 600,
+        delay: 1350,
+        ease: 'Sine.easeOut',
+        onUpdate: drawIris
+      });
+      
+      // 4. 2回目の瞬き（再度上下から閉じる）
+      this.tweens.add({
+        targets: eye,
+        rx: 600,
+        ry: 0,
+        duration: 300,
+        delay: 2150,
+        ease: 'Sine.easeIn',
+        onUpdate: drawIris
+      });
+      
+      // 5. 最後に上下からゆっくり視界が全開になり、博士と勇者の顔が現れる
+      this.tweens.add({
+        targets: eye,
+        rx: 1600,
         ry: 950,
-        duration: 1200,
-        delay: 2650,
+        duration: 1100,
+        delay: 2600,
         ease: 'Sine.easeOut',
         onUpdate: drawIris,
         onComplete: () => {
