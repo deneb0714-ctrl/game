@@ -25,7 +25,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=DotGothic16&family=Press+Start+2P&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="styles/styles.css?v=241" />
+  <link rel="stylesheet" href="styles/styles.css?v=243" />
 </head>
 <body>
   <div id="orientation-warning">
@@ -34,7 +34,13 @@
       <div class="warning-title">【横向きプレイ推奨】</div>
       <div class="warning-text">快適にプレイいただくため、スマートフォンの画面回転をオンにして横向き（ランドスケープ）にしてお楽しみください。</div>
       <button class="warning-btn" onclick="document.getElementById('orientation-warning').style.display='none'">[ このままプレイする ]</button>
+      <div style="margin-top: 16px;">
+        <button class="warning-btn" style="border-color: #4FD1FF; color: #4FD1FF; font-size: 14px; padding: 8px 16px;" onclick="window.forceClearCache()">[ 🔄 キャッシュ消去＆最新版へ更新 ]</button>
+      </div>
     </div>
+  </div>
+  <div id="floating-update-btn" style="position: fixed; top: 10px; right: 10px; z-index: 999998; opacity: 0.8;">
+    <button onclick="window.forceClearCache()" style="background: rgba(5,8,20,0.85); color: #4FD1FF; border: 1px solid #4FD1FF; border-radius: 4px; padding: 6px 10px; font-family: 'DotGothic16', sans-serif; font-size: 13px; cursor: pointer;">🔄 キャッシュ消去/最新版へ</button>
   </div>
   <div id="game-root"></div>
   <!-- Phaser 3 from CDN -->
@@ -43,39 +49,68 @@
   <!-- Base64 Images Removed (Loaded directly as PNG in BootScene) -->
 
   <!-- Game Logic -->
-  <script>window.GAME_VERSION = 'v241';</script>
-  <script src="src/logic/audio.js?v=241"></script>
-  <script src="src/logic/flags.js?v=241"></script>
-  <script src="src/logic/endings.js?v=241"></script>
-  <script src="src/logic/controls.js?v=241"></script>
-  <script src="src/logic/enemies.js?v=241"></script>
-  <script src="src/logic/items.js?v=241"></script>
-  <script src="src/logic/doctorDirective.js?v=241"></script>
+  <script>window.GAME_VERSION = 'v243';</script>
+  <script src="src/logic/audio.js?v=243"></script>
+  <script src="src/logic/flags.js?v=243"></script>
+  <script src="src/logic/endings.js?v=243"></script>
+  <script src="src/logic/controls.js?v=243"></script>
+  <script src="src/logic/enemies.js?v=243"></script>
+  <script src="src/logic/items.js?v=243"></script>
+  <script src="src/logic/doctorDirective.js?v=243"></script>
 
   <!-- Scenes -->
-  <script src="src/scenes/BootScene.js?v=241"></script>
-  <script src="src/scenes/TitleScene.js?v=241"></script>
-  <script src="src/scenes/StoryScene.js?v=241"></script>
-  <script src="src/scenes/GameScene.js?v=241"></script>
-  <script src="src/scenes/EndingScene.js?v=241"></script>
-  <script src="src/scenes/BossScene.js?v=241"></script>
+  <script src="src/scenes/BootScene.js?v=243"></script>
+  <script src="src/scenes/TitleScene.js?v=243"></script>
+  <script src="src/scenes/StoryScene.js?v=243"></script>
+  <script src="src/scenes/GameScene.js?v=243"></script>
+  <script src="src/scenes/EndingScene.js?v=243"></script>
+  <script src="src/scenes/BossScene.js?v=243"></script>
 
   <!-- Core -->
-  <script src="src/config.js?v=241"></script>
-  <script src="src/main.js?v=241"></script>
+  <script src="src/config.js?v=243"></script>
+  <script src="src/main.js?v=243"></script>
 
   <script>
-    // Unregister Service Worker to clear old PWA caches and force fresh load
-    if ('serviceWorker' in navigator) {
-      window.addEventListener('load', () => {
+    // Unregister Service Worker & Clear Cache Storage to force fresh load
+    window.forceClearCache = function() {
+      if (confirm('キャッシュと一時ファイルを消去して最新バージョン（v243）を再読込しますか？\n（※ゲームのセーブデータやクリア状態は消えません）')) {
+        let promises = [];
+        if ('serviceWorker' in navigator) {
+          promises.push(navigator.serviceWorker.getRegistrations().then(function(registrations) {
+            for(let r of registrations) { r.unregister(); }
+          }));
+        }
+        if ('caches' in window) {
+          promises.push(caches.keys().then(function(names) {
+            return Promise.all(names.map(function(name) { return caches.delete(name); }));
+          }));
+        }
+        Promise.all(promises).finally(function() {
+          const url = new URL(window.location.href);
+          url.searchParams.set('t', Date.now());
+          window.location.replace(url.toString());
+        });
+      }
+    };
+
+    window.addEventListener('load', () => {
+      if ('serviceWorker' in navigator) {
         navigator.serviceWorker.getRegistrations().then(function(registrations) {
           for(let registration of registrations) {
             registration.unregister();
             console.log('SW unregistered');
           }
         });
-      });
-    }
+      }
+      if ('caches' in window) {
+        caches.keys().then(function(names) {
+          names.forEach(function(name) {
+            caches.delete(name);
+            console.log('Cache deleted:', name);
+          });
+        });
+      }
+    });
   </script>
 </body>
 </html>

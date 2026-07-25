@@ -15,6 +15,7 @@ const MOVE_DUR = 140; // ms（スナップ速度）
  * 指定グリッドセル (lane, col) へプレイヤーをスナップ移動する。
  */
 MOT.moveToCell = function (scene, player, lane, col) {
+  if (scene.dialogActive || (scene.dialogContainer && scene.dialogContainer.active) || (scene.physics && scene.physics.world && scene.physics.world.isPaused)) return;
   lane = Phaser.Math.Clamp(lane, 0, 2);
   col  = Phaser.Math.Clamp(col,  0, 2);
 
@@ -103,6 +104,7 @@ MOT.setupTouchControls = function (scene, player) {
   const threshold = 50; // スワイプ判定距離 (px)
 
   scene.input.on('pointerdown', function (pointer) {
+    if (scene.dialogActive || (scene.dialogContainer && scene.dialogContainer.active) || (scene.physics && scene.physics.world && scene.physics.world.isPaused)) return;
     if (pointer.y > 780 || pointer.y < 70) return; // UIボタン領域（下部ボタン＆上部トグル）でのタッチはスワイプ判定から除外
     startX = pointer.x;
     startY = pointer.y;

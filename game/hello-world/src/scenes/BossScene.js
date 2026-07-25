@@ -4110,10 +4110,14 @@ class BossScene extends Phaser.Scene {
   }
 
   showDeviceDialogue(text, onComplete) {
+    this.dialogActive = true;
+    this.input.setTopOnly(true);
     if (this.dialogContainer) {
       this.dialogContainer.destroy();
     }
-    this.dialogContainer = this.add.container(0, 0).setDepth(100);
+    this.dialogContainer = this.add.container(0, 0).setDepth(200000).setScrollFactor(0);
+    const touchZone = this.add.rectangle(960, 540, 1920, 1080, 0x000000, 0.001).setInteractive({ useHandCursor: true });
+    this.dialogContainer.add(touchZone);
 
     var w = 1920, h = 1080, boxH = 280, boxY = h - boxH - 20;
 
@@ -4152,7 +4156,7 @@ class BossScene extends Phaser.Scene {
     });
     this.dialogContainer.add(bodyText);
 
-    var contText = this.add.text(w - 100, boxY + boxH - 40, '▶ [SPACE]', {
+    var contText = this.add.text(w - 100, boxY + boxH - 40, '▶ NEXT [TAP/SPACE]', {
       fontFamily: '"Press Start 2P"', fontSize: '20px', color: '#9CA3AF'
     }).setOrigin(1, 0).setAlpha(0);
     this.dialogContainer.add(contText);
@@ -4166,25 +4170,55 @@ class BossScene extends Phaser.Scene {
         if (charIndex >= text.length) {
           typeTimer.destroy();
           contText.setAlpha(1);
-          this.tweens.add({ targets: contText, alpha: 0.3, yoyo: true, repeat: -1, duration: 500 });
-
-          const advance = () => {
-            this.input.off('pointerdown', advance);
-            this.input.keyboard.off('keydown', keyHandler);
-            if (this.dialogContainer) this.dialogContainer.destroy();
-            this.dialogContainer = null;
-            if (onComplete) onComplete();
-          };
-          const keyHandler = (event) => {
-            if (event.key === ' ' || event.code === 'Space') {
-              advance();
-            }
-          };
-          this.input.once('pointerdown', advance);
-          this.input.keyboard.on('keydown', keyHandler);
+          if (this.tweens) this.tweens.add({ targets: contText, alpha: 0.3, yoyo: true, repeat: -1, duration: 500 });
         }
       }, callbackScope: this, loop: true
     });
+
+    const advance = () => {
+      this.dialogActive = false;
+      this.input.off('pointerdown', handleInput);
+      if (touchZone && touchZone.active) {
+        touchZone.off('pointerdown', handleInput);
+        touchZone.destroy();
+      }
+      this.input.keyboard.off('keydown', handleKey);
+      if (this.dialogContainer) {
+        this.dialogContainer.destroy();
+        this.dialogContainer = null;
+      }
+      if (onComplete) onComplete();
+    };
+
+    let lastTapTime = 0;
+    const handleInput = (arg1, arg2, arg3, event) => {
+      if (event && typeof event.stopPropagation === 'function') event.stopPropagation();
+      else if (arg1 && typeof arg1.stopPropagation === 'function') arg1.stopPropagation();
+      const now = Date.now();
+      if (now - lastTapTime < 200) return;
+      lastTapTime = now;
+
+      if (charIndex < text.length) {
+        typeTimer.destroy();
+        charIndex = text.length;
+        bodyText.setText(text);
+        contText.setAlpha(1);
+        if (this.tweens) this.tweens.add({ targets: contText, alpha: 0.3, yoyo: true, repeat: -1, duration: 500 });
+      } else {
+        advance();
+      }
+    };
+
+    const handleKey = (event) => {
+      if (event.key === ' ' || event.code === 'Space' || event.key === 'Enter' || event.code === 'Enter') {
+        handleInput();
+      }
+    };
+
+    touchZone.on('pointerdown', handleInput);
+    this.input.off('pointerdown', handleInput);
+    this.input.on('pointerdown', handleInput);
+    this.input.keyboard.on('keydown', handleKey);
   }
 
 
@@ -4196,8 +4230,8 @@ class BossScene extends Phaser.Scene {
     let startY = h / 2 - (choicesData.length - 1) * 60;
     
     choicesData.forEach((data, index) => {
-      let btn = this.add.rectangle(w / 2, startY + index * 120, 600, 90, 0x1F2933).setStrokeStyle(2, 0x4FD1FF).setInteractive({ useHandCursor: true }).setDepth(200);
-      let txt = this.add.text(w / 2, startY + index * 120, data.label, { fontFamily: '"DotGothic16"', fontSize: '26px', color: '#4FD1FF' }).setOrigin(0.5).setDepth(200);
+      let btn = this.add.rectangle(w / 2, startY + index * 120, 600, 90, 0x1F2933).setStrokeStyle(2, 0x4FD1FF).setInteractive({ useHandCursor: true }).setDepth(200000).setScrollFactor(0);
+      let txt = this.add.text(w / 2, startY + index * 120, data.label, { fontFamily: '"DotGothic16"', fontSize: '26px', color: '#4FD1FF' }).setOrigin(0.5).setDepth(200001).setScrollFactor(0);
       
       this.choicesList.push({ btn: btn, txt: txt, callback: data.callback });
       
@@ -4260,10 +4294,14 @@ class BossScene extends Phaser.Scene {
   }
 
   showDialogue(speaker, text, onComplete, keepOpen = false) {
+    this.dialogActive = true;
+    this.input.setTopOnly(true);
     if (this.dialogContainer) {
       this.dialogContainer.destroy();
     }
-    this.dialogContainer = this.add.container(0, 0).setDepth(100);
+    this.dialogContainer = this.add.container(0, 0).setDepth(200000).setScrollFactor(0);
+    const touchZone = this.add.rectangle(960, 540, 1920, 1080, 0x000000, 0.001).setInteractive({ useHandCursor: true });
+    this.dialogContainer.add(touchZone);
 
     var w = 1920, h = 1080, boxH = 280, boxY = h - boxH - 20;
     var box = this.add.graphics();
@@ -4284,7 +4322,7 @@ class BossScene extends Phaser.Scene {
     });
     this.dialogContainer.add(bodyText);
 
-    var contText = this.add.text(w - 100, boxY + boxH - 40, '▶ [SPACE]', {
+    var contText = this.add.text(w - 100, boxY + boxH - 40, '▶ NEXT [TAP/SPACE]', {
       fontFamily: '"Press Start 2P"', fontSize: '20px', color: '#9CA3AF'
     }).setOrigin(1, 0).setAlpha(0);
     this.dialogContainer.add(contText);
@@ -4325,27 +4363,57 @@ class BossScene extends Phaser.Scene {
         if (charIndex >= text.length) {
           typeTimer.destroy();
           contText.setAlpha(1);
-          this.tweens.add({ targets: contText, alpha: 0.3, yoyo: true, repeat: -1, duration: 500 });
-
-          const advance = () => {
-            this.input.off('pointerdown', advance);
-            this.input.keyboard.off('keydown', keyHandler);
-            if (!keepOpen && this.dialogContainer) {
-              this.dialogContainer.destroy();
-              this.dialogContainer = null;
-            }
-            if (onComplete) onComplete();
-          };
-          const keyHandler = (event) => {
-            if (event.key === ' ' || event.code === 'Space') {
-              advance();
-            }
-          };
-          this.input.once('pointerdown', advance);
-          this.input.keyboard.on('keydown', keyHandler);
+          if (this.tweens) this.tweens.add({ targets: contText, alpha: 0.3, yoyo: true, repeat: -1, duration: 500 });
         }
       }, callbackScope: this, loop: true
     });
+
+    const advance = () => {
+      if (!keepOpen) {
+        this.dialogActive = false;
+      }
+      this.input.off('pointerdown', handleInput);
+      if (touchZone && touchZone.active) {
+        touchZone.off('pointerdown', handleInput);
+        touchZone.destroy();
+      }
+      this.input.keyboard.off('keydown', handleKey);
+      if (!keepOpen && this.dialogContainer) {
+        this.dialogContainer.destroy();
+        this.dialogContainer = null;
+      }
+      if (onComplete) onComplete();
+    };
+
+    let lastTapTime = 0;
+    const handleInput = (arg1, arg2, arg3, event) => {
+      if (event && typeof event.stopPropagation === 'function') event.stopPropagation();
+      else if (arg1 && typeof arg1.stopPropagation === 'function') arg1.stopPropagation();
+      const now = Date.now();
+      if (now - lastTapTime < 200) return;
+      lastTapTime = now;
+
+      if (charIndex < text.length) {
+        typeTimer.destroy();
+        charIndex = text.length;
+        bodyText.setText(text);
+        contText.setAlpha(1);
+        if (this.tweens) this.tweens.add({ targets: contText, alpha: 0.3, yoyo: true, repeat: -1, duration: 500 });
+      } else {
+        advance();
+      }
+    };
+
+    const handleKey = (event) => {
+      if (event.key === ' ' || event.code === 'Space' || event.key === 'Enter' || event.code === 'Enter') {
+        handleInput();
+      }
+    };
+
+    touchZone.on('pointerdown', handleInput);
+    this.input.off('pointerdown', handleInput);
+    this.input.on('pointerdown', handleInput);
+    this.input.keyboard.on('keydown', handleKey);
   }
 
     showChoice(choices) {
@@ -4356,7 +4424,7 @@ class BossScene extends Phaser.Scene {
     const overlay = this.add.graphics();
     overlay.fillStyle(0x000000, 0.5);
     overlay.fillRect(0, 0, w, h);
-    overlay.setDepth(149);
+    overlay.setDepth(200000).setScrollFactor(0);
     elements.push(overlay);
 
     // [ENTER] KEY ガイドテキストを右下に追加
@@ -4364,7 +4432,7 @@ class BossScene extends Phaser.Scene {
       fontFamily: '"Press Start 2P"',
       fontSize: '20px',
       color: '#9CA3AF'
-    }).setOrigin(1, 0.5).setDepth(151);
+    }).setOrigin(1, 0.5).setDepth(200001).setScrollFactor(0);
     this.tweens.add({ targets: contText, alpha: 0.3, yoyo: true, repeat: -1, duration: 500 });
     elements.push(contText);
 
@@ -4374,13 +4442,13 @@ class BossScene extends Phaser.Scene {
 
     choices.forEach(function (choice, i) {
       const y = startY + i * 110;
-      const btn = self.add.image(w / 2, y, 'ui_button_wide').setInteractive({ useHandCursor: true }).setDepth(150);
+      const btn = self.add.image(w / 2, y, 'ui_button_wide').setInteractive({ useHandCursor: true }).setDepth(200002).setScrollFactor(0);
       
       const txt = self.add.text(w / 2, y, choice.text, {
         fontFamily: '"DotGothic16"',
         fontSize: '26px',
         color: '#E5E7EB'
-      }).setOrigin(0.5).setDepth(151);
+      }).setOrigin(0.5).setDepth(200003).setScrollFactor(0);
 
       elements.push(btn, txt);
       choicesList.push({ btn: btn, txt: txt, callback: choice.callback });
