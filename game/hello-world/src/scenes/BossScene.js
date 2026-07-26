@@ -3862,6 +3862,9 @@ class BossScene extends Phaser.Scene {
     this.cameras.main.fadeOut(1500, 0, 0, 0);
     this.time.delayedCall(1500, () => { 
       this.bg.setTexture('bg_boss_stage5');
+      this.bg.setOrigin(0, 0);
+      this.bg.setPosition(0, 0);
+      this.bg.setScale(4);
       this.tweens.killTweensOf(this.player);
       this.player.setPosition(-200, this.player.y);
       if (this.player.body) {
@@ -3994,6 +3997,9 @@ class BossScene extends Phaser.Scene {
           else if (this.currentBossIndex === 2) bgKey = 'bg_boss_stage4';
           else if (this.currentBossIndex === 3) bgKey = 'bg_boss_stage5';
           this.bg.setTexture(bgKey);
+          this.bg.setOrigin(0, 0);
+          this.bg.setPosition(0, 0);
+          this.bg.setScale(4);
           
           // Player enters from the left off-screen
           this.tweens.killTweensOf(this.player);
