@@ -128,8 +128,12 @@ class TitleScene extends Phaser.Scene {
     // Fade in camera
     this.cameras.main.fadeIn(600, 5, 8, 20);
 
-    // START button
-    this.createButton(w / 2, h * 0.85, 'START', 500, function () {
+    // START & CONTINUE buttons
+    const hasSave = (window.MOT && MOT.hasSaveData && MOT.hasSaveData());
+    const startY = hasSave ? h * 0.78 : h * 0.85;
+
+    this.createButton(w / 2, startY, 'START', 500, function () {
+      if (window.MOT && MOT.clearSaveData) MOT.clearSaveData();
       if (this.heroGif) {
         this.heroGif.play('play_hero_title');
         this.heroGif.once('animationcomplete', function() {
@@ -145,6 +149,31 @@ class TitleScene extends Phaser.Scene {
         }, [], this);
       }
     }.bind(this));
+
+    if (hasSave) {
+      this.createButton(w / 2, h * 0.88, 'CONTINUE', 700, function () {
+        const saveData = window.MOT && MOT.loadGame ? MOT.loadGame() : null;
+        if (saveData && saveData.flags) {
+          MOT.flags = JSON.parse(JSON.stringify(saveData.flags));
+          MOT.flags.diedCount = 0;
+          MOT.flags.playerHP = MOT.flags.playerMaxHP || 5;
+        }
+        if (this.heroGif) {
+          this.heroGif.play('play_hero_title');
+          this.heroGif.once('animationcomplete', function() {
+            this.cameras.main.fadeOut(500, 5, 8, 20);
+            this.time.delayedCall(500, function () {
+              this.scene.start('BossScene', { startBossIndex: saveData ? saveData.bossIndex : 1, fromContinue: true });
+            }, [], this);
+          }, this);
+        } else {
+          this.cameras.main.fadeOut(500, 5, 8, 20);
+          this.time.delayedCall(500, function () {
+            this.scene.start('BossScene', { startBossIndex: saveData ? saveData.bossIndex : 1, fromContinue: true });
+          }, [], this);
+        }
+      }.bind(this));
+    }
 
     // デバッグショートカットキーUI
     if (!isGlitch) {

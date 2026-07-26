@@ -154,9 +154,13 @@ class BossScene extends Phaser.Scene {
     this.createHUD();
     this.cameras.main.fadeIn(800, 5, 8, 20);
 
-    // Start first boss
+    // Start first boss or intermission when resuming from continue
     if (!(this.startData && this.startData.jumpToEndingSetup)) {
-      this.time.delayedCall(1000, function () { this.startBoss(); }, [], this);
+      if (this.startData && this.startData.fromContinue && this.currentBossIndex > 0 && this.bossQueue[this.currentBossIndex] !== 'doctor') {
+        this.time.delayedCall(1000, function () { this.startIntermission(); }, [], this);
+      } else {
+        this.time.delayedCall(1000, function () { this.startBoss(); }, [], this);
+      }
     }
 
     // ── デバッグ用ショートカット ──
@@ -3922,6 +3926,29 @@ class BossScene extends Phaser.Scene {
     var resumeFn = function() {
       this.currentBoss = null;
       this.currentBossIndex++;
+      
+      // ─── 自動セーブ処理（各ボス撃破直後） ───
+      if (this.currentBossIndex > 0 && this.currentBossIndex <= 4) {
+        if (MOT.saveGame) MOT.saveGame(this.currentBossIndex);
+        try {
+          const saveNotify = this.add.text(1920 / 2, 80, '💾 進行状況を自動セーブしました', {
+            fontFamily: "'DotGothic16', sans-serif",
+            fontSize: '28px',
+            color: '#00FF88',
+            backgroundColor: 'rgba(5,8,20,0.85)',
+            padding: { x: 20, y: 10 }
+          }).setOrigin(0.5).setDepth(99999);
+          this.tweens.add({
+            targets: saveNotify,
+            alpha: 0,
+            delay: 2500,
+            duration: 1000,
+            onComplete: () => { if (saveNotify) saveNotify.destroy(); }
+          });
+        } catch (e) {
+          console.error('Save notify UI error:', e);
+        }
+      }
       
       // Clear enemy bullets so player is safe while collecting items
       this.enemyBullets.clear(true, true);

@@ -85,3 +85,47 @@ MOT.incrementDoctorObeyCount = function () {
   MOT.flags.dollPoints = Math.min(100, MOT.flags.dollPoints + 10);
   console.log('[MOT] doctorObeyCount:', MOT.flags.doctorObeyCount);
 };
+
+// =============================================
+// セーブ／ロード機能（自動セーブ＆CONTINUE対応）
+// =============================================
+MOT.saveGame = function(nextBossIndex) {
+  try {
+    const saveData = {
+      version: 1,
+      timestamp: Date.now(),
+      bossIndex: nextBossIndex,
+      flags: JSON.parse(JSON.stringify(MOT.flags))
+    };
+    localStorage.setItem('MOT_SAVE_DATA', JSON.stringify(saveData));
+    console.log('[MOT] Auto-saved progress for bossIndex:', nextBossIndex);
+  } catch(e) {
+    console.error('[MOT] Failed to save game:', e);
+  }
+};
+
+MOT.loadGame = function() {
+  try {
+    const dataStr = localStorage.getItem('MOT_SAVE_DATA');
+    if (!dataStr) return null;
+    return JSON.parse(dataStr);
+  } catch(e) {
+    console.error('[MOT] Failed to load save data:', e);
+    return null;
+  }
+};
+
+MOT.hasSaveData = function() {
+  const data = MOT.loadGame();
+  return data && data.bossIndex !== undefined && data.bossIndex > 0;
+};
+
+MOT.clearSaveData = function() {
+  try {
+    localStorage.removeItem('MOT_SAVE_DATA');
+    console.log('[MOT] Save data cleared.');
+  } catch(e) {
+    console.error('[MOT] Failed to clear save data:', e);
+  }
+};
+
