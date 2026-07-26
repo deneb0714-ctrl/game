@@ -25,7 +25,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=DotGothic16&family=Press+Start+2P&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="styles/styles.css?v=244" />
+  <link rel="stylesheet" href="styles/styles.css?v=245" />
 </head>
 <body>
   <div id="orientation-warning">
@@ -51,26 +51,26 @@
   <!-- Base64 Images Removed (Loaded directly as PNG in BootScene) -->
 
   <!-- Game Logic -->
-  <script>window.GAME_VERSION = 'v244';</script>
-  <script src="src/logic/audio.js?v=244"></script>
-  <script src="src/logic/flags.js?v=244"></script>
-  <script src="src/logic/endings.js?v=244"></script>
-  <script src="src/logic/controls.js?v=244"></script>
-  <script src="src/logic/enemies.js?v=244"></script>
-  <script src="src/logic/items.js?v=244"></script>
-  <script src="src/logic/doctorDirective.js?v=244"></script>
+  <script>window.GAME_VERSION = 'v245';</script>
+  <script src="src/logic/audio.js?v=245"></script>
+  <script src="src/logic/flags.js?v=245"></script>
+  <script src="src/logic/endings.js?v=245"></script>
+  <script src="src/logic/controls.js?v=245"></script>
+  <script src="src/logic/enemies.js?v=245"></script>
+  <script src="src/logic/items.js?v=245"></script>
+  <script src="src/logic/doctorDirective.js?v=245"></script>
 
   <!-- Scenes -->
-  <script src="src/scenes/BootScene.js?v=244"></script>
-  <script src="src/scenes/TitleScene.js?v=244"></script>
-  <script src="src/scenes/StoryScene.js?v=244"></script>
-  <script src="src/scenes/GameScene.js?v=244"></script>
-  <script src="src/scenes/EndingScene.js?v=244"></script>
-  <script src="src/scenes/BossScene.js?v=244"></script>
+  <script src="src/scenes/BootScene.js?v=245"></script>
+  <script src="src/scenes/TitleScene.js?v=245"></script>
+  <script src="src/scenes/StoryScene.js?v=245"></script>
+  <script src="src/scenes/GameScene.js?v=245"></script>
+  <script src="src/scenes/EndingScene.js?v=245"></script>
+  <script src="src/scenes/BossScene.js?v=245"></script>
 
   <!-- Core -->
-  <script src="src/config.js?v=244"></script>
-  <script src="src/main.js?v=244"></script>
+  <script src="src/config.js?v=245"></script>
+  <script src="src/main.js?v=245"></script>
 
   <script>
     // 全画面表示（フルスクリーン）切り替え
@@ -96,7 +96,7 @@
 
     // Unregister Service Worker & Clear Cache Storage to force fresh load
     window.forceClearCache = function() {
-      if (confirm('キャッシュと一時ファイルを消去して最新バージョン（v244）を再読込しますか？\n（※ゲームのセーブデータやクリア状態は消えません）')) {
+      if (confirm('キャッシュと一時ファイルを消去して最新バージョン（v245）を再読込しますか？\n（※ゲームのセーブデータやクリア状態は消えません）')) {
         let promises = [];
         if ('serviceWorker' in navigator) {
           promises.push(navigator.serviceWorker.getRegistrations().then(function(registrations) {
