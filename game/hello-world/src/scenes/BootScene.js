@@ -157,6 +157,8 @@ class BootScene extends Phaser.Scene {
     // 博士の立ち絵
     this.load.image('doctor_stand', 'assets/images/doctor_normal.png?v=' + v);
     this.load.image('doctor_stand_open', 'assets/images/doctor_open_eyes.png?v=' + v);
+    this.load.image('doctor_combat', 'assets/images/doctor_combat.png?v=' + v);
+    this.load.image('doctor_combat_beam', 'assets/images/doctor_combat_beam.png?v=' + v);
     
     // 主人公の立ち絵は以下で読み込みます
     

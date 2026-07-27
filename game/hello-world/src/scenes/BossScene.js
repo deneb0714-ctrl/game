@@ -231,7 +231,8 @@ class BossScene extends Phaser.Scene {
       }
       this.bossDefeated = false;
       
-      let dummyBoss = this.physics.add.sprite(1400, 1080 / 2, 'doctor_awaken_smile_weapon');
+      let dummyBoss = this.physics.add.sprite(1400, 460, 'doctor_combat');
+      dummyBoss.setScale(2.5);
       dummyBoss.configKey = 'doctor';
       dummyBoss.hp = 9999;
       this.bossHP = 9999;
@@ -310,7 +311,7 @@ class BossScene extends Phaser.Scene {
         choices: []
       },
       doctor: {
-        texture: 'doctor_awaken_smile_weapon', name: '博士', hp: 450, scale: 0.28,
+        texture: 'doctor_combat', name: '博士', hp: 450, scale: 2.5,
         intro: '「さぁ、最終決戦といこうじゃないか！」',
         defeat: '「驚いた...まさかお前がここまでやるとはな」',
         choices: []
@@ -335,7 +336,7 @@ class BossScene extends Phaser.Scene {
     this.bossDefeated = false;
 
     // Spawn boss (hidden initially)
-    var bossSpawnY = (key === 'doctor') ? 400 : 460;
+    var bossSpawnY = 460;
     var boss = this.physics.add.sprite(1920, bossSpawnY, cfg.texture);
     if (key === 'boss1') boss.play('boss1_idle');
     if (key === 'demon_lord') boss.play('demon_combat_anim');
@@ -1244,6 +1245,12 @@ class BossScene extends Phaser.Scene {
       let silver = 0xE0E0E0; // 白よりのシルバー
       let docPattern = Phaser.Math.Between(0, 6); // パターンを7種類に増加
       
+      if (docPattern !== 6) {
+        if (this.currentBoss && this.currentBoss.active && this.currentBoss.texture.key !== 'doctor_combat') {
+          this.currentBoss.setTexture('doctor_combat');
+        }
+      }
+      
       if (docPattern === 0) {
         // 幹部1の斬撃（シルバー化）
         var laneYs = [220, 460, 700];
@@ -1305,6 +1312,15 @@ class BossScene extends Phaser.Scene {
       } else {
         // 新技：斜め極太ブラスター（顔なし）
         let numBlasters = Phaser.Math.Between(4, 6); // 4〜6体に増加
+        
+        if (this.currentBoss && this.currentBoss.active) {
+          this.currentBoss.setTexture('doctor_combat_beam');
+          this.time.delayedCall(2500, () => {
+            if (this.currentBoss && this.currentBoss.active && this.currentBoss.configKey === 'doctor' && this.currentBoss.texture.key === 'doctor_combat_beam') {
+              this.currentBoss.setTexture('doctor_combat');
+            }
+          });
+        }
         
         for (let i = 0; i < numBlasters; i++) {
           this.time.delayedCall(i * 300, () => {
