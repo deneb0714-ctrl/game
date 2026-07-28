@@ -1006,17 +1006,19 @@ class BossScene extends Phaser.Scene {
         MOT.DoctorDirective.hideDirective(this);
       }
     } else {
-      MOT.DoctorDirective.update(this, delta, this.player, this.dialogActive);
+      let isDialogOrChoice = this.dialogActive || this.choiceActive || (this.choiceContainer && this.choiceContainer.active);
+      MOT.DoctorDirective.update(this, delta, this.player, isDialogOrChoice);
     }
 
     // 会話が終わった瞬間（dialogActive が true から false に変わった時）に、バリアのクールタイムを最大（0%からチャージ）にする
-    if (!this.dialogActive && this.lastDialogActive) {
+    let currentDialogOrChoice = this.dialogActive || this.choiceActive || (this.choiceContainer && this.choiceContainer.active);
+    if (!currentDialogOrChoice && this.lastDialogActive) {
       // 2秒（2000ms）のフルクールタイムをセットし、戦闘開始直後のバリアを完全に防ぐ
       this.barrierCooldown = 2000;
     }
-    this.lastDialogActive = this.dialogActive;
+    this.lastDialogActive = currentDialogOrChoice;
 
-    if (this.dialogActive) return;
+    if (currentDialogOrChoice) return;
 
     // 軽量なレーザー当たり判定
     if (this.activeLasers) {
@@ -4476,6 +4478,7 @@ class BossScene extends Phaser.Scene {
   }
 
     showChoice(choices) {
+    this.choiceActive = true;
     const w = 1920, h = 1080;
     const startY = h / 2 - (choices.length * 45);
     const elements = [];
@@ -4522,6 +4525,7 @@ class BossScene extends Phaser.Scene {
       });
 
       btn.on('pointerdown', function () {
+        self.choiceActive = false;
         self.input.keyboard.off('keydown');
         elements.forEach(function (el) { el.destroy(); });
         choice.callback();
@@ -4554,6 +4558,7 @@ class BossScene extends Phaser.Scene {
         self.selectedChoiceIndex = (self.selectedChoiceIndex + 1) % choicesList.length;
         self.updateChoiceSelection(choicesList);
       } else if (event.code === 'Enter') {
+        self.choiceActive = false;
         self.input.keyboard.off('keydown');
         elements.forEach(function (el) { el.destroy(); });
         choicesList[self.selectedChoiceIndex].callback();
