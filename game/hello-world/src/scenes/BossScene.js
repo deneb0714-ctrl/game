@@ -2818,7 +2818,17 @@ class BossScene extends Phaser.Scene {
               } else {
                   await sayDevice('「よくやった。さぁ早くとどめを！」');
                   await sayDemon('「ぐっ…ここまでか…」');
-                  c = await askShatterChoice('1. 心臓を打ち抜く', '2. 見逃す', Kills === 0);
+                  
+                  let isFreedomRoute = (Kills === 0 && MOT.flags.dollPoints < 20 && MOT.flags.killingIntent >= 20);
+                  if (isFreedomRoute) {
+                      c = await new Promise(res => {
+                          this.showChoice([
+                              { text: '見逃す', callback: () => { if(MOT.Audio.playSelect) MOT.Audio.playSelect(); res(2); } }
+                          ]);
+                      });
+                  } else {
+                      c = await askShatterChoice('1. 心臓を打ち抜く', '2. 見逃す', Kills === 0);
+                  }
               }
               
               if (c === 1) {
