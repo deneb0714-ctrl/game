@@ -152,7 +152,7 @@ class BootScene extends Phaser.Scene {
     this.load.audio('twins_bgm', 'assets/audio/twins_bgm.mp3');
     this.load.audio('boss1_bgm', 'assets/audio/boss1_bgm.mp3');
     this.load.audio('boss2_bgm', 'assets/audio/boss2_bgm.wav');
-    this.load.audio('demon_lord_bgm', 'assets/audio/boss2_bgm_kai.wav');
+    this.load.audio('demon_lord_bgm', 'assets/audio/demon_lord_bgm.mp3');
     this.load.audio('bgm_stage', 'assets/audio/bgm_stage.mp3');
 
     // 博士の立ち絵
