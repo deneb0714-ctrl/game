@@ -790,7 +790,7 @@ class BossScene extends Phaser.Scene {
 
     // 補助魔法（8〜15秒ごとにランダムで弾幕加速 or バリア）
     const supportAction = () => {
-      if (this.bossDefeated || this.dialogActive || !this.inunekoEnemy || !this.inunekoEnemy.visible) {
+      if (this.bossDefeated || this.dialogActive || this.cutsceneActive || !this.inunekoEnemy || !this.inunekoEnemy.visible) {
         if (!this.bossDefeated) {
           this.time.delayedCall(Phaser.Math.Between(8000, 15000), supportAction);
         }
@@ -973,20 +973,23 @@ class BossScene extends Phaser.Scene {
     }
 
     // Auto-shoot
-    this.autoShootTimer += delta;
-    let shootInterval = this.heroAttackSpeedBoost ? 80 : 200;
-    if (this.autoShootTimer >= shootInterval) {
-      this.autoShootTimer = 0;
-      var b = this.playerBullets.create(this.player.x + 30, this.player.y, 'bullet_player');
-      if (b) {
-        b.setVelocityX(this.heroFirepowerBoost ? 1000 : 600); 
-        b.setScale(this.heroFirepowerBoost ? 4 : 2);
-        if (this.heroFirepowerBoost) {
-          b.setTint(0xffaa00);
-          b.damage = 2;
+    let canShoot = this.currentBoss && this.currentBoss.active && this.currentBoss.visible && this.bossHP > 0;
+    if (canShoot) {
+      this.autoShootTimer += delta;
+      let shootInterval = this.heroAttackSpeedBoost ? 80 : 200;
+      if (this.autoShootTimer >= shootInterval) {
+        this.autoShootTimer = 0;
+        var b = this.playerBullets.create(this.player.x + 30, this.player.y, 'bullet_player');
+        if (b) {
+          b.setVelocityX(this.heroFirepowerBoost ? 1000 : 600); 
+          b.setScale(this.heroFirepowerBoost ? 4 : 2);
+          if (this.heroFirepowerBoost) {
+            b.setTint(0xffaa00);
+            b.damage = 2;
+          }
+          MOT.Audio.playShot();
+          this.time.delayedCall(4000, function () { if (b.active) b.destroy(); });
         }
-        MOT.Audio.playShot();
-        this.time.delayedCall(4000, function () { if (b.active) b.destroy(); });
       }
     }
 
