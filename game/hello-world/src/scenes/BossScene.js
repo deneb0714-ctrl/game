@@ -973,7 +973,7 @@ class BossScene extends Phaser.Scene {
     }
 
     // Auto-shoot
-    let canShoot = (this.currentBoss && this.currentBoss.active && this.currentBoss.visible && this.bossHP > 0) || this.minionBattleActive;
+    let canShoot = (this.currentBoss && this.currentBoss.active && this.currentBoss.visible && this.bossHP > 0) || this.minionBattleActive || this.intermissionActive;
     if (canShoot) {
       this.autoShootTimer += delta;
       let shootInterval = this.heroAttackSpeedBoost ? 80 : 200;
