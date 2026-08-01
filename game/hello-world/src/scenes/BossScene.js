@@ -334,6 +334,7 @@ class BossScene extends Phaser.Scene {
     this.bossPhase = 0;
     this.bossAttackTimer = 0;
     this.bossDefeated = false;
+    this.cutsceneActive = false;
 
     // Spawn boss (hidden initially)
     var bossSpawnY = 460;
@@ -456,7 +457,9 @@ class BossScene extends Phaser.Scene {
   }
 
   startBossIntro(key, boss) {
+    this.cutsceneActive = true;
     if (key !== 'demon_lord' && key !== 'doctor') {
+      this.cutsceneActive = false;
       this.dialogActive = false;
       this.physics.resume();
     } else {
@@ -481,7 +484,8 @@ class BossScene extends Phaser.Scene {
            
            if (key === 'demon_lord') {
              this.playDemonLordIntro(() => {
-               this.dialogActive = false;
+               this.cutsceneActive = false;
+                this.dialogActive = false;
                this.physics.resume();
                this.startBossLaneMovement();
                this.boss4Bgm = this.sound.add('demon_lord_bgm', { loop: true, volume: 0.2 });
@@ -898,8 +902,10 @@ class BossScene extends Phaser.Scene {
 
     // 補助魔法（8〜15秒ごとにランダムで弾幕加速 or バリア）
     const supportAction = () => {
-      if (this.dialogActive || !this.inunekoEnemy || !this.inunekoEnemy.visible) {
-        this.time.delayedCall(Phaser.Math.Between(8000, 15000), supportAction);
+      if (this.bossDefeated || this.dialogActive || !this.inunekoEnemy || !this.inunekoEnemy.visible) {
+        if (!this.bossDefeated) {
+          this.time.delayedCall(Phaser.Math.Between(8000, 15000), supportAction);
+        }
         return;
       }
       const action = Phaser.Math.Between(0, 1);
@@ -1013,7 +1019,7 @@ class BossScene extends Phaser.Scene {
     }
 
     // 会話が終わった瞬間（dialogActive が true から false に変わった時）に、バリアのクールタイムを最大（0%からチャージ）にする
-    let currentDialogOrChoice = this.dialogActive || this.choiceActive || (this.choiceContainer && this.choiceContainer.active);
+    let currentDialogOrChoice = this.dialogActive || this.choiceActive || (this.choiceContainer && this.choiceContainer.active) || this.cutsceneActive;
     if (!currentDialogOrChoice && this.lastDialogActive) {
       // 2秒（2000ms）のフルクールタイムをセットし、戦闘開始直後のバリアを完全に防ぐ
       this.barrierCooldown = 2000;
@@ -2203,6 +2209,7 @@ class BossScene extends Phaser.Scene {
 
     if (this.bossHP <= 0 && !this.bossDefeated) {
       this.bossDefeated = true; // Prevent multiple triggers
+      this.cutsceneActive = true;
       if (this.boss1Bgm) this.boss1Bgm.stop();
       if (this.boss2Bgm) this.boss2Bgm.stop();
       if (this.boss4Bgm) this.boss4Bgm.stop();
@@ -4101,6 +4108,7 @@ class BossScene extends Phaser.Scene {
 
     // 幕間フラグ
     this.intermissionActive = true;
+    this.cutsceneActive = false;
     
     // BGM再生
     if (this.stageBgm) this.stageBgm.stop();
