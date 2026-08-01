@@ -4099,6 +4099,11 @@ class BossScene extends Phaser.Scene {
 
     // 幕間フラグ
     this.intermissionActive = true;
+    
+    // BGM再生
+    if (this.stageBgm) this.stageBgm.stop();
+    this.stageBgm = this.sound.add('bgm_stage', { loop: true, volume: 0.15 });
+    this.stageBgm.play();
 
     // 1.5秒後に雑魚スポーン開始（GameSceneと同じウェーブ形式）
     this.time.delayedCall(1500, function () {
@@ -4157,6 +4162,9 @@ class BossScene extends Phaser.Scene {
   endIntermission() {
     if (!this.intermissionActive) return;
     this.intermissionActive = false;
+    
+    if (this.stageBgm) this.stageBgm.stop();
+    
     if (this.intermissionTimeout) {
       this.intermissionTimeout.destroy();
       this.intermissionTimeout = null;
