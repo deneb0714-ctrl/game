@@ -149,6 +149,7 @@ class BossScene extends Phaser.Scene {
     this.inunekoGroup = this.physics.add.group();
     this.physics.add.overlap(this.playerBullets, this.inunekoGroup, this.onBossHit, null, this);
     this.physics.add.overlap(this.playerBullets, this.enemyGroup, this.onBossHit, null, this);
+    this.physics.add.overlap(this.player, this.enemyGroup, this.onPlayerHit, null, this);
     this.physics.add.overlap(this.player, this.itemGroup, MOT.collectItem.bind(null, this), null, this);
 
     this.createHUD();
@@ -1538,7 +1539,11 @@ class BossScene extends Phaser.Scene {
     if (this.barrierActive) {
       const isJustGuard = (this.time.now - this.barrierActivatedTime) <= 150; // シビアな判定 (150ms)
 
-      obj.destroy();
+      if (obj.isScenarioMinion) {
+        this.onBossHit({ active: true, damage: 9999, silent: false, destroy: function(){} }, obj);
+      } else {
+        obj.destroy();
+      }
       this.deactivateBarrier();
       
       // 同時にヒットした別の弾の判定を無視するための短い無敵時間を付与
@@ -1623,7 +1628,11 @@ class BossScene extends Phaser.Scene {
       return;
     }
 
-    obj.destroy();
+    if (obj.isScenarioMinion) {
+      this.onBossHit({ active: true, damage: 9999, silent: false, destroy: function(){} }, obj);
+    } else {
+      obj.destroy();
+    }
     let dmg = obj.damage || 1;
     MOT.flags.playerHP -= dmg;
     this.cameras.main.shake(150, 0.008);
