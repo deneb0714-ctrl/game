@@ -906,15 +906,39 @@ class BossScene extends Phaser.Scene {
       MOT.DoctorDirective.update(this, delta, this.player, isDialogOrChoice);
     }
 
+    let isDialog = this.dialogActive || this.choiceActive || (this.choiceContainer && this.choiceContainer.active);
+    
     // 会話が終わった瞬間（dialogActive が true から false に変わった時）に、バリアのクールタイムを最大（0%からチャージ）にする
-    let currentDialogOrChoice = this.dialogActive || this.choiceActive || (this.choiceContainer && this.choiceContainer.active) || this.cutsceneActive;
-    if (!currentDialogOrChoice && this.lastDialogActive) {
+    if (!isDialog && this.lastDialogActive) {
       // 2秒（2000ms）のフルクールタイムをセットし、戦闘開始直後のバリアを完全に防ぐ
       this.barrierCooldown = 2000;
     }
-    this.lastDialogActive = currentDialogOrChoice;
+    this.lastDialogActive = isDialog;
 
-    if (currentDialogOrChoice) return;
+    if (isDialog) {
+      return;
+    }
+    
+    if (this.cutsceneActive) {
+      MOT.handleMovement(this, this.player);
+      
+      // バリアの更新（移動時に追従させるため）
+      if (this.barrierCooldown > 0) {
+        this.barrierCooldown -= delta;
+        if (this.barrierCooldown < 0) this.barrierCooldown = 0;
+      }
+      if (this.barrierActive) {
+        this.barrierTime += delta;
+        if (this.barrierVisual) {
+          this.barrierVisual.setPosition(this.player.x, this.player.y);
+          this.barrierHitbox.setPosition(this.player.x, this.player.y);
+        }
+        if (this.barrierTime >= 3000) {
+          this.deactivateBarrier();
+        }
+      }
+      return;
+    }
 
     // 軽量なレーザー当たり判定
     if (this.activeLasers) {
