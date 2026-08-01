@@ -36,14 +36,12 @@
       <button class="warning-btn" onclick="document.getElementById('orientation-warning').style.display='none'">[ このままプレイする ]</button>
       <div style="margin-top: 16px; display: flex; gap: 10px; justify-content: center; flex-wrap: wrap;">
         <button class="warning-btn" style="border-color: #00FF88; color: #00FF88; font-size: 14px; padding: 8px 16px;" onclick="window.toggleGameFullscreen()">[ ⛶ 全画面（フルスクリーン）表示 ]</button>
-        <button class="warning-btn" style="border-color: #4FD1FF; color: #4FD1FF; font-size: 14px; padding: 8px 16px;" onclick="window.forceClearCache()">[ 🔄 キャッシュ消去＆最新版へ更新 ]</button>
-      </div>
+              </div>
     </div>
   </div>
-  <div id="floating-update-btn" style="position: fixed; top: 10px; right: 10px; z-index: 999998; opacity: 0.85; display: flex; gap: 8px;">
+  <div id="floating-update-btn" class="mobile-only" style="position: fixed; top: 10px; right: 10px; z-index: 999998; opacity: 0.85; display: flex; gap: 8px;">
     <button onclick="window.toggleGameFullscreen()" style="background: rgba(5,8,20,0.85); color: #00FF88; border: 1px solid #00FF88; border-radius: 4px; padding: 6px 10px; font-family: 'DotGothic16', sans-serif; font-size: 13px; cursor: pointer;">⛶ 全画面</button>
-    <button onclick="window.forceClearCache()" style="background: rgba(5,8,20,0.85); color: #4FD1FF; border: 1px solid #4FD1FF; border-radius: 4px; padding: 6px 10px; font-family: 'DotGothic16', sans-serif; font-size: 13px; cursor: pointer;">🔄 キャッシュ消去</button>
-  </div>
+      </div>
   <div id="game-root"></div>
   <!-- Phaser 3 from CDN -->
   <script src="https://cdn.jsdelivr.net/npm/phaser@3.80.1/dist/phaser.min.js"></script>
@@ -51,7 +49,7 @@
   <!-- Base64 Images Removed (Loaded directly as PNG in BootScene) -->
 
   <!-- Game Logic -->
-  <script>window.GAME_VERSION = 'v246';</script>
+  <script>window.GAME_VERSION = 'v247';</script>
   <script src="src/logic/audio.js?v=246"></script>
   <script src="src/logic/flags.js?v=246"></script>
   <script src="src/logic/endings.js?v=246"></script>
@@ -94,27 +92,6 @@
       }
     };
 
-    // Unregister Service Worker & Clear Cache Storage to force fresh load
-    window.forceClearCache = function() {
-      if (confirm('キャッシュと一時ファイルを消去して最新バージョン（v246）を再読込しますか？\n（※ゲームのセーブデータやクリア状態は消えません）')) {
-        let promises = [];
-        if ('serviceWorker' in navigator) {
-          promises.push(navigator.serviceWorker.getRegistrations().then(function(registrations) {
-            for(let r of registrations) { r.unregister(); }
-          }));
-        }
-        if ('caches' in window) {
-          promises.push(caches.keys().then(function(names) {
-            return Promise.all(names.map(function(name) { return caches.delete(name); }));
-          }));
-        }
-        Promise.all(promises).finally(function() {
-          const url = new URL(window.location.href);
-          url.searchParams.set('t', Date.now());
-          window.location.replace(url.toString());
-        });
-      }
-    };
 
     window.addEventListener('load', () => {
       if ('serviceWorker' in navigator) {

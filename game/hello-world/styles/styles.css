@@ -119,3 +119,10 @@ html, body {
     display: flex;
   }
 }
+
+/* PC等ではモバイル用UIを隠す */
+@media screen and (min-width: 769px) {
+  .mobile-only {
+    display: none !important;
+  }
+}
