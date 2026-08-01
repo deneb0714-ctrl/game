@@ -2109,7 +2109,7 @@ class BossScene extends Phaser.Scene {
                 this.twinsBgm.play();
               }
               if (key === 'demon_lord') {
-                this.boss4Bgm = this.sound.add('bgm_stage', { loop: true, volume: 0.15 });
+                this.boss4Bgm = this.sound.add('demon_lord_bgm', { loop: true, volume: 0.2 });
                 this.boss4Bgm.play();
               }
             })();
