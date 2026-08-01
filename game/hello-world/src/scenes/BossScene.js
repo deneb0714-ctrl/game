@@ -170,7 +170,7 @@ class BossScene extends Phaser.Scene {
   getBossConfig(key) {
     var configs = {
       boss1: {
-        texture: 'boss1_combat', name: '幹部1 – 筋肉', hp: 80, scale: 2.0,
+        texture: 'boss1_combat', name: 'クラトス', hp: 80, scale: 2.0,
         intro: '「貴様が博士の人形か。\nこの俺の拳で叩き潰してやる！」',
         defeat: '「馬鹿な…この俺が…！」',
         choices: [
@@ -179,7 +179,7 @@ class BossScene extends Phaser.Scene {
         ]
       },
       boss2: {
-        texture: 'boss2_battle_anim', name: '幹部2 – 戦闘狂', hp: 120, scale: 0.3,
+        texture: 'boss2_battle_anim', name: 'トゥレロス', hp: 120, scale: 0.3,
         intro: '「ヒャハハ！ 踊れ踊れぇ！！\n俺の双銃から逃げられるかなぁ！？」',
         defeat: '「アハハハハ…最高にイカれた気分だぜ…」',
         choices: [
@@ -188,8 +188,8 @@ class BossScene extends Phaser.Scene {
         ]
       },
       boss3_twins: {
-        texture: 'boss3_battle_anim', name: '男（兄）', hp: 150, scale: 0.25,
-        texture2: 'sister_shoot1', name2: '女（妹）', hp2: 150, scale2: 1.2,
+        texture: 'boss3_battle_anim', name: 'エディオ', hp: 150, scale: 0.25,
+        texture2: 'sister_shoot1', name2: 'エナリア', hp2: 150, scale2: 1.2,
         // Intro and defeat are handled custom via playTwinsIntro and post-battle logic
       },
       demon_lord: {
@@ -564,11 +564,11 @@ class BossScene extends Phaser.Scene {
     
     // Male Frame (Brother)
     var maleFrame = this.add.rectangle(w - 300, h / 2 - 160, 300, 300, 0x1F2933).setAlpha(0).setDepth(90).setStrokeStyle(4, 0x4FD1FF);
-    var maleLabel = this.add.text(w - 300, h / 2 - 160, '男（兄）', { fontFamily: '"DotGothic16"', fontSize: '40px', color: '#ffffff' }).setOrigin(0.5).setAlpha(0).setDepth(90);
+    var maleLabel = this.add.text(w - 300, h / 2 - 160, 'エディオ', { fontFamily: '"DotGothic16"', fontSize: '40px', color: '#ffffff' }).setOrigin(0.5).setAlpha(0).setDepth(90);
     
     // Female Frame (Sister)
     var femaleFrame = this.add.rectangle(w - 300, h / 2 + 160, 300, 300, 0x1F2933).setAlpha(0).setDepth(90).setStrokeStyle(4, 0xFF4B6E);
-    var femaleLabel = this.add.text(w - 300, h / 2 + 160, '女（妹）', { fontFamily: '"DotGothic16"', fontSize: '40px', color: '#ffffff' }).setOrigin(0.5).setAlpha(0).setDepth(90);
+    var femaleLabel = this.add.text(w - 300, h / 2 + 160, 'エナリア', { fontFamily: '"DotGothic16"', fontSize: '40px', color: '#ffffff' }).setOrigin(0.5).setAlpha(0).setDepth(90);
 
     const sayDevice = (text) => new Promise(res => {
       this.tweens.add({ targets: [dimBg, this.heroImage, maleFrame, maleLabel, femaleFrame, femaleLabel], alpha: 0, duration: 300 });
@@ -1657,7 +1657,7 @@ class BossScene extends Phaser.Scene {
           if (this.assistImage) this.assistImage.destroy();
         }
         this.assistDialog = this.add.rectangle(w / 2, h - 80, 1200, 120, 0x0a0a14).setStrokeStyle(4, 0x4FD1FF).setDepth(200);
-        this.assistText = this.add.text(w / 2 - 400, h - 110, '兄「勝手に死なれると妹が悲しむからな…立て！」\n【効果：HP1で復活】', { fontFamily: '"DotGothic16"', fontSize: '28px', color: '#fff', wordWrap: { width: 900 } }).setOrigin(0, 0).setDepth(201);
+        this.assistText = this.add.text(w / 2 - 400, h - 110, 'エディオ「勝手に死なれると妹が悲しむからな…立て！」\n【効果：HP1で復活】', { fontFamily: '"DotGothic16"', fontSize: '28px', color: '#fff', wordWrap: { width: 900 } }).setOrigin(0, 0).setDepth(201);
         this.assistImage = this.add.sprite(w / 2 - 500, h - 80, 'boss3_battle_anim').setScale(0.25).setDepth(201);
         this.assistImage.play('boss3_battle_play');
         
@@ -2078,7 +2078,7 @@ class BossScene extends Phaser.Scene {
                  this.sisterBoss.play('sister_shoot_anim');
              }
              
-             let speakerText = isBrotherDefeated ? '妹「兄さん！起きて！」' : '兄「しっかりしろ！」';
+             let speakerText = isBrotherDefeated ? 'エナリア「兄さん！起きて！」' : 'エディオ「しっかりしろ！」';
              let speakerColor = isBrotherDefeated ? '#FF4B6E' : '#4FD1FF';
              let floatText = this.add.text(otherBoss.x, otherBoss.y - 80, speakerText, { fontFamily: '"DotGothic16"', fontSize: '28px', color: speakerColor }).setOrigin(0.5).setDepth(200);
              this.tweens.add({ targets: floatText, y: floatText.y - 40, alpha: 0, duration: 2500, ease: 'Power1', onComplete: () => floatText.destroy() });
@@ -2109,25 +2109,37 @@ class BossScene extends Phaser.Scene {
       if (this.boss1Bgm) this.boss1Bgm.stop();
       if (this.boss2Bgm) this.boss2Bgm.stop();
       if (this.boss4Bgm) this.boss4Bgm.stop();
-      this.dialogActive = true;
-      this.physics.pause();
+      
       if (this.bossLaneTimer) {
         this.bossLaneTimer.destroy();
       }
       this.enemyBullets.clear(true, true);
-      this.player.setVelocity(0, 0);
 
       // Disable boss to prevent further hits/attacks
       boss.body.enable = false;
 
       var key = boss.configKey;
       var cfg = this.getBossConfig(key);
-      this.cameras.main.shake(300, 0.02);
+      this.cameras.main.shake(1000, 0.02);
+      
+      // 連続爆発エフェクト
+      this.time.addEvent({
+        delay: 200,
+        repeat: 11,
+        callback: () => {
+          if (this.showExplosion) this.showExplosion(boss.x + Phaser.Math.Between(-100, 100), boss.y + Phaser.Math.Between(-100, 100));
+          if (window.MOT && MOT.Audio) MOT.Audio.playExplosion();
+        }
+      });
 
-      // Boss defeat flash
+      // Boss defeat flash (Give time to collect items)
       this.tweens.add({
-        targets: boss, alpha: 0.3, yoyo: true, repeat: 2, duration: 150,
+        targets: boss, alpha: 0.3, yoyo: true, repeat: 8, duration: 150,
         onComplete: () => {
+          this.dialogActive = true;
+          this.physics.pause();
+          this.player.setVelocity(0, 0);
+
           var w = 1920, h = 1080;
           var dimBg = this.add.rectangle(w/2, h/2, w, h, 0x000000, 0.6).setAlpha(0).setDepth(89);
           this.dimBg = dimBg;
@@ -2170,7 +2182,7 @@ class BossScene extends Phaser.Scene {
               this.tweens.add({ targets: dimBg, alpha: 0.6, duration: 300 });
               this.tweens.add({ targets: boss1DefImg, alpha: 1, duration: 300 });
               this.tweens.add({ targets: this.heroImage, alpha: 0.4, duration: 300 });
-              this.showDialogue('敵幹部1', text, res);
+              this.showDialogue('クラトス', text, res);
             });
             // 主人公が話すとき：主人公ハイライト、幹部1は暗く
             const sayHeroB1 = (text) => new Promise(res => {
@@ -2243,7 +2255,7 @@ class BossScene extends Phaser.Scene {
               this.tweens.add({ targets: boss2DefImg, alpha: 1, duration: 300 });
               this.tweens.add({ targets: this.heroImage, alpha: 0.4, duration: 300 });
               boss2DefImg.setTexture(tex);
-              this.showDialogue('敵幹部2', text, res);
+              this.showDialogue('トゥレロス', text, res);
             });
             const sayHeroB2 = (text) => new Promise(res => {
               this.tweens.add({ targets: dimBg, alpha: 0.6, duration: 300 });
@@ -3623,25 +3635,40 @@ class BossScene extends Phaser.Scene {
     if (this.twinsBgm) {
       this.twinsBgm.stop();
     }
-    this.dialogActive = true;
-    this.physics.pause();
+    
+    this.cutsceneActive = true;
     if (this.bossLaneTimer) this.bossLaneTimer.destroy();
     if (this.sisterLaneTimer) this.sisterLaneTimer.destroy();
     this.enemyBullets.clear(true, true);
-    this.player.setVelocity(0, 0);
 
     this.currentBoss.body.enable = false;
     this.sisterBoss.body.enable = false;
     
-    this.cameras.main.shake(300, 0.02);
+    this.cameras.main.shake(1000, 0.02);
+    
+    // 連続爆発エフェクト
+    this.time.addEvent({
+      delay: 200,
+      repeat: 11,
+      callback: () => {
+        let tx = Phaser.Math.Between(0, 1) ? this.currentBoss.x : this.sisterBoss.x;
+        let ty = Phaser.Math.Between(0, 1) ? this.currentBoss.y : this.sisterBoss.y;
+        if (this.showExplosion) this.showExplosion(tx + Phaser.Math.Between(-100, 100), ty + Phaser.Math.Between(-100, 100));
+        if (window.MOT && MOT.Audio) MOT.Audio.playExplosion();
+      }
+    });
     
     // Both sprites remain visible or become visible
     this.currentBoss.setVisible(true).setAlpha(1);
     this.sisterBoss.setVisible(true).setAlpha(1);
     
     this.tweens.add({
-      targets: [this.currentBoss, this.sisterBoss], alpha: 0.3, yoyo: true, repeat: 2, duration: 150,
+      targets: [this.currentBoss, this.sisterBoss], alpha: 0.3, yoyo: true, repeat: 8, duration: 150,
       onComplete: () => {
+        this.dialogActive = true;
+        this.physics.pause();
+        this.player.setVelocity(0, 0);
+
         var w = 1920, h = 1080;
         var dimBg = this.add.rectangle(w/2, h/2, w, h, 0x000000, 0.6).setAlpha(0).setDepth(89);
         this.dimBg = dimBg;
@@ -4510,7 +4537,7 @@ class BossScene extends Phaser.Scene {
       MOT.flags.playerHP = Math.min((MOT.flags.playerMaxHP || 5), MOT.flags.playerHP + 2);
     } else if (chosen === 'twins') {
       tex = 'boss3_sister'; // 妹立ち絵
-      msg = '妹「ふんっ、今回だけ特別に守ってあげるんだから！」\n【効果：無敵バリア展開】';
+      msg = 'エナリア「ふんっ、今回だけ特別に守ってあげるんだから！」\n【効果：無敵バリア展開】';
       this.barrierActive = true;
       this.barrierTime = 0;
       this.barrierCooldown = 0;
