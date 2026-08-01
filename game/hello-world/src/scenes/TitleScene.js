@@ -175,8 +175,8 @@ class TitleScene extends Phaser.Scene {
       }.bind(this));
     }
 
-    const creditsX = w - 180;
-    const creditsY = h * 0.4;
+    const creditsX = w - 80;
+    const creditsY = h * 0.45;
     this.createButton(creditsX, creditsY, 'CREDITS', hasSave ? 900 : 700, function () {
       this.showCredits();
     }.bind(this));
@@ -345,25 +345,73 @@ class TitleScene extends Phaser.Scene {
 
     const creditsText = "クレジット\n\nゲーム制作\n[Hello World] 制作チーム\n・大室朋希\n・土田果奈\n・向下祐布\n\n背景イラスト提供\n・ゲームまてりあるず\n  https://game-materials.com/\n\n音楽提供\n・中村芳哉\n・魔王魂\n\n開発プラットフォーム\nPowered by Google Antigravity\n\nSpecial Thanks\n奥村研究室";
 
-    const bodyText = this.add.text(boxX + 60, boxY + 50, creditsText, {
+    const startY = boxY + 50;
+    const bodyText = this.add.text(boxX + 60, startY, creditsText, {
       fontFamily: '"DotGothic16"', fontSize: '36px', color: '#E5E7EB',
       wordWrap: { width: boxW - 120, useAdvancedWrap: true }, lineSpacing: 14
     });
     this.creditsContainer.add(bodyText);
 
+    // Mask for scrolling
+    const maskGraphics = this.add.graphics();
+    maskGraphics.fillStyle(0xffffff);
+    maskGraphics.fillRect(boxX, boxY + 20, boxW, boxH - 100);
+    const mask = maskGraphics.createGeometryMask();
+    bodyText.setMask(mask);
+
+    // Scroll zone
+    const scrollZone = this.add.zone(boxX + boxW/2, boxY + boxH/2, boxW, boxH).setInteractive();
+    this.creditsContainer.add(scrollZone);
+
+    let isDragging = false;
+    let lastY = 0;
+    scrollZone.on('pointerdown', (pointer, localX, localY, event) => {
+      event.stopPropagation();
+      isDragging = true;
+      lastY = pointer.y;
+    });
+    scrollZone.on('wheel', (pointer, deltaX, deltaY, deltaZ, event) => {
+      event.stopPropagation();
+      let newY = bodyText.y - deltaY;
+      let minTextY = startY - Math.max(0, bodyText.height - (boxH - 140));
+      if (newY > startY) newY = startY;
+      if (newY < minTextY) newY = minTextY;
+      bodyText.y = newY;
+    });
+    
+    this.input.on('pointerup', () => {
+      isDragging = false;
+    });
+    this.input.on('pointermove', (pointer) => {
+      if (isDragging && this.creditsContainer) {
+        let deltaY = pointer.y - lastY;
+        lastY = pointer.y;
+        let newY = bodyText.y + deltaY;
+        let minTextY = startY - Math.max(0, bodyText.height - (boxH - 140));
+        if (newY > startY) newY = startY;
+        if (newY < minTextY) newY = minTextY;
+        bodyText.y = newY;
+      }
+    });
+
     const closeText = this.add.text(boxX + boxW - 60, boxY + boxH - 50, '▶ CLOSE [TAP/CLICK]', {
       fontFamily: '"Press Start 2P"', fontSize: '20px', color: '#9CA3AF'
-    }).setOrigin(1, 0);
+    }).setOrigin(1, 0).setInteractive({ useHandCursor: true });
     this.creditsContainer.add(closeText);
     
     this.tweens.add({ targets: closeText, alpha: 0.3, yoyo: true, repeat: -1, duration: 500 });
 
     const handleClose = () => {
       if (window.MOT && MOT.Audio) MOT.Audio.playSelect();
+      if (maskGraphics) maskGraphics.destroy();
       this.creditsContainer.destroy();
       this.creditsContainer = null;
     };
     touchZone.on('pointerdown', handleClose);
+    closeText.on('pointerdown', (pointer, localX, localY, event) => {
+      event.stopPropagation();
+      handleClose();
+    });
   }
 
   createButton(x, y, label, delay, callback) {
