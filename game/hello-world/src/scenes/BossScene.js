@@ -484,6 +484,8 @@ class BossScene extends Phaser.Scene {
                this.dialogActive = false;
                this.physics.resume();
                this.startBossLaneMovement();
+               this.boss4Bgm = this.sound.add('demon_lord_bgm', { loop: true, volume: 0.2 });
+               this.boss4Bgm.play();
              });
            } else {
              // Doctor intro
