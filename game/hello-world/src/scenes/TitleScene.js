@@ -128,9 +128,9 @@ class TitleScene extends Phaser.Scene {
     // Fade in camera
     this.cameras.main.fadeIn(600, 5, 8, 20);
 
-    // START & CONTINUE buttons
+    // START, CONTINUE, CREDITS buttons
     const hasSave = (window.MOT && MOT.hasSaveData && MOT.hasSaveData());
-    const startY = hasSave ? h * 0.78 : h * 0.85;
+    const startY = hasSave ? h * 0.75 : h * 0.80;
 
     this.createButton(w / 2, startY, 'START', 500, function () {
       if (window.MOT && MOT.clearSaveData) MOT.clearSaveData();
@@ -151,7 +151,7 @@ class TitleScene extends Phaser.Scene {
     }.bind(this));
 
     if (hasSave) {
-      this.createButton(w / 2, h * 0.88, 'CONTINUE', 700, function () {
+      this.createButton(w / 2, h * 0.84, 'CONTINUE', 700, function () {
         const saveData = window.MOT && MOT.loadGame ? MOT.loadGame() : null;
         if (saveData && saveData.flags) {
           MOT.flags = JSON.parse(JSON.stringify(saveData.flags));
@@ -174,6 +174,11 @@ class TitleScene extends Phaser.Scene {
         }
       }.bind(this));
     }
+
+    const creditsY = hasSave ? h * 0.93 : h * 0.89;
+    this.createButton(w / 2, creditsY, 'CREDITS', hasSave ? 900 : 700, function () {
+      this.showCredits();
+    }.bind(this));
 
     // デバッグショートカットキーUI
     if (!isGlitch) {
@@ -316,6 +321,48 @@ class TitleScene extends Phaser.Scene {
         }
       }
     }
+  }
+
+  showCredits() {
+    if (this.creditsContainer) return;
+    this.creditsContainer = this.add.container(0, 0).setDepth(200000);
+    const w = 1920, h = 1080;
+    
+    // Dim background
+    const touchZone = this.add.rectangle(w/2, h/2, w, h, 0x000000, 0.7).setInteractive({ useHandCursor: true });
+    this.creditsContainer.add(touchZone);
+
+    // Box (dialogue style)
+    const boxW = 1200, boxH = 900;
+    const boxX = (w - boxW) / 2, boxY = (h - boxH) / 2;
+    const box = this.add.graphics();
+    box.fillStyle(0x0a0a1a, 0.92);
+    box.fillRoundedRect(boxX, boxY, boxW, boxH, 12);
+    box.lineStyle(2, 0x4FD1FF, 0.8);
+    box.strokeRoundedRect(boxX, boxY, boxW, boxH, 12);
+    this.creditsContainer.add(box);
+
+    const creditsText = "クレジット\n\nゲーム制作\n[Hello World] 制作チーム\n・大室朋希\n・土田果奈\n・向下祐布\n\n背景イラスト提供\n・ゲームまてりあるず\n  https://game-materials.com/\n\n音楽提供\n・中村芳哉\n・魔王魂\n\n開発プラットフォーム\nPowered by Google Antigravity\n\nSpecial Thanks\n奥村研究室";
+
+    const bodyText = this.add.text(boxX + 60, boxY + 50, creditsText, {
+      fontFamily: '"DotGothic16"', fontSize: '36px', color: '#E5E7EB',
+      wordWrap: { width: boxW - 120, useAdvancedWrap: true }, lineSpacing: 14
+    });
+    this.creditsContainer.add(bodyText);
+
+    const closeText = this.add.text(boxX + boxW - 60, boxY + boxH - 50, '▶ CLOSE [TAP/CLICK]', {
+      fontFamily: '"Press Start 2P"', fontSize: '20px', color: '#9CA3AF'
+    }).setOrigin(1, 0);
+    this.creditsContainer.add(closeText);
+    
+    this.tweens.add({ targets: closeText, alpha: 0.3, yoyo: true, repeat: -1, duration: 500 });
+
+    const handleClose = () => {
+      if (window.MOT && MOT.Audio) MOT.Audio.playSelect();
+      this.creditsContainer.destroy();
+      this.creditsContainer = null;
+    };
+    touchZone.on('pointerdown', handleClose);
   }
 
   createButton(x, y, label, delay, callback) {
