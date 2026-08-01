@@ -2147,17 +2147,7 @@ class BossScene extends Phaser.Scene {
 
       var key = boss.configKey;
       var cfg = this.getBossConfig(key);
-      this.cameras.main.shake(1000, 0.02);
-      
-      // 連続爆発エフェクト
-      this.time.addEvent({
-        delay: 200,
-        repeat: 11,
-        callback: () => {
-          if (this.showExplosion) this.showExplosion(boss.x + Phaser.Math.Between(-100, 100), boss.y + Phaser.Math.Between(-100, 100));
-          if (window.MOT && MOT.Audio) MOT.Audio.playExplosion();
-        }
-      });
+      this.cameras.main.shake(300, 0.02);
 
       // Boss defeat flash (Give time to collect items)
       this.tweens.add({
@@ -3671,19 +3661,7 @@ class BossScene extends Phaser.Scene {
     this.currentBoss.body.enable = false;
     this.sisterBoss.body.enable = false;
     
-    this.cameras.main.shake(1000, 0.02);
-    
-    // 連続爆発エフェクト
-    this.time.addEvent({
-      delay: 200,
-      repeat: 11,
-      callback: () => {
-        let tx = Phaser.Math.Between(0, 1) ? this.currentBoss.x : this.sisterBoss.x;
-        let ty = Phaser.Math.Between(0, 1) ? this.currentBoss.y : this.sisterBoss.y;
-        if (this.showExplosion) this.showExplosion(tx + Phaser.Math.Between(-100, 100), ty + Phaser.Math.Between(-100, 100));
-        if (window.MOT && MOT.Audio) MOT.Audio.playExplosion();
-      }
-    });
+    this.cameras.main.shake(300, 0.02);
     
     // Both sprites remain visible or become visible
     this.currentBoss.setVisible(true).setAlpha(1);
