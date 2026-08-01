@@ -175,8 +175,9 @@ class TitleScene extends Phaser.Scene {
       }.bind(this));
     }
 
-    const creditsY = hasSave ? h * 0.93 : h * 0.89;
-    this.createButton(w / 2, creditsY, 'CREDITS', hasSave ? 900 : 700, function () {
+    const creditsX = w - 180;
+    const creditsY = h * 0.4;
+    this.createButton(creditsX, creditsY, 'CREDITS', hasSave ? 900 : 700, function () {
       this.showCredits();
     }.bind(this));
 
