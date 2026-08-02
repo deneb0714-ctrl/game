@@ -373,7 +373,8 @@ class BossScene extends Phaser.Scene {
            if (key === 'demon_lord') {
              this.playDemonLordIntro(() => {
                this.cutsceneActive = false;
-                this.dialogActive = false;
+                this.cutsceneActive = false;
+               this.dialogActive = false;
                this.physics.resume();
                this.startBossLaneMovement();
                this.boss4Bgm = this.sound.add('demon_lord_bgm', { loop: true, volume: 0.2 });
@@ -404,6 +405,7 @@ class BossScene extends Phaser.Scene {
                  targets: [dimBg, this.doctorImage, this.heroImage], alpha: 0, duration: 500,
                  onComplete: () => { dimBg.destroy(); this.doctorImage.destroy(); if(this.heroImage) this.heroImage.destroy(); }
                });
+               this.cutsceneActive = false;
                this.dialogActive = false;
                this.physics.resume();
                this.startBossLaneMovement();
