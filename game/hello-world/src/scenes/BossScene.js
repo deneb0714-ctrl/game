@@ -1438,6 +1438,12 @@ class BossScene extends Phaser.Scene {
     slash.setScale(1.5); // サイズは少し大きくする程度
     slash.setDepth(9);
     
+    // 見た目に対して当たり判定が大きすぎないように絶妙に調整
+    let bw = slash.width * 0.55;
+    let bh = slash.height * 0.55;
+    slash.body.setSize(bw, bh);
+    slash.body.setOffset((slash.width - bw) / 2, (slash.height - bh) / 2);
+    
     // 角度に合わせて回転させる
     slash.setAngle(angleDeg);
     
