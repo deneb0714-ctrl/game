@@ -3094,10 +3094,10 @@ class BossScene extends Phaser.Scene {
                           this.doctorImage.setY(100 + (this.doctorImage.height * docScale) / 2);
                           
                           // 勇者（覚醒）の立ち絵
-                          this.heroImage = this.add.image(300, 1080 / 2, 'hero_stand').setAlpha(0).setDepth(90);
-                          var newHeroScale = 750 / 1080; // 画像の幅が1080であることを前提に手動計算
+                          this.heroImage = this.add.image(300, 1080 / 2, 'hero_stand_corrupted').setAlpha(0).setDepth(90);
+                          var newHeroScale = 750 / this.heroImage.width;
                           this.heroImage.setScale(newHeroScale);
-                          this.heroImage.setY(100 + (1920 * newHeroScale) / 2);
+                          this.heroImage.setY(100 + (this.heroImage.height * newHeroScale) / 2);
                           
                           // フェードイン
                           this.cameras.main.fadeIn(1000);
@@ -3113,36 +3113,10 @@ class BossScene extends Phaser.Scene {
                           await sayDoctorLab('「おい、通信機を破壊したな？それに魔王すら殺していないとはどういうことだ。」');
                           await sayDoctorLab('「あまり好き勝手されるのは困るんだがな。」');
                           
-                          // 5つの選択肢
-                          if (this.choiceContainer) this.choiceContainer.destroy();
-                          this.choiceContainer = this.add.container(0, 0).setDepth(200);
-                          var w = 1920, h = 1080;
-                          var bgChoice = this.add.rectangle(w / 2, h / 2, w, h, 0x000000, 0.4).setInteractive();
-                          this.choiceContainer.add(bgChoice);
-                          var titleChoice = this.add.text(w / 2, h / 2 - 220, '選択してください', { fontFamily: '"DotGothic16"', fontSize: '40px', color: '#ffffff' }).setOrigin(0.5);
-                          this.choiceContainer.add(titleChoice);
-                          
-                          let yStart = h / 2 - 150;
-                          for(let i=0; i<5; i++){
-                              let numTxt = (i + 1).toString();
-                              let box = this.add.rectangle(w / 2, yStart + i * 60, 500, 50, 0x1F2933, 0.8).setStrokeStyle(2, 0x4FD1FF);
-                              let txt = this.add.text(w / 2, yStart + i * 60, numTxt + ' 博士を倒す', { fontFamily: '"DotGothic16"', fontSize: '24px', color: '#ffffff' }).setOrigin(0.5);
-                              this.choiceContainer.add([box, txt]);
-                          }
                           await new Promise(res => {
-                              let cursor = this.add.text(w / 2 - 280, yStart, '▶', { fontFamily: '"DotGothic16"', fontSize: '24px', color: '#39FF14' }).setOrigin(0.5);
-                              this.choiceContainer.add(cursor);
-                              let idx = 0;
-                              const kh = (e) => {
-                                  if(e.key==='ArrowUp' || e.key==='w') { idx = Math.max(0, idx-1); cursor.setY(yStart + idx*60); }
-                                  if(e.key==='ArrowDown' || e.key==='s') { idx = Math.min(4, idx+1); cursor.setY(yStart + idx*60); }
-                                  if(e.key==='Enter' || e.key===' ') {
-                                      this.input.keyboard.off('keydown', kh);
-                                      this.choiceContainer.destroy();
-                                      res();
-                                  }
-                              };
-                              this.input.keyboard.on('keydown', kh);
+                              this.showChoice([
+                                  { text: '1. 博士を倒す', callback: () => { if(MOT.Audio.playSelect) MOT.Audio.playSelect(); res(); } }
+                              ]);
                           });
                           
                           // 立ち絵と背景を消して、真の魔王を表示
