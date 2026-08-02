@@ -3002,7 +3002,7 @@ class BossScene extends Phaser.Scene {
                   MOT.flags.killedDemonLord = false;
                   
                   // 生かした場合の分岐演出 (True Demon Lord or others)
-                  if (Kills === 0 && Satsui >= 20 && DP < 20) {
+                  if (Kills === 0 && Satsui >= 100 && DP < 100) {
                       // 自由の身エンドの特別演出
                           const localSayDevice = (text) => new Promise(res => { this.tweens.add({ targets: this.dimBg, alpha: 0.6, duration: 300 }); if(this.heroImage) this.tweens.add({targets: this.heroImage, alpha: 0.4, duration: 300}); if(this.inunekoImage) this.tweens.add({targets: this.inunekoImage, alpha: 0.4, duration: 300}); if(this.demonImage) this.tweens.add({targets: this.demonImage, alpha: 0.4, duration: 300}); this.showDeviceDialogue(text, res); });
                           const localSayInuneko = (text) => new Promise(res => { this.tweens.add({ targets: this.dimBg, alpha: 0.6, duration: 300 }); if(this.heroImage) this.tweens.add({targets: this.heroImage, alpha: 0.4, duration: 300}); if(this.demonImage) this.tweens.add({targets: this.demonImage, alpha: 0.4, duration: 300}); if(this.inunekoImage) this.tweens.add({targets: this.inunekoImage, alpha: 1, duration: 300}); this.showDialogue('犬猫☆すたー', text, res); });
@@ -3152,9 +3152,10 @@ class BossScene extends Phaser.Scene {
                           if (this.bg) this.bg.setVisible(false);
                           
                           let trueDemonLordBg = this.add.rectangle(1920/2, 1080/2, 1920, 1080, 0x000000).setDepth(88);
-                          let trueDemonLord = this.add.image(1920 / 2, 1080 / 2, 'true_demon_lord').setDepth(89);
-                          let scaleY = 1080 / trueDemonLord.height;
-                          trueDemonLord.setScale(scaleY);
+                          let trueDemonLord = this.add.dom(1920 / 2, (1080 - 300) / 2, 'img').setDepth(89);
+                          trueDemonLord.node.src = 'assets/images/true_demon_lord.gif?v=' + window.GAME_VERSION;
+                          trueDemonLord.node.style.height = '750px';
+                          trueDemonLord.node.style.objectFit = 'contain';
                           
                           await sayHeroLab('「…」');
                           await sayDoctorLab('「こちらに銃を構えてどうした？ああ、私を倒したいとでも言うのか。」');
@@ -3178,9 +3179,11 @@ class BossScene extends Phaser.Scene {
                           
                           await sayHeroLab('「……。」');
 
+                          this.tweens.add({targets: trueDemonLord, alpha: 0, duration: 1000});
                           this.cameras.main.fadeOut(1000);
                           await new Promise(r => this.time.delayedCall(1000, r));
 
+                          trueDemonLord.destroy();
                           ending('hidden_freedom');
                       } else if (Kills === 0) {
                           if (this.heroImage) {
