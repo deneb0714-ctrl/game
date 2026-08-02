@@ -120,10 +120,10 @@ MOT.DoctorDirective = {
     container.add(txt);
 
     // プレイヤーの移動先ハイライト表示
-    var targetCol = player.currentCol + directive.dx;
-    var targetLane = player.currentLane + directive.dy;
-    var targetX = [150, 300, 450][targetCol];
-    var targetY = [220, 460, 700][targetLane];
+    this.targetCol = player.currentCol + directive.dx;
+    this.targetLane = player.currentLane + directive.dy;
+    var targetX = [150, 300, 450][this.targetCol];
+    var targetY = [220, 460, 700][this.targetLane];
 
     if (targetX !== undefined && targetY !== undefined) {
       var highlight = scene.add.graphics();
@@ -186,10 +186,8 @@ MOT.DoctorDirective = {
       return;
     }
 
-    var followedX = (d.dx === 0) || (d.dx > 0 && movedX > threshold) || (d.dx < 0 && movedX < -threshold);
-    var followedY = (d.dy === 0) || (d.dy > 0 && movedY > threshold) || (d.dy < 0 && movedY < -threshold);
-
-    if (followedX && followedY) {
+    // 黄色くハイライトしてるところを踏んでるときだけポイント加算させる
+    if (player.currentCol === this.targetCol && player.currentLane === this.targetLane) {
       this.isObeyChecked = true;
       MOT.incrementDoctorObeyCount();
       
