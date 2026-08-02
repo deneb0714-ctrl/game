@@ -3147,6 +3147,17 @@ class BossScene extends Phaser.Scene {
                               this.input.keyboard.on('keydown', kh);
                           });
                           
+                          // 立ち絵と背景を消して、真の魔王を表示
+                          if (this.heroImage) this.heroImage.setVisible(false);
+                          if (this.doctorImage) this.doctorImage.setVisible(false);
+                          if (this.dimBg) this.dimBg.setVisible(false);
+                          if (this.bg) this.bg.setVisible(false);
+                          
+                          let trueDemonLordBg = this.add.rectangle(1920/2, 1080/2, 1920, 1080, 0x000000).setDepth(88);
+                          let trueDemonLord = this.add.image(1920 / 2, 1080 / 2, 'true_demon_lord').setDepth(89);
+                          let scaleY = 1080 / trueDemonLord.height;
+                          trueDemonLord.setScale(scaleY);
+                          
                           await sayHeroLab('「…」');
                           await sayDoctorLab('「こちらに銃を構えてどうした？ああ、私を倒したいとでも言うのか。」');
                           await sayDoctorLab('「残念だが、お前にその権限はない。」');
@@ -3459,6 +3470,16 @@ class BossScene extends Phaser.Scene {
                           };
                           this.input.keyboard.on('keydown', kh);
                       });
+                      
+                      // 立ち絵と背景を消して、真の魔王を表示
+                      if (this.heroImage) this.heroImage.setVisible(false);
+                      if (this.doctorImage) this.doctorImage.setVisible(false);
+                      if (this.dimBg) this.dimBg.setVisible(false);
+                      let trueDemonLordBg = this.add.rectangle(w/2, h/2, w, h, 0x000000).setDepth(88);
+                      let trueDemonLord = this.add.image(w / 2, h / 2, 'true_demon_lord').setDepth(89);
+                      let scaleY = h / trueDemonLord.height;
+                      trueDemonLord.setScale(scaleY);
+                      
                       await sayHeroLab('「…」');
                       await sayDoctorLab('「こちらに銃を構えてどうした？私を倒したいでも言うのか。」');
                       await sayDoctorLab('「残念だが、お前にその権限はない。」');
