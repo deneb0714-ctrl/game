@@ -3152,10 +3152,11 @@ class BossScene extends Phaser.Scene {
                           if (this.bg) this.bg.setVisible(false);
                           
                           let trueDemonLordBg = this.add.rectangle(1920/2, 1080/2, 1920, 1080, 0x000000).setDepth(88);
-                          let trueDemonLord = this.add.image(1920/2, 1080/2, 'true_demon_lord_static').setDepth(89);
-                          let tdlScaleX = 1920 / trueDemonLord.width;
-                          let tdlScaleY = 1080 / trueDemonLord.height;
-                          trueDemonLord.setScale(Math.max(tdlScaleX, tdlScaleY));
+                          let trueDemonLord = this.add.dom(1920 / 2, 780 / 2, 'img').setDepth(89);
+                          trueDemonLord.node.src = 'assets/images/true_demon_lord.gif?v=' + window.GAME_VERSION;
+                          trueDemonLord.node.style.width = '1920px';
+                          trueDemonLord.node.style.height = '750px';
+                          trueDemonLord.node.style.objectFit = 'contain';
                           
                           // Ensure hero and doctor are hidden while true demon lord is shown
                           if (this.heroImage) this.heroImage.setVisible(false);
