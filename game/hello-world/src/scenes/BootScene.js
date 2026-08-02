@@ -235,7 +235,7 @@ class BootScene extends Phaser.Scene {
     this.load.image('doctor_face', 'assets/images/doctor_face.png?v=' + v);
 
     // Inuneko Star
-    this.load.image('true_demon_lord', 'assets/images/true_demon_lord.gif?v=' + v);
+
     this.load.image('inuneko_stand', 'assets/images/inuneko_stand.png?v=' + v);
     this.load.image('inuneko_dying', 'assets/images/inuneko_dying.png?v=' + v);
     this.load.image('inuneko_blink', 'assets/images/inuneko_blink.png?v=' + v);
