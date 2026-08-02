@@ -3024,6 +3024,13 @@ class BossScene extends Phaser.Scene {
                           this.cameras.main.shake(300, 0.05);
                           await new Promise(r => this.time.delayedCall(500, r));
                           
+                          // ここで覚醒主人公に変更
+                          var corruptedTex = this.textures.get('hero_stand_corrupted').getSourceImage();
+                          var corruptedScale = 750 / corruptedTex.width;
+                          this.heroImage.setTexture('hero_stand_corrupted');
+                          this.heroImage.setScale(corruptedScale);
+                          this.heroImage.setY(100 + (corruptedTex.height * corruptedScale) / 2);
+
                           await sayHero('「うるさいな」');
                           await localSayDemon('「勇者……？」');
                           await sayHero('「もうここに用はない。」');
@@ -3092,8 +3099,8 @@ class BossScene extends Phaser.Scene {
                           this.doctorImage.setScale(docScale);
                           this.doctorImage.setY(100 + (this.doctorImage.height * docScale) / 2);
                           
-                          // 勇者の立ち絵（最初は通常）
-                          this.heroImage = this.add.image(300, 1080 / 2, 'hero_stand').setAlpha(0).setDepth(90);
+                          // 勇者の立ち絵（既に覚醒済み）
+                          this.heroImage = this.add.image(300, 1080 / 2, 'hero_stand_corrupted').setAlpha(0).setDepth(90);
                           var newHeroScale = 750 / 1080;
                           this.heroImage.setScale(newHeroScale);
                           this.heroImage.setY(100 + (1920 * newHeroScale) / 2);
@@ -3182,12 +3189,7 @@ class BossScene extends Phaser.Scene {
                           if (this.dimBg) this.dimBg.setVisible(true);
                           if (this.doctorImage) this.doctorImage.setVisible(true);
                           
-                          // 覚醒主人公に変更
-                          var corruptedTex = this.textures.get('hero_stand_corrupted').getSourceImage();
-                          var corruptedScale = 750 / corruptedTex.width;
-                          this.heroImage.setTexture('hero_stand_corrupted');
-                          this.heroImage.setScale(corruptedScale);
-                          this.heroImage.setY(100 + (corruptedTex.height * corruptedScale) / 2);
+                          // 既に覚醒済みなので、画像の再設定は不要。可視化のみ行う
                           this.heroImage.setVisible(true);
                           
                           if (MOT.Audio.playSelect) MOT.Audio.playSelect();
