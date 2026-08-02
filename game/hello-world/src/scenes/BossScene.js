@@ -975,7 +975,7 @@ class BossScene extends Phaser.Scene {
     // Auto-shoot
     let isBossAlive = (this.currentBoss && this.currentBoss.active && this.currentBoss.visible && this.bossHP > 0);
     let isSisterAlive = (this.sisterBoss && this.sisterBoss.active && this.sisterBoss.visible && this.sisterBoss.hp > 0);
-    let canShoot = isBossAlive || isSisterAlive || this.minionBattleActive || this.intermissionActive;
+    let canShoot = !this.dialogActive && (isBossAlive || isSisterAlive || this.minionBattleActive || this.intermissionActive);
     if (canShoot) {
       this.autoShootTimer += delta;
       let shootInterval = this.heroAttackSpeedBoost ? 80 : 200;
@@ -2078,7 +2078,6 @@ class BossScene extends Phaser.Scene {
         boss.active = false;
         boss.setVisible(false);
         boss.body.enable = false;
-        this.showExplosion(boss.x, boss.y);
         
         // --- 復活処理（6秒） ---
         let otherBoss = (boss === this.currentBoss) ? this.sisterBoss : this.currentBoss;
@@ -2107,7 +2106,6 @@ class BossScene extends Phaser.Scene {
              boss.setVisible(true);
              boss.body.enable = true;
              boss.hp = 1; // 復活時のHP
-             this.showExplosion(boss.x, boss.y); 
              
              if (isBrotherDefeated && this.sisterBoss && this.sisterBoss.active) {
                  this.sisterBoss.play('sister_shoot_anim');
@@ -2763,7 +2761,7 @@ class BossScene extends Phaser.Scene {
                   await sayDevice('「よくやった。さぁ早くとどめを！」');
                   await sayDemon('「ぐっ…ここまでか…」');
                   
-                  let isFreedomRoute = (Kills === 0 && MOT.flags.dollPoints < 20 && MOT.flags.killingIntent >= 20);
+                  let isFreedomRoute = (Kills === 0 && MOT.flags.dollPoints < 100 && MOT.flags.killingIntent >= 100);
                   if (isFreedomRoute) {
                       c = await new Promise(res => {
                           this.showChoice([
@@ -3848,6 +3846,27 @@ class BossScene extends Phaser.Scene {
     
     // スキップ処理: wing_left, wing_right を飛ばして demon_lord (インデックス3) へ
     this.currentBossIndex = 3; 
+    
+    // ─── 自動セーブ処理 ───
+    if (MOT.saveGame) MOT.saveGame(3);
+    try {
+      const saveNotify = this.add.text(1920 / 2, 80, '💾 進行状況を自動セーブしました', {
+        fontFamily: "'DotGothic16', sans-serif",
+        fontSize: '28px',
+        color: '#00FF88',
+        backgroundColor: 'rgba(5,8,20,0.85)',
+        padding: { x: 20, y: 10 }
+      }).setOrigin(0.5).setDepth(99999);
+      this.tweens.add({
+        targets: saveNotify,
+        alpha: 0,
+        delay: 2500,
+        duration: 1000,
+        onComplete: () => { if (saveNotify) saveNotify.destroy(); }
+      });
+    } catch (e) {
+      console.error('Save notify UI error:', e);
+    }
     
     // 画面暗転→ラスボス戦
     this.physics.pause();

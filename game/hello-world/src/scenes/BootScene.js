@@ -217,7 +217,7 @@ class BootScene extends Phaser.Scene {
     this.load.image('boss1_wind_slash', 'assets/images/boss1_wind_slash.png?v=' + v);
     this.load.image('boss2_bullet', 'assets/images/boss2_bullet.png?v=' + v);
     this.load.spritesheet('boss1_combat', 'assets/images/boss1_combat_sheet.png?v=' + v, { frameWidth: 100, frameHeight: 100 });
-    this.load.image('boss2_combat', 'assets/images/boss2_combat.jpg?v=' + v);
+    this.load.image('boss2_combat', 'assets/images/boss2_battle.png?v=' + v);
     this.load.spritesheet('boss2_battle_anim', 'assets/images/boss2_battle.png?v=' + v, { frameWidth: 543, frameHeight: 560 });
     this.load.spritesheet('boss3_battle_anim', 'assets/images/boss3_battle.png?v=' + v, { frameWidth: 560, frameHeight: 533 });
     this.load.image('boss2_normal', 'assets/images/boss2_normal.png?v=' + v);
@@ -232,7 +232,7 @@ class BootScene extends Phaser.Scene {
     // Doctor
     this.load.image('doctor_normal', 'assets/images/doctor_normal.png?v=' + v);
     this.load.image('doctor_open_eyes', 'assets/images/doctor_open_eyes.png?v=' + v);
-    this.load.image('doctor_face', 'assets/images/doctor_face.png?v=' + v);
+    this.load.image('doctor_face', 'assets/images/doctor_stand.png?v=' + v);
 
     // Inuneko Star
 

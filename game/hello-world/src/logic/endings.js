@@ -113,17 +113,17 @@ MOT.decideEnding = function () {
   // 幹部が全員生きてる
   if (allAlive) {
     if (!f.killedDemonLord) {
-      // 魔王を生かす -> YES -> ドールポイントが20未満か？
-      if (f.dollPoints < 20) { // 20未満＝YES
-        if (f.killingIntent >= 20) {
-          // 殺意がたまっている(20以上)＝YES -> 自由の身エンド
+      // 魔王を生かす -> YES -> ドールポイントが100未満か？
+      if (f.dollPoints < 100) { // 100未満＝YES
+        if (f.killingIntent >= 100) {
+          // 殺意がたまっている(100以上)＝YES -> 自由の身エンド
           return MOT.ENDINGS.hidden_freedom;
         } else {
           // 殺意がたまっている＝NO -> 身寄りのない勇者
           return MOT.ENDINGS.END_ORPHAN;
         }
       } else {
-        // ドールポイントが100以下＝NO -> 身寄りのない勇者
+        // ドールポイントが100以上＝NO -> 身寄りのない勇者
         return MOT.ENDINGS.END_ORPHAN;
       }
     } else {
