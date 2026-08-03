@@ -157,6 +157,7 @@ class TitleScene extends Phaser.Scene {
           MOT.flags = JSON.parse(JSON.stringify(saveData.flags));
           MOT.flags.diedCount = 0;
           MOT.flags.playerHP = MOT.flags.playerMaxHP || 5;
+          MOT.flags.useGlitchTitle = false;
         }
         if (this.heroGif) {
           this.heroGif.play('play_hero_title');
