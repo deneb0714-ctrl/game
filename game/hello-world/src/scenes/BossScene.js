@@ -3166,6 +3166,7 @@ class BossScene extends Phaser.Scene {
                           trueDemonLord.node.style.width = '1920px';
                           trueDemonLord.node.style.height = '750px';
                           trueDemonLord.node.style.objectFit = 'contain';
+                          trueDemonLord.node.style.pointerEvents = 'none';
                           
                           // Ensure hero and doctor are hidden while true demon lord is shown
                           if (this.heroImage) this.heroImage.setVisible(false);
