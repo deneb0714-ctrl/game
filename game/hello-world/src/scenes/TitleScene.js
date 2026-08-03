@@ -134,6 +134,7 @@ class TitleScene extends Phaser.Scene {
 
     this.createButton(w / 2, startY, 'START', 500, function () {
       if (window.MOT && MOT.clearSaveData) MOT.clearSaveData();
+      if (window.MOT && MOT.resetFlags) MOT.resetFlags();
       if (this.heroGif) {
         this.heroGif.play('play_hero_title');
         this.heroGif.once('animationcomplete', function() {

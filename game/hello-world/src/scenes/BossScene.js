@@ -2844,6 +2844,7 @@ class BossScene extends Phaser.Scene {
                       await localSayDevice('「いいか。お前はこれから逃がした敵を殺しに行くんだ。今度こそ逃がすなんてことは許さないからな？」');
                       
                       ending('normal_unresistable');
+                      return;
                   } else {
                       await sayDemon('「このわらわが...！すまない、我がしもべたち...」');
                       MOT.Audio.playSelect(); // 爆発音
@@ -2857,151 +2858,9 @@ class BossScene extends Phaser.Scene {
                       if (DP < 100) {
                           ending('normal_daily');
                       } else {
-                          // フェードアウト
-                          this.cameras.main.fadeOut(1000);
-                          await new Promise(r => this.time.delayedCall(1000, r));
-                          
-                          // 戦闘UIとオブジェクトを全て隠す
-                          if (this.player) { this.player.setVisible(false); this.player.setActive(false); }
-                          if (this.playerHitboxGraphics) this.playerHitboxGraphics.setVisible(false);
-                          if (this.bossHpBg) this.bossHpBg.setVisible(false);
-                          if (this.bossHpBar) this.bossHpBar.setVisible(false);
-                          if (this.barrierVisual) this.barrierVisual.setVisible(false);
-                          if (this.uiBg) this.uiBg.setVisible(false);
-                          if (this.uiText) this.uiText.setVisible(false);
-                          if (this.hpText) this.hpText.setVisible(false);
-                          if (this.energyText) this.energyText.setVisible(false);
-                          if (this.energyBar) this.energyBar.setVisible(false);
-                          if (this.energyBarBgObj) this.energyBarBgObj.setVisible(false);
-                          if (this.energyBarFgObj) this.energyBarFgObj.setVisible(false);
-                          if (this.energyBarOutline) this.energyBarOutline.setVisible(false);
-                          if (this.barrierIconBg) this.barrierIconBg.setVisible(false);
-                          if (this.barrierIconFg) this.barrierIconFg.setVisible(false);
-                          if (this.bossHPText) this.bossHPText.setVisible(false);
-                          if (this.areaNameText) this.areaNameText.setVisible(false);
-                          if (this.iconPersonBg) this.iconPersonBg.setVisible(false);
-                          if (this.iconPersonFill) this.iconPersonFill.setVisible(false);
-                          if (this.dollText) this.dollText.setVisible(false);
-                          if (this.iconBatteryBg) this.iconBatteryBg.setVisible(false);
-                          if (this.iconBatteryFill) this.iconBatteryFill.setVisible(false);
-                          if (this.intentText) this.intentText.setVisible(false);
-                          if (this.laneGraphics) { this.laneGraphics.setVisible(false); }
-                          if (this.currentBoss) { this.currentBoss.setVisible(false); this.currentBoss.setActive(false); }
-                          if (this.inunekoImage) { this.inunekoImage.setVisible(false); }
-                          if (this.demonImage) { this.demonImage.setVisible(false); }
-                          
-                          this.playerBullets.clear(true, true);
-                          this.enemyBullets.clear(true, true);
-                          
-                          this.bg.setTexture('bg_lab');
-                          this.bg.setTint(0xffffff);
-                          this.bg.setOrigin(0, 0.5);
-                          if (this.laneLines) this.laneLines.forEach(g => g.setVisible(false));
-                          this.bg.setPosition(0, 1080 / 2);
-                          this.bg.setScale(1920 / 1024);
-                          
-                          this.cameras.main.fadeIn(1000);
-                          await new Promise(r => this.time.delayedCall(1000, r));
-                          
-                          this.textures.get('doctor_stand').setFilter(Phaser.Textures.FilterMode.LINEAR);
-                          var docScale = 600 / this.textures.get('doctor_stand').getSourceImage().width;
-                          let doctorImage = this.add.image(1920 - 300, 1080 / 2, 'doctor_awaken_straight_dying').setAlpha(0).setDepth(90);
-                          doctorImage.setScale(docScale);
-                          doctorImage.setY(100 + (this.textures.get('doctor_stand').getSourceImage().height * docScale) / 2);
-                          
-                           if (!this.heroImage || !this.heroImage.active) {
-                               this.heroImage = this.add.image(300, 1080 / 2, 'hero_stand_silent').setAlpha(0).setDepth(90);
-                           } else {
-                               this.heroImage.setTexture('hero_stand_silent');
-                           }
-                           var hScale = 750 / this.heroImage.width;
-                           this.heroImage.setScale(hScale);
-                           this.heroImage.setY(100 + (this.heroImage.height * hScale) / 2);
-                           this.tweens.add({ targets: [doctorImage, this.heroImage], alpha: 1, duration: 500 });
-                           
-                           const sayDoctorLab = (text) => new Promise(res => { this.tweens.add({ targets: dimBg, alpha: 0.6, duration: 300 }); this.tweens.add({targets: doctorImage, alpha: 1, duration: 300}); if(this.heroImage) this.tweens.add({targets: this.heroImage, alpha: 0.4, duration: 300}); this.showDialogue('博士', text, res); });
-                           const sayHeroLab = (text) => new Promise(res => { this.tweens.add({ targets: dimBg, alpha: 0.6, duration: 300 }); this.tweens.add({targets: doctorImage, alpha: 0.4, duration: 300}); if(this.heroImage) this.tweens.add({targets: this.heroImage, alpha: 1, duration: 300}); this.showDialogue('勇者', text, res); });
-                           
-                           await sayDoctorLab('「驚いた...まさかお前がここまでやるとはな」');
-                           await sayHeroLab('「…」');
-                           await sayDoctorLab('「なにをしている？早くとどめを刺せ。同情などいらん。何の足しにもならないからな。」');
-                           
-                           // 選択肢 (1. 殺さない 2. 殺せない)
-                           let selectedOpt = 1;
-                           await new Promise(resolve => {
-                               let btnElements = [];
-                               const w = 1920, h = 1080;
-                               let overlay = this.add.graphics().fillStyle(0x000000, 0.5).fillRect(0,0,w,h).setDepth(203);
-                               btnElements.push(overlay);
-                               
-                               let texts = [
-                                   "1. 殺さない",
-                                   "2. 殺せない"
-                               ];
-                               let startY = h / 2 - 40;
-                               
-                               texts.forEach((txtStr, i) => {
-                                   let y = startY + i * 100;
-                                   let btn = this.add.image(w/2, y, 'ui_button_wide').setInteractive({useHandCursor: true}).setDepth(204).setAlpha(0);
-                                   let txt = this.add.text(w/2, y, txtStr, { fontFamily: '"DotGothic16"', fontSize: '28px', color: '#E5E7EB' }).setOrigin(0.5).setDepth(205).setAlpha(0);
-                                   this.tweens.add({ targets: [btn, txt], alpha: 1, duration: 300, delay: i*100 });
-                                   btn.on('pointerdown', () => {
-                                       selectedOpt = i + 1;
-                                       this.input.keyboard.off('keydown', kh);
-                                       btnElements.forEach(el => el.destroy());
-                                       resolve();
-                                   });
-                                   btnElements.push(btn, txt);
-                               });
-                               
-                               let cursor = this.add.text(w / 2 - 280, startY, '▶', { fontFamily: '"DotGothic16"', fontSize: '28px', color: '#39FF14' }).setOrigin(0.5).setDepth(206);
-                               btnElements.push(cursor);
-                               let idx = 0;
-                               const kh = (e) => {
-                                   if(e.key==='ArrowUp' || e.key==='w') { idx = Math.max(0, idx-1); cursor.setY(startY + idx*100); }
-                                   if(e.key==='ArrowDown' || e.key==='s') { idx = Math.min(texts.length-1, idx+1); cursor.setY(startY + idx*100); }
-                                   if(e.key==='Enter' || e.key===' ') {
-                                       selectedOpt = idx + 1;
-                                       this.input.keyboard.off('keydown', kh);
-                                       btnElements.forEach(el => el.destroy());
-                                       resolve();
-                                   }
-                               };
-                               this.input.keyboard.on('keydown', kh);
-                           });
-                           
-                           if (selectedOpt === 1) {
-                               await sayDoctorLab('「…なんだ、ここでも殺さないのか。わかっているのか？その女の言う通り、私はお前を騙していたんだ。」');
-                               await sayDoctorLab('「お前は”勇者”なんかじゃない、俺の最高傑作のはずだったんだがな。」');
-                               
-                               // 自害直前に立ち絵を「覚醒_真顔_武器展開」に変更
-                               if (doctorImage) doctorImage.setTexture('doctor_awaken_straight_weapon');
-                               
-                               await sayHeroLab('「あなたがやったことは許せない。だけど、ここであなたを殺したら僕はあなたと同じになってしまう。」');
-                               await sayDoctorLab('「そうか……。」');
-                               await sayDoctorLab('「ついぞ俺の実験が成功することはなかった。もうここには用はない。さらばだ011101。」');
-                               await sayHeroLab('「！」');
-                           } else {
-                               // 自害直前に立ち絵を「覚醒_真顔_武器展開」に変更
-                               if (doctorImage) doctorImage.setTexture('doctor_awaken_straight_weapon');
-                               
-                               await sayHeroLab('「できない...。あなたがやったことは許せないけど、それでもあなたは僕の...」');
-                               await sayDoctorLab('「全く...本当にどうしようもない欠陥品だな。」');
-                               await sayDoctorLab('「私は、自分の目的のためにしか生きられない。お前が何を思っていてもな。」');
-                               await sayDoctorLab('「さらばだ、011101。もう、お前に用はない。好きに生きるんだな。」');
-                               await sayHeroLab('「！」');
-                           }
-                           
-                           // 立ち絵と背景を消して、真の魔王を表示
-                           let trueDemonLordBg = this.add.rectangle(1920/2, 1080/2, 1920, 1080, 0x000000).setDepth(88);
-                           let trueDemonLord = this.add.image(1920/2, 1080/2, 'true_demon_lord_static').setDepth(89).setAlpha(0);
-                           let tdlScaleX = 1920 / trueDemonLord.width;
-                           let tdlScaleY = 1080 / trueDemonLord.height;
-                           trueDemonLord.setScale(Math.max(tdlScaleX, tdlScaleY));
-                           await new Promise(r => this.time.delayedCall(1200, r));
-                           
-                           ending('END_ORPHAN');
+                          ending('bad_shutdown');
                       }
+                      return;
                   }
               } else {
                   // 魔王を生かす
