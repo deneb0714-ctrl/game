@@ -70,6 +70,9 @@ class BossScene extends Phaser.Scene {
   }
 
   create() {
+    if (this.currentBossIndex === 0 && MOT.saveGame && this.startData && !this.startData.fromContinue) {
+      MOT.saveGame(0);
+    }
     this.sound.stopAll();
     this.events.on('shutdown', () => {
       if (this.twinsBgm) this.twinsBgm.stop();
@@ -2241,7 +2244,7 @@ class BossScene extends Phaser.Scene {
               await sayDeviceB1('「よくやった。このまま止めを刺すんだ。魔物も人間と変わらず心臓を打ち抜けば死ぬ。」');
               let c = await askChoice('1. 心臓を打ち抜く', '2. 見逃す');
               if (c === 1) {
-                MOT.flags.dollPoints++; MOT.flags.killedTwins = true; MOT.flags.killedBoss1 = true;
+                MOT.flags.dollPoints++; MOT.flags.killedBoss1 = true;
                 await sayEnemyB1('「くそっ…！俺もここまでか…」');
                 MOT.Audio.playSelect(); // 銃声SE
                 await sayDeviceB1('「よくやった。まずは一歩平和に近づいたな。そのまま進んでいくといい」');
@@ -2892,6 +2895,7 @@ class BossScene extends Phaser.Scene {
                           this.bg.setTexture('bg_lab');
                           this.bg.setTint(0xffffff);
                           this.bg.setOrigin(0, 0.5);
+                          if (this.laneLines) this.laneLines.forEach(g => g.setVisible(false));
                           this.bg.setPosition(0, 1080 / 2);
                           this.bg.setScale(1920 / 1024);
                           
@@ -3088,6 +3092,7 @@ class BossScene extends Phaser.Scene {
                           this.bg.setTexture('bg_lab');
                           this.bg.setTint(0xffffff); // 背景色が変えられていた場合に戻す
                           this.bg.setOrigin(0, 0.5);
+                          if (this.laneLines) this.laneLines.forEach(g => g.setVisible(false));
                           this.bg.setPosition(0, 1080 / 2);
                           this.bg.setScale(1920 / 1024);
                           
@@ -3161,10 +3166,10 @@ class BossScene extends Phaser.Scene {
                           if (this.bg) this.bg.setVisible(false);
                           
                           let trueDemonLordBg = this.add.rectangle(1920/2, 1080/2, 1920, 1080, 0x000000).setDepth(88);
-                          let trueDemonLord = this.add.dom(1920 / 2, 780 / 2, 'img').setDepth(89);
+                          let trueDemonLord = this.add.dom(1920 / 2, 1080 / 2, 'img').setDepth(89);
                           trueDemonLord.node.src = 'assets/images/true_demon_lord.gif?v=' + window.GAME_VERSION;
                           trueDemonLord.node.style.width = '1920px';
-                          trueDemonLord.node.style.height = '750px';
+                          trueDemonLord.node.style.height = '1080px';
                           trueDemonLord.node.style.objectFit = 'contain';
                           trueDemonLord.node.style.pointerEvents = 'none';
                           trueDemonLord.updateSize();
@@ -3193,7 +3198,9 @@ class BossScene extends Phaser.Scene {
                           this.tweens.add({ targets: [trueDemonLordBg, trueDemonLord], alpha: 0, duration: 1000 });
                           await new Promise(r => this.time.delayedCall(1000, r));
 
-                          ending('hidden_freedom');
+                          MOT.flags.finalEnding = 'hidden_freedom';
+                          this.scene.start('EndingScene');
+                          return;
                       } else if (Kills === 0) {
                           if (this.heroImage) {
                               this.heroImage.setTexture('hero_stand');
@@ -3363,6 +3370,7 @@ class BossScene extends Phaser.Scene {
                       // 研究室の背景
                       var labBgDaily = this.add.image(1920/2, 1080/2, 'bg_lab').setDepth(90);
                       labBgDaily.setScale(Math.max(1920 / labBgDaily.width, 1080 / labBgDaily.height));
+                      if (this.laneLines) this.laneLines.forEach(g => g.setVisible(false));
                       
                       // 勇者と博士の立ち絵
                       var docImgDaily = this.add.image(1920 - 300, 1080/2, 'doctor_stand').setDepth(95);
@@ -3423,6 +3431,7 @@ class BossScene extends Phaser.Scene {
                       // 研究室の背景
                       var labBg = this.add.image(1920/2, 1080/2, 'bg_lab').setDepth(90);
                       labBg.setScale(Math.max(1920 / labBg.width, 1080 / labBg.height));
+                      if (this.laneLines) this.laneLines.forEach(g => g.setVisible(false));
                       
                       // 勇者と博士の立ち絵
                       var docImg = this.add.image(1920 - 300, 1080/2, 'doctor_stand').setDepth(95);
@@ -3800,6 +3809,16 @@ class BossScene extends Phaser.Scene {
               await sayDevice('「まさか生きていたとはな…いや、なんでもない。そのまま進んでくれ」');
               await sayDevice('「魔王を逃がすなんてしたらわかっているな？」');
             }
+            // フェードアウト完了を確実に待ってから遷移（立ち絵が残るバグ対策）
+            await new Promise(r => this.tweens.add({
+              targets: [dimBg, this.sisterImage, this.brotherImage, this.heroImage].filter(Boolean),
+              alpha: 0, duration: 500,
+              onComplete: () => {
+                if(this.sisterImage) { this.sisterImage.destroy(); this.sisterImage = null; }
+                if(this.brotherImage) { this.brotherImage.destroy(); this.brotherImage = null; }
+                r();
+              }
+            }));
             this.skipToDemonLord(false);
           } else {
             if (this.brotherImage) this.brotherImage.setTexture('brother_hurt');
@@ -3829,11 +3848,16 @@ class BossScene extends Phaser.Scene {
               await sayDevice('「魔王さえ倒せば、トップがいなくなり奴らはどうしようもなくなる。必ず倒すんだ。」');
             }
             
-            // Fade out dialogue UI
-            this.tweens.add({
-              targets: [dimBg, this.sisterImage, this.heroImage], alpha: 0, duration: 500,
-              onComplete: () => { if(this.sisterImage) this.sisterImage.destroy(); }
-            });
+            // フェードアウト完了を確実に待ってから遷移（立ち絵が残るバグ対策）
+            await new Promise(r => this.tweens.add({
+              targets: [dimBg, this.sisterImage, this.brotherImage, this.heroImage].filter(Boolean),
+              alpha: 0, duration: 500,
+              onComplete: () => {
+                if(this.sisterImage) { this.sisterImage.destroy(); this.sisterImage = null; }
+                if(this.brotherImage) { this.brotherImage.destroy(); this.brotherImage = null; }
+                r();
+              }
+            }));
             
             this.skipToDemonLord(true);
           }
@@ -3919,6 +3943,7 @@ class BossScene extends Phaser.Scene {
     if (this.inunekoImage) { this.inunekoImage.destroy(); this.inunekoImage = null; }
     if (this.doctorImage) { this.doctorImage.destroy(); this.doctorImage = null; }
     if (this.sisterImage) { this.sisterImage.destroy(); this.sisterImage = null; }
+    if (this.brotherImage) { this.brotherImage.destroy(); this.brotherImage = null; }
   }
 
   proceedToNextArea(boss, isSpared = false) {

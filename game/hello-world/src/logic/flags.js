@@ -119,7 +119,7 @@ MOT.loadGame = function() {
 
 MOT.hasSaveData = function() {
   const data = MOT.loadGame();
-  return data && data.bossIndex !== undefined && data.bossIndex > 0;
+  return data && data.bossIndex !== undefined && data.bossIndex >= 0;
 };
 
 MOT.clearSaveData = function() {
