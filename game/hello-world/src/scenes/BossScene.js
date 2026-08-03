@@ -2954,7 +2954,7 @@ class BossScene extends Phaser.Scene {
                           this.bg.setTexture('bg_lab');
                           this.bg.setTint(0xffffff); // 背景色が変えられていた場合に戻す
                           this.bg.setOrigin(0, 0.5);
-                          if (this.laneLines) this.laneLines.forEach(g => g.setVisible(false));
+                          if (this.laneGraphics) { this.laneGraphics.setVisible(false); }
                           this.bg.setPosition(0, 1080 / 2);
                           this.bg.setScale(1920 / 1024);
                           
@@ -3232,7 +3232,7 @@ class BossScene extends Phaser.Scene {
                       // 研究室の背景
                       var labBgDaily = this.add.image(1920/2, 1080/2, 'bg_lab').setDepth(90);
                       labBgDaily.setScale(Math.max(1920 / labBgDaily.width, 1080 / labBgDaily.height));
-                      if (this.laneLines) this.laneLines.forEach(g => g.setVisible(false));
+                      if (this.laneGraphics) { this.laneGraphics.setVisible(false); }
                       
                       // 勇者と博士の立ち絵
                       var docImgDaily = this.add.image(1920 - 300, 1080/2, 'doctor_stand').setDepth(95);
@@ -3293,7 +3293,7 @@ class BossScene extends Phaser.Scene {
                       // 研究室の背景
                       var labBg = this.add.image(1920/2, 1080/2, 'bg_lab').setDepth(90);
                       labBg.setScale(Math.max(1920 / labBg.width, 1080 / labBg.height));
-                      if (this.laneLines) this.laneLines.forEach(g => g.setVisible(false));
+                      if (this.laneGraphics) { this.laneGraphics.setVisible(false); }
                       
                       // 勇者と博士の立ち絵
                       var docImg = this.add.image(1920 - 300, 1080/2, 'doctor_stand').setDepth(95);
@@ -3413,6 +3413,7 @@ class BossScene extends Phaser.Scene {
             if (this.bossHpBg) this.bossHpBg.setVisible(false);
             if (this.bossHpBar) this.bossHpBar.setVisible(false);
             if (this.bossHPText) this.bossHPText.setVisible(false);
+            if (this.laneGraphics) { this.laneGraphics.setVisible(false); }
 
             this.textures.get('doctor_stand').setFilter(Phaser.Textures.FilterMode.LINEAR);
             let doctorImage = this.add.image(1920 - 300, 1080 / 2, 'doctor_awaken_normal_dying').setAlpha(0).setDepth(90);
