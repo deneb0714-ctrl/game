@@ -1110,6 +1110,7 @@ class BossScene extends Phaser.Scene {
           bullet.setVelocity(Math.cos(angle) * 1000, Math.sin(angle) * 1000);
           bullet.setScale(4);
           bullet.setTint(0x4FD1FF);
+          bullet.damage = 8; // 必殺技ダメージ
           this.time.delayedCall(1500, function () {
             if (bullet.active) bullet.destroy();
           });
