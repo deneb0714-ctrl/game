@@ -42,7 +42,7 @@ class EndingScene extends Phaser.Scene {
       color: '#E5E7EB',
       align: 'left',
       lineSpacing: 25,
-      wordWrap: { width: 1400 }
+      wordWrap: { width: 1400, useAdvancedWrap: true }
     }).setOrigin(0.5).setDepth(21).setAlpha(0);
 
     this.textPhaseElements.push(dialogBox, desc);

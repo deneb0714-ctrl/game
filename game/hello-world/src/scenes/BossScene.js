@@ -126,11 +126,11 @@ class BossScene extends Phaser.Scene {
 
     // Draw 3 lanes visually
     const laneYs = [220, 460, 700];
-    const laneGraphics = this.add.graphics().setDepth(1);
-    laneGraphics.lineStyle(2, 0x4FD1FF, 0.25);
+    this.laneGraphics = this.add.graphics().setDepth(1);
+    this.laneGraphics.lineStyle(2, 0x4FD1FF, 0.25);
 
-    laneYs.forEach(function (y) {
-      laneGraphics.lineBetween(0, y, w, y);
+    laneYs.forEach(y => {
+      this.laneGraphics.lineBetween(0, y, w, y);
     });
 
     MOT.setupControls(this);
@@ -3186,25 +3186,11 @@ class BossScene extends Phaser.Scene {
                           await sayDoctorLab('「そうか。やはりお前は私の最高傑作のようだ！！！まさか、思想まで似てしまうとは。想定外だが、それもいいだろう。」');
                           await sayHeroLab('「うるさいな！もうお前は必要ない。」');
                           
-                          // 真の魔王の全画面画像を消して通常の立ち絵に戻す
-                          trueDemonLordBg.destroy();
-                          trueDemonLord.destroy();
-                          if (this.bg) this.bg.setVisible(true);
-                          if (this.dimBg) this.dimBg.setVisible(true);
-                          if (this.doctorImage) this.doctorImage.setVisible(true);
-                          
-                          // 既に覚醒済みなので、画像の再設定は不要。可視化のみ行う
-                          this.heroImage.setVisible(true);
-                          
+                          // 真の魔王で撃った後、そのままエンディングへ
                           if (MOT.Audio.playSelect) MOT.Audio.playSelect();
-                          this.cameras.main.shake(1000, 0.05);
-                          let glass = this.add.rectangle(w/2, h/2, w, h, 0xffffff).setAlpha(0).setDepth(400).setBlendMode(Phaser.BlendModes.ADD);
-                          this.tweens.add({targets: glass, alpha: 1, duration: 100, yoyo: true, repeat: 3});
-                          await new Promise(r => this.time.delayedCall(1000, r));
                           
-                          await sayHeroLab('「……。」');
-
                           this.cameras.main.fadeOut(1000);
+                          this.tweens.add({ targets: [trueDemonLordBg, trueDemonLord], alpha: 0, duration: 1000 });
                           await new Promise(r => this.time.delayedCall(1000, r));
 
                           ending('hidden_freedom');
