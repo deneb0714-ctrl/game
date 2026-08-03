@@ -3015,6 +3015,8 @@ class BossScene extends Phaser.Scene {
                           const localSayDemon = (text) => new Promise(res => { this.tweens.add({ targets: this.dimBg, alpha: 0.6, duration: 300 }); if(this.heroImage) this.tweens.add({targets: this.heroImage, alpha: 0.4, duration: 300}); if(this.inunekoImage) this.tweens.add({targets: this.inunekoImage, alpha: 0.4, duration: 300}); if(this.demonImage) this.tweens.add({targets: this.demonImage, alpha: 1, duration: 300}); this.showDialogue('魔王', text, res); });
                           const sayHero = (text) => new Promise(res => { this.tweens.add({ targets: this.dimBg, alpha: 0.6, duration: 300 }); if(this.demonImage) this.tweens.add({targets: this.demonImage, alpha: 0.4, duration: 300}); if(this.inunekoImage) this.tweens.add({targets: this.inunekoImage, alpha: 0.4, duration: 300}); if(this.heroImage) this.tweens.add({targets: this.heroImage, alpha: 1, duration: 300}); this.showDialogue('勇者', text, res); });
 
+                          await localSayDevice('「よくやった。早く止めを刺すんだ。そして、見逃した幹部も殺しに行け。」');
+                          await sayHero('「…」');
                           await localSayDemon('「殺すならわらわだけで十分であろう！？わらわを殺せば組織は終わる！お前の目的だって達成される！！！」');
                           
                           if (!this.inunekoImage || !this.inunekoImage.active) {
@@ -3167,10 +3169,10 @@ class BossScene extends Phaser.Scene {
                           if (this.bg) this.bg.setVisible(false);
                           
                           let trueDemonLordBg = this.add.rectangle(1920/2, 1080/2, 1920, 1080, 0x000000).setDepth(88);
-                          let trueDemonLord = this.add.dom(1920 / 2, 1080 / 2, 'img').setDepth(89);
+                          let trueDemonLord = this.add.dom(1920 / 2, 780 / 2, 'img').setDepth(89);
                           trueDemonLord.node.src = 'assets/images/true_demon_lord.gif?v=' + window.GAME_VERSION;
                           trueDemonLord.node.style.width = '1920px';
-                          trueDemonLord.node.style.height = '1080px';
+                          trueDemonLord.node.style.height = '780px';
                           trueDemonLord.node.style.objectFit = 'contain';
                           trueDemonLord.node.style.pointerEvents = 'none';
                           trueDemonLord.updateSize();
