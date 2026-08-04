@@ -19,7 +19,7 @@ MOT.GAME_CONFIG = {
   width: 1920,
   height: 1080,
   pixelArt: true,
-  backgroundColor: '#050814',
+  transparent: true,
   scale: {
     mode: Phaser.Scale.FIT,
     autoCenter: Phaser.Scale.CENTER_BOTH

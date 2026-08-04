@@ -2970,9 +2970,11 @@ class BossScene extends Phaser.Scene {
                           
                           // 勇者の立ち絵（既に覚醒済み）
                           this.heroImage = this.add.image(300, 1080 / 2, 'hero_stand_corrupted').setAlpha(0).setDepth(90);
-                          var newHeroScale = 750 / 1080;
-                          this.heroImage.setScale(newHeroScale);
-                          this.heroImage.setY(100 + (1920 * newHeroScale) / 2);
+                           var w = this.heroImage.width || 1080;
+                           var h = this.heroImage.height || 1080;
+                           var newHeroScale = 750 / w;
+                           this.heroImage.setScale(newHeroScale);
+                           this.heroImage.setY(100 + (h * newHeroScale) / 2);
                           
                           // フェードイン
                           this.cameras.main.fadeIn(1000);
@@ -3027,16 +3029,20 @@ class BossScene extends Phaser.Scene {
                           if (this.dimBg) this.dimBg.setVisible(false);
                           if (this.bg) this.bg.setVisible(false);
                           
-                          let trueDemonLordBg = this.add.rectangle(1920/2, 1080/2, 1920, 1080, 0x000000).setDepth(88);
-                          let trueDemonLord = this.add.dom(1920 / 2, 780 / 2, 'img').setDepth(89);
+                          // Put the entire Phaser DOM container behind the canvas
+                          if (this.game.domContainer) {
+                              this.game.domContainer.style.zIndex = '-1';
+                          }
+
+                          let trueDemonLord = this.add.dom(1920 / 2, 1080 / 2, 'img').setDepth(89);
                           trueDemonLord.node.src = 'assets/images/true_demon_lord.gif?v=' + window.GAME_VERSION;
                           trueDemonLord.node.style.width = '1920px';
-                          trueDemonLord.node.style.height = '780px';
-                          trueDemonLord.node.style.objectFit = 'contain';
+                          trueDemonLord.node.style.height = '1080px';
+                          trueDemonLord.node.style.objectFit = 'cover';
                           trueDemonLord.node.style.pointerEvents = 'none';
                           trueDemonLord.updateSize();
                           
-                          // Ensure hero and doctor are hidden while true demon lord is shown
+                          // Ensure hero and doctor are NOT hidden while true demon lord is shown
                           if (this.heroImage) this.heroImage.setVisible(false);
                           if (this.doctorImage) this.doctorImage.setVisible(false);
                           await sayHeroLab('「…」');
@@ -3356,10 +3362,20 @@ class BossScene extends Phaser.Scene {
                       if (this.heroImage) this.heroImage.setVisible(false);
                       if (this.doctorImage) this.doctorImage.setVisible(false);
                       if (this.dimBg) this.dimBg.setVisible(false);
-                      let trueDemonLordBg = this.add.rectangle(w/2, h/2, w, h, 0x000000).setDepth(88);
-                      let trueDemonLord = this.add.image(w / 2, h / 2, 'true_demon_lord').setDepth(89);
-                      let scaleY = h / trueDemonLord.height;
-                      trueDemonLord.setScale(scaleY);
+                      if (this.bg) this.bg.setVisible(false);
+                      
+                      // Put the entire Phaser DOM container behind the canvas
+                      if (this.game.domContainer) {
+                          this.game.domContainer.style.zIndex = '-1';
+                      }
+
+                      let trueDemonLord = this.add.dom(w / 2, h / 2, 'img').setDepth(89);
+                      trueDemonLord.node.src = 'assets/images/true_demon_lord.gif?v=' + window.GAME_VERSION;
+                      trueDemonLord.node.style.width = '1920px';
+                      trueDemonLord.node.style.height = '1080px';
+                      trueDemonLord.node.style.objectFit = 'cover';
+                      trueDemonLord.node.style.pointerEvents = 'none';
+                      trueDemonLord.updateSize();
                       
                       await sayHeroLab('「…」');
                       await sayDoctorLab('「こちらに銃を構えてどうした？私を倒したいでも言うのか。」');
