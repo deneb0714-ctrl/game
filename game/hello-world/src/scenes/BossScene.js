@@ -214,7 +214,7 @@ class BossScene extends Phaser.Scene {
   startBoss() {
     if (this.currentBossIndex >= this.bossQueue.length) {
       this.cameras.main.fadeOut(1000, 0, 0, 0);
-      this.time.delayedCall(1000, function () { this.scene.start('EndingScene'); }, [], this);
+      this.time.delayedCall(1000, function () { let trueDemonLordImg = document.getElementById('trueDemonLordImg'); if (trueDemonLordImg) trueDemonLordImg.remove(); this.scene.start('EndingScene'); }, [], this);
       return;
     }
 
@@ -1717,7 +1717,7 @@ class BossScene extends Phaser.Scene {
       
       MOT.flags.diedCount++;
       this.cameras.main.fadeOut(1000, 0, 0, 0);
-      this.time.delayedCall(1000, function () { this.scene.start('EndingScene'); }, [], this);
+      this.time.delayedCall(1000, function () { let trueDemonLordImg = document.getElementById('trueDemonLordImg'); if (trueDemonLordImg) trueDemonLordImg.remove(); this.scene.start('EndingScene'); }, [], this);
     }
   }
 
@@ -2950,16 +2950,24 @@ class BossScene extends Phaser.Scene {
                           
                           // Hide all boss fight UI elements
                           if (this.player) { this.player.setVisible(false); this.player.setActive(false); }
-                          if (this.playerHitboxGraphics) this.playerHitboxGraphics.setVisible(false);
-                          if (this.bossHpBg) this.bossHpBg.setVisible(false);
-                          if (this.bossHpBar) this.bossHpBar.setVisible(false);
-                          if (this.barrierVisual) this.barrierVisual.setVisible(false);
-                          if (this.uiBg) this.uiBg.setVisible(false);
-                          if (this.uiText) this.uiText.setVisible(false);
-                          if (this.hpText) this.hpText.setVisible(false);
-                          if (this.energyText) this.energyText.setVisible(false);
+                          if (this.playerHitboxGraphics) { this.playerHitboxGraphics.setVisible(false); this.playerHitboxGraphics.clear(); }
+                          if (this.bossHPBar) { this.bossHPBar.setVisible(false); this.bossHPBar.clear(); }
+                          if (this.bossHPText) { this.bossHPText.setVisible(false); }
+                          if (this.barrierVisual) { this.barrierVisual.setVisible(false); }
+                          if (this.barrierGraphic) { this.barrierGraphic.setVisible(false); this.barrierGraphic.clear(); }
+                          if (this.barrierIconBg) { this.barrierIconBg.setVisible(false); this.barrierIconBg.clear(); }
+                          if (this.barrierIconFg) { this.barrierIconFg.setVisible(false); this.barrierIconFg.clear(); }
+                          if (this.energyBar) { this.energyBar.setVisible(false); this.energyBar.clear(); }
+                          if (this.energyBarOutline) { this.energyBarOutline.setVisible(false); this.energyBarOutline.clear(); }
+                          if (this.batteryUI) { this.batteryUI.setVisible(false); this.batteryUI.clear(); }
+                          if (this.uiBg) { this.uiBg.setVisible(false); }
+                          if (this.uiText) { this.uiText.setVisible(false); }
+                          if (this.hpText) { this.hpText.setVisible(false); }
+                          if (this.energyText) { this.energyText.setVisible(false); }
                           if (this.inunekoBoss) { this.inunekoBoss.setVisible(false); this.inunekoBoss.setActive(false); }
                           if (this.demonBoss) { this.demonBoss.setVisible(false); this.demonBoss.setActive(false); }
+                          if (this.inunekoEnemy) { this.inunekoEnemy.setVisible(false); this.inunekoEnemy.setActive(false); }
+
                           
                           this.playerBullets.clear(true, true);
                           this.enemyBullets.clear(true, true);
@@ -3042,18 +3050,18 @@ class BossScene extends Phaser.Scene {
                           if (this.dimBg) this.dimBg.setVisible(false);
                           if (this.bg) this.bg.setVisible(false);
                           
-                          // Put the entire Phaser DOM container behind the canvas
-                          if (this.game.domContainer) {
-                              this.game.domContainer.style.zIndex = '-1';
-                          }
-
-                          let trueDemonLord = this.add.dom(1920 / 2, 1080 / 2, 'img').setDepth(89);
-                          trueDemonLord.node.src = 'assets/images/true_demon_lord.gif?v=' + window.GAME_VERSION;
-                          trueDemonLord.node.style.width = '1920px';
-                          trueDemonLord.node.style.height = '1080px';
-                          trueDemonLord.node.style.objectFit = 'cover';
-                          trueDemonLord.node.style.pointerEvents = 'none';
-                          trueDemonLord.updateSize();
+                          let trueDemonLordImg = document.createElement('img');
+                          trueDemonLordImg.id = 'trueDemonLordImg';
+                          trueDemonLordImg.src = 'assets/images/true_demon_lord.gif?v=' + window.GAME_VERSION;
+                          trueDemonLordImg.style.position = 'absolute';
+                          trueDemonLordImg.style.top = '0';
+                          trueDemonLordImg.style.left = '0';
+                          trueDemonLordImg.style.width = '100%';
+                          trueDemonLordImg.style.height = '100%';
+                          trueDemonLordImg.style.objectFit = 'cover';
+                          trueDemonLordImg.style.zIndex = '-1';
+                          trueDemonLordImg.style.pointerEvents = 'none';
+                          document.getElementById('game-root').appendChild(trueDemonLordImg);
                           
                           // Ensure hero and doctor are NOT hidden while true demon lord is shown
                           if (this.heroImage) this.heroImage.setVisible(false);
@@ -3080,7 +3088,7 @@ class BossScene extends Phaser.Scene {
                           await new Promise(r => this.time.delayedCall(1000, r));
 
                           MOT.flags.finalEnding = 'hidden_freedom';
-                          this.scene.start('EndingScene');
+                          let trueDemonLordImg = document.getElementById('trueDemonLordImg'); if (trueDemonLordImg) trueDemonLordImg.remove(); this.scene.start('EndingScene');
                           return;
                       } else if (Kills === 0) {
                           if (this.heroImage) {
@@ -3885,7 +3893,7 @@ class BossScene extends Phaser.Scene {
         
         this.cameras.main.fadeOut(1500, 0, 0, 0);
         this.time.delayedCall(1500, () => {
-          this.scene.start('EndingScene');
+          let trueDemonLordImg = document.getElementById('trueDemonLordImg'); if (trueDemonLordImg) trueDemonLordImg.remove(); this.scene.start('EndingScene');
         });
         return;
       }
