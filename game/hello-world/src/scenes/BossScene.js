@@ -1066,6 +1066,13 @@ class BossScene extends Phaser.Scene {
     // 犬猫バリアグラフィック更新
     if (this.barrierUpdateCb) this.barrierUpdateCb();
 
+    if (this.isLabTransition) {
+        if (this.enemyBullets) this.enemyBullets.clear(true, true);
+        if (this.playerBullets) this.playerBullets.clear(true, true);
+        if (this.playerHitboxGraphics) this.playerHitboxGraphics.clear();
+        if (this.currentBoss) { this.currentBoss.setActive(false); this.currentBoss.setVisible(false); }
+        if (this.sisterBoss) { this.sisterBoss.setActive(false); this.sisterBoss.setVisible(false); }
+    }
     this.updateHUD();
   }
 
@@ -3044,6 +3051,7 @@ class BossScene extends Phaser.Scene {
                               this.input.keyboard.on('keydown', kh);
                           });
                           
+                          this.isLabTransition = true;
                           // 立ち絵と背景を消して、真の魔王を表示
                           if (this.heroImage) this.heroImage.setVisible(false);
                           if (this.doctorImage) this.doctorImage.setVisible(false);
@@ -3084,7 +3092,8 @@ class BossScene extends Phaser.Scene {
                           if (MOT.Audio.playSelect) MOT.Audio.playSelect();
                           
                           this.cameras.main.fadeOut(1000);
-                          this.tweens.add({ targets: [trueDemonLordBg, trueDemonLord], alpha: 0, duration: 1000 });
+                          let fadeImg = document.getElementById('trueDemonLordImg');
+                          if(fadeImg) { fadeImg.style.transition = 'opacity 1s'; fadeImg.style.opacity = '0'; }
                           await new Promise(r => this.time.delayedCall(1000, r));
 
                           MOT.flags.finalEnding = 'hidden_freedom';
@@ -3379,24 +3388,26 @@ class BossScene extends Phaser.Scene {
                           this.input.keyboard.on('keydown', kh);
                       });
                       
-                      // 立ち絵と背景を消して、真の魔王を表示
+                      this.isLabTransition = true;
+                          // 立ち絵と背景を消して、真の魔王を表示
                       if (this.heroImage) this.heroImage.setVisible(false);
                       if (this.doctorImage) this.doctorImage.setVisible(false);
                       if (this.dimBg) this.dimBg.setVisible(false);
                       if (this.bg) this.bg.setVisible(false);
                       
-                      // Put the entire Phaser DOM container behind the canvas
-                      if (this.game.domContainer) {
-                          this.game.domContainer.style.zIndex = '-1';
-                      }
-
-                      let trueDemonLord = this.add.dom(w / 2, h / 2, 'img').setDepth(89);
-                      trueDemonLord.node.src = 'assets/images/true_demon_lord.gif?v=' + window.GAME_VERSION;
-                      trueDemonLord.node.style.width = '1920px';
-                      trueDemonLord.node.style.height = '1080px';
-                      trueDemonLord.node.style.objectFit = 'cover';
-                      trueDemonLord.node.style.pointerEvents = 'none';
-                      trueDemonLord.updateSize();
+this.isLabTransition = true;
+                      let trueDemonLordImg = document.createElement('img');
+                      trueDemonLordImg.id = 'trueDemonLordImg';
+                      trueDemonLordImg.src = 'assets/images/true_demon_lord.gif?v=' + window.GAME_VERSION;
+                      trueDemonLordImg.style.position = 'absolute';
+                      trueDemonLordImg.style.top = '0';
+                      trueDemonLordImg.style.left = '0';
+                      trueDemonLordImg.style.width = '100%';
+                      trueDemonLordImg.style.height = '100%';
+                      trueDemonLordImg.style.objectFit = 'cover';
+                      trueDemonLordImg.style.zIndex = '-1';
+                      trueDemonLordImg.style.pointerEvents = 'none';
+                      document.getElementById('game-root').appendChild(trueDemonLordImg);
                       
                       await sayHeroLab('「…」');
                       await sayDoctorLab('「こちらに銃を構えてどうした？私を倒したいでも言うのか。」');
