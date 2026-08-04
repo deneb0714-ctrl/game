@@ -2948,6 +2948,19 @@ class BossScene extends Phaser.Scene {
                           if (this.laneGraphics) { this.laneGraphics.setVisible(false); }
                           if (this.currentBoss) { this.currentBoss.setVisible(false); this.currentBoss.setActive(false); }
                           
+                          // Hide all boss fight UI elements
+                          if (this.player) { this.player.setVisible(false); this.player.setActive(false); }
+                          if (this.playerHitboxGraphics) this.playerHitboxGraphics.setVisible(false);
+                          if (this.bossHpBg) this.bossHpBg.setVisible(false);
+                          if (this.bossHpBar) this.bossHpBar.setVisible(false);
+                          if (this.barrierVisual) this.barrierVisual.setVisible(false);
+                          if (this.uiBg) this.uiBg.setVisible(false);
+                          if (this.uiText) this.uiText.setVisible(false);
+                          if (this.hpText) this.hpText.setVisible(false);
+                          if (this.energyText) this.energyText.setVisible(false);
+                          if (this.inunekoBoss) { this.inunekoBoss.setVisible(false); this.inunekoBoss.setActive(false); }
+                          if (this.demonBoss) { this.demonBoss.setVisible(false); this.demonBoss.setActive(false); }
+                          
                           this.playerBullets.clear(true, true);
                           this.enemyBullets.clear(true, true);
                           

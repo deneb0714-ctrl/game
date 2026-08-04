@@ -1,5 +1,5 @@
 /* =============================================
-   真理のマリオネット – Global Styles
+   真理のマリオネッチE EGlobal Styles
    ============================================= */
 
 * {
@@ -11,7 +11,7 @@
 html, body {
   width: 100%;
   height: 100%;
-  height: 100dvh; /* 動的ビューポート高（アドレスバーや上部タブを考慮した正確な高さ） */
+  height: 100dvh; /* 動的ビューポ�Eト高（アドレスバ�EめE��部タブを老E�Eした正確な高さ�E�E*/
   overflow: hidden;
   margin: 0;
   padding: 0;
@@ -26,11 +26,11 @@ html, body {
   -webkit-user-select: none;
 }
 
-#game-root {
+#game-root { position: relative; z-index: 0;
   width: 100%;
   height: 100%;
   width: 100dvw;
-  height: 100dvh; /* 上部タブやアドレスバー領域を除外した実際の表示領域にフィット */
+  height: 100dvh; /* 上部タブやアドレスバ�E領域を除外した実際の表示領域にフィチE�� */
   display: flex;
   align-items: center;
   justify-content: center;
@@ -45,7 +45,7 @@ html, body {
 }
 
 /* =============================================
-   スマートフォン・タブレット向け縦向きアラート
+   スマ�Eトフォン・タブレチE��向け縦向きアラーチE
    ============================================= */
 #orientation-warning {
   display: none;
@@ -120,7 +120,7 @@ html, body {
   }
 }
 
-/* PC等ではモバイル用UIを隠す */
+/* PC等ではモバイル用UIを隠ぁE*/
 @media screen and (min-width: 769px) {
   .mobile-only {
     display: none !important;
