@@ -214,7 +214,7 @@ class BossScene extends Phaser.Scene {
   startBoss() {
     if (this.currentBossIndex >= this.bossQueue.length) {
       this.cameras.main.fadeOut(1000, 0, 0, 0);
-      this.time.delayedCall(1000, function () { let trueDemonLordImg = document.getElementById('trueDemonLordImg'); if (trueDemonLordImg) trueDemonLordImg.remove(); this.scene.start('EndingScene'); }, [], this);
+      this.time.delayedCall(1000, function () { let __img = document.getElementById('trueDemonLordImg'); if (__img) __img.remove(); this.scene.start('EndingScene'); }, [], this);
       return;
     }
 
@@ -1717,7 +1717,7 @@ class BossScene extends Phaser.Scene {
       
       MOT.flags.diedCount++;
       this.cameras.main.fadeOut(1000, 0, 0, 0);
-      this.time.delayedCall(1000, function () { let trueDemonLordImg = document.getElementById('trueDemonLordImg'); if (trueDemonLordImg) trueDemonLordImg.remove(); this.scene.start('EndingScene'); }, [], this);
+      this.time.delayedCall(1000, function () { let __img = document.getElementById('trueDemonLordImg'); if (__img) __img.remove(); this.scene.start('EndingScene'); }, [], this);
     }
   }
 
@@ -3088,7 +3088,7 @@ class BossScene extends Phaser.Scene {
                           await new Promise(r => this.time.delayedCall(1000, r));
 
                           MOT.flags.finalEnding = 'hidden_freedom';
-                          let trueDemonLordImg = document.getElementById('trueDemonLordImg'); if (trueDemonLordImg) trueDemonLordImg.remove(); this.scene.start('EndingScene');
+                          let __img = document.getElementById('trueDemonLordImg'); if (__img) __img.remove(); this.scene.start('EndingScene');
                           return;
                       } else if (Kills === 0) {
                           if (this.heroImage) {
@@ -3893,7 +3893,7 @@ class BossScene extends Phaser.Scene {
         
         this.cameras.main.fadeOut(1500, 0, 0, 0);
         this.time.delayedCall(1500, () => {
-          let trueDemonLordImg = document.getElementById('trueDemonLordImg'); if (trueDemonLordImg) trueDemonLordImg.remove(); this.scene.start('EndingScene');
+          let __img = document.getElementById('trueDemonLordImg'); if (__img) __img.remove(); this.scene.start('EndingScene');
         });
         return;
       }
