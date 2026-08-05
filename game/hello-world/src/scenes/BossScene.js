@@ -856,6 +856,19 @@ class BossScene extends Phaser.Scene {
 
 
   update(time, delta) {
+    if (this.isLabTransition) {
+        if (this.enemyBullets) this.enemyBullets.clear(true, true);
+        if (this.playerBullets) this.playerBullets.clear(true, true);
+        if (this.playerHitboxGraphics) this.playerHitboxGraphics.clear();
+        if (this.currentBoss) { this.currentBoss.setActive(false); this.currentBoss.setVisible(false); }
+        if (this.sisterBoss) { this.sisterBoss.setActive(false); this.sisterBoss.setVisible(false); }
+        if (this.batteryUI) this.batteryUI.clear();
+        if (this.energyBarOutline) this.energyBarOutline.clear();
+        if (MOT.DoctorDirective && MOT.DoctorDirective.directiveContainer) {
+            MOT.DoctorDirective.hideDirective(this);
+        }
+        return;
+    }
     // レーザー全体でのカスタム当たり判定
     if (this.player && this.player.active && this.player.alpha > 0 && !this.player.isInvincible) {
       if (this.enemyBullets) {
@@ -1066,13 +1079,7 @@ class BossScene extends Phaser.Scene {
     // 犬猫バリアグラフィック更新
     if (this.barrierUpdateCb) this.barrierUpdateCb();
 
-    if (this.isLabTransition) {
-        if (this.enemyBullets) this.enemyBullets.clear(true, true);
-        if (this.playerBullets) this.playerBullets.clear(true, true);
-        if (this.playerHitboxGraphics) this.playerHitboxGraphics.clear();
-        if (this.currentBoss) { this.currentBoss.setActive(false); this.currentBoss.setVisible(false); }
-        if (this.sisterBoss) { this.sisterBoss.setActive(false); this.sisterBoss.setVisible(false); }
-    }
+
     this.updateHUD();
   }
 
