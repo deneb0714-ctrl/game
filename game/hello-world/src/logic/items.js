@@ -7,7 +7,15 @@ window.MOT = window.MOT || {};
  * Spawn an energy item (or Red Diamond) at position.
  */
 MOT.spawnEnergyItem = function (scene, x, y, forceRed = false) {
-  const isMurderous = forceRed || Phaser.Math.Between(0, 100) < 15; // 15% chance for Red Diamond
+
+  const lanes = [220, 460, 700];
+  let closestY = lanes[0];
+  let minDist = Math.abs(y - lanes[0]);
+  for(let i = 1; i < lanes.length; i++) {
+      if(Math.abs(y - lanes[i]) < minDist) { minDist = Math.abs(y - lanes[i]); closestY = lanes[i]; }
+  }
+  y = closestY;
+  const isMurderous = forceRed || Phaser.Math.Between(0, 100) < 5; // 15% chance for Red Diamond
   
   let item;
   if (isMurderous) {
@@ -39,6 +47,14 @@ MOT.spawnEnergyItem = function (scene, x, y, forceRed = false) {
  * Spawn a health restore item.
  */
 MOT.spawnHealthItem = function (scene, x, y) {
+
+  const lanes = [220, 460, 700];
+  let closestY = lanes[0];
+  let minDist = Math.abs(y - lanes[0]);
+  for(let i = 1; i < lanes.length; i++) {
+      if(Math.abs(y - lanes[i]) < minDist) { minDist = Math.abs(y - lanes[i]); closestY = lanes[i]; }
+  }
+  y = closestY;
   const item = scene.itemGroup.create(x, y, 'item_health');
   item.setVelocityX(Phaser.Math.Between(-400, -200));
   item.itemType = 'health';
@@ -60,6 +76,14 @@ MOT.spawnHealthItem = function (scene, x, y) {
  * Spawn a Red Diamond item.
  */
 MOT.spawnRedDiamond = function (scene, x, y) {
+
+  const lanes = [220, 460, 700];
+  let closestY = lanes[0];
+  let minDist = Math.abs(y - lanes[0]);
+  for(let i = 1; i < lanes.length; i++) {
+      if(Math.abs(y - lanes[i]) < minDist) { minDist = Math.abs(y - lanes[i]); closestY = lanes[i]; }
+  }
+  y = closestY;
   const item = scene.itemGroup.create(x, y, 'item_red_diamond');
   item.setVelocityX(Phaser.Math.Between(-400, -200));
   item.itemType = 'red_diamond';

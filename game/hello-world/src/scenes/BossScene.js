@@ -1761,7 +1761,7 @@ class BossScene extends Phaser.Scene {
       if (boss.hp <= 0) {
         if (!bullet.silent) {
           this.showExplosion(boss.x, boss.y);
-          if (Phaser.Math.Between(0, 100) < 40) MOT.spawnEnergyItem(this, boss.x, boss.y);
+          if (Phaser.Math.Between(0, 100) < 40) if(Phaser.Math.Between(0, 100) < 5) MOT.spawnHealthItem(this, boss.x, boss.y); else MOT.spawnEnergyItem(this, boss.x, boss.y);
         }
         
         // 倒された敵が発射した弾を消去する
@@ -2091,7 +2091,7 @@ class BossScene extends Phaser.Scene {
       this.time.delayedCall(50, function () { if (boss.active) boss.clearTint(); });
       
       if (Phaser.Math.Between(0, 100) < 50) {
-        MOT.spawnEnergyItem(this, boss.x, boss.y);
+        if(Phaser.Math.Between(0, 100) < 5) MOT.spawnHealthItem(this, boss.x, boss.y); else MOT.spawnEnergyItem(this, boss.x, boss.y);
       }
       
       if (boss.hp <= 0 && boss.active) {
@@ -2125,7 +2125,7 @@ class BossScene extends Phaser.Scene {
              boss.active = true;
              boss.setVisible(true);
              boss.body.enable = true;
-             boss.hp = 1; // 復活時のHP
+             boss.hp = Math.max(1, otherBoss.hp); // 復活時のHP
              
              if (isBrotherDefeated && this.sisterBoss && this.sisterBoss.active) {
                  this.sisterBoss.play('sister_shoot_anim');
@@ -2153,7 +2153,7 @@ class BossScene extends Phaser.Scene {
     boss.setTint(0xffffff);
     this.time.delayedCall(50, function () { if (boss.active) boss.clearTint(); });
     if (Phaser.Math.Between(0, 100) < 50) {
-      MOT.spawnEnergyItem(this, boss.x, boss.y);
+      if(Phaser.Math.Between(0, 100) < 5) MOT.spawnHealthItem(this, boss.x, boss.y); else MOT.spawnEnergyItem(this, boss.x, boss.y);
     }
 
     if (this.bossHP <= 0 && !this.bossDefeated) {
