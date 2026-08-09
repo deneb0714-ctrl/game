@@ -2803,6 +2803,8 @@ class BossScene extends Phaser.Scene {
                   MOT.flags.killedDemonLord = true;
                   
                   if (Kills === 0) {
+                      ending('normal_unresistable');
+                      return;
                       if (!this.inunekoImage || !this.inunekoImage.active) {
                           this.inunekoImage = this.add.image(1920 - 120, 1080 / 2 - 250, 'inuneko_stand').setAlpha(0).setDepth(91);
                           this.inunekoImage.setScale(300 / 691);
@@ -3145,14 +3147,10 @@ class BossScene extends Phaser.Scene {
                               this.showDialogue(MOT.flags.heroName || '勇者', text, res);
                           });
 
-                          await localSayHero('「……魔王は……殺さなきゃ……エラーを消去……」');
+                          const localSayDemon = (text, tex='demon_lord_dying') => new Promise(res => { this.tweens.add({ targets: dimBg, alpha: 0.6, duration: 300 }); if(this.heroImage) this.tweens.add({targets: this.heroImage, alpha: 0.4, duration: 300}); if(this.inunekoImage) this.tweens.add({targets: this.inunekoImage, alpha: 0.4, duration: 300}); if(this.demonImage) { this.tweens.add({targets: this.demonImage, alpha: 1, duration: 300}); this.demonImage.setTexture(tex); } this.showDialogue('魔王', text, res); });
+                          const localSayInuneko = (text, tex='inuneko_stand') => new Promise(res => { this.tweens.add({ targets: dimBg, alpha: 0.6, duration: 300 }); if(this.heroImage) this.tweens.add({targets: this.heroImage, alpha: 0.4, duration: 300}); if(this.demonImage) this.tweens.add({targets: this.demonImage, alpha: 0.4, duration: 300}); if(this.inunekoImage) { this.tweens.add({targets: this.inunekoImage, alpha: 1, duration: 300}); this.inunekoImage.setTexture(tex); } this.showDialogue('犬猫☆すたー', text, res); });
 
-                          let c = await askShatterChoice('1. 殺す', '2. 殺さない', true);
-                          if (c === 1) {
-                              ending('normal_unresistable');
-                              return;
-                          }
-                          await sayDemon('「……結局我々を殺さず、お前は何をしにきたんだ？あの法螺吹きにけしかけられて、わらわたちを滅ぼしに来たんだろう？」');
+                          await localSayDemon('「……結局我々を殺さず、お前は何をしにきたんだ？あの法螺吹きにけしかけられて、わらわたちを滅ぼしに来たんだろう？」');
                           
                           await localSayDemon('「そうか……英断だな…。」', 'demon_lord_normal');
                           await localSayDemon('「そしてここから話すのは、信じるも信じないもお前の自由だ。」');
