@@ -3152,7 +3152,6 @@ class BossScene extends Phaser.Scene {
                               ending('normal_unresistable');
                               return;
                           }
-                          }
                           await sayDemon('「……結局我々を殺さず、お前は何をしにきたんだ？あの法螺吹きにけしかけられて、わらわたちを滅ぼしに来たんだろう？」');
                           
                           await localSayDemon('「そうか……英断だな…。」', 'demon_lord_normal');

@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <meta name="description" content="Hello World 遯ｶ繝ｻ郢晏ｳｨ繝｣郢晁ご・ｵ・ｵ2D陜玲ｨ｣竏ｩ郢ｧ・ｷ郢晢ｽ･郢晢ｽｼ郢昴・縺・ｹ晢ｽｳ郢ｧ・ｰ邵ｲ繧・・郢晢ｽｫ郢昶・縺顔ｹ晢ｽｳ郢昴・縺・ｹ晢ｽｳ郢ｧ・ｰ陋ｻ繝ｻ・ｲ莉呎｢帷ｹｧ・｢郢ｧ・ｯ郢ｧ・ｷ郢晢ｽｧ郢晢ｽｳ郢ｧ・ｲ郢晢ｽｼ郢晢ｿｽ邵ｲ繝ｻ />
+  <meta name="description" content="Hello World 窶・繝峨ャ繝育ｵｵ2D蝗樣∩繧ｷ繝･繝ｼ繝・ぅ繝ｳ繧ｰ縲ゅ・繝ｫ繝√お繝ｳ繝・ぅ繝ｳ繧ｰ蛻・ｲ仙梛繧｢繧ｯ繧ｷ繝ｧ繝ｳ繧ｲ繝ｼ繝�縲・ />
   <meta name="theme-color" content="#050814" />
   <meta name="mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
@@ -25,22 +25,22 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=DotGothic16&family=Press+Start+2P&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="styles/styles.css?v=396" />
+  <link rel="stylesheet" href="styles/styles.css?v=385" />
 </head>
 <body>
   <div id="orientation-warning">
     <div class="warning-box">
-      <div class="warning-icon">�導 �売</div>
-      <div class="warning-title">縲先ｨｪ蜷代″繝励Ξ繧､謗ｨ螂ｨ縲・/div>
-      <div class="warning-text">蠢ｫ驕ｩ縺ｫ繝励Ξ繧､縺・◆縺�縺上◆繧√√せ繝槭・繝医ヵ繧ｩ繝ｳ縺ｮ逕ｻ髱｢蝗櫁ｻ｢繧偵が繝ｳ縺ｫ縺励※讓ｪ蜷代″・医Λ繝ｳ繝峨せ繧ｱ繝ｼ繝暦ｼ峨↓縺励※縺頑･ｽ縺励∩縺上□縺輔＞縲・/div>
-      <button class="warning-btn" onclick="document.getElementById('orientation-warning').style.display='none'">[ 縺薙・縺ｾ縺ｾ繝励Ξ繧､縺吶ｋ ]</button>
+      <div class="warning-icon">📱 🔄</div>
+      <div class="warning-title">【横向きプレイ推奨】</div>
+      <div class="warning-text">快適にプレイいただくため、スマートフォンの画面回転をオンにして横向き（ランドスケープ）にしてお楽しみください。</div>
+      <button class="warning-btn" onclick="document.getElementById('orientation-warning').style.display='none'">[ このままプレイする ]</button>
       <div style="margin-top: 16px; display: flex; gap: 10px; justify-content: center; flex-wrap: wrap;">
-        <button class="warning-btn" style="border-color: #00FF88; color: #00FF88; font-size: 14px; padding: 8px 16px;" onclick="window.toggleGameFullscreen()">[ 笵ｶ 蜈ｨ逕ｻ髱｢・医ヵ繝ｫ繧ｹ繧ｯ繝ｪ繝ｼ繝ｳ・芽｡ｨ遉ｺ ]</button>
+        <button class="warning-btn" style="border-color: #00FF88; color: #00FF88; font-size: 14px; padding: 8px 16px;" onclick="window.toggleGameFullscreen()">[ ⛶ 全画面（フルスクリーン）表示 ]</button>
               </div>
     </div>
   </div>
   <div id="floating-update-btn" class="mobile-only" style="position: fixed; top: 10px; right: 10px; z-index: 999998; opacity: 0.85; display: flex; gap: 8px;">
-    <button onclick="window.toggleGameFullscreen()" style="background: rgba(5,8,20,0.85); color: #00FF88; border: 1px solid #00FF88; border-radius: 4px; padding: 6px 10px; font-family: 'DotGothic16', sans-serif; font-size: 13px; cursor: pointer;">笵ｶ 蜈ｨ逕ｻ髱｢</button>
+    <button onclick="window.toggleGameFullscreen()" style="background: rgba(5,8,20,0.85); color: #00FF88; border: 1px solid #00FF88; border-radius: 4px; padding: 6px 10px; font-family: 'DotGothic16', sans-serif; font-size: 13px; cursor: pointer;">⛶ 全画面</button>
       </div>
   <div id="game-root"></div>
   <!-- Phaser 3 from CDN -->
@@ -50,40 +50,40 @@
 
   <!-- Game Logic -->
   <script>
-    window.GAME_VERSION = 'v396';
+    window.GAME_VERSION = 'v390';
   </script>
-  <script src="src/logic/audio.js?v=396"></script>
-  <script src="src/logic/flags.js?v=396"></script>
-  <script src="src/logic/endings.js?v=396"></script>
-  <script src="src/logic/controls.js?v=396"></script>
-  <script src="src/logic/enemies.js?v=396"></script>
-  <script src="src/logic/items.js?v=396"></script>
-  <script src="src/logic/doctorDirective.js?v=396"></script>
+  <script src="src/logic/audio.js?v=385"></script>
+  <script src="src/logic/flags.js?v=385"></script>
+  <script src="src/logic/endings.js?v=385"></script>
+  <script src="src/logic/controls.js?v=385"></script>
+  <script src="src/logic/enemies.js?v=385"></script>
+  <script src="src/logic/items.js?v=385"></script>
+  <script src="src/logic/doctorDirective.js?v=385"></script>
 
   <!-- Scenes -->
-  <script src="src/scenes/BootScene.js?v=396"></script>
-  <script src="src/scenes/TitleScene.js?v=396"></script>
-  <script src="src/scenes/StoryScene.js?v=396"></script>
-  <script src="src/scenes/GameScene.js?v=396"></script>
-  <script src="src/scenes/EndingScene.js?v=396"></script>
-  <script src="src/scenes/BossScene.js?v=396"></script>
+  <script src="src/scenes/BootScene.js?v=385"></script>
+  <script src="src/scenes/TitleScene.js?v=385"></script>
+  <script src="src/scenes/StoryScene.js?v=385"></script>
+  <script src="src/scenes/GameScene.js?v=385"></script>
+  <script src="src/scenes/EndingScene.js?v=385"></script>
+  <script src="src/scenes/BossScene.js?v=385"></script>
 
   <!-- Core -->
-  <script src="src/config.js?v=396"></script>
-  <script src="src/main.js?v=396"></script>
+  <script src="src/config.js?v=385"></script>
+  <script src="src/main.js?v=385"></script>
 
   <script>
-    // 蜈ｨ逕ｻ髱｢陦ｨ遉ｺ・医ヵ繝ｫ繧ｹ繧ｯ繝ｪ繝ｼ繝ｳ・牙・繧頑崛縺・
+    // 全画面表示（フルスクリーン）切り替え
     window.toggleGameFullscreen = function() {
       if (!document.fullscreenElement && !document.webkitFullscreenElement) {
         let elem = document.documentElement;
         let req = elem.requestFullscreen || elem.webkitRequestFullscreen || elem.msRequestFullscreen;
         if (req) {
           req.call(elem).catch(function() {
-            alert('縲進Phone(iOS)縺ｪ縺ｩ縺ｧ蜈ｨ逕ｻ髱｢縺ｫ縺吶ｋ譁ｹ豕輔曾nSafari縺ｮ繧｢繝峨Ξ繧ｹ繝舌・縺ｫ縺ゅｋ縲後＝縺・aA)縲阪ｒ繧ｿ繝・・縺励※縲後ヤ繝ｼ繝ｫ繝舌・繧帝撼陦ｨ遉ｺ縲阪ｒ驕ｸ謚槭☆繧九°縲√ヶ繝ｩ繧ｦ繧ｶ縺ｮ荳矩Κ繝｡繝九Η繝ｼ縺九ｉ縲後・繝ｼ繝�逕ｻ髱｢縺ｫ霑ｽ蜉�縲阪ｒ縺励※繝帙・繝�逕ｻ髱｢縺ｮ繧｢繧､繧ｳ繝ｳ縺九ｉ襍ｷ蜍輔☆繧九→縲√い繝峨Ξ繧ｹ繝舌・縺ｮ辟｡縺・ｮ悟・縺ｪ蜈ｨ逕ｻ髱｢縺ｧ縺頑･ｽ縺励∩縺・◆縺�縺代∪縺呻ｼ・);
+            alert('【iPhone(iOS)などで全画面にする方法】\nSafariのアドレスバーにある「ぁあ(aA)」をタップして「ツールバーを非表示」を選択するか、ブラウザの下部メニューから「ホーム画面に追加」をしてホーム画面のアイコンから起動すると、アドレスバーの無い完全な全画面でお楽しみいただけます！');
           });
         } else {
-          alert('縲進Phone(iOS)縺ｪ縺ｩ縺ｧ蜈ｨ逕ｻ髱｢縺ｫ縺吶ｋ譁ｹ豕輔曾nSafari縺ｮ繧｢繝峨Ξ繧ｹ繝舌・縺ｫ縺ゅｋ縲後＝縺・aA)縲阪ｒ繧ｿ繝・・縺励※縲後ヤ繝ｼ繝ｫ繝舌・繧帝撼陦ｨ遉ｺ縲阪ｒ驕ｸ謚槭☆繧九°縲√ヶ繝ｩ繧ｦ繧ｶ縺ｮ荳矩Κ繝｡繝九Η繝ｼ縺九ｉ縲後・繝ｼ繝�逕ｻ髱｢縺ｫ霑ｽ蜉�縲阪ｒ縺励※繝帙・繝�逕ｻ髱｢縺ｮ繧｢繧､繧ｳ繝ｳ縺九ｉ襍ｷ蜍輔☆繧九→縲√い繝峨Ξ繧ｹ繝舌・縺ｮ辟｡縺・ｮ悟・縺ｪ蜈ｨ逕ｻ髱｢縺ｧ縺頑･ｽ縺励∩縺・◆縺�縺代∪縺呻ｼ・);
+          alert('【iPhone(iOS)などで全画面にする方法】\nSafariのアドレスバーにある「ぁあ(aA)」をタップして「ツールバーを非表示」を選択するか、ブラウザの下部メニューから「ホーム画面に追加」をしてホーム画面のアイコンから起動すると、アドレスバーの無い完全な全画面でお楽しみいただけます！');
         }
       } else {
         if (document.exitFullscreen) {
