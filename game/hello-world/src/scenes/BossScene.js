@@ -3122,7 +3122,7 @@ class BossScene extends Phaser.Scene {
                           
                           const localSayDoctor = (text, tex='doctor_awaken_normal') => new Promise(res => {
                               if (!this.doctorImage || !this.doctorImage.active) {
-                                  this.doctorImage = this.add.image(1920 - 300, 1080 / 2, tex).setAlpha(0).setDepth(90);
+                                  this.doctorImage = this.add.image(1920 / 2, 1080 / 2, tex).setAlpha(0).setDepth(95);
                               }
                               this.doctorImage.setTexture(tex);
                               this.textures.get(tex).setFilter(Phaser.Textures.FilterMode.LINEAR);
@@ -3152,6 +3152,13 @@ class BossScene extends Phaser.Scene {
 
                           await localSayDemon('「……結局我々を殺さず、お前は何をしにきたんだ？あの法螺吹きにけしかけられて、わらわたちを滅ぼしに来たんだろう？」');
                           
+                          await new Promise(res => {
+                              this.showChoice([
+                                  { text: '殺す必要がないと思った', callback: () => { MOT.Audio.playSelect(); res(1); } },
+                                  { text: '博士を信じられない', callback: () => { MOT.Audio.playSelect(); res(2); } }
+                              ]);
+                          });
+
                           await localSayDemon('「そうか……英断だな…。」', 'demon_lord_normal');
                           await localSayDemon('「そしてここから話すのは、信じるも信じないもお前の自由だ。」');
                           await localSayDemon('「お前は、あいつに”魔王が世界を滅ぼそうとしている”とでも言われたのだろう？だが、残念なことに、それはわらわたちを滅ぼすための方便にすぎぬ。」');
