@@ -1326,10 +1326,14 @@ class BossScene extends Phaser.Scene {
                 };
                 this.activeLasers.push(laserData);
                 
+                // 当たり判定は150msで消える（ビジュアルが残っていても判定は消す）
+                this.time.delayedCall(150, () => {
+                  laserData.active = false;
+                });
+                
                 this.tweens.add({
                   targets: beam, alpha: 0, duration: 500, onComplete: () => {
                     beam.destroy();
-                    laserData.active = false;
                   }
                 });
               }
@@ -3122,7 +3126,7 @@ class BossScene extends Phaser.Scene {
                           
                           const localSayDoctor = (text, tex='doctor_awaken_normal') => new Promise(res => {
                               if (!this.doctorImage || !this.doctorImage.active) {
-                                  this.doctorImage = this.add.image(1920 / 2, 1080 / 2, tex).setAlpha(0).setDepth(95);
+                                  this.doctorImage = this.add.image(1920 - 300, 1080 / 2, tex).setAlpha(0).setDepth(90);
                               }
                               this.doctorImage.setTexture(tex);
                               this.textures.get(tex).setFilter(Phaser.Textures.FilterMode.LINEAR);
@@ -3141,14 +3145,14 @@ class BossScene extends Phaser.Scene {
                           const localSayHero = (text) => new Promise(res => {
                               this.tweens.add({ targets: dimBg, alpha: 0.6, duration: 300 });
                               if(this.heroImage) this.tweens.add({targets: this.heroImage, alpha: 1, duration: 300});
-                              if(this.demonImage) this.tweens.add({targets: this.demonImage, alpha: 0, duration: 300});
-                              if(this.inunekoImage) this.tweens.add({targets: this.inunekoImage, alpha: 0, duration: 300});
-                              if(this.doctorImage) this.tweens.add({targets: this.doctorImage, alpha: 0.4, duration: 300});
+                              if(this.demonImage && this.demonImage.alpha > 0) this.tweens.add({targets: this.demonImage, alpha: 0.4, duration: 300});
+                              if(this.inunekoImage && this.inunekoImage.alpha > 0) this.tweens.add({targets: this.inunekoImage, alpha: 0.4, duration: 300});
+                              if(this.doctorImage && this.doctorImage.alpha > 0) this.tweens.add({targets: this.doctorImage, alpha: 0.4, duration: 300});
                               this.showDialogue(MOT.flags.heroName || '勇者', text, res);
                           });
 
-                          const localSayDemon = (text, tex='demon_lord_dying') => new Promise(res => { this.tweens.add({ targets: dimBg, alpha: 0.6, duration: 300 }); if(this.heroImage) this.tweens.add({targets: this.heroImage, alpha: 0.4, duration: 300}); if(this.inunekoImage) this.tweens.add({targets: this.inunekoImage, alpha: 0.4, duration: 300}); if(this.demonImage) { this.tweens.add({targets: this.demonImage, alpha: 1, duration: 300}); this.demonImage.setTexture(tex); } this.showDialogue('魔王', text, res); });
-                          const localSayInuneko = (text, tex='inuneko_stand') => new Promise(res => { this.tweens.add({ targets: dimBg, alpha: 0.6, duration: 300 }); if(this.heroImage) this.tweens.add({targets: this.heroImage, alpha: 0.4, duration: 300}); if(this.demonImage) this.tweens.add({targets: this.demonImage, alpha: 0.4, duration: 300}); if(this.inunekoImage) { this.tweens.add({targets: this.inunekoImage, alpha: 1, duration: 300}); this.inunekoImage.setTexture(tex); } this.showDialogue('犬猫☆すたー', text, res); });
+                          const localSayDemon = (text, tex='demon_lord_dying') => new Promise(res => { this.tweens.add({ targets: dimBg, alpha: 0.6, duration: 300 }); if(this.heroImage) this.tweens.add({targets: this.heroImage, alpha: 0.4, duration: 300}); if(this.inunekoImage) this.tweens.add({targets: this.inunekoImage, alpha: 0, duration: 300}); if(this.doctorImage) this.tweens.add({targets: this.doctorImage, alpha: 0, duration: 300}); if(this.demonImage) { this.tweens.add({targets: this.demonImage, alpha: 1, duration: 300}); this.demonImage.setTexture(tex); } this.showDialogue('魔王', text, res); });
+                          const localSayInuneko = (text, tex='inuneko_stand') => new Promise(res => { this.tweens.add({ targets: dimBg, alpha: 0.6, duration: 300 }); if(this.heroImage) this.tweens.add({targets: this.heroImage, alpha: 0.4, duration: 300}); if(this.demonImage) this.tweens.add({targets: this.demonImage, alpha: 0, duration: 300}); if(this.doctorImage) this.tweens.add({targets: this.doctorImage, alpha: 0, duration: 300}); if(this.inunekoImage) { this.tweens.add({targets: this.inunekoImage, alpha: 1, duration: 300}); this.inunekoImage.setTexture(tex); } this.showDialogue('犬猫☆すたー', text, res); });
 
                           await localSayDemon('「……結局我々を殺さず、お前は何をしにきたんだ？あの法螺吹きにけしかけられて、わらわたちを滅ぼしに来たんだろう？」');
                           
