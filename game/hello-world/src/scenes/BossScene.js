@@ -3601,111 +3601,87 @@ this.isLabTransition = true;
                 const localSayHero = (text) => new Promise(res => {
                     this.tweens.add({ targets: dimBg, alpha: 0.6, duration: 300 });
                     if (this.heroImage) {
-                      this.tweens.add({ targets: this.heroImage, alpha: 1, duration: 300 });
                       this.heroImage.setTexture('hero_stand');
+                      this.heroImage.setScale(750 / this.heroImage.width);
+                      this.heroImage.setY(100 + (this.heroImage.height * this.heroImage.scaleY) / 2);
+                      this.tweens.add({ targets: this.heroImage, alpha: 1, duration: 300 });
                     }
                     if (doctorImage) this.tweens.add({ targets: doctorImage, alpha: 0, duration: 300 });
-                    if (this.demonImage) this.tweens.add({ targets: this.demonImage, alpha: 0.4, duration: 300 });
-                    if (this.sisterImage) this.tweens.add({ targets: this.sisterImage, alpha: 0.4, duration: 300 });
-                    if (this.brotherImage) this.tweens.add({ targets: this.brotherImage, alpha: 0.4, duration: 300 });
-                    if (this.inunekoImage) this.tweens.add({ targets: this.inunekoImage, alpha: 0.4, duration: 300 });
+                    if (this.demonImage && this.demonImage.alpha > 0) this.tweens.add({ targets: this.demonImage, alpha: 0.4, duration: 300 });
+                    if (this.sisterImage && this.sisterImage.alpha > 0) this.tweens.add({ targets: this.sisterImage, alpha: 0.4, duration: 300 });
+                    if (this.brotherImage && this.brotherImage.alpha > 0) this.tweens.add({ targets: this.brotherImage, alpha: 0.4, duration: 300 });
+                    if (this.inunekoImage && this.inunekoImage.alpha > 0) this.tweens.add({ targets: this.inunekoImage, alpha: 0.4, duration: 300 });
+                    if (this.boss1Image && this.boss1Image.alpha > 0) this.tweens.add({ targets: this.boss1Image, alpha: 0.4, duration: 300 });
+                    if (this.boss2Image && this.boss2Image.alpha > 0) this.tweens.add({ targets: this.boss2Image, alpha: 0.4, duration: 300 });
                     this.showDialogue(MOT.flags.heroName, text, res);
                 });
                 const localSayDemon = (text) => new Promise(res => {
                     this.tweens.add({ targets: dimBg, alpha: 0.6, duration: 300 });
                     if (this.heroImage) this.tweens.add({ targets: this.heroImage, alpha: 0.4, duration: 300 });
                     if (doctorImage) this.tweens.add({ targets: doctorImage, alpha: 0, duration: 300 });
-                    if (!this.demonImage) {
-                        this.demonImage = this.add.image(1920 - 300, 1080/2, 'demon_lord_normal').setDepth(90);
-                        var docScale = 600 / (this.textures.get('demon_lord_normal').getSourceImage().width || 750);
-                        this.demonImage.setScale(docScale);
-                        this.demonImage.setY(100 + ((this.textures.get('demon_lord_normal').getSourceImage().height || 1000) * docScale) / 2);
-                    }
+                    if (!this.demonImage) this.demonImage = this.add.image(1920 - 300, 1080/2, 'demon_lord_normal').setDepth(90);
+                    if (!this.inunekoImage) this.inunekoImage = this.add.image(1920 - 550, 1080/2, 'inuneko_stand').setDepth(90);
                     this.demonImage.setTexture('demon_lord_normal');
                     this.tweens.add({ targets: this.demonImage, alpha: 1, duration: 300 });
-                    if (this.sisterImage) this.tweens.add({ targets: this.sisterImage, alpha: 0.4, duration: 300 });
-                    if (this.brotherImage) this.tweens.add({ targets: this.brotherImage, alpha: 0.4, duration: 300 });
-                    if (this.inunekoImage) this.tweens.add({ targets: this.inunekoImage, alpha: 0.4, duration: 300 });
+                    this.tweens.add({ targets: this.inunekoImage, alpha: 1, duration: 300 });
+                    if (this.sisterImage) this.tweens.add({ targets: this.sisterImage, alpha: 0, duration: 300 });
+                    if (this.brotherImage) this.tweens.add({ targets: this.brotherImage, alpha: 0, duration: 300 });
+                    if (this.boss1Image) this.tweens.add({ targets: this.boss1Image, alpha: 0, duration: 300 });
+                    if (this.boss2Image) this.tweens.add({ targets: this.boss2Image, alpha: 0, duration: 300 });
                     this.showDialogue('魔王', text, res);
                 });
                 const localSayInuneko = (text) => new Promise(res => {
                     this.tweens.add({ targets: dimBg, alpha: 0.6, duration: 300 });
                     if (this.heroImage) this.tweens.add({ targets: this.heroImage, alpha: 0.4, duration: 300 });
                     if (doctorImage) this.tweens.add({ targets: doctorImage, alpha: 0, duration: 300 });
-                    if (this.demonImage) this.tweens.add({ targets: this.demonImage, alpha: 0.4, duration: 300 });
-                    if (!this.inunekoImage) {
-                        this.inunekoImage = this.add.image(1920/2 - 500, 1080/2, 'inuneko_stand').setDepth(90);
-                        var docScale = 400 / (this.textures.get('inuneko_stand').getSourceImage().width || 750);
-                        this.inunekoImage.setScale(docScale);
-                        this.inunekoImage.setY(100 + ((this.textures.get('inuneko_stand').getSourceImage().height || 1000) * docScale) / 2);
-                    }
+                    if (!this.demonImage) this.demonImage = this.add.image(1920 - 300, 1080/2, 'demon_lord_normal').setDepth(90);
+                    if (!this.inunekoImage) this.inunekoImage = this.add.image(1920 - 550, 1080/2, 'inuneko_stand').setDepth(90);
+                    this.inunekoImage.setTexture('inuneko_stand');
+                    this.tweens.add({ targets: this.demonImage, alpha: 1, duration: 300 });
                     this.tweens.add({ targets: this.inunekoImage, alpha: 1, duration: 300 });
-                    if (this.sisterImage) this.tweens.add({ targets: this.sisterImage, alpha: 0.4, duration: 300 });
-                    if (this.brotherImage) this.tweens.add({ targets: this.brotherImage, alpha: 0.4, duration: 300 });
+                    if (this.sisterImage) this.tweens.add({ targets: this.sisterImage, alpha: 0, duration: 300 });
+                    if (this.brotherImage) this.tweens.add({ targets: this.brotherImage, alpha: 0, duration: 300 });
+                    if (this.boss1Image) this.tweens.add({ targets: this.boss1Image, alpha: 0, duration: 300 });
+                    if (this.boss2Image) this.tweens.add({ targets: this.boss2Image, alpha: 0, duration: 300 });
                     this.showDialogue('犬猫☆スター', text, res);
                 });
                 const localSayBoss2 = (text) => new Promise(res => {
                     this.tweens.add({ targets: dimBg, alpha: 0.6, duration: 300 });
                     if (this.heroImage) this.tweens.add({ targets: this.heroImage, alpha: 0.4, duration: 300 });
                     if (doctorImage) this.tweens.add({ targets: doctorImage, alpha: 0, duration: 300 });
-                    if (this.demonImage) this.tweens.add({ targets: this.demonImage, alpha: 0.4, duration: 300 });
-                    if (this.inunekoImage) this.tweens.add({ targets: this.inunekoImage, alpha: 0.4, duration: 300 });
-                    if (!this.boss2Image) {
-                        this.boss2Image = this.add.image(1920/2 + 600, 1080/2, 'boss2_normal').setDepth(90);
-                        var docScale = 500 / (this.textures.get('boss2_normal').getSourceImage().width || 750);
-                        this.boss2Image.setScale(docScale);
-                        this.boss2Image.setY(100 + ((this.textures.get('boss2_normal').getSourceImage().height || 1000) * docScale) / 2);
-                    }
+                    if (this.demonImage) this.tweens.add({ targets: this.demonImage, alpha: 0, duration: 300 });
+                    if (this.inunekoImage) this.tweens.add({ targets: this.inunekoImage, alpha: 0, duration: 300 });
+                    if (!this.boss2Image) this.boss2Image = this.add.image(1920 - 300, 1080/2, 'boss2_normal').setDepth(90);
                     this.tweens.add({ targets: this.boss2Image, alpha: 1, duration: 300 });
-                    if (this.sisterImage) this.tweens.add({ targets: this.sisterImage, alpha: 0.4, duration: 300 });
-                    if (this.brotherImage) this.tweens.add({ targets: this.brotherImage, alpha: 0.4, duration: 300 });
-                    if (this.boss1Image) this.tweens.add({ targets: this.boss1Image, alpha: 0.4, duration: 300 });
+                    if (this.sisterImage) this.tweens.add({ targets: this.sisterImage, alpha: 0, duration: 300 });
+                    if (this.brotherImage) this.tweens.add({ targets: this.brotherImage, alpha: 0, duration: 300 });
+                    if (this.boss1Image) this.tweens.add({ targets: this.boss1Image, alpha: 0, duration: 300 });
                     this.showDialogue('トゥレロス', text, res);
                 });
                 const localSayTwins = (text, name) => new Promise(res => {
                     this.tweens.add({ targets: dimBg, alpha: 0.6, duration: 300 });
                     if (this.heroImage) this.tweens.add({ targets: this.heroImage, alpha: 0.4, duration: 300 });
                     if (doctorImage) this.tweens.add({ targets: doctorImage, alpha: 0, duration: 300 });
-                    if (this.demonImage) this.tweens.add({ targets: this.demonImage, alpha: 0.4, duration: 300 });
-                    if (this.inunekoImage) this.tweens.add({ targets: this.inunekoImage, alpha: 0.4, duration: 300 });
-                    if (this.boss2Image) this.tweens.add({ targets: this.boss2Image, alpha: 0.4, duration: 300 });
-                    if (!this.sisterImage) {
-                        this.sisterImage = this.add.image(1920/2 - 600, 1080/2, 'sister_normal').setDepth(90);
-                        var sScale = 500 / (this.textures.get('sister_normal').getSourceImage().width || 750);
-                        this.sisterImage.setScale(sScale);
-                        this.sisterImage.setY(100 + ((this.textures.get('sister_normal').getSourceImage().height || 1000) * sScale) / 2);
-                    }
-                    if (!this.brotherImage) {
-                        this.brotherImage = this.add.image(1920/2 - 800, 1080/2, 'brother_normal').setDepth(90);
-                        var bScale = 500 / (this.textures.get('brother_normal').getSourceImage().width || 750);
-                        this.brotherImage.setScale(bScale);
-                        this.brotherImage.setY(100 + ((this.textures.get('brother_normal').getSourceImage().height || 1000) * bScale) / 2);
-                    }
-                    if (name === 'エナリア') {
-                        this.tweens.add({ targets: this.sisterImage, alpha: 1, duration: 300 });
-                        this.tweens.add({ targets: this.brotherImage, alpha: 0.4, duration: 300 });
-                    } else {
-                        this.tweens.add({ targets: this.sisterImage, alpha: 0.4, duration: 300 });
-                        this.tweens.add({ targets: this.brotherImage, alpha: 1, duration: 300 });
-                    }
-                    if (this.boss1Image) this.tweens.add({ targets: this.boss1Image, alpha: 0.4, duration: 300 });
+                    if (this.demonImage) this.tweens.add({ targets: this.demonImage, alpha: 0, duration: 300 });
+                    if (this.inunekoImage) this.tweens.add({ targets: this.inunekoImage, alpha: 0, duration: 300 });
+                    if (this.boss2Image) this.tweens.add({ targets: this.boss2Image, alpha: 0, duration: 300 });
+                    if (this.boss1Image) this.tweens.add({ targets: this.boss1Image, alpha: 0, duration: 300 });
+                    if (!this.sisterImage) this.sisterImage = this.add.image(1920 - 300, 1080/2, 'sister_normal').setDepth(90);
+                    if (!this.brotherImage) this.brotherImage = this.add.image(1920 - 650, 1080/2, 'brother_normal').setDepth(90);
+                    this.tweens.add({ targets: this.sisterImage, alpha: 1, duration: 300 });
+                    this.tweens.add({ targets: this.brotherImage, alpha: 1, duration: 300 });
                     this.showDialogue(name, text, res);
                 });
                 const localSayBoss1 = (text) => new Promise(res => {
                     this.tweens.add({ targets: dimBg, alpha: 0.6, duration: 300 });
                     if (this.heroImage) this.tweens.add({ targets: this.heroImage, alpha: 0.4, duration: 300 });
                     if (doctorImage) this.tweens.add({ targets: doctorImage, alpha: 0, duration: 300 });
-                    if (this.demonImage) this.tweens.add({ targets: this.demonImage, alpha: 0.4, duration: 300 });
-                    if (this.inunekoImage) this.tweens.add({ targets: this.inunekoImage, alpha: 0.4, duration: 300 });
-                    if (this.boss2Image) this.tweens.add({ targets: this.boss2Image, alpha: 0.4, duration: 300 });
-                    if (this.sisterImage) this.tweens.add({ targets: this.sisterImage, alpha: 0.4, duration: 300 });
-                    if (this.brotherImage) this.tweens.add({ targets: this.brotherImage, alpha: 0.4, duration: 300 });
-                    if (!this.boss1Image) {
-                        this.boss1Image = this.add.image(1920/2 + 800, 1080/2, 'boss1_normal').setDepth(90);
-                        var docScale = 500 / (this.textures.get('boss1_normal').getSourceImage().width || 750);
-                        this.boss1Image.setScale(docScale);
-                        this.boss1Image.setY(100 + ((this.textures.get('boss1_normal').getSourceImage().height || 1000) * docScale) / 2);
-                    }
+                    if (this.demonImage) this.tweens.add({ targets: this.demonImage, alpha: 0, duration: 300 });
+                    if (this.inunekoImage) this.tweens.add({ targets: this.inunekoImage, alpha: 0, duration: 300 });
+                    if (this.boss2Image) this.tweens.add({ targets: this.boss2Image, alpha: 0, duration: 300 });
+                    if (this.sisterImage) this.tweens.add({ targets: this.sisterImage, alpha: 0, duration: 300 });
+                    if (this.brotherImage) this.tweens.add({ targets: this.brotherImage, alpha: 0, duration: 300 });
+                    if (!this.boss1Image) this.boss1Image = this.add.image(1920 - 300, 1080/2, 'boss1_normal').setDepth(90);
                     this.tweens.add({ targets: this.boss1Image, alpha: 1, duration: 300 });
                     this.showDialogue('クラトス', text, res);
                 });
