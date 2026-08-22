@@ -253,13 +253,11 @@ class BossScene extends Phaser.Scene {
         this.anims.create({
           key: 'sister_shoot_anim',
           frames: [
-            { key: 'sister_shoot1', duration: 1500 },
+            { key: 'sister_shoot1', duration: 400 },
+            { key: 'sister_shoot2', duration: 400 },
+            { key: 'sister_shoot1', duration: 400 },
             { key: 'sister_shoot1_blink', duration: 150 },
-            { key: 'sister_shoot1', duration: 1500 },
-            { key: 'sister_shoot1_blink', duration: 150 },
-            { key: 'sister_shoot2', duration: 1500 },
-            { key: 'sister_shoot2_blink', duration: 150 },
-            { key: 'sister_shoot2', duration: 1500 },
+            { key: 'sister_shoot2', duration: 400 },
             { key: 'sister_shoot2_blink', duration: 150 }
           ],
           repeat: -1
