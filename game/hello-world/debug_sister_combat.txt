@@ -1,0 +1,19 @@
+200:         texture2: 'sister_shoot1', name2: 'エナリア', hp2: 150, scale2: 1.2,
+252:       if (!this.anims.exists('sister_shoot_anim')) {
+254:           key: 'sister_shoot_anim',
+256:             { key: 'sister_shoot1', duration: 1500 },
+257:             { key: 'sister_shoot1_blink', duration: 150 },
+258:             { key: 'sister_shoot1', duration: 1500 },
+259:             { key: 'sister_shoot1_blink', duration: 150 },
+260:             { key: 'sister_shoot2', duration: 1500 },
+261:             { key: 'sister_shoot2_blink', duration: 150 },
+262:             { key: 'sister_shoot2', duration: 1500 },
+263:             { key: 'sister_shoot2_blink', duration: 150 }
+268:       if (!this.anims.exists('sister_revive_anim')) {
+270:           key: 'sister_revive_anim',
+272:             { key: 'sister_revive1' },
+273:             { key: 'sister_revive2' }
+281:       sister.play('sister_shoot_anim');
+2064:                  this.sisterBoss.play('sister_shoot_anim');
+2128:                       this.sisterBoss.play('sister_revive_anim');
+2140:                  this.sisterBoss.play('sister_shoot_anim');

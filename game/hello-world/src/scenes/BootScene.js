@@ -254,6 +254,12 @@ class BootScene extends Phaser.Scene {
     this.load.image('sister_revive2', 'assets/images/妹_兄蘇生2.png?v=' + v);
     this.load.image('brother_normal', 'assets/images/brother_normal.png?v=' + v);
     this.load.image('brother_closed', 'assets/images/brother_closed.png?v=' + v);
+    this.load.image('brother_stand_open', 'assets/images/双子兄_立つ目開け.png');
+    this.load.image('brother_stand_closed', 'assets/images/双子兄_目閉じ.png');
+    this.load.image('brother_sit_open', 'assets/images/双子兄_座る目開け.png');
+    this.load.image('brother_sit_closed', 'assets/images/双子兄_座る目閉じ.png');
+    this.load.image('brother_shoot_open', 'assets/images/双子兄_座る銃を打つ目開け.png');
+    this.load.image('brother_shoot_closed', 'assets/images/双子兄_座る銃を打つ目閉じ.png');
     this.load.image('brother_dying', 'assets/images/brother_dying.png?v=' + v);
     this.load.image('brother_dying_closed', 'assets/images/brother_dying_closed.png?v=' + v);
     this.load.image('brother_hurt', 'assets/images/brother_hurt.png?v=' + v);
@@ -340,6 +346,36 @@ class BootScene extends Phaser.Scene {
       key: 'boss3_battle_play',
       frames: this.anims.generateFrameNumbers('boss3_battle_anim', { start: 0, end: 19 }),
       frameRate: 15,
+      repeat: -1
+    });
+
+    this.anims.create({
+      key: 'brother_idle',
+      frames: [
+        { key: 'brother_stand_open' },
+        { key: 'brother_stand_closed' }
+      ],
+      frameRate: 2,
+      repeat: -1
+    });
+
+    this.anims.create({
+      key: 'brother_warn',
+      frames: [
+        { key: 'brother_sit_open' },
+        { key: 'brother_sit_closed' }
+      ],
+      frameRate: 2,
+      repeat: -1
+    });
+
+    this.anims.create({
+      key: 'brother_fire',
+      frames: [
+        { key: 'brother_shoot_open' },
+        { key: 'brother_shoot_closed' }
+      ],
+      frameRate: 4,
       repeat: -1
     });
 

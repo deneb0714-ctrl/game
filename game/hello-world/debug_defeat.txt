@@ -1,0 +1,50 @@
+2381:             }
+2382:           } else if (key === 'demon_lord') {
+2383:             var f = MOT.flags;
+2384:             
+2385:             var dimBg = this.add.rectangle(1920/2, 1080/2, 1920, 1080, 0x000000, 0.6).setAlpha(0).setDepth(89);
+2386:             this.dimBg = dimBg;
+2387:             
+2388:             this.demonImage = this.add.image(1920 - 300, 1080 / 2, 'demon_lord_dying').setAlpha(0).setDepth(90);
+2389:             var dScale = 1000 / this.demonImage.width;
+2390:             this.demonImage.setScale(dScale);
+2391:             this.demonImage.setY(100 + (this.demonImage.height * dScale) / 2 - 200);
+2392: 
+2393:             // 撃退後の犬猫立ち絵（ハイライトなし）
+2394:             this.inunekoImage = this.add.image(1920 - 120, 1080 / 2 - 250, 'inuneko_dying').setAlpha(0).setDepth(91);
+2395:             var iScale = 300 / 691;
+2396:             this.inunekoImage.setScale(iScale);
+2397:             this.inunekoImage.setY(350);
+2398: 
+2399:             const sayDevice = (text) => new Promise(res => { this.tweens.add({ targets: dimBg, alpha: 0.6, duration: 300 }); this.tweens.add({targets: this.heroImage, alpha: 0.4, duration: 300}); this.tweens.add({ targets: this.demonImage, alpha: 0.4, duration: 300 }); if(this.inunekoImage) this.tweens.add({ targets: this.inunekoImage, alpha: 0.4, duration: 300 }); this.showDeviceDialogue(text, res); });
+2400:             const sayInuneko = (text, tex = 'inuneko_stand') => new Promise(res => {
+2401:       this.tweens.add({ targets: dimBg, alpha: 0.6, duration: 300 });
+2402:       this.tweens.add({ targets: this.heroImage, alpha: 0.4, duration: 300 });
+2403:       if(this.demonImage) this.tweens.add({ targets: this.demonImage, alpha: 0.4, duration: 300 });
+2404:       if(this.inunekoImage) {
+2405:         this.tweens.add({ targets: this.inunekoImage, alpha: 1, duration: 300 });
+2406:         this.inunekoImage.setTexture(tex);
+2407:       }
+2408:       this.showDialogue('犬猫☆すたー', text, res);
+2409:     });
+2410: 
+2411:     const sayHero = (text) => new Promise(res => { this.tweens.add({ targets: dimBg, alpha: 0.6, duration: 300 }); this.tweens.add({targets: this.heroImage, alpha: 1, duration: 300}); this.tweens.add({ targets: this.demonImage, alpha: 0.4, duration: 300 }); if(this.inunekoImage) this.tweens.add({ targets: this.inunekoImage, alpha: 0.4, duration: 300 }); if (text === '「……」' || text === '「……。」' || text === '「…」') { this.heroImage.setTexture('hero_stand_silent'); } else if (text === '「……それでも僕は、殺したくない……！！」') { this.heroImage.setTexture('hero_cry'); } else { this.heroImage.setTexture('hero_stand'); } this.heroImage.setScale(750 / this.heroImage.width); this.heroImage.setY(100 + (this.heroImage.height * this.heroImage.scaleY) / 2); this.showDialogue(MOT.flags.heroName || '勇者', text, res); });
+2412:             const sayDemon = (text) => new Promise(res => { this.tweens.add({ targets: dimBg, alpha: 0.6, duration: 300 }); this.tweens.add({targets: this.heroImage, alpha: 0.4, duration: 300}); this.tweens.add({ targets: this.demonImage, alpha: 1, duration: 300 }); if(this.inunekoImage) this.tweens.add({ targets: this.inunekoImage, alpha: 0.4, duration: 300 }); this.demonImage.setTexture('demon_lord_dying'); this.demonImage.setScale(1000 / this.demonImage.width); this.demonImage.setY(100 + (this.demonImage.height * this.demonImage.scaleY) / 2 - 200); this.showDialogue('魔王', text, res); });
+2413:     
+2414:             
+2415:             const askShatterChoice = (label1, label2, canShatter) => new Promise(res => {
+2416:               if (this.choiceContainer) this.choiceContainer.destroy();
+2417:               this.choiceContainer = this.add.container(0, 0).setDepth(200);
+2418:               var w = 1920, h = 1080;
+2419:               var bg = this.add.rectangle(w / 2, h / 2, w, h, 0x000000, 0.4).setInteractive();
+2420:               this.choiceContainer.add(bg);
+2421:               var title = this.add.text(w / 2, h / 2 - 120, '選択してください', { fontFamily: '"DotGothic16"', fontSize: '40px', color: '#ffffff' }).setOrigin(0.5);
+2422:               this.choiceContainer.add(title);
+2423:               var y1 = h / 2 - 20;
+2424:               var y2 = h / 2 + 80;
+2425:               
+2426:               var box1 = this.add.rectangle(w / 2, y1, 500, 80, 0x1F2933, 0.8).setStrokeStyle(2, 0x4FD1FF);
+2427:               var txt1 = this.add.text(w / 2, y1, label1, { fontFamily: '"DotGothic16"', fontSize: '32px', color: '#ffffff' }).setOrigin(0.5);
+2428:               var box2 = this.add.rectangle(w / 2, y2, 500, 80, 0x1F2933, 0.8).setStrokeStyle(2, 0x4FD1FF);
+2429:               var txt2 = this.add.text(w / 2, y2, label2, { fontFamily: '"DotGothic16"', fontSize: '32px', color: '#ffffff' }).setOrigin(0.5);
+2430:               this.choiceContainer.add([box1, txt1, box2, txt2]);

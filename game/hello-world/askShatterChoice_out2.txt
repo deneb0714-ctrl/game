@@ -1,0 +1,60 @@
+2541:                       if (downPresses < 20) {
+2542:                         // 1〜19回目まで、累乗を使って最初はほぼ0、後半急激に大きくなるようにする
+2543:                         let ratio = downPresses / 20; // 0.05 〜 0.95
+2544:                         let shakeIntensity = Math.pow(ratio, 3) * 0.015; // 0.015が最大の揺れ幅
+2545:                         let shakeDuration = 50 + (downPresses * 5); // 55ms 〜 145ms
+2546:                         
+2547:                         this.cameras.main.shake(shakeDuration, shakeIntensity);
+2548:                       }
+2549:                       
+2550:                       // 10回目以降からヒビが入り、徐々に広がる
+2551:                       if (downPresses >= 10 && downPresses < 20) {
+2552:                         let scale = (downPresses - 9) * 0.5; // 0.5, 1.0, 1.5...
+2553:                         drawCrack(w/2, y2 - 40, scale);
+2554:                         if (MOT.Audio.playBleep) MOT.Audio.playBleep();
+2555:                       }
+2556:                       
+2557:                       if (downPresses >= 20) {
+2558:                         isAnimating = true;
+2559:                         shattered = true;
+2560:                         // ブレイクスルー演出
+2561:                         this.cameras.main.shake(800, 0.05);
+2562:                         if (MOT.Audio.playShatter) MOT.Audio.playShatter();
+2563:                         else MOT.Audio.playExplosion();
+2564:                         
+2565:                         shatterOption1(); // 殺す選択肢を粉砕
+2566:                         crackGraphics.clear(); // ヒビ割れクリア
+2567:                         
+2568:                         // バリア破壊演出
+2569:                         if (redBarrier) {
+2570:                           this.tweens.add({
+2571:                             targets: redBarrier,
+2572:                             alpha: 0,
+2573:                             scale: 1.5,
+2574:                             duration: 500,
+2575:                             onComplete: () => { redBarrier.destroy(); }
+2576:                           });
+2577:                         }
+2578:                         
+2579:                         // 見逃す選択肢が復活
+2580:                         box2.setFillStyle(0x1F2933, 0.8);
+2581:                         box2.setStrokeStyle(2, 0x4FD1FF);
+2582:                         txt2.setColor('#ffffff');
+2583:                         
+2584:                         currentIndex = 2;
+2585:                         cursor.setY(y2);
+2586:                         
+2587:                         this.input.keyboard.off('keydown', keyHandler);
+2588:                         await sayHero('「……それでも僕は、殺したくない……！！」');
+2589:                         this.input.keyboard.on('keydown', keyHandler);
+2590:                         isAnimating = false;
+2591:                       } else {
+2592:                         // ヒビを入れる
+2593:                         this.cameras.main.shake(150, 0.015);
+2594:                         if (MOT.Audio.playCrack) MOT.Audio.playCrack();
+2595:                         drawCrack(w/2 + Phaser.Math.Between(-300, 300), y1 + 50 + Phaser.Math.Between(-150, 150));
+2596:                         // 抵抗中はカーソルは1に押し留められる
+2597:                         currentIndex = 1;
+2598:                         cursor.setY(y1);
+2599:                       }
+2600:                     }

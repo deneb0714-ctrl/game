@@ -238,7 +238,7 @@ class BossScene extends Phaser.Scene {
     if (key === 'boss1') boss.play('boss1_idle');
     if (key === 'demon_lord') boss.play('demon_combat_anim');
     if (key === 'boss2') boss.play('boss2_battle_play');
-    if (key === 'boss3_twins') boss.play('boss3_battle_play');
+    if (key === 'boss3_twins') boss.play('brother_idle');
     boss.setScale(cfg.scale);
     boss.setDepth(8);
     this.enemyGroup.add(boss);
@@ -717,6 +717,7 @@ class BossScene extends Phaser.Scene {
     this.bossLaneTimer = this.time.addEvent({
       delay: 3000,
       callback: function () {
+        if (this.isLaneBeamActive) return;
         if (this.currentBoss && this.currentBoss.active && !this.dialogActive) {
           var laneYs = [220, 460, 700];
           var targetY = laneYs[Phaser.Math.Between(0, 2)];
@@ -1477,8 +1478,17 @@ class BossScene extends Phaser.Scene {
     if (this.dialogActive) return;
     this.isLaneBeamActive = true;
     
+    if (this.currentBoss && this.currentBoss.configKey === 'boss3_twins') {
+      this.currentBoss.play('brother_warn');
+    }
+    
     const laneYs = [220, 460, 700];
     const targetY = laneYs[Phaser.Math.Between(0, 2)];
+    
+    if (this.currentBoss && this.currentBoss.configKey === 'boss3_twins') {
+      this.tweens.killTweensOf(this.currentBoss);
+      this.tweens.add({ targets: this.currentBoss, y: targetY, duration: 800, ease: 'Cubic.easeInOut' });
+    }
     
     // 警告演出 (赤い半透明の帯を点滅させる)
     let warningRect = this.add.rectangle(1920 / 2, targetY, 1920, 100, 0xff0000, 0.2).setDepth(8);
@@ -1493,6 +1503,10 @@ class BossScene extends Phaser.Scene {
     // 5秒後に極太レーザー発射
     this.time.delayedCall(5000, () => {
       if (warningRect) warningRect.destroy();
+      
+      if (this.currentBoss && this.currentBoss.configKey === 'boss3_twins') {
+        this.currentBoss.play('brother_fire');
+      }
       
       // レーザー実体
       let beam = this.add.rectangle(1920 / 2, targetY, 1920, 100, 0x4FD1FF, 1).setDepth(9);
@@ -1509,10 +1523,13 @@ class BossScene extends Phaser.Scene {
       this.tweens.add({
         targets: beam,
         alpha: 0,
-        duration: 800,
+        duration: 3000,
         onComplete: () => {
           collider.destroy();
           beam.destroy();
+          if (this.currentBoss && this.currentBoss.configKey === 'boss3_twins') {
+            this.currentBoss.play('brother_idle');
+          }
           this.isLaneBeamActive = false;
         }
       });

@@ -1,0 +1,15 @@
+240:     if (key === 'boss2') boss.play('boss2_battle_play');
+241:     if (key === 'boss3_twins') boss.play('boss3_battle_play');
+242:     boss.setScale(cfg.scale);
+243:     boss.setDepth(8);
+244:     this.enemyGroup.add(boss);
+245:     this.currentBoss = boss;
+246:     boss.hp = cfg.hp;
+247:     boss.configKey = key;
+248:     boss.setVisible(false);
+249:     boss.body.enable = false;
+250: 
+251:     if (key === 'boss3_twins') {
+252:       if (!this.anims.exists('sister_shoot_anim')) {
+253:         this.anims.create({
+254:           key: 'sister_shoot_anim',

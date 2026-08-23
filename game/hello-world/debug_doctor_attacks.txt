@@ -1,0 +1,79 @@
+1197:       let silver = 0xE0E0E0; // 白よりのシルバー
+1198:       let docPattern = Phaser.Math.Between(0, 6); // パターンを7種類に増加
+1199:       
+1200:       if (docPattern !== 6) {
+1201:         if (this.currentBoss && this.currentBoss.active && this.currentBoss.texture.key !== 'doctor_combat') {
+1202:           this.currentBoss.setTexture('doctor_combat');
+1203:         }
+1204:       }
+1205:       
+1206:       if (docPattern === 0) {
+1207:         // 幹部1の斬撃（シルバー化）
+1208:         var laneYs = [220, 460, 700];
+1209:         let ty = laneYs[Phaser.Math.Between(0, 2)];
+1210:         var slash = this.enemyBullets.create(x, ty, 'slash_attack');
+1211:         if (slash) {
+1212:           slash.setVelocityX(-400); slash.setScale(2); slash.setDepth(9); slash.setTintFill(silver);
+1213:           this.time.delayedCall(5000, () => { if (slash.active) slash.destroy(); });
+1214:         }
+1215:       } else if (docPattern === 1) {
+1216:         // 幹部2の銃弾（シルバー化）
+1217:         var laneYs = [220, 460, 700];
+1218:         let ty = laneYs[Phaser.Math.Between(0, 2)];
+1219:         MOT.fireLinear(this, x, ty, -800, 0, silver, 'bullet_enemy_white');
+1220:         this.time.delayedCall(200, () => MOT.fireLinear(this, x, ty, -800, 0, silver, 'bullet_enemy_white'));
+1221:       } else if (docPattern === 2) {
+1222:         // 兄のレーザー（シルバー化）
+1223:         MOT.fireHoming(this, x, y, 1000, this.player, silver, 'bullet_laser');
+1224:         this.time.delayedCall(300, () => MOT.fireHoming(this, x, y, 1400, this.player, silver, 'bullet_laser'));
+1225:       } else if (docPattern === 3) {
+1226:         // 魔王の分裂球（シルバー化）
+1227:         let ball = MOT.fireLinear(this, x, y, -400, 0, silver, 'bullet_enemy_white');
+1228:         if (ball) {
+1229:           ball.setScale(3);
+1230:           let self = this;
+1231:           ball.updateBehavior = function(now, delta) {
+1232:             if (this.x < 1100 && !this.hasSplit) {
+1233:               this.hasSplit = true;
+1234:               let bx = this.x, by = this.y;
+1235:               this.destroy(); MOT.Audio.playShot();
+1236:               let targetAngle = Phaser.Math.Angle.Between(bx, by, self.player.x, self.player.y);
+1237:               for (let i = 0; i < 3; i++) {
+1238:                 let angle = targetAngle - 0.4 + 0.4 * i;
+1239:                 let b = MOT.fireLinear(self, bx, by, Math.cos(angle)*400, Math.sin(angle)*400, silver, 'bullet_enemy_white');
+1240:                 if(b) b.setScale(1.5);
+1241:               }
+1242:             }
+1243:           };
+1244:         }
+1245:       } else if (docPattern === 4) {
+1246:         // 魔王の螺旋弾幕（シルバー化）
+1247:         let spiralCount = 20; 
+1248:         let baseAngle = Phaser.Math.FloatBetween(0, Math.PI * 2);
+1249:         let direction = Phaser.Math.Between(0, 1) === 0 ? 1 : -1;
+1250:         for (let i = 0; i < spiralCount; i++) {
+1251:           this.time.delayedCall(i * 80, () => {
+1252:              if (!this.currentBoss || !this.currentBoss.active) return;
+1253:              let angle = baseAngle + i * 0.3 * direction;
+1254:              let b = MOT.fireLinear(this, this.currentBoss.x, this.currentBoss.y, Math.cos(angle)*400, Math.sin(angle)*400, silver, 'bullet_enemy_white');
+1255:              if (b) b.setScale(1.2);
+1256:           });
+1257:         }
+1258:       } else if (docPattern === 5) {
+1259:         // 妹のダイヤ弾幕（シルバー化）
+1260:         let ty = Phaser.Math.Between(100, 980);
+1261:         let bx = this.currentBoss ? this.currentBoss.x : 1600;
+1262:         MOT.fireCircle(this, bx, ty, 10, 260, silver, 'bullet_diamond');
+1263:         this.time.delayedCall(300, () => MOT.fireCircle(this, bx, ty, 10, 320, silver, 'bullet_diamond'));
+1264:       } else {
+1265:         // 新技：斜め極太ブラスター（顔なし）
+1266:         let numBlasters = Phaser.Math.Between(4, 6); // 4〜6体に増加
+1267:         
+1268:         if (this.currentBoss && this.currentBoss.active) {
+1269:           this.currentBoss.setTexture('doctor_combat_beam');
+1270:           this.time.delayedCall(2500, () => {
+1271:             if (this.currentBoss && this.currentBoss.active && this.currentBoss.configKey === 'doctor' && this.currentBoss.texture.key === 'doctor_combat_beam') {
+1272:               this.currentBoss.setTexture('doctor_combat');
+1273:             }
+1274:           });
+1275:         }

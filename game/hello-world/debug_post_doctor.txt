@@ -1,0 +1,160 @@
+3591:                 }
+3592:                 
+3593:                 if (MOT.Audio && MOT.Audio.playShot) {
+3594:                   MOT.Audio.playShot();
+3595:                 } else if (MOT.Audio && MOT.Audio.playSelect) {
+3596:                   MOT.Audio.playSelect();
+3597:                 }
+3598:                 this.cameras.main.shake(600, 0.06);
+3599:                 await new Promise(r => this.time.delayedCall(1200, r));
+3600:                 
+3601:                 const localSayHero = (text) => new Promise(res => {
+3602:                     this.tweens.add({ targets: dimBg, alpha: 0.6, duration: 300 });
+3603:                     if (this.heroImage) {
+3604:                       this.tweens.add({ targets: this.heroImage, alpha: 1, duration: 300 });
+3605:                       this.heroImage.setTexture('hero_stand');
+3606:                     }
+3607:                     if (doctorImage) this.tweens.add({ targets: doctorImage, alpha: 0, duration: 300 });
+3608:                     if (this.demonImage) this.tweens.add({ targets: this.demonImage, alpha: 0.4, duration: 300 });
+3609:                     if (this.sisterImage) this.tweens.add({ targets: this.sisterImage, alpha: 0.4, duration: 300 });
+3610:                     if (this.brotherImage) this.tweens.add({ targets: this.brotherImage, alpha: 0.4, duration: 300 });
+3611:                     if (this.inunekoImage) this.tweens.add({ targets: this.inunekoImage, alpha: 0.4, duration: 300 });
+3612:                     this.showDialogue(MOT.flags.heroName, text, res);
+3613:                 });
+3614:                 const localSayDemon = (text) => new Promise(res => {
+3615:                     this.tweens.add({ targets: dimBg, alpha: 0.6, duration: 300 });
+3616:                     if (this.heroImage) this.tweens.add({ targets: this.heroImage, alpha: 0.4, duration: 300 });
+3617:                     if (doctorImage) this.tweens.add({ targets: doctorImage, alpha: 0, duration: 300 });
+3618:                     if (!this.demonImage) {
+3619:                         this.demonImage = this.add.image(1920 - 300, 1080/2, 'demon_lord_normal').setDepth(90);
+3620:                         var docScale = 600 / (this.textures.get('demon_lord_normal').getSourceImage().width || 750);
+3621:                         this.demonImage.setScale(docScale);
+3622:                         this.demonImage.setY(100 + ((this.textures.get('demon_lord_normal').getSourceImage().height || 1000) * docScale) / 2);
+3623:                     }
+3624:                     this.demonImage.setTexture('demon_lord_normal');
+3625:                     this.tweens.add({ targets: this.demonImage, alpha: 1, duration: 300 });
+3626:                     if (this.sisterImage) this.tweens.add({ targets: this.sisterImage, alpha: 0.4, duration: 300 });
+3627:                     if (this.brotherImage) this.tweens.add({ targets: this.brotherImage, alpha: 0.4, duration: 300 });
+3628:                     if (this.inunekoImage) this.tweens.add({ targets: this.inunekoImage, alpha: 0.4, duration: 300 });
+3629:                     this.showDialogue('魔王', text, res);
+3630:                 });
+3631:                 const localSayInuneko = (text) => new Promise(res => {
+3632:                     this.tweens.add({ targets: dimBg, alpha: 0.6, duration: 300 });
+3633:                     if (this.heroImage) this.tweens.add({ targets: this.heroImage, alpha: 0.4, duration: 300 });
+3634:                     if (doctorImage) this.tweens.add({ targets: doctorImage, alpha: 0, duration: 300 });
+3635:                     if (this.demonImage) this.tweens.add({ targets: this.demonImage, alpha: 0.4, duration: 300 });
+3636:                     if (!this.inunekoImage) {
+3637:                         this.inunekoImage = this.add.image(1920/2 - 500, 1080/2, 'inuneko_stand').setDepth(90);
+3638:                         var docScale = 400 / (this.textures.get('inuneko_stand').getSourceImage().width || 750);
+3639:                         this.inunekoImage.setScale(docScale);
+3640:                         this.inunekoImage.setY(100 + ((this.textures.get('inuneko_stand').getSourceImage().height || 1000) * docScale) / 2);
+3641:                     }
+3642:                     this.tweens.add({ targets: this.inunekoImage, alpha: 1, duration: 300 });
+3643:                     if (this.sisterImage) this.tweens.add({ targets: this.sisterImage, alpha: 0.4, duration: 300 });
+3644:                     if (this.brotherImage) this.tweens.add({ targets: this.brotherImage, alpha: 0.4, duration: 300 });
+3645:                     this.showDialogue('犬猫☆スター', text, res);
+3646:                 });
+3647:                 const localSayBoss2 = (text) => new Promise(res => {
+3648:                     this.tweens.add({ targets: dimBg, alpha: 0.6, duration: 300 });
+3649:                     if (this.heroImage) this.tweens.add({ targets: this.heroImage, alpha: 0.4, duration: 300 });
+3650:                     if (doctorImage) this.tweens.add({ targets: doctorImage, alpha: 0, duration: 300 });
+3651:                     if (this.demonImage) this.tweens.add({ targets: this.demonImage, alpha: 0.4, duration: 300 });
+3652:                     if (this.inunekoImage) this.tweens.add({ targets: this.inunekoImage, alpha: 0.4, duration: 300 });
+3653:                     if (!this.boss2Image) {
+3654:                         this.boss2Image = this.add.image(1920/2 + 600, 1080/2, 'boss2_normal').setDepth(90);
+3655:                         var docScale = 500 / (this.textures.get('boss2_normal').getSourceImage().width || 750);
+3656:                         this.boss2Image.setScale(docScale);
+3657:                         this.boss2Image.setY(100 + ((this.textures.get('boss2_normal').getSourceImage().height || 1000) * docScale) / 2);
+3658:                     }
+3659:                     this.tweens.add({ targets: this.boss2Image, alpha: 1, duration: 300 });
+3660:                     if (this.sisterImage) this.tweens.add({ targets: this.sisterImage, alpha: 0.4, duration: 300 });
+3661:                     if (this.brotherImage) this.tweens.add({ targets: this.brotherImage, alpha: 0.4, duration: 300 });
+3662:                     if (this.boss1Image) this.tweens.add({ targets: this.boss1Image, alpha: 0.4, duration: 300 });
+3663:                     this.showDialogue('トゥレロス', text, res);
+3664:                 });
+3665:                 const localSayTwins = (text, name) => new Promise(res => {
+3666:                     this.tweens.add({ targets: dimBg, alpha: 0.6, duration: 300 });
+3667:                     if (this.heroImage) this.tweens.add({ targets: this.heroImage, alpha: 0.4, duration: 300 });
+3668:                     if (doctorImage) this.tweens.add({ targets: doctorImage, alpha: 0, duration: 300 });
+3669:                     if (this.demonImage) this.tweens.add({ targets: this.demonImage, alpha: 0.4, duration: 300 });
+3670:                     if (this.inunekoImage) this.tweens.add({ targets: this.inunekoImage, alpha: 0.4, duration: 300 });
+3671:                     if (this.boss2Image) this.tweens.add({ targets: this.boss2Image, alpha: 0.4, duration: 300 });
+3672:                     if (!this.sisterImage) {
+3673:                         this.sisterImage = this.add.image(1920/2 - 600, 1080/2, 'sister_normal').setDepth(90);
+3674:                         var sScale = 500 / (this.textures.get('sister_normal').getSourceImage().width || 750);
+3675:                         this.sisterImage.setScale(sScale);
+3676:                         this.sisterImage.setY(100 + ((this.textures.get('sister_normal').getSourceImage().height || 1000) * sScale) / 2);
+3677:                     }
+3678:                     if (!this.brotherImage) {
+3679:                         this.brotherImage = this.add.image(1920/2 - 800, 1080/2, 'brother_normal').setDepth(90);
+3680:                         var bScale = 500 / (this.textures.get('brother_normal').getSourceImage().width || 750);
+3681:                         this.brotherImage.setScale(bScale);
+3682:                         this.brotherImage.setY(100 + ((this.textures.get('brother_normal').getSourceImage().height || 1000) * bScale) / 2);
+3683:                     }
+3684:                     if (name === 'エナリア') {
+3685:                         this.tweens.add({ targets: this.sisterImage, alpha: 1, duration: 300 });
+3686:                         this.tweens.add({ targets: this.brotherImage, alpha: 0.4, duration: 300 });
+3687:                     } else {
+3688:                         this.tweens.add({ targets: this.sisterImage, alpha: 0.4, duration: 300 });
+3689:                         this.tweens.add({ targets: this.brotherImage, alpha: 1, duration: 300 });
+3690:                     }
+3691:                     if (this.boss1Image) this.tweens.add({ targets: this.boss1Image, alpha: 0.4, duration: 300 });
+3692:                     this.showDialogue(name, text, res);
+3693:                 });
+3694:                 const localSayBoss1 = (text) => new Promise(res => {
+3695:                     this.tweens.add({ targets: dimBg, alpha: 0.6, duration: 300 });
+3696:                     if (this.heroImage) this.tweens.add({ targets: this.heroImage, alpha: 0.4, duration: 300 });
+3697:                     if (doctorImage) this.tweens.add({ targets: doctorImage, alpha: 0, duration: 300 });
+3698:                     if (this.demonImage) this.tweens.add({ targets: this.demonImage, alpha: 0.4, duration: 300 });
+3699:                     if (this.inunekoImage) this.tweens.add({ targets: this.inunekoImage, alpha: 0.4, duration: 300 });
+3700:                     if (this.boss2Image) this.tweens.add({ targets: this.boss2Image, alpha: 0.4, duration: 300 });
+3701:                     if (this.sisterImage) this.tweens.add({ targets: this.sisterImage, alpha: 0.4, duration: 300 });
+3702:                     if (this.brotherImage) this.tweens.add({ targets: this.brotherImage, alpha: 0.4, duration: 300 });
+3703:                     if (!this.boss1Image) {
+3704:                         this.boss1Image = this.add.image(1920/2 + 800, 1080/2, 'boss1_normal').setDepth(90);
+3705:                         var docScale = 500 / (this.textures.get('boss1_normal').getSourceImage().width || 750);
+3706:                         this.boss1Image.setScale(docScale);
+3707:                         this.boss1Image.setY(100 + ((this.textures.get('boss1_normal').getSourceImage().height || 1000) * docScale) / 2);
+3708:                     }
+3709:                     this.tweens.add({ targets: this.boss1Image, alpha: 1, duration: 300 });
+3710:                     this.showDialogue('クラトス', text, res);
+3711:                 });
+3712:                 
+3713:                 await localSayHero('「博士は、自分に向かって引き金を引いた。」');
+3714:                 await localSayHero('「僕が止めようとするも間に合わず、博士は満足したかの様に自害をした。」');
+3715:                 await localSayHero('「止められなかった…」');
+3716:                 await localSayHero('「……」');
+3717:                 await localSayHero('「でも、これで全部終わったんだよね……」');
+3718:                 
+3719:                 await localSayDemon('「ああ。…それぞれに複雑な想いはあれど、ようやく永い戦いが終わった。」');
+3720:                 await localSayInuneko('「みんな自由になるにゃん！！」');
+3721:                 await localSayDemon('「さて、お前を操る存在はいなくなったがこれからどうするつもりなんだ？」');
+3722:                 await localSayHero('「……」');
+3723:                 
+3724:                 await localSayBoss2('「じゃあ再戦しようよ！！！勇者くん！」');
+3725:                 await localSayTwins('「あなた馬鹿じゃないの？みんなボロボロなのにこれ以上戦うって死ぬつもり？」', 'エナリア');
+3726:                 await localSayBoss2('「そんなつもりはないよ！ただ負けっぱなしってのも気に食わないからね。」');
+3727:                 await localSayBoss1('「それは同感だ！！！見た目弱そうなのに強くて驚いた！」');
+3728:                 await localSayTwins('「まあ、僕たちと同じで博士に創られた存在だからね。強くて当然。」', 'エディオ');
+3729:                 await localSayTwins('「そうね、兄さま。それにこの子もちゃんと判断できるようになったみたいだし、対立する理由もなくなったわ。」', 'エナリア');
+3730:                 await localSayBoss1('「なんだ！じゃあもう仲間なのか！」');
+3731:                 
+3732:                 await localSayHero('「いや、仲間じゃ…」');
+3733:                 await localSayDemon('「みなこう言っとるし、わらわたちのもとに来るか？」');
+3734:                 await localSayHero('「……でも僕はあなたたちを殺そうとしたんだよ？」');
+3735:                 await localSayDemon('「だが自分で選択をして、殺さなかった。」');
+3736:                 await localSayDemon('「それに、わらわの部下たちはお前と同じで居場所がないものたちだ。誰も拒絶せぬよ。」');
+3737:                 await localSayTwins('「僕は大賛成！だって僕らは兄弟だろう？」', 'エディオ');
+3738:                 await localSayHero('「本当にいいの？」');
+3739:                 await localSayDemon('「良くなかったら誘わぬ！お前が嫌じゃないならさっさと来るんじゃ！」');
+3740:                 await localSayInuneko('「れっつらごーだわん！！」');
+3741: 
+3742:                 await terminalEffect([
+3743:                     'mmƂ̃bbggggO 「...now loading...」',
+3744:                     'mmƂ̃bbggggO 「...完了」',
+3745:                     '',
+3746:                     'mmƂ̃````bbggggO 「エラーの確認...修復完了」',
+3747:                     '',
+3748:                     'mmƂ̃````bbggggO 「...なんて、堅苦しいのはここまでにしましょう」',
+3749:                     '',
+3750:                     'mmƂ̃````bbggggO 「さっきぶりね。『GGS』よ。」',

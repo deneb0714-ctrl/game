@@ -1,0 +1,20 @@
+71:   <!-- Core -->
+72:   <script src="src/config.js?v=396"></script>
+73:   <script src="src/main.js?v=396"></script>
+74: 
+75:   <script>
+76:     // 蜈ｨ逕ｻ髱｢陦ｨ遉ｺ・医ヵ繝ｫ繧ｹ繧ｯ繝ｪ繝ｼ繝ｳ・牙・繧頑崛縺・
+77:     window.toggleGameFullscreen = function() {
+78:       if (!document.fullscreenElement && !document.webkitFullscreenElement) {
+79:         let elem = document.documentElement;
+80:         let req = elem.requestFullscreen || elem.webkitRequestFullscreen || elem.msRequestFullscreen;
+81:         if (req) {
+82:           req.call(elem).catch(function() {
+83:             alert('縲進Phone(iOS)縺ｪ縺ｩ縺ｧ蜈ｨ逕ｻ髱｢縺ｫ縺吶ｋ譁ｹ豕輔曾nSafari縺ｮ繧｢繝峨Ξ繧ｹ繝舌・縺ｫ縺ゅｋ縲後＝縺・aA)縲阪ｒ繧ｿ繝・・縺励※縲後ヤ繝ｼ繝ｫ繝舌・繧帝撼陦ｨ遉ｺ縲阪ｒ驕ｸ謚槭☆繧九°縲√ヶ繝ｩ繧ｦ繧ｶ縺ｮ荳矩Κ繝｡繝九Η繝ｼ縺九ｉ縲後・繝ｼ繝�逕ｻ髱｢縺ｫ霑ｽ蜉�縲阪ｒ縺励※繝帙・繝�逕ｻ髱｢縺ｮ繧｢繧､繧ｳ繝ｳ縺九ｉ襍ｷ蜍輔☆繧九→縲√い繝峨Ξ繧ｹ繝舌・縺ｮ辟｡縺・ｮ悟・縺ｪ蜈ｨ逕ｻ髱｢縺ｧ縺頑･ｽ縺励∩縺・◆縺�縺代∪縺呻ｼ・);
+84:           });
+85:         } else {
+86:           alert('縲進Phone(iOS)縺ｪ縺ｩ縺ｧ蜈ｨ逕ｻ髱｢縺ｫ縺吶ｋ譁ｹ豕輔曾nSafari縺ｮ繧｢繝峨Ξ繧ｹ繝舌・縺ｫ縺ゅｋ縲後＝縺・aA)縲阪ｒ繧ｿ繝・・縺励※縲後ヤ繝ｼ繝ｫ繝舌・繧帝撼陦ｨ遉ｺ縲阪ｒ驕ｸ謚槭☆繧九°縲√ヶ繝ｩ繧ｦ繧ｶ縺ｮ荳矩Κ繝｡繝九Η繝ｼ縺九ｉ縲後・繝ｼ繝�逕ｻ髱｢縺ｫ霑ｽ蜉�縲阪ｒ縺励※繝帙・繝�逕ｻ髱｢縺ｮ繧｢繧､繧ｳ繝ｳ縺九ｉ襍ｷ蜍輔☆繧九→縲√い繝峨Ξ繧ｹ繝舌・縺ｮ辟｡縺・ｮ悟・縺ｪ蜈ｨ逕ｻ髱｢縺ｧ縺頑･ｽ縺励∩縺・◆縺�縺代∪縺呻ｼ・);
+87:         }
+88:       } else {
+89:         if (document.exitFullscreen) {
+90:           document.exitFullscreen();

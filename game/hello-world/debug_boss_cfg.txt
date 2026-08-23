@@ -1,0 +1,10 @@
+209:       doctor: {
+210:         texture: 'doctor_combat', name: '博士', hp: 450, scale: 2.5,
+211:         intro: '「さぁ、最終決戦といこうじゃないか！」',
+212:         defeat: '「驚いた...まさかお前がここまでやるとはな」',
+213:         choices: []
+214:       }
+215:     };
+216:     return configs[key];
+217:   }
+218: 

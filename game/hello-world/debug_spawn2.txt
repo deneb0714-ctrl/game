@@ -1,0 +1,250 @@
+377:            this.tweens.add({ targets: boss, y: boss.y - 30, yoyo: true, repeat: -1, duration: 1000, ease: 'Sine.easeInOut' });
+378:            
+379:            if (key === 'demon_lord') {
+380:              this.playDemonLordIntro(() => {
+381:                this.cutsceneActive = false;
+382:                 this.cutsceneActive = false;
+383:                this.dialogActive = false;
+384:                this.physics.resume();
+385:                this.startBossLaneMovement();
+386:                this.boss4Bgm = this.sound.add('demon_lord_bgm', { loop: true, volume: 0.2 });
+1917:               if (bossImage) this.tweens.add({ targets: bossImage, alpha: 0.4, duration: 300 });
+1918:               else this.tweens.add({ targets: [enemyFrame, enemyLabel], alpha: 0, duration: 300 });
+1919:               if(sisterImage) this.tweens.add({ targets: sisterImage, alpha: 0.4, duration: 300 });
+1920:               this.showDeviceDialogue(text, res);
+1921:             });
+1922:             const sayEnemyUnknown = (text, tex = null, speaker = '男') => new Promise(res => {
+1923:               [dimBg, bossImage, sisterImage, this.heroImage].filter(Boolean).forEach(t => t.setVisible(true));
+1924:               if (!bossImage) { if (enemyFrame) enemyFrame.setVisible(true); if (enemyLabel) enemyLabel.setVisible(true); }
+1925:               else { if (enemyFrame) enemyFrame.setVisible(false); if (enemyLabel) enemyLabel.setVisible(false); }
+1926:               lastEnemySpeaker = speaker;
+1935:                 if (bossImage) { this.tweens.add({ targets: bossImage, alpha: 0.4, duration: 300 }); bossImage.setDepth(90); }
+1936:                 this.tweens.add({ targets: sisterImage, alpha: 1, duration: 300 });
+1937:                 sisterImage.setDepth(91);
+1938:               } else {
+1939:                 if (bossImage) {
+1940:                   this.tweens.add({ targets: bossImage, alpha: 1, duration: 300 });
+1941:                   bossImage.setTexture(useTex);
+1942:                   bossImage.setDepth(91);
+1943:                 } else {
+1944:                   this.tweens.add({ targets: [enemyFrame, enemyLabel], alpha: 1, duration: 300 });
+1940:                   this.tweens.add({ targets: bossImage, alpha: 1, duration: 300 });
+1941:                   bossImage.setTexture(useTex);
+1942:                   bossImage.setDepth(91);
+1943:                 } else {
+1944:                   this.tweens.add({ targets: [enemyFrame, enemyLabel], alpha: 1, duration: 300 });
+1945:                   enemyLabel.setText('???');
+1946:                 }
+1947:                 if(sisterImage) { this.tweens.add({targets: sisterImage, alpha: 0.4, duration: 300}); sisterImage.setDepth(90); }
+1948:               }
+1949:               if (bossImage) bossImage.setTint(0x000000);
+1969:                 if (bossImage) { this.tweens.add({ targets: bossImage, alpha: 0.4, duration: 300 }); bossImage.setDepth(90); }
+1970:                 else this.tweens.add({ targets: [enemyFrame, enemyLabel], alpha: 0, duration: 300 });
+1971:                 this.tweens.add({ targets: sisterImage, alpha: 1, duration: 300 });
+1972:                 sisterImage.setDepth(91);
+1973:               } else {
+1974:                 if (bossImage) {
+1975:                   this.tweens.add({ targets: bossImage, alpha: 1, duration: 300 });
+1976:                   bossImage.setTexture(useTex);
+1977:                   bossImage.setDepth(91);
+1978:                 } else {
+1975:                   this.tweens.add({ targets: bossImage, alpha: 1, duration: 300 });
+1976:                   bossImage.setTexture(useTex);
+1977:                   bossImage.setDepth(91);
+1978:                 } else {
+1979:                   this.tweens.add({ targets: [enemyFrame, enemyLabel], alpha: 1, duration: 300 });
+1980:                   enemyLabel.setText(name);
+1981:                 }
+1982:                 if(sisterImage) { this.tweens.add({ targets: sisterImage, alpha: 0.4, duration: 300 }); sisterImage.setDepth(90); }
+1983:               }
+1984:               if (bossImage) bossImage.clearTint();
+2008:       if (bossImage) this.tweens.add({ targets: bossImage, alpha: 0.4, duration: 300 });
+2009:       else this.tweens.add({ targets: [enemyFrame, enemyLabel], alpha: 0, duration: 300 });
+2010:       if(sisterImage) this.tweens.add({ targets: sisterImage, alpha: 0.4, duration: 300 });
+2011:       if (text === '「……」' || text === '「……。」' || text === '「…」') {
+2012:         this.heroImage.setTexture('hero_stand_silent');
+2013:       } else {
+2014:         this.heroImage.setTexture('hero_stand');
+2015:       }
+2016:       this.heroImage.setScale(750 / this.heroImage.width);
+2017:       this.heroImage.setY(100 + (this.heroImage.height * this.heroImage.scaleY) / 2);
+2033:                 await new Promise(r => this.tweens.add({ targets: this.currentBoss, x: 1400, duration: 1200, ease: 'Power2', onComplete: r }));
+2034:                 this.tweens.add({ targets: this.currentBoss, y: this.currentBoss.y - 30, yoyo: true, repeat: -1, duration: 1000, ease: 'Sine.easeInOut' });
+2035:                 
+2036:                 await sayEnemyName('クラトス', '「なんだ？帰らないのか？」', 'boss1_normal');
+2037:                 await sayEnemyName('クラトス', '「……というかお前、”勇者”なのか？勇者の割には弱そうなやつだな。」', 'boss1_normal');
+2038:                 await sayHero('「……『弱そう』って初対面なはずなのに失礼だな。」');
+2039:                 await sayEnemyName('クラトス', '「おっと、悪い悪い。でも、俺だって無駄に傷付けたいわけじゃないからな。それに、任務も楽に達成できそうでラッキーなこった！」', 'boss1_sweat');
+2040:                 await sayHero('「任務？」');
+2041:                 await sayEnemyName('クラトス', '「ああ、魔王様から”勇者”を連れてこいって命じられてんだ。お前も戦う気満々って感じだしやるしかないよな！！」', 'boss1_normal');
+2042:                 await sayDevice('「クラトスは見かけ通りに己の力のみで戦うことを良しとする。銃を持ってはいるが、あれを本来の使い方で使うことはない。あれで打撃を飛ばしてくるから、気を付けろよ。」');
+2034:                 this.tweens.add({ targets: this.currentBoss, y: this.currentBoss.y - 30, yoyo: true, repeat: -1, duration: 1000, ease: 'Sine.easeInOut' });
+2035:                 
+2036:                 await sayEnemyName('クラトス', '「なんだ？帰らないのか？」', 'boss1_normal');
+2037:                 await sayEnemyName('クラトス', '「……というかお前、”勇者”なのか？勇者の割には弱そうなやつだな。」', 'boss1_normal');
+2038:                 await sayHero('「……『弱そう』って初対面なはずなのに失礼だな。」');
+2039:                 await sayEnemyName('クラトス', '「おっと、悪い悪い。でも、俺だって無駄に傷付けたいわけじゃないからな。それに、任務も楽に達成できそうでラッキーなこった！」', 'boss1_sweat');
+2040:                 await sayHero('「任務？」');
+2041:                 await sayEnemyName('クラトス', '「ああ、魔王様から”勇者”を連れてこいって命じられてんだ。お前も戦う気満々って感じだしやるしかないよな！！」', 'boss1_normal');
+2042:                 await sayDevice('「クラトスは見かけ通りに己の力のみで戦うことを良しとする。銃を持ってはいるが、あれを本来の使い方で使うことはない。あれで打撃を飛ばしてくるから、気を付けろよ。」');
+2043:                 await sayHero('「つまり、脳ｋ……」');
+2055:                 await new Promise(r => this.tweens.add({ targets: this.currentBoss, x: 1400, duration: 1200, ease: 'Power2', onComplete: r }));
+2056:                 this.tweens.add({ targets: this.currentBoss, y: this.currentBoss.y - 30, yoyo: true, repeat: -1, duration: 1000, ease: 'Sine.easeInOut' });
+2057:                 
+2058:                 await sayEnemyName('トゥレロス', '「クラトスは負けたみたいだね。あいつ力はあるくせに馬鹿だから負けるんだよ。まぁいいや。さっさと君を倒して魔王様のところに帰ろう。」', 'boss2_normal');
+2059:                 await sayHero('「（……やっぱり脳筋だったのか）」');
+2060:                 await sayHero('「倒すんじゃなくて、連れて帰るんじゃないのか？」');
+2061:                 await sayEnemyName('トゥレロス', '「うん？そういえばそうだった！でもなんで君が知ってるの？」', 'boss2_normal');
+2062:                 await sayEnemyName('トゥレロス', '「わかった。あの馬鹿が言いやがったな……。」', 'boss2_normal');
+2063:                 await sayHero('「でも、僕も負けるつもりはないよ。」');
+2064:                 await sayEnemyName('トゥレロス', '「いいね！！楽しくなりそうで嬉しいよ！」', 'boss2_normal');
+2056:                 this.tweens.add({ targets: this.currentBoss, y: this.currentBoss.y - 30, yoyo: true, repeat: -1, duration: 1000, ease: 'Sine.easeInOut' });
+2057:                 
+2058:                 await sayEnemyName('トゥレロス', '「クラトスは負けたみたいだね。あいつ力はあるくせに馬鹿だから負けるんだよ。まぁいいや。さっさと君を倒して魔王様のところに帰ろう。」', 'boss2_normal');
+2059:                 await sayHero('「（……やっぱり脳筋だったのか）」');
+2060:                 await sayHero('「倒すんじゃなくて、連れて帰るんじゃないのか？」');
+2061:                 await sayEnemyName('トゥレロス', '「うん？そういえばそうだった！でもなんで君が知ってるの？」', 'boss2_normal');
+2062:                 await sayEnemyName('トゥレロス', '「わかった。あの馬鹿が言いやがったな……。」', 'boss2_normal');
+2063:                 await sayHero('「でも、僕も負けるつもりはないよ。」');
+2064:                 await sayEnemyName('トゥレロス', '「いいね！！楽しくなりそうで嬉しいよ！」', 'boss2_normal');
+2065:                 
+2077:                 this.tweens.add({ targets: this.currentBoss, y: this.currentBoss.y - 30, yoyo: true, repeat: -1, duration: 1000, ease: 'Sine.easeInOut' });
+2078:                 this.tweens.add({ targets: this.sisterBoss, y: this.sisterBoss.y + 30, yoyo: true, repeat: -1, duration: 1100, ease: 'Sine.easeInOut' });
+2079:                 
+2080:                 await sayDevice('「こいつらに名前なんてない。さっさと倒せ。」');
+2081:                 await sayEnemyName('エディオ', '「やめてよ。魔王様に付けてもらった素敵な名前があるんだ。僕がエディオで、」', 'brother_normal', '男');
+2082:                 await sayEnemyName('エナリア', '「私がエナリア。魔王様が、捨てられてた私たちを拾ってくれたの。」', 'sister_normal', '女');
+2083:                 await sayEnemyName('エディオ', '「君は博士に騙されている。悪いことは言わないからこちらの味方になった方がいい」', 'brother_normal', '男');
+2084:                 await sayDevice('「彼らの言葉に耳を傾けてはいけない。早く倒すんだ。」');
+2085:                 await sayHero('「…」');
+2086:                 await sayEnemyName('エナリア', '「…そう。意思は硬いのね。仕方ないわ兄様」', 'sister_normal', '女');
+2270:               this.tweens.add({ targets: boss1DefImg, alpha: 1, duration: 300 });
+2271:               this.tweens.add({ targets: this.heroImage, alpha: 0.4, duration: 300 });
+2272:               this.showDialogue('クラトス', text, res);
+2273:             });
+2274:             // 主人公が話すとき：主人公ハイライト、幹部1は暗く
+2275:             const sayHeroB1 = (text) => new Promise(res => {
+2276:               this.tweens.add({ targets: dimBg, alpha: 0.6, duration: 300 });
+2277:               this.tweens.add({ targets: this.heroImage, alpha: 1, duration: 300 });
+2278:               this.tweens.add({ targets: boss1DefImg, alpha: 0.4, duration: 300 });
+2279:               if (text === '「……」' || text === '「……。」' || text === '「…」') {
+2278:               this.tweens.add({ targets: boss1DefImg, alpha: 0.4, duration: 300 });
+2279:               if (text === '「……」' || text === '「……。」' || text === '「…」') {
+2280:                 this.heroImage.setTexture('hero_stand_silent');
+2281:               } else {
+2282:                 this.heroImage.setTexture('hero_stand');
+2283:               }
+2284:               this.heroImage.setScale(750 / this.heroImage.width);
+2285:               this.heroImage.setY(100 + (this.heroImage.height * this.heroImage.scaleY) / 2);
+2286:               this.showDialogue(MOT.flags.heroName || '勇者', text, res);
+2287:             });
+2292:               this.tweens.add({ targets: boss1DefImg, alpha: 0.4, duration: 300 });
+2293:               this.showDeviceDialogue(text, res);
+2294:             });
+2295: 
+2296:             (async () => {
+2297:               // 立ち絵フェードイン
+2298:               this.tweens.add({ targets: dimBg, alpha: 0.6, duration: 400 });
+2299:               this.tweens.add({ targets: this.heroImage, alpha: 0.4, duration: 400 });
+2300:               this.tweens.add({ targets: boss1DefImg, alpha: 1, duration: 400 });
+2301:               await new Promise(r => this.time.delayedCall(500, r));
+2300:               this.tweens.add({ targets: boss1DefImg, alpha: 1, duration: 400 });
+2301:               await new Promise(r => this.time.delayedCall(500, r));
+2302: 
+2303:               await sayDeviceB1('「よくやった。このまま止めを刺すんだ。魔物も人間と変わらず心臓を打ち抜けば死ぬ。」');
+2304:               let c = await askChoice('1. 心臓を打ち抜く', '2. 見逃す');
+2305:               if (c === 1) {
+2306:                 MOT.flags.dollPoints++; MOT.flags.killedBoss1 = true;
+2307:                 await sayEnemyB1('「くそっ…！俺もここまでか…」');
+2308:                 MOT.Audio.playSelect(); // 銃声SE
+2309:                 await sayDeviceB1('「よくやった。まずは一歩平和に近づいたな。そのまま進んでいくといい」');
+2320:                 await new Promise(r => this.tweens.add({ targets: boss, x: 2200, duration: 1500, ease: 'Power2', onComplete: r }));
+2321:                 boss1DefImg.destroy();
+2322:                 await sayDeviceB1('「君は一体何をしている？」');
+2323:                 await sayDeviceB1('「奴らを倒さないと、世界が救われないんだ。何がしたいのかさっぱりだが、次はちゃんと止めを刺せ。」');
+2324:                 await sayHeroB1('「……」');
+2325:                 this.proceedToNextArea(boss, true);
+2326:               }
+2327:             })();
+2328:           } else if (key === 'boss2') {
+2329:             var boss2DefImg = this.add.image(w - 300, h / 2, 'boss2_surprised_dying').setAlpha(0).setDepth(90);
+2342:               this.tweens.add({ targets: boss2DefImg, alpha: 1, duration: 300 });
+2343:               this.tweens.add({ targets: this.heroImage, alpha: 0.4, duration: 300 });
+2344:               boss2DefImg.setTexture(tex);
+2345:               this.showDialogue('トゥレロス', text, res);
+2346:             });
+2347:             const sayHeroB2 = (text) => new Promise(res => {
+2348:               this.tweens.add({ targets: dimBg, alpha: 0.6, duration: 300 });
+2349:               this.tweens.add({ targets: this.heroImage, alpha: 1, duration: 300 });
+2350:               this.tweens.add({ targets: boss2DefImg, alpha: 0.4, duration: 300 });
+2351:               if (text === '「……」' || text === '「……。」' || text === '「…」') {
+2350:               this.tweens.add({ targets: boss2DefImg, alpha: 0.4, duration: 300 });
+2351:               if (text === '「……」' || text === '「……。」' || text === '「…」') {
+2352:                 this.heroImage.setTexture('hero_stand_silent');
+2353:               } else {
+2354:                 this.heroImage.setTexture('hero_stand');
+2355:               }
+2356:               this.heroImage.setScale(750 / this.heroImage.width);
+2357:               this.heroImage.setY(100 + (this.heroImage.height * this.heroImage.scaleY) / 2);
+2358:               this.showDialogue(MOT.flags.heroName || '勇者', text, res);
+2359:             });
+2363:               this.tweens.add({ targets: boss2DefImg, alpha: 0.4, duration: 300 });
+2364:               this.showDeviceDialogue(text, res);
+2365:             });
+2366: 
+2367:             (async () => {
+2368:               // 立ち絵フェードイン
+2369:               this.tweens.add({ targets: dimBg, alpha: 0.6, duration: 400 });
+2370:               this.tweens.add({ targets: this.heroImage, alpha: 0.4, duration: 400 });
+2371:               this.tweens.add({ targets: boss2DefImg, alpha: 1, duration: 400 });
+2372:               await new Promise(r => this.time.delayedCall(500, r));
+2371:               this.tweens.add({ targets: boss2DefImg, alpha: 1, duration: 400 });
+2372:               await new Promise(r => this.time.delayedCall(500, r));
+2373: 
+2374:               if (MOT.flags.killedBoss1) {
+2375:                 await sayDeviceB2('「先ほどと同じように、止めを刺すんだ。こいつを倒せば幹部は残り半分になる。」');
+2376:               } else {
+2377:                 await sayDeviceB2('「今回はわかっているな？世界のために、逃がさないで止めを刺せ。」');
+2378:               }
+2379:               let c = await askChoice('1. 心臓を打ち抜く', '2. 見逃す');
+2380:               if (c === 1) { MOT.flags.dollPoints++; MOT.flags.killedTwins = true; MOT.flags.killedBoss2 = true;
+2399:                   await new Promise(r => this.tweens.add({ targets: boss, x: 2200, duration: 1500, ease: 'Power2', onComplete: r }));
+2400:                   boss2DefImg.destroy();
+2401:                   await sayDeviceB2('「おい、何をしている？なぜ止めを刺さなかった。」');
+2402:                 } else {
+2403:                   await sayEnemyB2('「はは、君はやっぱり殺さないんだ。舐めてるの？」', 'boss2_normal_dying');
+2404:                   await sayEnemyB2('「とはいえ、僕も今は限界だから引こうかな。次は負けないから！」', 'boss2_eyes_closed_dying');
+2405:                   
+2406:                   await new Promise(r => this.tweens.add({ targets: boss, x: 2200, duration: 1500, ease: 'Power2', onComplete: r }));
+2407:                   boss2DefImg.destroy();
+2408:                   await sayDeviceB2('「またか。お前は何がしたい？この世界を終わらせたいのか？」');
+2406:                   await new Promise(r => this.tweens.add({ targets: boss, x: 2200, duration: 1500, ease: 'Power2', onComplete: r }));
+2407:                   boss2DefImg.destroy();
+2408:                   await sayDeviceB2('「またか。お前は何がしたい？この世界を終わらせたいのか？」');
+2409:                   await sayDeviceB2('「それとも、役立たずとして処分でもされたいのか？」');
+2410:                   await sayHeroB2('「……。」');
+2411:                 }
+2412:                 this.proceedToNextArea(boss, true);
+2413:               }
+2414:             })();
+2415:           } else if (key === 'boss3_twins') {
+2896:                           this.tweens.add({ targets: this.currentBoss, scale: this.currentBoss.scaleX * 1.5, alpha: 0, duration: 500, ease: 'Power2' });
+2897:                       }
+2898: 
+2899:                       await new Promise(r => this.time.delayedCall(1000, r));
+2900:                       
+2901:                       await localSayHero('「！」');
+2902:                       await localSayHero('「なんで、今勝手に手が…！」');
+2903:                       await localSayDevice('「ろくでもない生物を生かしておく必要はないだろう。無駄な命乞いを聞く前にさっさと始末したに過ぎない。」');
+2904:                       await localSayDevice('「いいか。お前はこれから逃がした敵を殺しに行くんだ。今度こそ逃がすなんてことは許さないからな？」');
+2905:                       
+3793:               this.tweens.add({ targets: bossImage, alpha: 1, duration: 300 });
+3794:               if (this.heroImage) this.tweens.add({ targets: this.heroImage, alpha: 0.4, duration: 300 });
+3795:             } else if (bossKey === 'boss2') {
+3796:               dimBg = this.add.rectangle(w/2, h/2, w, h, 0x000000, 0.6).setAlpha(0).setDepth(89);
+3797:               enemyFrame = this.add.rectangle(w - 300, h / 2, 400, 600, 0x1F2933).setAlpha(0).setDepth(90).setStrokeStyle(4, 0xffffff);
+3798:               enemyLabel = this.add.text(w - 300, h / 2, cfg.name, { fontFamily: '"DotGothic16"', fontSize: '40px', color: '#ffffff' }).setOrigin(0.5).setAlpha(0).setDepth(90);
+3799:               this.tweens.add({ targets: [dimBg, enemyFrame, enemyLabel], alpha: 1, duration: 300 });
+3800:             }
+3801: 
+3802:             this.showDialogue(cfg.name, cfg.defeat, function () {

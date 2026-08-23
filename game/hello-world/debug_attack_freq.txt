@@ -1,0 +1,40 @@
+1038:       this.bossAttackTimer += delta;
+1039:       var interval = this.bossHP < this.bossMaxHP * 0.5 ? 600 : 1000;
+1040:       if (this.currentBoss.configKey === 'boss1') interval = 3000; // ボス1の攻撃頻度を下げる
+1041:       if (this.inunekoBoostActive) interval = Math.floor(interval * 0.5); // 犬猫スター弾幕加速
+1042:       if (this.currentBoss.configKey === 'boss3_twins') interval = 1200; // 兄の攻撃頻度を上げる
+1043:       if (this.currentBoss.configKey === 'doctor') interval = this.bossHP < this.bossMaxHP * 0.5 ? 1400 : 1800; // 博士の攻撃頻度を上げる
+1044:       if (this.currentBoss.configKey === 'demon_lord') interval = this.bossHP < this.bossMaxHP * 0.5 ? 2500 : 3000; // 魔王の螺旋弾幕（2.4秒）と重ならないように大幅緩和
+1045:       
+1046:       if (this.bossAttackTimer >= interval) {
+1047:         this.bossAttackTimer = 0;
+1046:       if (this.bossAttackTimer >= interval) {
+1047:         this.bossAttackTimer = 0;
+1048:         this.bossAttack();
+1049:       }
+1050:     }
+1051:     
+1052:     // Sister attacks
+1053:     if (this.currentBoss && this.currentBoss.configKey === 'boss3_twins' && this.sisterBoss && this.sisterBoss.active && this.sisterBoss.visible && !this.dialogActive) {
+1054:       if (!this.sisterAttackTimer) this.sisterAttackTimer = 0;
+1055:       this.sisterAttackTimer += delta;
+SISTER - 1055:       this.sisterAttackTimer += delta;
+1056:       if (this.sisterAttackTimer >= 2000) {
+1057:         this.sisterAttackTimer = 0;
+1058:         this.fireStarGauge(Phaser.Math.Between(1, 3), false);
+1059:       }
+1060:     }
+1061: 
+1062:     // Cleanup
+1063:     this.enemyGroup.getChildren().forEach(function (e) {
+1064:       if (e.x < -100) {
+SISTER - 1056:       if (this.sisterAttackTimer >= 2000) {
+1057:         this.sisterAttackTimer = 0;
+1058:         this.fireStarGauge(Phaser.Math.Between(1, 3), false);
+1059:       }
+1060:     }
+1061: 
+1062:     // Cleanup
+1063:     this.enemyGroup.getChildren().forEach(function (e) {
+1064:       if (e.x < -100) {
+1065:         if (e.isScenarioMinion || e.isIntermissionEnemy) {

@@ -1,0 +1,52 @@
+847:       this.barrierGraphic.lineStyle(3, 0xAA88FF, 0.7 + 0.3 * Math.sin(Date.now() / 150));
+848:       this.barrierGraphic.strokeCircle(boss.x, boss.y, 80);
+849:     };
+850:     this.barrierUpdateCb = drawBarrier;
+887:             let ly = Math.sin(b.rotation);
+888:             
+889:             let t = dx * lx + dy * ly;
+890:             if (t >= 0 && t <= 400) {
+1127:           bullet.setVelocity(Math.cos(angle) * 1000, Math.sin(angle) * 1000);
+1128:           bullet.setScale(4);
+1129:           bullet.setTint(0x4FD1FF);
+1130:           bullet.damage = 8; // 必殺技ダメージ
+1229:                 let b = MOT.fireLinear(self, bx, by, Math.cos(angle)*400, Math.sin(angle)*400, silver, 'bullet_enemy_white');
+1230:                 if(b) b.setScale(1.5);
+1231:               }
+1232:             }
+1244:              let b = MOT.fireLinear(this, this.currentBoss.x, this.currentBoss.y, Math.cos(angle)*400, Math.sin(angle)*400, silver, 'bullet_enemy_white');
+1245:              if (b) b.setScale(1.2);
+1246:           });
+1247:         }
+1310:                   y2: spawnY + Math.sin(targetAngle) * beamLength,
+1311:                   thickness: beamThickness,
+1312:                   active: true
+1313:                 };
+1366:                 let b = MOT.fireLinear(self, bx, by, Math.cos(angle)*400, Math.sin(angle)*400, 0xff00ff, 'bullet_enemy_white');
+1367:                 if (b) {
+1368:                   b.setScale(1.5);
+1369:                   b.spawnTime = now;
+1376:                       let currentAngle = this.baseAngle + Math.sin(elapsed * 0.01) * 0.6;
+1377:                       this.setVelocity(Math.cos(currentAngle)*400, Math.sin(currentAngle)*400);
+1378:                     };
+1379:                   } else if (splitType === 2) {
+1377:                       this.setVelocity(Math.cos(currentAngle)*400, Math.sin(currentAngle)*400);
+1378:                     };
+1379:                   } else if (splitType === 2) {
+1380:                     // 透明化
+1404:              let b = MOT.fireLinear(this, this.currentBoss.x, this.currentBoss.y, Math.cos(angle)*350, Math.sin(angle)*350, 0xaa00ff, 'bullet_enemy_white');
+1405:              if (b) b.setScale(1.2);
+1406:              if (i % 3 === 0) MOT.Audio.playShot();
+1407:           });
+1469:     slash.setVelocity(Math.cos(rad) * speed, Math.sin(rad) * speed);
+1470: 
+1471:     // 7秒後に自動破棄
+1472:     this.time.delayedCall(7000, function () { if (slash.active) slash.destroy(); });
+2498:                   let endY = y + Math.sin(angle) * length;
+2499:                   endX += Phaser.Math.Between(-10, 10);
+2500:                   endY += Phaser.Math.Between(-10, 10);
+2501:                   
+4856:       const flash = (Math.sin(Date.now() / 150) + 1) / 2;
+4857:       this.energyBarOutline.lineStyle(4, 0xFFFF00, 0.4 + 0.6 * flash);
+4858:       this.energyBarOutline.strokeRect(26, 76, 308, 32);
+4859:     } else {

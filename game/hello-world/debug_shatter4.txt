@@ -1,0 +1,50 @@
+2601:                   } else {
+2602:                     currentIndex = 2;
+2603:                     cursor.setY(y2);
+2604:                   }
+2605:                 } else if (event.key === 'Enter' || event.key === ' ') {
+2606:                   if (isBlocked && !shattered && currentIndex === 2) {
+2607:                     // グレーアウト状態では選べない
+2608:                     return;
+2609:                   }
+2610:                   this.input.keyboard.off('keydown', keyHandler);
+2611:                   this.choiceContainer.destroy();
+2612:                   res(currentIndex);
+2613:                 }
+2614:               };
+2615:               this.input.keyboard.on('keydown', keyHandler);
+2616:             });
+2617: 
+2618:             (async () => {
+2619:               let DP = MOT.flags.dollPoints || 0;
+2620:               let Satsui = MOT.flags.killingIntent || 0;
+2621:               let Kills = MOT.flags.kills !== undefined ? MOT.flags.kills : 0;
+2622:               if (MOT.flags.kills === undefined) {
+2623:                 if (MOT.flags.killedBoss1) Kills++;
+2624:                 if (MOT.flags.killedBoss2) Kills++;
+2625:                 if (MOT.flags.killedTwins) Kills++;
+2626:               }
+2627: 
+2628:               const ending = (key) => {
+2629:                   MOT.flags.finalEnding = key;
+2630:                   this.proceedToNextArea(boss, false);
+2631:               };
+2632: 
+2633:               // Kills === 3 (幹部全員殺害) の場合は傀儡エンド専用演出
+2634:               if (Kills === 3) {
+2635:                   await sayDevice('「よくやった。さぁ早くとどめを！」');
+2636:                   await sayDemon('「ぐっ…ここまでか…」');
+2637:                   
+2638:                   // 画面が乱れる演出
+2639:                   this.cameras.main.shake(1000, 0.03);
+2640:                   let glitchBg = this.add.rectangle(1920/2, 1080/2, 1920, 1080, 0x000000, 0.9).setDepth(200);
+2641:                   let consoleText = this.add.text(100, 100, '', {
+2642:                       fontFamily: '"Press Start 2P"', fontSize: '32px', color: '#00ff00', lineSpacing: 10
+2643:                   }).setDepth(201);
+2644:                   
+2645:                   const addLog = async (msg, delay) => {
+2646:                       consoleText.text += msg + '\n';
+2647:                       MOT.Audio.playBleep();
+2648:                       await new Promise(r => this.time.delayedCall(delay, r));
+2649:                   };
+2650:                   

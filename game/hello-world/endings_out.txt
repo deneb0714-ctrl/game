@@ -1,0 +1,8 @@
+75:   normal_unresistable: {
+76:     key: 'normal_unresistable',
+77:     title: 'NORMAL END',
+78:     subtitle: '— 抗えない —',
+79:     description: '勇者の意思とは裏腹に、見逃したはずの幹部たちを見つけ殺していく。\nどれだけ引き金を引かないよう抗ったとて、その手は言うことを聞かなかった。',
+80:     color: 0x9CA3AF,
+81:     bgColor: '#05050a'
+82:   }

@@ -1,0 +1,50 @@
+2501:                 }
+2502:               };
+2503: 
+2504:               const keyHandler = async (event) => {
+2505:                 if (isAnimating) return;
+2506:                 
+2507:                 if (event.key === 'ArrowUp' || event.key === 'w') {
+2508:                   if (!shattered) {
+2509:                     currentIndex = 1;
+2510:                     cursor.setY(y1);
+2511:                   }
+2512:                 } else if (event.key === 'ArrowDown' || event.key === 's') {
+2513:                   if (shattered) return; // 破壊後は1(殺す)が消えているので2に固定
+2514:                   
+2515:                   if (canShatter) {
+2516:                     if (!isBlocked) {
+2517:                       isAnimating = true;
+2518:                       isBlocked = true;
+2519:                       
+2520:                       // 赤いバリアオーバーレイを生成
+2521:                       redBarrier = this.add.rectangle(w/2, h/2, w, h, 0xff0000, 0.1).setBlendMode(Phaser.BlendModes.ADD);
+2522:                       this.choiceContainer.addAt(redBarrier, 1); // 背景のすぐ上に追加
+2523:                       
+2524:                       // 初回の阻止演出
+2525:                       this.input.keyboard.off('keydown', keyHandler);
+2526:                       await sayDevice('「魔王を生かすことなんてさせないからな。」');
+2527:                       box2.setFillStyle(0x333333, 0.8);
+2528:                       box2.setStrokeStyle(2, 0x555555);
+2529:                       txt2.setColor('#777777');
+2530:                       this.input.keyboard.on('keydown', keyHandler);
+2531:                       isAnimating = false;
+2532:                       // カーソルは1に戻される
+2533:                       currentIndex = 1;
+2534:                       cursor.setY(y1);
+2535:                     } else {
+2536:                       // 2回目以降の抵抗（ひび割れ）
+2537:                       downPresses++;
+2538:                       if (redBarrier) redBarrier.setAlpha(0.1 + (downPresses / 20) * 0.6); // どんどん赤く強く発光する
+2539:                       
+2540:                       // 揺れの処理（1回目から20回目まで、単一の数式で徐々に大きくする）
+2541:                       if (downPresses < 20) {
+2542:                         // 1〜19回目まで、累乗を使って最初はほぼ0、後半急激に大きくなるようにする
+2543:                         let ratio = downPresses / 20; // 0.05 〜 0.95
+2544:                         let shakeIntensity = Math.pow(ratio, 3) * 0.015; // 0.015が最大の揺れ幅
+2545:                         let shakeDuration = 50 + (downPresses * 5); // 55ms 〜 145ms
+2546:                         
+2547:                         this.cameras.main.shake(shakeDuration, shakeIntensity);
+2548:                       }
+2549:                       
+2550:                       // 10回目以降からヒビが入り、徐々に広がる

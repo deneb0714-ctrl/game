@@ -1,0 +1,10 @@
+255:     this.load.image('brother_normal', 'assets/images/brother_normal.png?v=' + v);
+256:     this.load.image('brother_closed', 'assets/images/brother_closed.png?v=' + v);
+257:     this.load.image('brother_dying', 'assets/images/brother_dying.png?v=' + v);
+258:     this.load.image('brother_dying_closed', 'assets/images/brother_dying_closed.png?v=' + v);
+259:     this.load.image('brother_hurt', 'assets/images/brother_hurt.png?v=' + v);
+340:       key: 'boss3_battle_play',
+341:       frames: this.anims.generateFrameNumbers('boss3_battle_anim', { start: 0, end: 19 }),
+342:       frameRate: 15,
+343:       repeat: -1
+344:     });

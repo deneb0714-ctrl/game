@@ -1,0 +1,50 @@
+2801:               if (c === 1) {
+2802:                   // 魔王を殺す
+2803:                   MOT.flags.killedDemonLord = true;
+2804:                   
+2805:                   if (Kills === 0) {
+2806:                       if (!this.inunekoImage || !this.inunekoImage.active) {
+2807:                           this.inunekoImage = this.add.image(1920 - 120, 1080 / 2 - 250, 'inuneko_stand').setAlpha(0).setDepth(91);
+2808:                           this.inunekoImage.setScale(300 / 691);
+2809:                           this.inunekoImage.setY(350);
+2810:                       }
+2811:                       
+2812:                       const localSayInuneko = (text) => new Promise(res => { this.tweens.add({ targets: dimBg, alpha: 0.6, duration: 300 }); if(this.heroImage) this.tweens.add({targets: this.heroImage, alpha: 0.4, duration: 300}); if(this.inunekoImage) this.tweens.add({targets: this.inunekoImage, alpha: 1, duration: 300}); if(this.demonImage) this.tweens.add({targets: this.demonImage, alpha: 0.4, duration: 300}); this.showDialogue('犬猫☆すたー', text, res); });
+2813:                       const localSayDemon = (text) => new Promise(res => { this.tweens.add({ targets: dimBg, alpha: 0.6, duration: 300 }); if(this.heroImage) this.tweens.add({targets: this.heroImage, alpha: 0.4, duration: 300}); if(this.inunekoImage) this.tweens.add({targets: this.inunekoImage, alpha: 0.4, duration: 300}); if(this.demonImage) this.tweens.add({targets: this.demonImage, alpha: 1, duration: 300}); this.showDialogue('魔王', text, res); });
+2814:                       const localSayHero = (text) => new Promise(res => { this.tweens.add({ targets: dimBg, alpha: 0.6, duration: 300 }); if(this.heroImage) this.tweens.add({targets: this.heroImage, alpha: 1, duration: 300}); if(this.inunekoImage) this.tweens.add({targets: this.inunekoImage, alpha: 0.4, duration: 300}); if(this.demonImage) this.tweens.add({targets: this.demonImage, alpha: 0.4, duration: 300}); this.showDialogue(MOT.flags.heroName || '勇者', text, res); });
+2815:                       const localSayDevice = (text) => new Promise(res => { this.tweens.add({ targets: dimBg, alpha: 0.6, duration: 300 }); if(this.heroImage) this.tweens.add({targets: this.heroImage, alpha: 0.4, duration: 300}); if(this.inunekoImage) this.tweens.add({targets: this.inunekoImage, alpha: 0.4, duration: 300}); if(this.demonImage) this.tweens.add({targets: this.demonImage, alpha: 0.4, duration: 300}); this.showDeviceDialogue(text, res); });
+2816: 
+2817:                       await localSayDemon('「わがしもべたちは、わらわに従っていただけだ。おぬしもむやみに殺したいわけではないのだろう？」');
+2818:                       await localSayInuneko('「まおうさま……だめだわん……まおうさまがいなくなったら……」');
+2819:                       await localSayDemon('「だから今ここで契約を結べ。われはこのまま何もしない。だからしもべを殺すな」');
+2820:                       await localSayHero('「…わかった。」');
+2821:                       await localSayDevice('「おい、勝手に決めるな。お前の使命を忘れたのか。魔王を倒した後、残りのやつらも倒しに行くぞ。」');
+2822:                       await localSayDemon('「ふざけるな！！！わらわたちが何をした！もしも世界に悪が存在するのなら、それは！」');
+2823:                       
+2824:                       // 画面が乱れる（目に優しい暗めの横線フリッカーと微弱な揺れ）
+2825:                       this.cameras.main.shake(1000, 0.015);
+2826:                       let glitchRect1 = this.add.rectangle(1920/2, 1080/2 - 150, 1920, 200, 0x000000).setAlpha(0).setDepth(400);
+2827:                       let glitchRect2 = this.add.rectangle(1920/2, 1080/2 + 250, 1920, 100, 0x000000).setAlpha(0).setDepth(400);
+2828:                       this.tweens.add({targets: glitchRect1, alpha: 0.8, duration: 50, yoyo: true, repeat: 10});
+2829:                       this.tweens.add({targets: glitchRect2, alpha: 0.8, duration: 80, yoyo: true, repeat: 6});
+2830:                       
+2831:                       let errorText = this.add.text(1920/2, 1080/2, 'ꂍꂍꂍꂍEẼGGGG[[[[AAEEE ', {fontFamily: '"DotGothic16"', fontSize: '100px', color: '#ff0000', backgroundColor: '#000000'}).setOrigin(0.5).setDepth(401);
+2832:                       this.tweens.add({targets: errorText, alpha: 0.2, duration: 40, yoyo: true, repeat: 12});
+2833:                       
+2834:                       await new Promise(r => this.time.delayedCall(500, r));
+2835:                       
+2836:                       // 銃声SE×２回
+2837:                       MOT.Audio.playSelect(); 
+2838:                       await new Promise(r => this.time.delayedCall(200, r));
+2839:                       MOT.Audio.playSelect();
+2840:                       
+2841:                       errorText.destroy();
+2842:                       glitchRect1.destroy();
+2843:                       glitchRect2.destroy();
+2844:                       
+2845:                       // 魔王と犬猫爆発演出（サイズを相対的に少し拡大しつつ透明にして完全削除）
+2846:                       if(this.demonImage) {
+2847:                           this.tweens.add({ targets: this.demonImage, scale: this.demonImage.scaleX * 1.5, alpha: 0, duration: 500, ease: 'Power2', onComplete: () => { this.demonImage.destroy(); this.demonImage = null; } });
+2848:                       }
+2849:                       if(this.inunekoImage) {
+2850:                           this.tweens.add({ targets: this.inunekoImage, scale: this.inunekoImage.scaleX * 1.5, alpha: 0, duration: 500, ease: 'Power2', onComplete: () => { this.inunekoImage.destroy(); this.inunekoImage = null; } });

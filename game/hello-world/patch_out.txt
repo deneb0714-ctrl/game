@@ -1,0 +1,35 @@
+3141:                               if(this.heroImage) this.tweens.add({targets: this.heroImage, alpha: 1, duration: 300});
+3142:                               if(this.demonImage) this.tweens.add({targets: this.demonImage, alpha: 0, duration: 300});
+3143:                               if(this.inunekoImage) this.tweens.add({targets: this.inunekoImage, alpha: 0, duration: 300});
+3144:                               if(this.doctorImage) this.tweens.add({targets: this.doctorImage, alpha: 0.4, duration: 300});
+3145:                               this.showDialogue(MOT.flags.heroName || '勇者', text, res);
+3146:                           });
+3147: 
+3148:                           await localSayHero('「……魔王は……殺さなきゃ……エラーを消去……」');
+3149: 
+3150:                           let downCount = 0;
+3151:                           while (downCount < 10) {
+3152:                               let c = await askShatterChoice('1. 殺す', '2. 殺さない', true);
+3153:                               
+3154:                               if (c === 1) {
+3155:                                   ending('normal_unresistable');
+3156:                                   return;
+3157:                               } else {
+3158:                                   downCount++;
+3159:                                   if (downCount === 1) {
+3160:                                       if(MOT.Audio.playError) MOT.Audio.playError();
+3161:                                       await localSayDoctor('「……お前は、無駄な選択を……」', 'doctor_stand');
+3162:                                       await localSayDoctor('「……殺すんだ。」', 'doctor_stand');
+3163:                                   } else if (downCount >= 10) {
+3164:                                       await localSayHero('「……それでも私は、殺さない……！！」');
+3165:                                       break;
+3166:                                   } else {
+3167:                                       if(MOT.Audio.playError) MOT.Audio.playError();
+3168:                                   }
+3169:                               }
+3170:                           }
+3171:                           await sayDemon('「……結局我々を殺さず、お前は何をしにきたんだ？あの法螺吹きにけしかけられて、わらわたちを滅ぼしに来たんだろう？」');
+3172:                           
+3173:                           await localSayDemon('「そうか……英断だな…。」', 'demon_lord_normal');
+3174:                           await localSayDemon('「そしてここから話すのは、信じるも信じないもお前の自由だ。」');
+3175:                           await localSayDemon('「お前は、あいつに”魔王が世界を滅ぼそうとしている”とでも言われたのだろう？だが、残念なことに、それはわらわたちを滅ぼすための方便にすぎぬ。」');

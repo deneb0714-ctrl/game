@@ -1,0 +1,5 @@
+106:     this.player = this.physics.add.sprite(-100, 460, 'hero_combat_down_open').setScale(2).setDepth(10);
+114:     this.player.body.setSize(14, 60);
+115:     this.player.body.setOffset(25, 25);
+1471:     slash.body.setSize(bw, bh);
+1472:     slash.body.setOffset((slash.width - bw) / 2, (slash.height - bh) / 2);

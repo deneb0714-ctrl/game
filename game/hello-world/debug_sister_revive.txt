@@ -1,0 +1,30 @@
+251:     if (key === 'boss3_twins') {
+252:       if (!this.anims.exists('sister_shoot_anim')) {
+253:         this.anims.create({
+254:           key: 'sister_shoot_anim',
+255:           frames: [
+256:             { key: 'sister_shoot1', duration: 1500 },
+257:             { key: 'sister_shoot1_blink', duration: 150 },
+258:             { key: 'sister_shoot1', duration: 1500 },
+259:             { key: 'sister_shoot1_blink', duration: 150 },
+260:             { key: 'sister_shoot2', duration: 1500 },
+261:             { key: 'sister_shoot2_blink', duration: 150 },
+262:             { key: 'sister_shoot2', duration: 1500 },
+263:             { key: 'sister_shoot2_blink', duration: 150 }
+264:           ],
+265:           repeat: -1
+266:         });
+267:       }
+268:       if (!this.anims.exists('sister_revive_anim')) {
+269:         this.anims.create({
+270:           key: 'sister_revive_anim',
+271:           frames: [
+272:             { key: 'sister_revive1' },
+273:             { key: 'sister_revive2' }
+274:           ],
+275:           frameRate: 6,
+276:           repeat: -1
+277:         });
+278:       }
+279:       var sister = this.physics.add.sprite(1920, 700, cfg.texture2);
+280:       sister.setScale(cfg.scale2);

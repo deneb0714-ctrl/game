@@ -1,0 +1,890 @@
+1: // =============================================
+2: // BootScene.js – アセットプリロード＋プロシージャルスプライト生成
+3: // =============================================
+4: window.MOT = window.MOT || {};
+5: 
+6: class BootScene extends Phaser.Scene {
+7:   constructor() {
+8:     super({ key: 'BootScene' });
+9:   }
+10: 
+11:   preload() {
+12:     // Loading bar (moved to bottom right)
+13:     const w = this.cameras.main.width;
+14:     const h = this.cameras.main.height;
+15:     const barW = 300, barH = 20;
+16:     const barX = w - barW - 40, barY = h - barH - 40;
+17: 
+18:     const bg = this.add.graphics();
+19:     bg.fillStyle(0x1F2933, 1);
+20:     bg.fillRect(barX, barY, barW, barH);
+21: 
+22:     const bar = this.add.graphics();
+23:     this.load.on('progress', function (v) {
+24:       bar.clear();
+25:       bar.fillStyle(0x4FD1FF, 1);
+26:       // Real load might be fast, but we show it anyway
+27:       bar.fillRect(barX + 4, barY + 4, (barW - 8) * v, barH - 8);
+28:     });
+29: 
+30:     // 背景を暗くする (CRTモニター風の深い黒緑)
+31:     this.add.rectangle(0, 0, w, h, 0x030803).setOrigin(0);
+32: 
+33:     // CRTスキャンライン（走査線）オーバーレイ
+34:     const scanlines = this.add.graphics().setDepth(100);
+35:     scanlines.fillStyle(0x000000, 0.35);
+36:     for (let y = 0; y < h; y += 4) {
+37:       scanlines.fillRect(0, y, w, 2);
+38:     }
+39: 
+40:     const prefix = "mmƂ̃````bbggggO: ";
+41:     const lines = [
+42:       prefix + "...link established",
+43:       prefix + "...signal drift: 0.03",
+44:       "",
+45:       prefix + "こんにちは。『GGS 』よ。",
+46:       "",
+47:       prefix + "世界構造の誤差、観測値より逸脱。",
+48:       prefix + "あなたには、それを正すだけの力がある。",
+49:       "",
+50:       prefix + "悪性因子、未除去。この世界を救う宿命を背負いなさい。",
+51:       "",
+52:       prefix + "...trace lost",
+53:       prefix + "...reconnecting..."
+54:     ];
+55:     
+56:     // 画面中央付近に配置するための計算
+57:     const startX = w / 2 - 500;
+58:     const startY = h / 2 - 320;
+59: 
+60:     const textObj = this.add.text(startX, startY, '', {
+61:       fontFamily: '"DotGothic16", "Courier New", Courier, monospace',
+62:       fontSize: '28px',
+63:       color: '#00FF66',
+64:       fontStyle: 'bold',
+65:       lineSpacing: 16,
+66:       shadow: {
+67:         offsetX: 0,
+68:         offsetY: 0,
+69:         color: '#00FF66',
+70:         blur: 10,
+71:         stroke: true,
+72:         fill: true
+73:       }
+74:     });
+75: 
+76:     this.isTypingDone = false;
+77:     this.isLoadDone = false;
+78: 
+79:     let currentLine = 0;
+80:     let currentChar = 0;
+81:     let displayText = "";
+82:     let cursorChar = "■";
+83: 
+84:     this.cursorTimer = this.time.addEvent({
+85:       delay: 500,
+86:       loop: true,
+87:       callback: () => {
+88:         cursorChar = (cursorChar === "■") ? " " : "■";
+89:         if (textObj && textObj.active && this.isTypingDone) {
+90:           textObj.setText(displayText + cursorChar);
+91:         }
+92:       }
+93:     });
+94: 
+95:     const typeNextChar = () => {
+96:       if (currentLine >= lines.length) {
+97:         this.isTypingDone = true;
+98:         if (this.isLoadDone) {
+99:           this.time.delayedCall(1800, () => {
+100:             if (this.cursorTimer) { this.cursorTimer.remove(); this.cursorTimer = null; }
+101:             this.scene.start('TitleScene');
+102:           });
+103:         }
+104:         return;
+105:       }
+106:       
+107:       const lineText = lines[currentLine];
+108:       if (currentChar < lineText.length) {
+109:         displayText += lineText[currentChar];
+110:         textObj.setText(displayText + "■");
+111:         currentChar++;
+112:         
+113:         let delay = 15; 
+114:         const lastChar = lineText[currentChar - 1];
+115:         if (lastChar === '。' || lastChar === '、') delay = 200;
+116:         else if (lastChar === ' ') delay = 5;
+117:         
+118:         this.time.delayedCall(delay, typeNextChar);
+119:       } else {
+120:         displayText += "\n";
+121:         textObj.setText(displayText + "■");
+122:         currentLine++;
+123:         currentChar = 0;
+124:         
+125:         let delay = 250; 
+126:         if (lineText === "") delay = 80;
+127:         
+128:         this.time.delayedCall(delay, typeNextChar);
+129:       }
+130:     };
+131:     
+132:     // タイピング開始
+133:     this.time.delayedCall(500, typeNextChar);
+134: 
+135:     const loadText = this.add.text(barX + barW / 2, barY - 20, 'LOADING...', {
+136:       fontFamily: '"Press Start 2P"', fontSize: '14px', color: '#4FD1FF'
+137:     }).setOrigin(0.5);
+138: 
+139:     this.load.on('complete', () => {
+140:       bar.destroy(); bg.destroy(); loadText.destroy();
+141:     });
+142: 
+143:     // Load a tiny transparent pixel just to have something to load
+144:     // All real textures are generated procedurally in create()
+145:     this.load.image('_placeholder', 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==');
+146: 
+147:     // 博士の顔アイコン (assets/images から読み込むためBase64は削除)
+148: 
+149:     const v = window.GAME_VERSION || 'v1';
+150:     
+151:     // 双子用BGM
+152:     this.load.audio('twins_bgm', 'assets/audio/twins_bgm.mp3');
+153:     this.load.audio('boss1_bgm', 'assets/audio/boss1_bgm.mp3');
+154:     this.load.audio('boss2_bgm', 'assets/audio/boss2_bgm.wav');
+155:     this.load.audio('demon_lord_bgm', 'assets/audio/demon_lord_bgm.mp3');
+156:     this.load.audio('bgm_stage', 'assets/audio/bgm_stage.mp3');
+157: 
+158:     // 博士の立ち絵
+159:     this.load.image('doctor_stand', 'assets/images/doctor_normal.png?v=' + v);
+160:     this.load.image('doctor_stand_open', 'assets/images/doctor_open_eyes.png?v=' + v);
+161:     this.load.image('doctor_combat', 'assets/images/doctor_combat.png?v=' + v);
+162:     this.load.image('doctor_combat_beam', 'assets/images/doctor_combat_beam.png?v=' + v);
+163:     
+164:     // 主人公の立ち絵は以下で読み込みます
+165:     
+166:     // 主人公の戦闘時・他者との会話時の立ち絵
+167:     this.load.spritesheet('hero_stand_combat', 'assets/images/hero_combat_sheet.png?v=' + v, {
+168:       frameWidth: 63,
+169:       frameHeight: 112
+170:     });
+171:     this.load.spritesheet('demon_stand_combat', 'assets/images/demon_lord_sheet.png?v=' + v, {
+172:       frameWidth: 315,
+173:       frameHeight: 560
+174:     });
+175: 
+176:     // 主人公の瞬き（表情切り替え用）
+177:     this.load.image('hero_stand_blink', 'assets/images/hero_stand_blink.png?v=' + v);
+178:     this.load.image('hero_stand', 'assets/images/hero_stand.png?v=' + v);
+179:     this.load.image('hero_stand_silent', 'assets/images/hero_stand_silent.png?v=' + v);
+180:     this.load.image('hero_stand_corrupted', 'assets/images/hero_stand_corrupted.png?v=' + v);
+181:     this.load.image('hero_cry', 'assets/images/hero_cry.png?v=' + v);
+182:     this.load.image('doctor_awaken_smile', 'assets/images/覚醒_笑.png?v=' + v);
+183:     this.load.image('doctor_awaken_smile_weapon', 'assets/images/覚醒_笑_武器展開.png?v=' + v);
+184:     this.load.image('doctor_awaken_smile_dying', 'assets/images/覚醒_笑_瀕死.png?v=' + v);
+185:     this.load.image('doctor_awaken_straight', 'assets/images/覚醒_真顔.png?v=' + v);
+186:     this.load.image('doctor_awaken_straight_dying', 'assets/images/覚醒_真顔_瀕死.png?v=' + v);
+187:     this.load.image('doctor_awaken_straight_weapon', 'assets/images/覚醒_真顔_武器展開.png?v=' + v);
+188:     this.load.image('doctor_awaken_normal', 'assets/images/覚醒_通常.png?v=' + v);
+189:     this.load.image('doctor_awaken_normal_dying', 'assets/images/覚醒_通常_瀕死.png?v=' + v);
+190:     this.load.image('doctor_awaken_normal_weapon', 'assets/images/覚醒_通常_武器展開.png?v=' + v);
+191: 
+192: 
+193:     this.load.image('demon_lord_normal', 'assets/images/demon_lord_normal.png?v=' + v);
+194:     this.load.image('demon_lord_blink', 'assets/images/demon_lord_blink.png?v=' + v);
+195:     
+196:     // Inuneko Star
+197:     this.load.image('true_demon_lord', 'assets/images/true_demon_lord.gif?v=' + v);
+198:     this.load.image('inuneko_stand', 'assets/images/inuneko_stand.png?v=' + v);
+199:     this.load.image('inuneko_blink', 'assets/images/inuneko_blink.png?v=' + v);
+200:     this.load.image('inuneko_dying', 'assets/images/inuneko_dying.png?v=' + v);
+201:     this.load.spritesheet('inuneko_combat', 'assets/images/inuneko_combat_sheet.png?v=' + v, { frameWidth: 315, frameHeight: 560 });
+202:     
+203:     this.load.image('icon_person', 'assets/images/icon_person.png?v=' + v);
+204:     this.load.image('demon_lord_dying', 'assets/images/demon_lord_dying.png?v=' + v);
+205:     this.load.image('demon_lord_shock', 'assets/images/demon_lord_shock.png?v=' + v);
+206:     this.load.image('demon_lord_eyes_closed', 'assets/images/demon_lord_eyes_closed.png?v=' + v);
+207: 
+208:     // Boss 1 and 2
+209:     this.load.image('boss1_muscle', 'assets/images/boss1_muscle.jpg?v=' + v);
+210:     this.load.image('boss1_normal', 'assets/images/boss1_normal.png?v=' + v);
+211:     this.load.image('boss1_angry', 'assets/images/boss1_angry.png?v=' + v);
+212:     this.load.image('boss1_dying', 'assets/images/boss1_hurt_normal.png?v=' + v);
+213:     this.load.image('boss1_sweat', 'assets/images/boss1_sweat.png?v=' + v);
+214:     this.load.image('boss1_hurt_angry', 'assets/images/boss1_hurt_angry.png?v=' + v);
+215:     
+216:     // 新しいエフェクト・弾幕画像
+217:     this.load.image('boss1_wind_slash', 'assets/images/boss1_wind_slash.png?v=' + v);
+218:     this.load.image('boss2_bullet', 'assets/images/boss2_bullet.png?v=' + v);
+219:     this.load.spritesheet('boss1_combat', 'assets/images/boss1_combat_sheet.png?v=' + v, { frameWidth: 100, frameHeight: 100 });
+220:     this.load.image('boss2_combat', 'assets/images/boss2_battle.png?v=' + v);
+221:     this.load.spritesheet('boss2_battle_anim', 'assets/images/boss2_battle.png?v=' + v, { frameWidth: 543, frameHeight: 560 });
+222:     this.load.spritesheet('boss3_battle_anim', 'assets/images/boss3_battle.png?v=' + v, { frameWidth: 560, frameHeight: 533 });
+223:     this.load.image('boss2_normal', 'assets/images/boss2_normal.png?v=' + v);
+224:     this.load.image('boss2_normal_dying', 'assets/images/boss2_normal_dying.png?v=' + v);
+225:     this.load.image('boss2_angry', 'assets/images/boss2_angry.png?v=' + v);
+226:     this.load.image('boss2_angry_dying', 'assets/images/boss2_angry_dying.png?v=' + v);
+227:     this.load.image('boss2_eyes_closed', 'assets/images/boss2_eyes_closed.png?v=' + v);
+228:     this.load.image('boss2_eyes_closed_dying', 'assets/images/boss2_eyes_closed_dying.png?v=' + v);
+229:     this.load.image('boss2_surprised', 'assets/images/boss2_surprised.png?v=' + v);
+230:     this.load.image('boss2_surprised_dying', 'assets/images/boss2_surprised_dying.png?v=' + v);
+231:     
+232:     // Doctor
+233:     this.load.image('doctor_normal', 'assets/images/doctor_normal.png?v=' + v);
+234:     this.load.image('doctor_open_eyes', 'assets/images/doctor_open_eyes.png?v=' + v);
+235:     this.load.image('doctor_face', 'assets/images/doctor_stand.png?v=' + v);
+236: 
+237:     // Inuneko Star
+238: 
+239:     this.load.image('inuneko_stand', 'assets/images/inuneko_stand.png?v=' + v);
+240:     this.load.image('inuneko_dying', 'assets/images/inuneko_dying.png?v=' + v);
+241:     this.load.image('inuneko_blink', 'assets/images/inuneko_blink.png?v=' + v);
+242:     this.load.image('sister_normal', 'assets/images/sister_normal.png?v=' + v);
+243:     this.load.image('sister_blink', 'assets/images/sister_blink.png?v=' + v);
+244:     this.load.image('sister_hurt', 'assets/images/sister_hurt.png?v=' + v);
+245:     
+246:     // New sister combat images
+247:     this.load.image('sister_shoot1', 'assets/images/妹_撃つ1.png?v=' + v);
+248:     this.load.image('sister_shoot1_blink', 'assets/images/妹_撃つ1目閉じ.png?v=' + v);
+249:     this.load.image('sister_shoot2', 'assets/images/妹_撃つ2.png?v=' + v);
+250:     this.load.image('sister_shoot2_blink', 'assets/images/妹_撃つ2目閉じ.png?v=' + v);
+251:     this.load.image('sister_revive1', 'assets/images/妹_兄蘇生1.png?v=' + v);
+252:     this.load.image('sister_revive2', 'assets/images/妹_兄蘇生2.png?v=' + v);
+253:     this.load.image('brother_normal', 'assets/images/brother_normal.png?v=' + v);
+254:     this.load.image('brother_closed', 'assets/images/brother_closed.png?v=' + v);
+255:     this.load.image('brother_dying', 'assets/images/brother_dying.png?v=' + v);
+256:     this.load.image('brother_dying_closed', 'assets/images/brother_dying_closed.png?v=' + v);
+257:     this.load.image('brother_hurt', 'assets/images/brother_hurt.png?v=' + v);
+258:     this.load.image('brother_hurt_closed', 'assets/images/brother_hurt_closed.png?v=' + v);
+259: 
+260: 
+261:     // Hero New
+262:     this.load.image('hero_silent_new', 'assets/images/hero_silent_new.png?v=' + v);
+263: 
+264:     // Icons
+265:     this.load.image('icon_person', 'assets/images/icon_person.png?v=' + v);
+266:     this.load.image('icon_battery', 'assets/images/icon_battery.png?v=' + v);
+267:     this.load.image('icon_battery', 'assets/images/icon_battery.png?v=' + v);
+268: 
+269:     // Title background (Hello World)
+270:     this.load.image('title_bg', 'assets/images/title_bg.png?v=' + v);
+271:     
+272:     // Title 1X assets
+273:     this.load.image('title_1x_back', 'assets/images/title_1x_back.png?v=' + v);
+274:     this.load.image('title_1x_number', 'assets/images/title_1x_number.png?v=' + v);
+275:     this.load.image('title_1x_hello_world', 'assets/images/title_1x_hello_world.png?v=' + v);
+276:     this.load.image('title_1x_baria', 'assets/images/title_1x_baria.png?v=' + v);
+277:     this.load.image('game_over_img', 'assets/images/game_over_img.png?v=' + v);
+278:     
+279:     // Title background (Glitch)
+280:     this.load.image('title_bg_glitch', 'assets/images/title_bg_glitch.png?v=' + v);
+281:     
+282:     // 強制シャットダウン用タイトル画像
+283:     this.load.image('404_bg', 'assets/images/404_bg.png?v=' + v);
+284:     this.load.image('not_found_text', 'assets/images/not_found_text.png?v=' + v);
+285: 
+286:     // Hero Title GIF (SpriteSheet)
+287:     this.load.spritesheet('hero_title_anim', 'assets/images/hero_title_sheet.png?v=' + v, {
+288:       frameWidth: 960,
+289:       frameHeight: 540
+290:     });
+291:     
+292:     // Custom Backgrounds (swapped per user request)
+293:     this.load.image('bg_stage1_scroll', 'assets/images/bg_boss1_static.png?v=' + v);
+294:     this.load.image('bg_boss1_static', 'assets/images/bg_stage1_scroll.jpg?v=' + v);
+295:     
+296:     this.load.image('bg_lab', 'assets/bg_lab.png');
+297:   }
+298: 
+299:   create() {
+300:     this.generateAllTextures();
+301:     
+302:     // アニメーションの作成
+303:     this.anims.create({
+304:       key: 'boss1_idle',
+305:       frames: this.anims.generateFrameNumbers('boss1_combat', { start: 0, end: 1 }),
+306:       frameRate: 2,
+307:       repeat: -1
+308:     });
+309: 
+310:     this.anims.create({
+311:       key: 'boss1_attack_right',
+312:       frames: this.anims.generateFrameNumbers('boss1_combat', { frames: [4, 5, 2, 3] }),
+313:       frameRate: 6,
+314:       repeat: 0
+315:     });
+316: 
+317:     this.anims.create({
+318:       key: 'boss1_attack_left',
+319:       frames: this.anims.generateFrameNumbers('boss1_combat', { frames: [0, 1, 6, 7] }),
+320:       frameRate: 6,
+321:       repeat: 0
+322:     });
+323: 
+324:     this.anims.create({
+325:       key: 'boss2_battle_play',
+326:       frames: this.anims.generateFrameNumbers('boss2_battle_anim', { start: 0, end: 28 }),
+327:       frameRate: 15,
+328:       repeat: -1
+329:     });
+330: 
+331:     this.anims.create({
+332:       key: 'boss3_battle_play',
+333:       frames: this.anims.generateFrameNumbers('boss3_battle_anim', { start: 0, end: 19 }),
+334:       frameRate: 15,
+335:       repeat: -1
+336:     });
+337: 
+338:     this.anims.create({
+339:       key: 'hero_combat_anim',
+340:       frames: this.anims.generateFrameNumbers('hero_stand_combat', { start: 0, end: 59 }),
+341:       frameRate: 15,
+342:       repeat: -1
+343:     });
+344:     
+345:     this.anims.create({
+346:       key: 'demon_combat_anim',
+347:       frames: this.anims.generateFrameNumbers('demon_stand_combat', { start: 0, end: 39 }),
+348:       frameRate: 15,
+349:       repeat: -1
+350:     });
+351: 
+352:     // 高解像度画像（立ち絵など）を縮小時にガビガビにならないようLINEARフィルタを一括適用
+353:     const highResKeys = [
+354:       'doctor_stand', 'doctor_stand_open', 'doctor_normal', 'doctor_open_eyes', 'doctor_face',
+355:       'doctor_awaken_smile', 'doctor_awaken_smile_weapon', 'doctor_awaken_smile_dying',
+356:       'doctor_awaken_straight', 'doctor_awaken_straight_dying', 'doctor_awaken_straight_weapon',
+357:       'doctor_awaken_normal', 'doctor_awaken_normal_dying', 'doctor_awaken_normal_weapon',
+358:       'boss1_muscle', 'boss1_normal', 'boss1_angry', 'boss1_dying', 'boss1_sweat', 'boss1_hurt_angry', 'boss2_combat',
+359:       'hero_stand', 'hero_stand_silent', 'hero_stand_corrupted', 'hero_stand_blink',
+360:       'demon_lord_normal', 'demon_lord_blink', 'demon_lord_dying', 'demon_lord_shock', 'demon_lord_eyes_closed',
+361:       'inuneko_stand', 'inuneko_blink', 'inuneko_dying'
+362:     ];
+363:     highResKeys.forEach(k => {
+364:       if (this.textures.exists(k)) {
+365:         this.textures.get(k).setFilter(Phaser.Textures.FilterMode.LINEAR);
+366:       }
+367:     });
+368: 
+369:     this.isLoadDone = true;
+370:     if (this.isTypingDone) {
+371:       this.time.delayedCall(1800, () => {
+372:         if (this.cursorTimer) { this.cursorTimer.remove(); this.cursorTimer = null; }
+373:         this.scene.start('TitleScene');
+374:       });
+375:     }
+376:   }
+377: 
+378:   generateAllTextures() {
+379:     this.makePlayer();
+380:     this.makeEnemyBasic();
+381:     this.makeMinion1();
+382:     this.makeBoss1();
+383:     this.makeBoss3Sister();
+384:     this.makeWingLeft();
+385:     this.makeWingRight();
+386:     this.makeDemonLord();
+387:     this.makeBullets();
+388:     this.makeSlash();
+389:     this.makeItems();
+390:     this.makeBackgrounds();
+391:     this.makeUIButton();
+392:     this.makeParticles();
+393:   }
+394: 
+395:   // --- Player: 48x48 人造人間 (blue energy lines) ---
+396:   makePlayer() {
+397:     const g = this.make.graphics({ add: false });
+398:     const s = 4; // pixel size
+399:     // Body shape (12x12 grid, drawn at 4x scale = 48x48)
+400:     const body = [
+401:       '....BBBB....',
+402:       '...BCCCBB...',
+403:       '..BCCCCCCB..',
+404:       '..BCCEECCB..',
+405:       '..BCCCCCCB..',
+406:       '...BCCCBB...',
+407:       '..BBBBBBB...',
+408:       '.BBAABBABB..',
+409:       '.BBAABBABB..',
+410:       '..BB.BB.BB..',
+411:       '..BB.BB.BB..',
+412:       '..BB.BB.BB..',
+413:     ];
+414:     const colors = { 'B': 0x1a1a2e, 'C': 0x3a3a5e, 'A': 0x4FD1FF, 'E': 0x4FD1FF, '.': -1 };
+415:     this.drawPixelArt(g, body, colors, s, 0, 0);
+416:     g.generateTexture('player', 48, 48);
+417:     g.destroy();
+418:   }
+419: 
+420:   // --- Basic enemy ---
+421:   makeEnemyBasic() {
+422:     const g = this.make.graphics({ add: false });
+423:     const s = 4;
+424:     const data = [
+425:       '...KKKK...',
+426:       '..KRRRRK..',
+427:       '.KRRRRRRK.',
+428:       'KRRDRRDRRK',
+429:       'KRRRRRRRRK',
+430:       'KRRRRRRRRK',
+431:       '.KRRRRRRK.',
+432:       '..KRRRRK..',
+433:       '...KRRK...',
+434:       '....KK....'
+435:     ];
+436:     const colors = { 'R': 0x993333, 'D': 0x220000, 'K': 0x000000, '.': -1 };
+437:     this.drawPixelArt(g, data, colors, s, 0, 0);
+438:     g.generateTexture('enemy_basic', 40, 40);
+439:     g.destroy();
+440:   }
+441: 
+442:   // --- Minion1 (下っ端1, 情けない表情) ---
+443:   makeMinion1() {
+444:     const g = this.make.graphics({ add: false });
+445:     const s = 4;
+446:     const data = [
+447:       '..PPPP..',
+448:       '.PPPPPP.',
+449:       'PP.PP.PP',
+450:       'PPPPPPPP',
+451:       'PP.PP.PP',
+452:       '.PPPPPP.',
+453:       '..PPPP..',
+454:       '.PP..PP.',
+455:     ];
+456:     const colors = { 'P': 0x8866aa, '.': -1 };
+457:     this.drawPixelArt(g, data, colors, s, 0, 0);
+458:     g.generateTexture('minion1', 32, 32);
+459:     g.destroy();
+460:   }
+461: 
+462:   // --- Boss1 (長男, 鎧) ---
+463:   makeBoss1() {
+464:     const g = this.make.graphics({ add: false });
+465:     const s = 4;
+466:     const data = [
+467:       '...GGGG...',
+468:       '..GGGGGG..',
+469:       '.GGWGGWGG.',
+470:       '.GGGGGGGG.',
+471:       '.GGGGGGGG.',
+472:       'GGGGGGGGGG',
+473:       'GSSGSSGSSG',
+474:       'GSSGSSGSSG',
+475:       '.GGGGGGGG.',
+476:       '.GGG..GGG.',
+477:       '.GGG..GGG.',
+478:       '.GGG..GGG.',
+479:     ];
+480:     const colors = { 'G': 0x666688, 'S': 0x8888aa, 'W': 0xffffff, '.': -1 };
+481:     this.drawPixelArt(g, data, colors, s, 0, 0);
+482:     g.generateTexture('boss1', 40, 48);
+483:     g.destroy();
+484:   }
+485: 
+486: 
+487: 
+488:   // --- Boss 3 Sister (赤・ピンク系) ---
+489:   makeBoss3Sister() {
+490:     const g = this.make.graphics({ add: false });
+491:     const s = 4;
+492:     const data = [
+493:       '..IIII..',
+494:       '.IIIIII.',
+495:       'IIWIIIWI',
+496:       'IIIIIIII',
+497:       '.IIIIII.',
+498:       '.IIIIII.',
+499:       'IIDDDDII',
+500:       'IIDDDDII',
+501:       '.II..II.',
+502:       '.II..II.',
+503:     ];
+504:     const colors = { 'I': 0x663344, 'D': 0x4a2a2a, 'W': 0xff99dd, '.': -1 };
+505:     this.drawPixelArt(g, data, colors, s, 0, 0);
+506:     g.generateTexture('boss3_sister', 32, 40);
+507:     g.destroy();
+508:   }
+509: 
+510:   // --- Wing Left (冷静, 青系) ---
+511:   makeWingLeft() {
+512:     const g = this.make.graphics({ add: false });
+513:     const s = 3;
+514:     const data = [
+515:       '....BBBB....',
+516:       '...BBBBBB...',
+517:       '..BBWBBWBB..',
+518:       '..BBBBBBBB..',
+519:       '..BBBBBBBB..',
+520:       '.BBBBBBBBBB.',
+521:       'BBBB.BB.BBBB',
+522:       'BBB..BB..BBB',
+523:       'BB...BB...BB',
+524:       '.B...BB...B.',
+525:       '....BBBB....',
+526:       '....B..B....',
+527:       '....B..B....',
+528:     ];
+529:     const colors = { 'B': 0x2255aa, 'W': 0xaaddff, '.': -1 };
+530:     this.drawPixelArt(g, data, colors, s, 0, 0);
+531:     g.generateTexture('wing_left', 36, 39);
+532:     g.destroy();
+533:   }
+534: 
+535:   // --- Wing Right (激情, 赤系) ---
+536:   makeWingRight() {
+537:     const g = this.make.graphics({ add: false });
+538:     const s = 3;
+539:     const data = [
+540:       '....RRRR....',
+541:       '...RRRRRR...',
+542:       '..RRWRRWRR..',
+543:       '..RRRRRRRR..',
+544:       '..RRRRRRRR..',
+545:       '.RRRRRRRRRR.',
+546:       'RRRR.RR.RRRR',
+547:       'RRR..RR..RRR',
+548:       'RR...RR...RR',
+549:       '.R...RR...R.',
+550:       '....RRRR....',
+551:       '....R..R....',
+552:       '....R..R....',
+553:     ];
+554:     const colors = { 'R': 0xaa2233, 'W': 0xffaaaa, '.': -1 };
+555:     this.drawPixelArt(g, data, colors, s, 0, 0);
+556:     g.generateTexture('wing_right', 36, 39);
+557:     g.destroy();
+558:   }
+559: 
+560:   // --- Demon Lord (魔王, 大型 128x128) ---
+561:   makeDemonLord() {
+562:     const g = this.make.graphics({ add: false });
+563:     const s = 8;
+564:     const data = [
+565:       'D..DDDDDD..D',
+566:       'DD.DDDDDD.DD',
+567:       'DDDDDDDDDDD.',
+568:       '.DDWDDDDWDD.',
+569:       '.DDDDDDDDD..',
+570:       '.DDDDRDDDD..',
+571:       '..DDDDDDDD..',
+572:       '.DDDDDDDDDD.',
+573:       'DDDDSDDSDDD.',
+574:       'DDDDDDDDDDDD',
+575:       '.DDDDDDDDD..',
+576:       '.DDD.DD.DDD..',
+577:       '..DD.DD.DD...',
+578:       '..DD.DD.DD...',
+579:     ];
+580:     const colors = { 'D': 0x440022, 'W': 0xFF2E2E, 'R': 0x880000, 'S': 0x660033, '.': -1 };
+581:     this.drawPixelArt(g, data, colors, s, 0, 0);
+582:     g.generateTexture('demon_lord', 96, 112);
+583:     g.destroy();
+584:   }
+585: 
+586:   // --- Bullets ---
+587:   makeBullets() {
+588:     // Player bullet (cyan)
+589:     const g1 = this.make.graphics({ add: false });
+590:     g1.fillStyle(0x4FD1FF, 1);
+591:     g1.fillRect(0, 0, 12, 4);
+592:     g1.fillStyle(0xffffff, 0.8);
+593:     g1.fillRect(2, 1, 8, 2);
+594:     g1.generateTexture('bullet_player', 12, 4);
+595:     g1.destroy();
+596: 
+597:     // Enemy bullet (red)
+598:     const g2 = this.make.graphics({ add: false });
+599:     g2.fillStyle(0xFF4B6E, 1);
+600:     g2.fillCircle(6, 6, 6);
+601:     g2.fillStyle(0xffffff, 0.5);
+602:     g2.fillCircle(4, 4, 2);
+603:     g2.generateTexture('bullet_enemy', 12, 12);
+604:     g2.destroy();
+605: 
+606:     // Homing bullet (pink glow)
+607:     const g3 = this.make.graphics({ add: false });
+608:     g3.fillStyle(0xFF2E2E, 0.4);
+609:     g3.fillCircle(8, 8, 8);
+610:     g3.fillStyle(0xFF4B6E, 1);
+611:     g3.fillCircle(8, 8, 5);
+612:     g3.fillStyle(0xffffff, 0.6);
+613:     g3.fillCircle(6, 6, 2);
+614:     g3.generateTexture('bullet_homing', 16, 16);
+615:     g3.destroy();
+616: 
+617:     // White base bullet for tinting
+618:     const gw = this.make.graphics({ add: false });
+619:     gw.fillStyle(0xffffff, 1);
+620:     gw.fillCircle(6, 6, 6);
+621:     gw.generateTexture('bullet_enemy_white', 12, 12);
+622:     gw.destroy();
+623: 
+624:     // White homing bullet for tinting
+625:     const gh = this.make.graphics({ add: false });
+626:     gh.fillStyle(0xffffff, 0.4);
+627:     gh.fillCircle(8, 8, 8);
+628:     gh.fillStyle(0xffffff, 1);
+629:     gh.fillCircle(8, 8, 5);
+630:     gh.generateTexture('bullet_homing_white', 16, 16);
+631:     gh.destroy();
+632: 
+633:     // Star bullet for twin sister
+634:     const gs = this.make.graphics({ add: false });
+635:     gs.fillStyle(0xffffff, 1);
+636:     // Draw a diamond shape
+637:     gs.beginPath();
+638:     gs.moveTo(10, 0);  // Top
+639:     gs.lineTo(20, 10); // Right
+640:     gs.lineTo(10, 20); // Bottom
+641:     gs.lineTo(0, 10);  // Left
+642:     gs.closePath();
+643:     gs.fillPath();
+644:     gs.generateTexture('bullet_diamond', 20, 20);
+645:     gs.clear();
+646: 
+647:     // Draw a true 5-pointed star shape
+648:     gs.fillStyle(0xffffff, 1);
+649:     gs.beginPath();
+650:     let cx = 10, cy = 10, spikes = 5, outerRadius = 10, innerRadius = 4;
+651:     let rot = Math.PI / 2 * 3;
+652:     let step = Math.PI / spikes;
+653:     gs.moveTo(cx, cy - outerRadius);
+654:     for (let i = 0; i < spikes; i++) {
+655:       let x = cx + Math.cos(rot) * outerRadius;
+656:       let y = cy + Math.sin(rot) * outerRadius;
+657:       gs.lineTo(x, y);
+658:       rot += step;
+659:       x = cx + Math.cos(rot) * innerRadius;
+660:       y = cy + Math.sin(rot) * innerRadius;
+661:       gs.lineTo(x, y);
+662:       rot += step;
+663:     }
+664:     gs.lineTo(cx, cy - outerRadius);
+665:     gs.closePath();
+666:     gs.fillPath();
+667:     gs.generateTexture('bullet_star', 20, 20);
+668:     gs.destroy();
+669: 
+670:     // Laser bullet for twin brother and doctor (長めのレーザーボルト)
+671:     const gl = this.make.graphics({ add: false });
+672:     // Outer soft glow (needle shape)
+673:     gl.fillStyle(0xffffff, 0.4);
+674:     gl.beginPath();
+675:     gl.moveTo(0, 8);
+676:     gl.lineTo(200, 0);
+677:     gl.lineTo(400, 8);
+678:     gl.lineTo(200, 16);
+679:     gl.closePath();
+680:     gl.fillPath();
+681:     
+682:     // Inner bright core
+683:     gl.fillStyle(0xffffff, 1);
+684:     gl.beginPath();
+685:     gl.moveTo(50, 8);
+686:     gl.lineTo(200, 4);
+687:     gl.lineTo(350, 8);
+688:     gl.lineTo(200, 12);
+689:     gl.closePath();
+690:     gl.fillPath();
+691:     
+692:     gl.generateTexture('bullet_laser', 400, 16);
+693:     gl.destroy();
+694:   }
+695: 
+696:   // --- Slash attack texture (斬撃弾) ---
+697:   makeSlash() {
+698:     // 縦長の斬撃（垂直方向）
+699:     const g = this.make.graphics({ add: false });
+700:     // アウターグロー
+701:     g.fillStyle(0xFF8C00, 0.5);
+702:     g.fillRect(4, 0, 16, 64);
+703:     // メイン斬撃線（オレンジで太め）
+704:     g.fillStyle(0xFF4B00, 1);
+705:     g.fillRect(8, 0, 8, 64);
+706:     // 中心の白い光り
+707:     g.fillStyle(0xFFFFFF, 0.8);
+708:     g.fillRect(10, 4, 4, 56);
+709:     // 上端・下端の尖り演出
+710:     g.fillStyle(0xFF6600, 1);
+711:     g.fillTriangle(12, 0, 8, 12, 16, 12);
+712:     g.fillTriangle(12, 64, 8, 52, 16, 52);
+713:     g.generateTexture('slash_attack', 24, 64);
+714:     g.destroy();
+715:   }
+716: 
+717:   // --- Items ---
+718:   makeItems() {
+719:     // Energy item (cyan diamond)
+720:     const g1 = this.make.graphics({ add: false });
+721:     g1.fillStyle(0x4FD1FF, 1);
+722:     g1.fillTriangle(10, 0, 0, 10, 10, 20);
+723:     g1.fillTriangle(10, 0, 20, 10, 10, 20);
+724:     g1.fillStyle(0xffffff, 0.5);
+725:     g1.fillTriangle(10, 2, 3, 10, 10, 16);
+726:     g1.generateTexture('item_energy', 20, 20);
+727:     g1.destroy();
+728: 
+729:     // Red Diamond Item
+730:     const grd = this.make.graphics({ add: false });
+731:     grd.fillStyle(0xFF0000, 1);
+732:     grd.lineStyle(2, 0xFFaaaa, 1);
+733:     // Draw a diamond shape
+734:     grd.beginPath();
+735:     grd.moveTo(10, 0);
+736:     grd.lineTo(20, 10);
+737:     grd.lineTo(10, 20);
+738:     grd.lineTo(0, 10);
+739:     grd.closePath();
+740:     grd.fillPath();
+741:     grd.strokePath();
+742:     grd.generateTexture('item_red_diamond', 20, 20);
+743:     grd.destroy();
+744: 
+745:     // Health item (green cross)
+746:     const g2 = this.make.graphics({ add: false });
+747:     g2.fillStyle(0x4FFF7F, 1);
+748:     g2.fillRect(8, 2, 4, 16);
+749:     g2.fillRect(2, 8, 16, 4);
+750:     g2.generateTexture('item_health', 20, 20);
+751:     g2.destroy();
+752: 
+753:     // Removed dynamic generation of icon_person and icon_battery to prevent WebGL crash on generated textures
+754:   }
+755: 
+756:   // --- Scrolling backgrounds ---
+757:   makeBackgrounds() {
+758:     const w = 480;
+759:     const h = 270;
+760: 
+761:     // Stage 1: Lab / Wasteland (dark blue with grid lines)
+762:     const g1 = this.make.graphics({ add: false });
+763:     g1.fillStyle(0x050814, 1);
+764:     g1.fillRect(0, 0, 480, 270);
+765:     // Grid
+766:     g1.lineStyle(2, 0x0a1428, 0.5);
+767:     for (let x = 0; x <= 480; x += 16) { g1.lineBetween(x, 0, x, 270); }
+768:     for (let y = 0; y <= 270; y += 16) { g1.lineBetween(0, y, 480, y); }
+769:     // Machinery
+770:     g1.fillStyle(0x1F2933, 0.8);
+771:     for (let i = 0; i < 8; i++) {
+772:       const rx = Phaser.Math.Between(25, 450);
+773:       const ry = Phaser.Math.Between(25, 245);
+774:       g1.fillRect(rx, ry, Phaser.Math.Between(7, 20), Phaser.Math.Between(5, 15));
+775:     }
+776:     // Accent lights
+777:     g1.fillStyle(0x4FD1FF, 0.8);
+778:     for (let i = 0; i < 12; i++) {
+779:       g1.fillCircle(Phaser.Math.Between(0, 480), Phaser.Math.Between(0, 270), Phaser.Math.Between(1, 2));
+780:     }
+781:     g1.generateTexture('bg_stage1', w, h);
+782:     g1.destroy();
+783: 
+784:     // Stage 2: Road to Demon Castle (Yellow/Orange) - Outside
+785:     const g2 = this.make.graphics({ add: false });
+786:     g2.fillStyle(0x1a1500, 1);
+787:     g2.fillRect(0, 0, 480, 270);
+788:     // Mountains silhouette
+789:     g2.fillStyle(0x332600, 1);
+790:     for (let x = 0; x < 480; x += 30) {
+791:       const h_mtn = Phaser.Math.Between(50, 125);
+792:       g2.fillTriangle(x, 270, x + 15, 270 - h_mtn, x + 30, 270);
+793:     }
+794:     // Stars
+795:     g2.fillStyle(0xE5E7EB, 0.8);
+796:     for (let i = 0; i < 50; i++) {
+797:       g2.fillCircle(Phaser.Math.Between(0, 480), Phaser.Math.Between(0, 150), 1);
+798:     }
+799:     g2.generateTexture('bg_stage2', w, h);
+800:     g2.destroy();
+801: 
+802:     // Boss stages: Inside Demon Castle (Throne room style with different colors)
+803:     const bossColors = [
+804:       { key: 'bg_boss_stage2', bg: 0x1a1500, column: 0x332600, vortex: 0xFFaa2E }, // 黄昏の荒野 (Yellow/Orange)
+805:       { key: 'bg_boss_stage3', bg: 0x220505, column: 0x330a0a, vortex: 0xFF2E2E }, // 宵闇の森 (Red)
+806:       { key: 'bg_boss_stage4', bg: 0x051122, column: 0x0a2233, vortex: 0x2E88FF }, // 子夜の城塞 (Blue)
+807:       { key: 'bg_boss_stage5', bg: 0x0a0514, column: 0x150a28, vortex: 0xaa2EFF }  // 魔王城 (Purple)
+808:     ];
+809: 
+810:     bossColors.forEach(bc => {
+811:       const g3 = this.make.graphics({ add: false });
+812:       g3.fillStyle(bc.bg, 1);
+813:       g3.fillRect(0, 0, 480, 270);
+814:       // Columns
+815:       g3.fillStyle(bc.column, 1);
+816:       for (let x = 50; x < 480; x += 100) {
+817:         g3.fillRect(x, 25, 10, 220);
+818:         g3.fillRect(x - 2, 20, 14, 8);
+819:         g3.fillRect(x - 2, 245, 14, 8);
+820:       }
+821:       // Dark vortex center
+822:       g3.fillStyle(bc.vortex, 0.08);
+823:       g3.fillCircle(240, 135, 75);
+824:       g3.fillStyle(bc.vortex, 0.05);
+825:       g3.fillCircle(240, 135, 112);
+826:       g3.generateTexture(bc.key, w, h);
+827:       g3.destroy();
+828:     });
+829:   }
+830: 
+831:   // --- UI Button ---
+832:   makeUIButton() {
+833:     const g = this.make.graphics({ add: false });
+834:     g.fillStyle(0x1F2933, 1);
+835:     g.fillRoundedRect(0, 0, 240, 60, 8);
+836:     g.lineStyle(2, 0x4FD1FF, 1);
+837:     g.strokeRoundedRect(0, 0, 240, 60, 8);
+838:     g.generateTexture('ui_button', 240, 60);
+839:     g.destroy();
+840: 
+841:     // Small button
+842:     const g2 = this.make.graphics({ add: false });
+843:     g2.fillStyle(0x1F2933, 1);
+844:     g2.fillRoundedRect(0, 0, 360, 50, 6);
+845:     g2.lineStyle(2, 0x4FD1FF, 1);
+846:     g2.strokeRoundedRect(0, 0, 360, 50, 6);
+847:     g2.generateTexture('ui_button_wide', 360, 50);
+848:     g2.destroy();
+849:   }
+850: 
+851:   // --- Particle / FX ---
+852:   makeParticles() {
+853:     const g = this.make.graphics({ add: false });
+854:     g.fillStyle(0xffffff, 1);
+855:     g.fillCircle(4, 4, 4);
+856:     g.generateTexture('particle', 8, 8);
+857:     g.destroy();
+858: 
+859:     // Explosion frames (single color circles of different sizes)
+860:     const g2 = this.make.graphics({ add: false });
+861:     g2.fillStyle(0xFF8C00, 1);
+862:     g2.fillCircle(16, 16, 16);
+863:     g2.fillStyle(0xFFFF00, 0.7);
+864:     g2.fillCircle(16, 16, 10);
+865:     g2.fillStyle(0xffffff, 0.5);
+866:     g2.fillCircle(16, 16, 5);
+867:     g2.generateTexture('explosion', 32, 32);
+868:     g2.destroy();
+869:   }
+870: 
+871:   // Utility: draw pixel art from string array
+872:   drawPixelArt(graphics, data, colorMap, pixelSize, offsetX, offsetY) {
+873:     for (let row = 0; row < data.length; row++) {
+874:       for (let col = 0; col < data[row].length; col++) {
+875:         const ch = data[row][col];
+876:         if (colorMap[ch] !== undefined && colorMap[ch] !== -1) {
+877:           graphics.fillStyle(colorMap[ch], 1);
+878:           graphics.fillRect(
+879:             offsetX + col * pixelSize,
+880:             offsetY + row * pixelSize,
+881:             pixelSize,
+882:             pixelSize
+883:           );
+884:         }
+885:       }
+886:     }
+887:   }
+888: }
+889: 
+890: window.BootScene = BootScene;

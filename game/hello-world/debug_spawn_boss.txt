@@ -1,0 +1,25 @@
+42:     this.currentBoss = null;
+43:     this.playerInvincible = false;
+44:     this.autoShootTimer = 0;
+45:     this.bossAttackTimer = 0;
+46:     this.bossPhase = 0;
+47:     this.bossLaneTimer = null;
+48:     this.barrierCooldown = 0;
+49:     this.barrierActive = false;
+50:     this.barrierTime = 0;
+51:     this.barrierVisual = null;
+52:     // 博士指示システム初期化
+53:     MOT.DoctorDirective.init();
+54: 
+55:     // UI初期化（シーン再開時の参照残存を防ぐため）
+56:     this.energyBarBgObj = null;
+57:     this.energyBarFgObj = null;
+58:     this.energyBarOutline = null;
+59:     this.iconPersonBg = null;
+60:     this.iconPersonFill = null;
+61:     this.dollText = null;
+62:     this.iconBatteryBg = null;
+63:     this.iconBatteryFill = null;
+64:     this.intentText = null;
+65:     this.events.on('shutdown', () => {
+66:       if (this.boss1Bgm) this.boss1Bgm.stop();

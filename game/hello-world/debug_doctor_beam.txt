@@ -1,0 +1,30 @@
+1316:                 
+1317:                 // 軽量な線分当たり判定用データを登録
+1318:                 if (!this.activeLasers) this.activeLasers = [];
+1319:                 let laserData = {
+1320:                   x1: spawnX,
+1321:                   y1: spawnY,
+1322:                   x2: spawnX + Math.cos(targetAngle) * beamLength,
+1323:                   y2: spawnY + Math.sin(targetAngle) * beamLength,
+1324:                   thickness: beamThickness,
+1325:                   active: true
+1326:                 };
+1327:                 this.activeLasers.push(laserData);
+1328:                 
+1329:                 this.tweens.add({
+1330:                   targets: beam, alpha: 0, duration: 500, onComplete: () => {
+1331:                     beam.destroy();
+1332:                     laserData.active = false;
+1333:                   }
+1334:                 });
+1335:               }
+1336:             });
+1337:           });
+1338:         }
+1339:       }
+1340:       return;
+1341:     }
+1342: 
+1343:     // demon_lord（魔王）の攻撃パターン
+1344:     if (this.currentBoss.configKey === 'demon_lord') {
+1345:       if (this.currentBoss.demonPatternIdx === undefined) {

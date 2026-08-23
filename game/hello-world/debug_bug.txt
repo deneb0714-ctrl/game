@@ -1,0 +1,40 @@
+3141:                               if(this.heroImage) this.tweens.add({targets: this.heroImage, alpha: 1, duration: 300});
+3142:                               if(this.demonImage) this.tweens.add({targets: this.demonImage, alpha: 0, duration: 300});
+3143:                               if(this.inunekoImage) this.tweens.add({targets: this.inunekoImage, alpha: 0, duration: 300});
+3144:                               if(this.doctorImage) this.tweens.add({targets: this.doctorImage, alpha: 0.4, duration: 300});
+3145:                               this.showDialogue(MOT.flags.heroName || '勇者', text, res);
+3146:                           });
+3147: 
+3148:                           await localSayHero('「……魔王は……殺さなきゃ……エラーを消去……」');
+3149: 
+3150:                           let c = await askShatterChoice('1. 殺す', '2. 殺さない', true);
+3151:                           if (c === 1) {
+3152:                               ending('normal_unresistable');
+3153:                               return;
+3154:                           }
+3155:                           await sayDemon('「……結局我々を殺さず、お前は何をしにきたんだ？あの法螺吹きにけしかけられて、わらわたちを滅ぼしに来たんだろう？」');
+3156:                           
+3157:                           await localSayDemon('「そうか……英断だな…。」', 'demon_lord_normal');
+3158:                           await localSayDemon('「そしてここから話すのは、信じるも信じないもお前の自由だ。」');
+3159:                           await localSayDemon('「お前は、あいつに”魔王が世界を滅ぼそうとしている”とでも言われたのだろう？だが、残念なことに、それはわらわたちを滅ぼすための方便にすぎぬ。」');
+3160:                           await localSayDemon('「あいつはこの世界に人間以上の存在がいることが許せないのだ。わらわはやつに襲われていた魔族を保護し、あいつとながい間戦ってきた。」');
+3161:                           await localSayDemon('「ながい、ながい戦いだった。……やつは気の毒な奴じゃ。だが、それはわらわたちを滅ぼす理由にはならない。」');
+3162:                           
+3163:                           await localSayDoctor('「…はははは。すべて話されてしまったみたいだな」', 'doctor_awaken_smile');
+3164:                           await localSayHero('「！」');
+3165:                           await localSayHero('「僕は……ずっとあなたに嘘をつかれていたんだね。」');
+3166:                           await localSayDoctor('「嘘？違うな、そいつらを殺せば平和な世界が訪れる。」');
+3167:                           await localSayDoctor('「私にとってな。」');
+3168:                           await localSayHero('「それでみんなを殺すだなんて、身勝手じゃないか。」');
+3169:                           await localSayDoctor('「そうだな。しかしそれがどうした？自分の望む世界を目指すのは普通のことだろう？」');
+3170:                           await localSayDoctor('「それに、私だけじゃない。魔族に恐怖し、滅んでほしいと願う人間はごまんといる。そいつらにとっても、いい世界となるんだ。」');
+3171:                           
+3172:                           await localSayDemon('「わらわたちはただ生きているだけだ！むやみに人を傷つけたことなど、一度もない！」');
+3173:                           await localSayInuneko('「そうわん！魔王様は、お前とは違って優しいにゃん！！」');
+3174:                           
+3175:                           await localSayHero('「僕はみんなを殺したくないと思った。」');
+3176:                           await localSayHero('「だって、みんな、魔王を殺しに来ているはずの僕も殺そうとしなかった。」');
+3177:                           await localSayHero('「僕は知った。魔族は悪い奴じゃないって。みんなを殺そうとしているあなたこそ、この世界の悪だ！！！」');
+3178:                           await localSayHero('「だからもう、あなたに従ったりはしない。」');
+3179:                           
+3180:                           await localSayDoctor('「……面白い。ただ創られた存在であるはずのお前が、そんな感情を持つなんてな。」');

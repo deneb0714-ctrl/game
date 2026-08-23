@@ -1,0 +1,240 @@
+794:         // const angleDeg = Phaser.Math.RadToDeg(Phaser.Math.Angle.Between(this.inunekoEnemy.x, this.inunekoEnemy.y, this.player.x, this.player.y));
+795:         // MOT.fireFan(this, this.inunekoEnemy.x, this.inunekoEnemy.y, 3, 250, angleDeg, 40);
+796:       }
+797:     });
+798: 
+799:     // 補助魔法（8〜15秒ごとにランダムで弾幕加速 or バリア）
+800:     const supportAction = () => {
+801:       if (this.bossDefeated || this.dialogActive || this.cutsceneActive || !this.inunekoEnemy || !this.inunekoEnemy.visible) {
+802:         if (!this.bossDefeated) {
+803:           this.time.delayedCall(Phaser.Math.Between(8000, 15000), supportAction);
+954:           this.barrierVisual.setPosition(this.player.x, this.player.y);
+955:           this.barrierHitbox.setPosition(this.player.x, this.player.y);
+956:         }
+957:         if (this.barrierTime >= 3000) {
+958:           this.deactivateBarrier();
+959:         }
+960:       }
+961:       return;
+962:     }
+963: 
+955:           this.barrierHitbox.setPosition(this.player.x, this.player.y);
+956:         }
+957:         if (this.barrierTime >= 3000) {
+958:           this.deactivateBarrier();
+959:         }
+960:       }
+961:       return;
+962:     }
+963: 
+964:     // 軽量なレーザー当たり判定
+968:         let px = this.player.x;
+969:         let py = this.player.y;
+970:         let l2 = (laser.x2 - laser.x1)**2 + (laser.y2 - laser.y1)**2;
+971:         if (l2 === 0) continue;
+972:         let t = ((px - laser.x1) * (laser.x2 - laser.x1) + (py - laser.y1) * (laser.y2 - laser.y1)) / l2;
+973:         t = Math.max(0, Math.min(1, t));
+974:         let projX = laser.x1 + t * (laser.x2 - laser.x1);
+975:         let projY = laser.y1 + t * (laser.y2 - laser.y1);
+976:         let dist = Math.sqrt((px - projX)**2 + (py - projY)**2);
+977:         if (dist < laser.thickness / 2) {
+1005:         var b = this.playerBullets.create(this.player.x + 30, this.player.y, 'bullet_player');
+1006:         if (b) {
+1007:           b.setVelocityX(this.heroFirepowerBoost ? 1000 : 600); 
+1008:           b.setScale(this.heroFirepowerBoost ? 4 : 2);
+1009:           if (this.heroFirepowerBoost) {
+1010:             b.setTint(0xffaa00);
+1011:             b.damage = 2;
+1012:           }
+1013:           MOT.Audio.playShot();
+1014:           this.time.delayedCall(4000, function () { if (b.active) b.destroy(); });
+1028:         this.barrierVisual.setPosition(this.player.x, this.player.y);
+1029:         this.barrierHitbox.setPosition(this.player.x, this.player.y);
+1030:       }
+1031:       if (this.barrierTime >= 3000) {
+1032:         this.deactivateBarrier();
+1033:       }
+1034:     }
+1035: 
+1036:     // Boss attacks
+1037:     if (this.currentBoss && this.currentBoss.active && this.currentBoss.visible) {
+1029:         this.barrierHitbox.setPosition(this.player.x, this.player.y);
+1030:       }
+1031:       if (this.barrierTime >= 3000) {
+1032:         this.deactivateBarrier();
+1033:       }
+1034:     }
+1035: 
+1036:     // Boss attacks
+1037:     if (this.currentBoss && this.currentBoss.active && this.currentBoss.visible) {
+1038:       this.bossAttackTimer += delta;
+1097:       this.barrierVisual = this.add.circle(this.player.x, this.player.y, 60, 0x00FFaa, 0.3);
+1098:       this.barrierVisual.setStrokeStyle(4, 0x00FFaa, 0.8);
+1099:       this.barrierVisual.setDepth(9);
+1100:     }
+1101:   }
+1102: 
+1103:   deactivateBarrier() {
+1104:     this.barrierActive = false;
+1105:     if (this.barrierVisual) {
+1106:       this.tweens.add({
+1125:         const bullet = this.playerBullets.create(this.player.x, this.player.y, 'bullet_player');
+1126:         if (bullet) {
+1127:           bullet.setVelocity(Math.cos(angle) * 1000, Math.sin(angle) * 1000);
+1128:           bullet.setScale(4);
+1129:           bullet.setTint(0x4FD1FF);
+1130:           bullet.damage = 8; // 必殺技ダメージ
+1131:           this.time.delayedCall(1500, function () {
+1132:             if (bullet.active) bullet.destroy();
+1133:           });
+1134:         }
+1234:               let targetAngle = Phaser.Math.Angle.Between(bx, by, self.player.x, self.player.y);
+1235:               for (let i = 0; i < 3; i++) {
+1236:                 let angle = targetAngle - 0.4 + 0.4 * i;
+1237:                 let b = MOT.fireLinear(self, bx, by, Math.cos(angle)*400, Math.sin(angle)*400, silver, 'bullet_enemy_white');
+1238:                 if(b) b.setScale(1.5);
+1239:               }
+1240:             }
+1241:           };
+1242:         }
+1243:       } else if (docPattern === 4) {
+1294:             let targetAngle = Phaser.Math.Angle.Between(spawnX, spawnY, this.player.x, this.player.y);
+1295:             
+1296:             // 発射前の警告線（ビジュアルのみ）
+1297:             let beamLength = 2500;
+1298:             let warnRect = this.add.rectangle(spawnX, spawnY, beamLength, 150, 0xff0000, 0.4).setDepth(8);
+1299:             warnRect.setOrigin(0, 0.5);
+1300:             warnRect.setRotation(targetAngle);
+1301:             
+1302:             // 顔が拡大していた時間(400ms)だけ待機したのち警告をフェードアウトして発射
+1303:             this.tweens.add({
+1372:               let targetAngle = Phaser.Math.Angle.Between(bx, by, self.player.x, self.player.y);
+1373:               let spread = 0.4;
+1374:               
+1375:               for (let i = 0; i < 3; i++) {
+1376:                 let angle = targetAngle - spread + spread * i;
+1377:                 let b = MOT.fireLinear(self, bx, by, Math.cos(angle)*400, Math.sin(angle)*400, 0xff00ff, 'bullet_enemy_white');
+1378:                 if (b) {
+1379:                   b.setScale(1.5);
+1380:                   b.spawnTime = now;
+1381:                   b.baseAngle = angle;
+1621:           const p = this.add.circle(player.x, player.y, 6, 0xFFD700).setDepth(20); // ゴールド
+1622:           this.tweens.add({
+1623:             targets: p,
+1624:             x: player.x + Phaser.Math.Between(-150, 150),
+1625:             y: player.y + Phaser.Math.Between(-150, 150),
+1626:             alpha: 0,
+1627:             scale: 0,
+1628:             duration: 400,
+1629:             onComplete: function () { p.destroy(); }
+1630:           });
+1624:             x: player.x + Phaser.Math.Between(-150, 150),
+1625:             y: player.y + Phaser.Math.Between(-150, 150),
+1626:             alpha: 0,
+1627:             scale: 0,
+1628:             duration: 400,
+1629:             onComplete: function () { p.destroy(); }
+1630:           });
+1631:         }
+1632: 
+1633:         // バリア反射時の音階と色変化（回数を重ねるごとに変化）
+1663:         const reflectBullet = this.playerBullets.create(player.x + 30, player.y, 'bullet_player');
+1664:         if (reflectBullet) {
+1665:           reflectBullet.setVelocityX(1200);
+1666:           reflectBullet.setScale(3);
+1667:           reflectBullet.setTint(color); 
+1668:           reflectBullet.damage = 5; 
+1669:           this.time.delayedCall(2000, function () {
+1670:             if (reflectBullet.active) reflectBullet.destroy();
+1671:           });
+1672:         }
+1678:           const p = this.add.circle(player.x, player.y, 4, 0x00FFaa).setDepth(20);
+1679:           this.tweens.add({
+1680:             targets: p,
+1681:             x: player.x + Phaser.Math.Between(-100, 100),
+1682:             y: player.y + Phaser.Math.Between(-100, 100),
+1683:             alpha: 0,
+1684:             scale: 0,
+1685:             duration: 300,
+1686:             onComplete: function () { p.destroy(); }
+1687:           });
+1681:             x: player.x + Phaser.Math.Between(-100, 100),
+1682:             y: player.y + Phaser.Math.Between(-100, 100),
+1683:             alpha: 0,
+1684:             scale: 0,
+1685:             duration: 300,
+1686:             onComplete: function () { p.destroy(); }
+1687:           });
+1688:         }
+1689:       }
+1690:       return;
+4361:       this.input.keyboard.off('keydown', handleKey);
+4362:       if (this.dialogContainer) {
+4363:         this.dialogContainer.destroy();
+4364:         this.dialogContainer = null;
+4365:       }
+4366:       if (onComplete) onComplete();
+4367:     };
+4368: 
+4369:     let lastTapTime = 0;
+4370:     const handleInput = (arg1, arg2, arg3, event) => {
+4388:     const handleKey = (event) => {
+4389:       if (event.key === ' ' || event.code === 'Space' || event.key === 'Enter' || event.code === 'Enter') {
+4390:         handleInput();
+4391:       }
+4392:     };
+4393: 
+4394:     touchZone.on('pointerdown', handleInput);
+4395:     this.input.off('pointerdown', handleInput);
+4396:     this.input.on('pointerdown', handleInput);
+4397:     this.input.keyboard.on('keydown', handleKey);
+4397:     this.input.keyboard.on('keydown', handleKey);
+4398:   }
+4399: 
+4400: 
+4401:   showChoices(choicesData) {
+4402:     const w = this.cameras.main.width;
+4403:     const h = this.cameras.main.height;
+4404:     
+4405:     this.choicesList = [];
+4406:     let startY = h / 2 - (choicesData.length - 1) * 60;
+4556:       this.input.keyboard.off('keydown', handleKey);
+4557:       if (!keepOpen && this.dialogContainer) {
+4558:         this.dialogContainer.destroy();
+4559:         this.dialogContainer = null;
+4560:       }
+4561:       if (onComplete) onComplete();
+4562:     };
+4563: 
+4564:     let lastTapTime = 0;
+4565:     const handleInput = (arg1, arg2, arg3, event) => {
+4583:     const handleKey = (event) => {
+4584:       if (event.key === ' ' || event.code === 'Space' || event.key === 'Enter' || event.code === 'Enter') {
+4585:         handleInput();
+4586:       }
+4587:     };
+4588: 
+4589:     touchZone.on('pointerdown', handleInput);
+4590:     this.input.off('pointerdown', handleInput);
+4591:     this.input.on('pointerdown', handleInput);
+4592:     this.input.keyboard.on('keydown', handleKey);
+4592:     this.input.keyboard.on('keydown', handleKey);
+4593:   }
+4594: 
+4595:     showChoice(choices) {
+4596:     this.choiceActive = true;
+4597:     const w = 1920, h = 1080;
+4598:     const startY = h / 2 - (choices.length * 45);
+4599:     const elements = [];
+4600: 
+4601:     const overlay = this.add.graphics();
+4742:         this.barrierVisual = this.add.circle(this.player.x, this.player.y, 60, 0x00FFaa, 0.3);
+4743:         this.barrierVisual.setStrokeStyle(4, 0x00FFaa, 0.8);
+4744:         this.barrierVisual.setDepth(9);
+4745:       }
+4746:     } else if (chosen === 'boss2') {
+4747:       tex = 'boss2_combat_down_open';
+4748:       msg = '戦闘狂「もっと速く、もっと激しく撃ちまくれぇ！！」\n【効果：連射速度超UP】';
+4749:       this.heroAttackSpeedBoost = true;
+4750:       this.time.delayedCall(8000, () => { this.heroAttackSpeedBoost = false; });
+4751:     } else if (chosen === 'boss1') {

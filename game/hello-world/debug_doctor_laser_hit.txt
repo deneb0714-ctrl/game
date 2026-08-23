@@ -1,0 +1,20 @@
+967:     if (this.activeLasers) {
+968:       for (let laser of this.activeLasers) {
+969:         if (!laser.active) continue;
+970:         let px = this.player.x;
+971:         let py = this.player.y;
+972:         let l2 = (laser.x2 - laser.x1)**2 + (laser.y2 - laser.y1)**2;
+973:         if (l2 === 0) continue;
+974:         let t = ((px - laser.x1) * (laser.x2 - laser.x1) + (py - laser.y1) * (laser.y2 - laser.y1)) / l2;
+975:         t = Math.max(0, Math.min(1, t));
+976:         let projX = laser.x1 + t * (laser.x2 - laser.x1);
+977:         let projY = laser.y1 + t * (laser.y2 - laser.y1);
+978:         let dist = Math.sqrt((px - projX)**2 + (py - projY)**2);
+979:         if (dist < laser.thickness / 2) {
+980:           this.onPlayerHit(this.player, { destroy: () => {} });
+981:         }
+982:       }
+983:       this.activeLasers = this.activeLasers.filter(l => l.active);
+984:     }
+985: 
+986:     MOT.handleMovement(this, this.player);
