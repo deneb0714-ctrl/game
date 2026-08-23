@@ -1513,7 +1513,7 @@ class BossScene extends Phaser.Scene {
             this.onPlayerHit(this.player, { destroy: () => {} });
           }
           this.showExplosion(x, y);
-          MOT.Audio.playHit();
+          MOT.Audio.playExplosion();
           star.destroy();
         }
       });
