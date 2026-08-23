@@ -200,7 +200,7 @@ class BossScene extends Phaser.Scene {
         ]
       },
       boss3_twins: {
-        texture: 'boss3_battle_anim', name: 'エディオ', hp: 150, scale: 0.25,
+        texture: 'boss3_battle_anim', name: 'エディオ', hp: 150, scale: 1.2,
         texture2: 'sister_shoot1', name2: 'エナリア', hp2: 150, scale2: 1.2,
         // Intro and defeat are handled custom via playTwinsIntro and post-battle logic
       },
