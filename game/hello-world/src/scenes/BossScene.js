@@ -103,7 +103,7 @@ class BossScene extends Phaser.Scene {
     this.itemGroup = this.physics.add.group();
 
     // Player
-    this.player = this.physics.add.sprite(-100, 460, 'hero_stand_combat').setScale(2).setDepth(10);
+    this.player = this.physics.add.sprite(-100, 460, 'hero_combat_down_open').setScale(2).setDepth(10);
     
     // 当たり判定可視化用グラフィックス
     this.playerHitboxGraphics = this.add.graphics();

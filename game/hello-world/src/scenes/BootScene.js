@@ -164,10 +164,10 @@ class BootScene extends Phaser.Scene {
     // 主人公の立ち絵は以下で読み込みます
     
     // 主人公の戦闘時・他者との会話時の立ち絵
-    this.load.spritesheet('hero_stand_combat', 'assets/images/hero_combat_sheet.png?v=' + v, {
-      frameWidth: 63,
-      frameHeight: 112
-    });
+    this.load.image('hero_combat_down_open', 'assets/images/勇者_下目開け.png?v=' + v);
+    this.load.image('hero_combat_down_close', 'assets/images/勇者_下目閉じ.png?v=' + v);
+    this.load.image('hero_combat_up_open', 'assets/images/勇者_上目開け.png?v=' + v);
+    this.load.image('hero_combat_up_close', 'assets/images/勇者_上目閉じ.png?v=' + v);
     this.load.spritesheet('demon_stand_combat', 'assets/images/demon_lord_sheet.png?v=' + v, {
       frameWidth: 315,
       frameHeight: 560
@@ -345,8 +345,14 @@ class BootScene extends Phaser.Scene {
 
     this.anims.create({
       key: 'hero_combat_anim',
-      frames: this.anims.generateFrameNumbers('hero_stand_combat', { start: 0, end: 59 }),
-      frameRate: 15,
+      frames: [
+          { key: 'hero_combat_down_open', duration: 400 },
+          { key: 'hero_combat_up_open', duration: 400 },
+          { key: 'hero_combat_down_open', duration: 400 },
+          { key: 'hero_combat_down_close', duration: 150 },
+          { key: 'hero_combat_up_open', duration: 400 },
+          { key: 'hero_combat_up_close', duration: 150 }
+      ],
       repeat: -1
     });
     
@@ -364,7 +370,7 @@ class BootScene extends Phaser.Scene {
       'doctor_awaken_straight', 'doctor_awaken_straight_dying', 'doctor_awaken_straight_weapon',
       'doctor_awaken_normal', 'doctor_awaken_normal_dying', 'doctor_awaken_normal_weapon',
       'boss1_muscle', 'boss1_normal', 'boss1_angry', 'boss1_dying', 'boss1_sweat', 'boss1_hurt_angry', 'boss2_combat_down_open', 'boss2_combat_down_close', 'boss2_combat_up_open', 'boss2_combat_up_close',
-      'hero_stand', 'hero_stand_silent', 'hero_stand_corrupted', 'hero_stand_blink',
+      'hero_combat_down_open', 'hero_combat_down_close', 'hero_combat_up_open', 'hero_combat_up_close', 'hero_stand_silent', 'hero_stand_corrupted', 'hero_stand_blink',
       'demon_lord_normal', 'demon_lord_blink', 'demon_lord_dying', 'demon_lord_shock', 'demon_lord_eyes_closed',
       'inuneko_stand', 'inuneko_blink', 'inuneko_dying'
     ];
