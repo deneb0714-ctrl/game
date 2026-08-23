@@ -396,7 +396,7 @@ class BossScene extends Phaser.Scene {
              this.heroImage.setY(100 + (this.heroImage.height * hScale) / 2);
     // removed demonImage init
               this.doctorImage = this.add.image(w - 300, h / 2, 'doctor_awaken_smile_weapon').setAlpha(0).setDepth(90);
-             var docScale = 600 / this.doctorImage.width;
+             var docScale = 900 / this.doctorImage.width;
              this.doctorImage.setScale(docScale);
              this.doctorImage.setY(100 + (this.doctorImage.height * docScale) / 2);
              
@@ -3062,7 +3062,7 @@ class BossScene extends Phaser.Scene {
                           
                           // 博士的立ち絵
                           this.doctorImage = this.add.image(1920 - 300, 1080 / 2, 'doctor_stand').setAlpha(0).setDepth(90);
-                          var docScale = 600 / this.doctorImage.width;
+                          var docScale = 900 / this.doctorImage.width;
                           this.doctorImage.setScale(docScale);
                           this.doctorImage.setY(100 + (this.doctorImage.height * docScale) / 2);
                           
@@ -3182,7 +3182,7 @@ class BossScene extends Phaser.Scene {
                               }
                               this.doctorImage.setTexture(tex);
                               this.textures.get(tex).setFilter(Phaser.Textures.FilterMode.LINEAR);
-                              var docScale = 600 / (this.textures.get(tex).getSourceImage().width || 750);
+                              var docScale = 900 / (this.textures.get(tex).getSourceImage().width || 750);
                               this.doctorImage.setScale(docScale);
                               this.doctorImage.setY(100 + ((this.textures.get(tex).getSourceImage().height || 1000) * docScale) / 2);
                               
@@ -3523,7 +3523,7 @@ this.isLabTransition = true;
 
             this.textures.get('doctor_stand').setFilter(Phaser.Textures.FilterMode.LINEAR);
             let doctorImage = this.add.image(1920 - 300, 1080 / 2, 'doctor_awaken_normal_dying').setAlpha(0).setDepth(90);
-            var docScale = 600 / this.textures.get('doctor_stand').getSourceImage().width;
+            var docScale = 900 / this.textures.get('doctor_stand').getSourceImage().width;
             doctorImage.setScale(docScale);
             doctorImage.setY(100 + (this.textures.get('doctor_stand').getSourceImage().height * docScale) / 2);
             this.doctorImage = doctorImage;
@@ -3536,7 +3536,7 @@ this.isLabTransition = true;
                 this.tweens.add({ targets: doctorImage, alpha: 1, duration: 300 });
                 if (tex) {
                   doctorImage.setTexture(tex);
-                  var dScale = 600 / this.textures.get('doctor_stand').getSourceImage().width;
+                  var dScale = 900 / this.textures.get('doctor_stand').getSourceImage().width;
                   doctorImage.setScale(dScale);
                   doctorImage.setY(100 + (this.textures.get('doctor_stand').getSourceImage().height * dScale) / 2);
                 }
