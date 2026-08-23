@@ -200,7 +200,7 @@ class BossScene extends Phaser.Scene {
         ]
       },
       boss3_twins: {
-        texture: 'boss3_battle_anim', name: 'エディオ', hp: 150, scale: 1.2,
+        texture: 'brother_stand_open', name: 'エディオ', hp: 150, scale: 0.9,
         texture2: 'sister_shoot1', name2: 'エナリア', hp2: 150, scale2: 1.2,
         // Intro and defeat are handled custom via playTwinsIntro and post-battle logic
       },
@@ -251,6 +251,10 @@ class BossScene extends Phaser.Scene {
     boss.configKey = key;
     boss.setVisible(false);
     boss.body.enable = false;
+    if (key === 'boss3_twins') {
+      boss.body.setSize(50, 110);
+      boss.body.setOffset(35, 5);
+    }
 
     if (key === 'boss3_twins') {
       if (!this.anims.exists('sister_shoot_anim')) {
@@ -299,6 +303,8 @@ class BossScene extends Phaser.Scene {
       sister.maxHp = cfg.hp2;
       sister.configKey = 'boss3_twins';
       sister.setVisible(false);
+      sister.body.setSize(50, 90);
+      sister.body.setOffset(25, 10);
       sister.body.enable = false;
       boss.maxHp = cfg.hp;
     }
