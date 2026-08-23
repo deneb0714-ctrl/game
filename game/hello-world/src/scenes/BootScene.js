@@ -168,10 +168,10 @@ class BootScene extends Phaser.Scene {
     this.load.image('hero_combat_down_close', 'assets/images/勇者_下目閉じ.png?v=' + v);
     this.load.image('hero_combat_up_open', 'assets/images/勇者_上目開け.png?v=' + v);
     this.load.image('hero_combat_up_close', 'assets/images/勇者_上目閉じ.png?v=' + v);
-    this.load.spritesheet('demon_stand_combat', 'assets/images/demon_lord_sheet.png?v=' + v, {
-      frameWidth: 315,
-      frameHeight: 560
-    });
+    this.load.image('demon_combat_down_open', 'assets/images/魔王_下目開け.png?v=' + v);
+    this.load.image('demon_combat_down_close', 'assets/images/魔王_下目閉じ.png?v=' + v);
+    this.load.image('demon_combat_up_open', 'assets/images/魔王_上目開け.png?v=' + v);
+    this.load.image('demon_combat_up_close', 'assets/images/魔王_上目閉じ.png?v=' + v);
 
     // 主人公の瞬き（表情切り替え用）
     this.load.image('hero_stand_blink', 'assets/images/hero_stand_blink.png?v=' + v);
@@ -358,8 +358,14 @@ class BootScene extends Phaser.Scene {
     
     this.anims.create({
       key: 'demon_combat_anim',
-      frames: this.anims.generateFrameNumbers('demon_stand_combat', { start: 0, end: 39 }),
-      frameRate: 15,
+      frames: [
+          { key: 'demon_combat_down_open', duration: 400 },
+          { key: 'demon_combat_up_open', duration: 400 },
+          { key: 'demon_combat_down_open', duration: 400 },
+          { key: 'demon_combat_down_close', duration: 150 },
+          { key: 'demon_combat_up_open', duration: 400 },
+          { key: 'demon_combat_up_close', duration: 150 }
+      ],
       repeat: -1
     });
 

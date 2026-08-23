@@ -201,7 +201,7 @@ class BossScene extends Phaser.Scene {
         // Intro and defeat are handled custom via playTwinsIntro and post-battle logic
       },
       demon_lord: {
-        texture: 'demon_stand_combat', name: '魔王 – ヴェリタス', hp: 300, scale: 0.5,
+        texture: 'demon_combat_down_open', name: '魔王 – ヴェリタス', hp: 300, scale: 1.5,
         intro: '「…来たか、博士の人形よ。\nお前に真実を伝えなければならない。」',
         defeat: '「聞いてくれ。博士こそが…この世界を壊そうとしている。\n俺は…それを止めたかっただけだ。」',
         choices: []
@@ -4729,7 +4729,7 @@ this.isLabTransition = true;
     let msg = '';
     
     if (chosen === 'demon') {
-      tex = 'demon_stand_combat';
+      tex = 'demon_combat_down_open';
       msg = 'ヴェリタス「人間よ、少しは休むがよい！」\n【効果：HP回復】';
       MOT.flags.playerHP = Math.min((MOT.flags.playerMaxHP || 5), MOT.flags.playerHP + 2);
     } else if (chosen === 'twins') {
