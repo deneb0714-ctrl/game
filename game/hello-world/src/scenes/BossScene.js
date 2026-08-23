@@ -1177,7 +1177,8 @@ class BossScene extends Phaser.Scene {
     
     // boss3_twins（兄）の攻撃パターン
     if (this.currentBoss.configKey === 'boss3_twins') {
-      MOT.fireHoming(this, x, y, 600, this.player, 0x4FD1FF, 'bullet_laser');
+      if (this.isLaneBeamActive) return;
+      this.fireLaneBeam();
       return;
     }
 
@@ -1472,6 +1473,52 @@ class BossScene extends Phaser.Scene {
   }
 
   // 5秒間の警告のあと、レーン全体を薙ぎ払う極太レーザー
+  fireLaneBeam() {
+    if (this.dialogActive) return;
+    this.isLaneBeamActive = true;
+    
+    const laneYs = [220, 460, 700];
+    const targetY = laneYs[Phaser.Math.Between(0, 2)];
+    
+    // 警告演出 (赤い半透明の帯を点滅させる)
+    let warningRect = this.add.rectangle(1920 / 2, targetY, 1920, 100, 0xff0000, 0.2).setDepth(8);
+    this.tweens.add({
+      targets: warningRect,
+      alpha: 0.5,
+      duration: 250,
+      yoyo: true,
+      repeat: 19 // 計5秒 (20回 * 250ms = 5000ms)
+    });
+    
+    // 5秒後に極太レーザー発射
+    this.time.delayedCall(5000, () => {
+      if (warningRect) warningRect.destroy();
+      
+      // レーザー実体
+      let beam = this.add.rectangle(1920 / 2, targetY, 1920, 100, 0x4FD1FF, 1).setDepth(9);
+      this.physics.add.existing(beam);
+      beam.body.setAllowGravity(false);
+      beam.body.setImmovable(true);
+      
+      // プレイヤーとの衝突判定
+      let collider = this.physics.add.overlap(this.player, beam, (p, b) => {
+        this.onPlayerHit(p, { destroy: () => {} });
+      });
+      
+      // レーザー消滅
+      this.tweens.add({
+        targets: beam,
+        alpha: 0,
+        duration: 800,
+        onComplete: () => {
+          collider.destroy();
+          beam.destroy();
+          this.isLaneBeamActive = false;
+        }
+      });
+    });
+  }
+
   fireStarGauge(numCells, isSilver) {
     if (this.dialogActive) return;
     if (!this.player || !this.player.active) return;
