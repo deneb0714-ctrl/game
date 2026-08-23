@@ -66,6 +66,8 @@ class BossScene extends Phaser.Scene {
       if (this.boss1Bgm) this.boss1Bgm.stop();
       if (this.boss2Bgm) this.boss2Bgm.stop();
       if (this.twinsBgm) this.twinsBgm.stop();
+      if (this.boss4Bgm) this.boss4Bgm.stop();
+      if (this.boss5Bgm) this.boss5Bgm.stop();
     });
   }
 
@@ -81,6 +83,8 @@ class BossScene extends Phaser.Scene {
     this.sound.stopAll();
     this.events.on('shutdown', () => {
       if (this.twinsBgm) this.twinsBgm.stop();
+      if (this.boss4Bgm) this.boss4Bgm.stop();
+      if (this.boss5Bgm) this.boss5Bgm.stop();
     });
     const w = 1920, h = 1080;
     var bgKey = 'bg_boss_stage2';
@@ -415,6 +419,8 @@ class BossScene extends Phaser.Scene {
                this.dialogActive = false;
                this.physics.resume();
                this.startBossLaneMovement();
+               this.boss5Bgm = this.sound.add('doctor_bgm', { loop: true, volume: 0.2 });
+               this.boss5Bgm.play();
              })();
            }
          }
@@ -2223,6 +2229,7 @@ class BossScene extends Phaser.Scene {
       if (this.boss1Bgm) this.boss1Bgm.stop();
       if (this.boss2Bgm) this.boss2Bgm.stop();
       if (this.boss4Bgm) this.boss4Bgm.stop();
+      if (this.boss5Bgm) this.boss5Bgm.stop();
       
       if (this.bossLaneTimer) {
         this.bossLaneTimer.destroy();
@@ -3264,6 +3271,8 @@ class BossScene extends Phaser.Scene {
                           if (this.boss1Bgm) this.boss1Bgm.stop();
                           if (this.boss2Bgm) this.boss2Bgm.stop();
                           if (this.twinsBgm) this.twinsBgm.stop();
+      if (this.boss4Bgm) this.boss4Bgm.stop();
+      if (this.boss5Bgm) this.boss5Bgm.stop();
                           
                           this.bossQueue.push('doctor');
                           this.proceedToNextArea(boss, true);

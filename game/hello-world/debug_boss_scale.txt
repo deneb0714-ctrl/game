@@ -1,0 +1,1 @@
+210:         texture: 'doctor_combat', name: '博士', hp: 450, scale: 2.5,

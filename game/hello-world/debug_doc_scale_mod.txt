@@ -1,0 +1,8 @@
+399:              var docScale = 600 / this.doctorImage.width;
+400:              this.doctorImage.setScale(docScale);
+401:              this.doctorImage.setY(100 + (this.doctorImage.height * docScale) / 2);
+402:              
+3065:                           var docScale = 600 / this.doctorImage.width;
+3066:                           this.doctorImage.setScale(docScale);
+3067:                           this.doctorImage.setY(100 + (this.doctorImage.height * docScale) / 2);
+3068:                           
