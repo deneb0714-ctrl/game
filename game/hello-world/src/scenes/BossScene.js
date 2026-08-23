@@ -187,7 +187,7 @@ class BossScene extends Phaser.Scene {
         ]
       },
       boss2: {
-        texture: 'boss2_combat_down_open', name: 'トゥレロス', hp: 120, scale: 0.3,
+        texture: 'boss2_combat_down_open', name: 'トゥレロス', hp: 120, scale: 2.0,
         intro: '「ヒャハハ！ 踊れ踊れぇ！！\n俺の双銃から逃げられるかなぁ！？」',
         defeat: '「アハハハハ…最高にイカれた気分だぜ…」',
         choices: [
