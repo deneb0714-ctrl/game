@@ -1039,7 +1039,7 @@ class BossScene extends Phaser.Scene {
       var interval = this.bossHP < this.bossMaxHP * 0.5 ? 600 : 1000;
       if (this.currentBoss.configKey === 'boss1') interval = 3000; // ボス1の攻撃頻度を下げる
       if (this.inunekoBoostActive) interval = Math.floor(interval * 0.5); // 犬猫スター弾幕加速
-      if (this.currentBoss.configKey === 'boss3_twins') interval = 1200; // 兄の攻撃頻度を上げる
+      if (this.currentBoss.configKey === 'boss3_twins') interval = 2400; // 兄の攻撃頻度を下げる（元1200）
       if (this.currentBoss.configKey === 'doctor') interval = this.bossHP < this.bossMaxHP * 0.5 ? 1400 : 1800; // 博士の攻撃頻度を上げる
       if (this.currentBoss.configKey === 'demon_lord') interval = this.bossHP < this.bossMaxHP * 0.5 ? 2500 : 3000; // 魔王の螺旋弾幕（2.4秒）と重ならないように大幅緩和
       
@@ -1053,7 +1053,7 @@ class BossScene extends Phaser.Scene {
     if (this.currentBoss && this.currentBoss.configKey === 'boss3_twins' && this.sisterBoss && this.sisterBoss.active && this.sisterBoss.visible && !this.dialogActive) {
       if (!this.sisterAttackTimer) this.sisterAttackTimer = 0;
       this.sisterAttackTimer += delta;
-      if (this.sisterAttackTimer >= 2000) {
+      if (this.sisterAttackTimer >= 3500) { // 妹の攻撃頻度を下げる（元2000）
         this.sisterAttackTimer = 0;
         this.fireStarGauge(Phaser.Math.Between(1, 3), false);
       }
