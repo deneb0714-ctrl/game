@@ -187,7 +187,7 @@ class BossScene extends Phaser.Scene {
         ]
       },
       boss2: {
-        texture: 'boss2_battle_anim', name: 'トゥレロス', hp: 120, scale: 0.3,
+        texture: 'boss2_combat_down_open', name: 'トゥレロス', hp: 120, scale: 0.3,
         intro: '「ヒャハハ！ 踊れ踊れぇ！！\n俺の双銃から逃げられるかなぁ！？」',
         defeat: '「アハハハハ…最高にイカれた気分だぜ…」',
         choices: [
@@ -4744,7 +4744,7 @@ this.isLabTransition = true;
         this.barrierVisual.setDepth(9);
       }
     } else if (chosen === 'boss2') {
-      tex = 'boss2_battle_anim';
+      tex = 'boss2_combat_down_open';
       msg = '戦闘狂「もっと速く、もっと激しく撃ちまくれぇ！！」\n【効果：連射速度超UP】';
       this.heroAttackSpeedBoost = true;
       this.time.delayedCall(8000, () => { this.heroAttackSpeedBoost = false; });

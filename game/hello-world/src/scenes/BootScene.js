@@ -217,8 +217,10 @@ class BootScene extends Phaser.Scene {
     this.load.image('boss1_wind_slash', 'assets/images/boss1_wind_slash.png?v=' + v);
     this.load.image('boss2_bullet', 'assets/images/boss2_bullet.png?v=' + v);
     this.load.spritesheet('boss1_combat', 'assets/images/boss1_combat_sheet.png?v=' + v, { frameWidth: 100, frameHeight: 100 });
-    this.load.image('boss2_combat', 'assets/images/boss2_battle.png?v=' + v);
-    this.load.spritesheet('boss2_battle_anim', 'assets/images/boss2_battle.png?v=' + v, { frameWidth: 543, frameHeight: 560 });
+    this.load.image('boss2_combat_down_open', 'assets/images/狂人_下目開け.png?v=' + v);
+    this.load.image('boss2_combat_down_close', 'assets/images/狂人_下目閉じ.png?v=' + v);
+    this.load.image('boss2_combat_up_open', 'assets/images/狂人_上目開け.png?v=' + v);
+    this.load.image('boss2_combat_up_close', 'assets/images/狂人_上目閉じ.png?v=' + v);
     this.load.spritesheet('boss3_battle_anim', 'assets/images/boss3_battle.png?v=' + v, { frameWidth: 560, frameHeight: 533 });
     this.load.image('boss2_normal', 'assets/images/boss2_normal.png?v=' + v);
     this.load.image('boss2_normal_dying', 'assets/images/boss2_normal_dying.png?v=' + v);
@@ -323,8 +325,14 @@ class BootScene extends Phaser.Scene {
 
     this.anims.create({
       key: 'boss2_battle_play',
-      frames: this.anims.generateFrameNumbers('boss2_battle_anim', { start: 0, end: 28 }),
-      frameRate: 15,
+      frames: [
+          { key: 'boss2_combat_down_open', duration: 400 },
+          { key: 'boss2_combat_up_open', duration: 400 },
+          { key: 'boss2_combat_down_open', duration: 400 },
+          { key: 'boss2_combat_down_close', duration: 150 },
+          { key: 'boss2_combat_up_open', duration: 400 },
+          { key: 'boss2_combat_up_close', duration: 150 }
+      ],
       repeat: -1
     });
 
@@ -355,7 +363,7 @@ class BootScene extends Phaser.Scene {
       'doctor_awaken_smile', 'doctor_awaken_smile_weapon', 'doctor_awaken_smile_dying',
       'doctor_awaken_straight', 'doctor_awaken_straight_dying', 'doctor_awaken_straight_weapon',
       'doctor_awaken_normal', 'doctor_awaken_normal_dying', 'doctor_awaken_normal_weapon',
-      'boss1_muscle', 'boss1_normal', 'boss1_angry', 'boss1_dying', 'boss1_sweat', 'boss1_hurt_angry', 'boss2_combat',
+      'boss1_muscle', 'boss1_normal', 'boss1_angry', 'boss1_dying', 'boss1_sweat', 'boss1_hurt_angry', 'boss2_combat_down_open', 'boss2_combat_down_close', 'boss2_combat_up_open', 'boss2_combat_up_close',
       'hero_stand', 'hero_stand_silent', 'hero_stand_corrupted', 'hero_stand_blink',
       'demon_lord_normal', 'demon_lord_blink', 'demon_lord_dying', 'demon_lord_shock', 'demon_lord_eyes_closed',
       'inuneko_stand', 'inuneko_blink', 'inuneko_dying'
