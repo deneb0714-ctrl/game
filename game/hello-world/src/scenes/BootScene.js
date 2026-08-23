@@ -263,6 +263,8 @@ class BootScene extends Phaser.Scene {
     this.load.image('brother_shoot_closed', 'assets/images/双子兄_座る銃を打つ目閉じ.png');
     this.load.image('brother_dying', 'assets/images/brother_dying.png?v=' + v);
     this.load.image('brother_dying_closed', 'assets/images/brother_dying_closed.png?v=' + v);
+    this.load.image('brother_revive1', 'assets/images/brother_revive1.png?v=' + v);
+    this.load.image('brother_revive2', 'assets/images/brother_revive2.png?v=' + v);
     this.load.image('brother_hurt', 'assets/images/brother_hurt.png?v=' + v);
     this.load.image('brother_hurt_closed', 'assets/images/brother_hurt_closed.png?v=' + v);
 
