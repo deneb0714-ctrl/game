@@ -103,7 +103,7 @@ class BossScene extends Phaser.Scene {
     this.itemGroup = this.physics.add.group();
 
     // Player
-    this.player = this.physics.add.sprite(-100, 460, 'hero_combat_down_open').setScale(2).setDepth(10);
+    this.player = this.physics.add.sprite(-100, 460, 'hero_combat_down_open').setScale(1.5).setDepth(10);
     
     // 当たり判定可視化用グラフィックス
     this.playerHitboxGraphics = this.add.graphics();
@@ -111,8 +111,8 @@ class BossScene extends Phaser.Scene {
 
     this.player.play('hero_combat_anim');
     // アニメーション再生後にサイズを指定（アニメーションによって上書きされるのを防ぐ）
-    this.player.body.setSize(14, 60);
-    this.player.body.setOffset(25, 25);
+    this.player.body.setSize(19, 80);
+    this.player.body.setOffset(40, 10);
     this.player.moveTween = this.tweens.add({ 
       targets: this.player, 
       x: 300, 

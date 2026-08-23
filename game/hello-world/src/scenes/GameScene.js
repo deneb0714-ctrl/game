@@ -74,7 +74,7 @@ class GameScene extends Phaser.Scene {
     this.itemGroup = this.physics.add.group();
 
     // Player
-    this.player = this.physics.add.sprite(-100, 460, 'hero_combat_down_open');
+    this.player = this.physics.add.sprite(-100, 460, 'hero_combat_down_open').setScale(1.5);
     this.player.play('hero_combat_anim');
     this.player.moveTween = this.tweens.add({ 
       targets: this.player, 
@@ -88,10 +88,10 @@ class GameScene extends Phaser.Scene {
     this.player.setDrag(800, 800);
     this.player.setMaxVelocity(400, 400);
     this.player.setDepth(10);
-    this.player.setScale(2);
+    this.player.setScale(1.5);
     // STG風の小さな当たり判定（未スケール時8x8、画面上16x16）
-    this.player.body.setSize(14, 60);
-    this.player.body.setOffset(25, 25);
+    this.player.body.setSize(19, 80);
+    this.player.body.setOffset(40, 10);
 
     this.playerHitboxGraphics = this.add.graphics();
     this.playerHitboxGraphics.setDepth(11);
