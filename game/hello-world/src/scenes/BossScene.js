@@ -267,6 +267,17 @@ class BossScene extends Phaser.Scene {
           repeat: -1
         });
       }
+      if (!this.anims.exists('brother_revive_anim')) {
+        this.anims.create({
+          key: 'brother_revive_anim',
+          frames: [
+            { key: 'brother_revive1' },
+            { key: 'brother_revive2' }
+          ],
+          frameRate: 4,
+          repeat: -1
+        });
+      }
       if (!this.anims.exists('sister_revive_anim')) {
         this.anims.create({
           key: 'sister_revive_anim',
@@ -1057,7 +1068,7 @@ class BossScene extends Phaser.Scene {
     }
     
     // Sister attacks
-    if (this.currentBoss && this.currentBoss.configKey === 'boss3_twins' && this.sisterBoss && this.sisterBoss.active && this.sisterBoss.visible && !this.dialogActive) {
+    if (this.currentBoss && this.currentBoss.configKey === 'boss3_twins' && this.sisterBoss && this.sisterBoss.active && this.sisterBoss.visible && !this.dialogActive && !this.twinsReviving) {
       if (!this.sisterAttackTimer) this.sisterAttackTimer = 0;
       this.sisterAttackTimer += delta;
       if (this.sisterAttackTimer >= 3500) { // 妹の攻撃頻度を下げる（元2000）
@@ -1156,6 +1167,7 @@ class BossScene extends Phaser.Scene {
 
   bossAttack() {
     if (!this.currentBoss || !this.currentBoss.active) return;
+    if (this.twinsReviving) return;
     var x = this.currentBoss.x, y = this.currentBoss.y;
 
     // boss1（筋肉）は斬撃攻撃
@@ -1803,6 +1815,10 @@ class BossScene extends Phaser.Scene {
   }
 
   onBossHit(bullet, boss) {
+    if (this.twinsReviving) {
+      bullet.destroy();
+      return;
+    }
     if (!bullet || !bullet.active) return;
     // 画面外 (x > 1920) にいる敵はダメージを受けない (弾は消去されるが敵はノーダメージ)
     if (boss.x > 1920) {
@@ -2169,6 +2185,7 @@ class BossScene extends Phaser.Scene {
         // --- 復活処理（6秒） ---
         let otherBoss = (boss === this.currentBoss) ? this.sisterBoss : this.currentBoss;
         if (otherBoss && otherBoss.active) {
+          this.twinsReviving = true;
           let isBrotherDefeated = (boss === this.currentBoss);
           
           if (this.twinReviveTimer) this.twinReviveTimer.destroy();
@@ -2180,22 +2197,31 @@ class BossScene extends Phaser.Scene {
           let delayBeforeAnim = totalReviveTime - animDuration;
 
           if (isBrotherDefeated && this.sisterBoss) {
-              // 蘇生直前の数秒間のみ蘇生アニメーションを再生
               this.twinReviveAnimTimer = this.time.delayedCall(delayBeforeAnim, () => {
                   if (this.sisterBoss && this.sisterBoss.active) {
                       this.sisterBoss.play('sister_revive_anim');
                   }
               });
+          } else if (!isBrotherDefeated && this.currentBoss) {
+              this.twinReviveAnimTimer = this.time.delayedCall(delayBeforeAnim, () => {
+                  if (this.currentBoss && this.currentBoss.active) {
+                      this.currentBoss.play('brother_revive_anim');
+                  }
+              });
           }
           
           this.twinReviveTimer = this.time.delayedCall(totalReviveTime, () => {
+             this.twinsReviving = false;
              boss.active = true;
              boss.setVisible(true);
              boss.body.enable = true;
-             boss.hp = Math.max(1, otherBoss.hp); // 復活時のHP
+             boss.hp = Math.max(1, otherBoss.hp); 
              
              if (isBrotherDefeated && this.sisterBoss && this.sisterBoss.active) {
                  this.sisterBoss.play('sister_shoot_anim');
+             } else if (!isBrotherDefeated && this.currentBoss && this.currentBoss.active) {
+                 if (this.anims.exists('brother_idle')) this.currentBoss.play('brother_idle');
+                 else this.currentBoss.setTexture('brother_normal');
              }
              
              let speakerText = isBrotherDefeated ? 'エナリア「兄さん！起きて！」' : 'エディオ「しっかりしろ！」';
@@ -5008,5 +5034,4 @@ this.isLabTransition = true;
 }
 
 window.BossScene = BossScene;
-
 
