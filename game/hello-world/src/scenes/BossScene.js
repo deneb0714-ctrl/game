@@ -1055,7 +1055,7 @@ class BossScene extends Phaser.Scene {
       this.sisterAttackTimer += delta;
       if (this.sisterAttackTimer >= 2000) {
         this.sisterAttackTimer = 0;
-        MOT.fireCircle(this, this.sisterBoss.x, this.sisterBoss.y, 8, 200, 0x7CFF00, 'bullet_star');
+        this.fireStarGauge(Phaser.Math.Between(1, 3), false);
       }
     }
 
@@ -1177,16 +1177,7 @@ class BossScene extends Phaser.Scene {
     
     // boss3_twins（兄）の攻撃パターン
     if (this.currentBoss.configKey === 'boss3_twins') {
-      if (this.isLaneBeamActive) return; // 薙ぎ払いビーム中は通常弾幕を出さない
-      
-      let pattern = Phaser.Math.Between(0, 2);
-      if (pattern === 0 || pattern === 1) {
-        // 高速の斜め追尾レーザー（速度を1400に上げてレーザー感を強調）
-        MOT.fireHoming(this, x, y, 1000, this.player, 0x4FD1FF, 'bullet_laser');
-      } else {
-        // レーン丸ごと攻撃（5秒警告後）
-        this.fireLaneBeam();
-      }
+      MOT.fireHoming(this, x, y, 600, this.player, 0x4FD1FF, 'bullet_laser');
       return;
     }
 
@@ -1254,11 +1245,8 @@ class BossScene extends Phaser.Scene {
           });
         }
       } else if (docPattern === 5) {
-        // 妹のダイヤ弾幕（シルバー化）
-        let ty = Phaser.Math.Between(100, 980);
-        let bx = this.currentBoss ? this.currentBoss.x : 1600;
-        MOT.fireCircle(this, bx, ty, 10, 260, silver, 'bullet_diamond');
-        this.time.delayedCall(300, () => MOT.fireCircle(this, bx, ty, 10, 320, silver, 'bullet_diamond'));
+        // 妹の星型ゲージ攻撃（シルバー化）
+        this.fireStarGauge(Phaser.Math.Between(1, 3), true);
       } else {
         // 新技：斜め極太ブラスター（顔なし）
         let numBlasters = Phaser.Math.Between(4, 6); // 4〜6体に増加
@@ -1484,47 +1472,49 @@ class BossScene extends Phaser.Scene {
   }
 
   // 5秒間の警告のあと、レーン全体を薙ぎ払う極太レーザー
-  fireLaneBeam() {
+  fireStarGauge(numCells, isSilver) {
     if (this.dialogActive) return;
-    this.isLaneBeamActive = true;
+    if (!this.player || !this.player.active) return;
     
-    const laneYs = [220, 460, 700];
-    const targetY = laneYs[Phaser.Math.Between(0, 2)];
+    let availableCells = [];
+    for (let c = 0; c < 3; c++) {
+      for (let l = 0; l < 3; l++) {
+        availableCells.push({col: c, lane: l});
+      }
+    }
+    Phaser.Utils.Array.Shuffle(availableCells);
+    let cells = availableCells.slice(0, numCells);
     
-    // 警告演出 (赤い半透明の帯を点滅させる)
-    let warningRect = this.add.rectangle(1920 / 2, targetY, 1920, 100, 0xff0000, 0.2).setDepth(8);
-    this.tweens.add({
-      targets: warningRect,
-      alpha: 0.5,
-      duration: 250,
-      yoyo: true,
-      repeat: 19 // 計5秒 (20回 * 250ms = 5000ms)
-    });
-    
-    // 5秒後に極太レーザー発射
-    this.time.delayedCall(5000, () => {
-      if (warningRect) warningRect.destroy();
+    const COL_XS = [150, 300, 450];
+    const LANE_YS = [220, 460, 700];
+
+    cells.forEach(cell => {
+      let x = COL_XS[cell.col];
+      let y = LANE_YS[cell.lane];
       
-      // レーザー実体
-      let beam = this.add.rectangle(1920 / 2, targetY, 1920, 100, 0x4FD1FF, 1).setDepth(9);
-      this.physics.add.existing(beam);
-      beam.body.setAllowGravity(false);
-      beam.body.setImmovable(true);
+      // The star icon acts as the gauge
+      let star = this.add.sprite(x, y, 'bullet_star').setAlpha(0.8).setDepth(9);
+      if (isSilver) star.setTintFill(0xE0E0E0);
+      else star.setTint(0x7CFF00); 
       
-      // プレイヤーとの衝突判定
-      let collider = this.physics.add.overlap(this.player, beam, (p, b) => {
-        this.onPlayerHit(p, { destroy: () => {} });
-      });
+      star.setScale(0.1); 
+      this.tweens.add({ targets: star, angle: 360, duration: 2000, repeat: -1 });
       
-      // レーザー消滅
+      // 3 seconds charge
       this.tweens.add({
-        targets: beam,
-        alpha: 0,
-        duration: 800,
+        targets: star,
+        scaleX: 4,
+        scaleY: 4,
+        alpha: 1,
+        duration: 3000,
         onComplete: () => {
-          collider.destroy();
-          beam.destroy();
-          this.isLaneBeamActive = false;
+          if (!this.scene) return;
+          if (this.player && this.player.active && this.player.currentCol === cell.col && this.player.currentLane === cell.lane) {
+            this.onPlayerHit(this.player, { destroy: () => {} });
+          }
+          this.showExplosion(x, y);
+          MOT.Audio.playHit();
+          star.destroy();
         }
       });
     });
