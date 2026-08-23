@@ -18,7 +18,7 @@ class EndingScene extends Phaser.Scene {
         return;
     }
 
-    if (ending.key === 'bad_shutdown' || !ending.description) {
+    if (!ending.description) {
         this.cameras.main.setBackgroundColor(ending.bgColor || '#000000');
         this.showEndingScreen(w, h, ending);
         return;
