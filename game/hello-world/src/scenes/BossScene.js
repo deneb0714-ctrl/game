@@ -699,7 +699,7 @@ class BossScene extends Phaser.Scene {
     this.sisterLaneTimer = this.time.addEvent({
       delay: 2500,
       callback: function () {
-        if (this.sisterBoss && this.sisterBoss.active && !this.dialogActive && this.sisterBoss.hp > 0) {
+        if (this.sisterBoss && this.sisterBoss.active && !this.dialogActive && this.sisterBoss.hp > 0 && !this.twinsReviving) {
           var laneYs = [220, 460, 700];
           var targetY = laneYs[Phaser.Math.Between(0, 2)];
           
@@ -741,7 +741,7 @@ class BossScene extends Phaser.Scene {
       delay: 3000,
       callback: function () {
         if (this.isLaneBeamActive) return;
-        if (this.currentBoss && this.currentBoss.active && !this.dialogActive) {
+        if (this.currentBoss && this.currentBoss.active && !this.dialogActive && this.currentBoss.hp > 0 && !this.twinsReviving) {
           var laneYs = [220, 460, 700];
           var targetY = laneYs[Phaser.Math.Between(0, 2)];
           
@@ -1507,9 +1507,18 @@ class BossScene extends Phaser.Scene {
     }
     
     const laneYs = [220, 460, 700];
-    const targetY = laneYs[Phaser.Math.Between(0, 2)];
+    let targetY = laneYs[Phaser.Math.Between(0, 2)];
     
     if (this.currentBoss && this.currentBoss.configKey === 'boss3_twins') {
+      if (this.sisterBoss && this.sisterBoss.active) {
+        var sisterTarget = this.sisterBoss.targetLaneY || this.sisterBoss.y;
+        var sisterBaseY = laneYs.reduce((prev, curr) => Math.abs(curr - sisterTarget) < Math.abs(prev - sisterTarget) ? curr : prev);
+        var available = laneYs.filter(y => y !== sisterBaseY);
+        if (available.length > 0) {
+          targetY = available[Phaser.Math.Between(0, available.length - 1)];
+        }
+      }
+      this.currentBoss.targetLaneY = targetY;
       this.tweens.killTweensOf(this.currentBoss);
       this.tweens.add({ targets: this.currentBoss, y: targetY, duration: 800, ease: 'Cubic.easeInOut' });
     }
@@ -2118,7 +2127,8 @@ class BossScene extends Phaser.Scene {
                 this.currentBoss.setVisible(true); this.currentBoss.body.enable = true;
                 this.sisterBoss.setVisible(true); this.sisterBoss.body.enable = true;
                 this.cameras.main.shake(400, 0.015);
-                await new Promise(r => this.tweens.add({ targets: [this.currentBoss, this.sisterBoss], x: 1400, duration: 1200, ease: 'Power2', onComplete: r }));
+                this.tweens.add({ targets: this.sisterBoss, x: 1550, duration: 1200, ease: 'Power2' });
+                await new Promise(r => this.tweens.add({ targets: this.currentBoss, x: 1400, duration: 1200, ease: 'Power2', onComplete: r }));
                 this.tweens.add({ targets: this.currentBoss, y: this.currentBoss.y - 30, yoyo: true, repeat: -1, duration: 1000, ease: 'Sine.easeInOut' });
                 this.tweens.add({ targets: this.sisterBoss, y: this.sisterBoss.y + 30, yoyo: true, repeat: -1, duration: 1100, ease: 'Sine.easeInOut' });
                 
