@@ -43,7 +43,11 @@ class GameScene extends Phaser.Scene {
       if (this.stageBgm) this.stageBgm.stop();
     });
 
-    this.stageBgm = this.sound.add('bgm_stage', { loop: true, volume: 0.15 });
+    if (this.sound.get('mob_bgm_boss1')) {
+      this.stageBgm = this.sound.add('mob_bgm_boss1', { loop: true, volume: 0.25 });
+    } else {
+      this.stageBgm = this.sound.add('bgm_stage', { loop: true, volume: 0.15 });
+    }
     if (this.currentStage > 1) {
       this.stageBgm.play();
     }

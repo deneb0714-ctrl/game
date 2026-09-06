@@ -4152,7 +4152,7 @@ this.isLabTransition = true;
         }
       });
       this.cameras.main.fadeIn(1000, 0, 0, 0);
-      this.startBoss(); 
+      this.startIntermission(); 
     }, [], this);
   }
 
@@ -4323,7 +4323,13 @@ this.isLabTransition = true;
     
     // BGM再生
     if (this.stageBgm) this.stageBgm.stop();
-    this.stageBgm = this.sound.add('bgm_stage', { loop: true, volume: 0.15 });
+    
+    let bgmKey = 'bgm_stage';
+    if (this.bossQueue[this.currentBossIndex] === 'boss2') bgmKey = 'mob_bgm_boss2';
+    else if (this.bossQueue[this.currentBossIndex] === 'boss3_twins') bgmKey = 'mob_bgm_boss3';
+    else if (this.bossQueue[this.currentBossIndex] === 'demon_lord') bgmKey = 'mob_bgm_demon';
+    
+    this.stageBgm = this.sound.add(bgmKey, { loop: true, volume: 0.25 });
     this.stageBgm.play();
 
     // 1.5秒後に雑魚スポーン開始（GameSceneと同じウェーブ形式）
