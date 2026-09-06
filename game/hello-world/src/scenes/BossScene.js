@@ -45,6 +45,9 @@ class BossScene extends Phaser.Scene {
     this.bossAttackTimer = 0;
     this.bossPhase = 0;
     this.bossLaneTimer = null;
+    this.isLaneBeamActive = false;
+    this.twinsReviving = false;
+    this.twinReviveCooldown = false;
     this.barrierCooldown = 0;
     this.barrierActive = false;
     this.barrierTime = 0;
@@ -3952,25 +3955,10 @@ this.isLabTransition = true;
         this.heroImage.setY(100 + (this.heroImage.height * hScale) / 2);
 
         // Sister Portrait (Default to 'sister_hurt' for post-defeat)
-        this.sisterImage = this.add.image(1920 - 300, h / 2, 'sister_hurt').setAlpha(0).setDepth(90);
-        // Fallback scale if texture not loaded, otherwise dynamic
-        var sScale = 750 / 600; 
-        if (this.textures.exists('sister_hurt')) {
-          var tex = this.textures.get('sister_hurt').getSourceImage();
-          if (tex && tex.width > 0) sScale = 750 / tex.width;
-        }
-        this.sisterImage.setScale(sScale);
-        this.sisterImage.setY(100 + (this.sisterImage.height * sScale) / 2);
+        this.sisterImage = this.add.image(1920 - 300, 1080 / 2, 'sister_hurt').setAlpha(0).setDepth(90);
 
         // Brother Portrait (Default to 'brother_dying' for post-defeat)
-        this.brotherImage = this.add.image(1920 - 650, h / 2, 'brother_dying').setAlpha(0).setDepth(90);
-        var bScale = 750 / 600;
-        if (this.textures.exists('brother_dying')) {
-          var tex2 = this.textures.get('brother_dying').getSourceImage();
-          if (tex2 && tex2.width > 0) bScale = 750 / tex2.width;
-        }
-        this.brotherImage.setScale(bScale);
-        this.brotherImage.setY(100 + (this.brotherImage.height * bScale) / 2);
+        this.brotherImage = this.add.image(1920 - 650, 1080 / 2, 'brother_dying').setAlpha(0).setDepth(90);
 
         // Sister & Brother Blinking logic
         this.time.addEvent({
