@@ -2920,8 +2920,6 @@ class BossScene extends Phaser.Scene {
                   MOT.flags.killedDemonLord = true;
                   
                   if (Kills === 0) {
-                      ending('normal_unresistable');
-                      return;
                       if (!this.inunekoImage || !this.inunekoImage.active) {
                           this.inunekoImage = this.add.image(1920 - 120, 1080 / 2 - 250, 'inuneko_stand').setAlpha(0).setDepth(91);
                           this.inunekoImage.setScale(300 / 691);
