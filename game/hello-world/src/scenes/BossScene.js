@@ -3952,7 +3952,7 @@ this.isLabTransition = true;
         this.heroImage.setY(100 + (this.heroImage.height * hScale) / 2);
 
         // Sister Portrait (Default to 'sister_hurt' for post-defeat)
-        this.sisterImage = this.add.image(1920 - 900, h / 2, 'sister_hurt').setAlpha(0).setDepth(90);
+        this.sisterImage = this.add.image(1920 - 300, h / 2, 'sister_hurt').setAlpha(0).setDepth(90);
         // Fallback scale if texture not loaded, otherwise dynamic
         var sScale = 750 / 600; 
         if (this.textures.exists('sister_hurt')) {
@@ -3963,7 +3963,7 @@ this.isLabTransition = true;
         this.sisterImage.setY(100 + (this.sisterImage.height * sScale) / 2);
 
         // Brother Portrait (Default to 'brother_dying' for post-defeat)
-        this.brotherImage = this.add.image(1920 - 250, h / 2, 'brother_dying').setAlpha(0).setDepth(90);
+        this.brotherImage = this.add.image(1920 - 650, h / 2, 'brother_dying').setAlpha(0).setDepth(90);
         var bScale = 750 / 600;
         if (this.textures.exists('brother_dying')) {
           var tex2 = this.textures.get('brother_dying').getSourceImage();
