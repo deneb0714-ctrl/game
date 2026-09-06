@@ -31,6 +31,13 @@ class EndingScene extends Phaser.Scene {
     // Dialogue Box Phase
     this.textPhaseElements = [];
     
+    let bgImg = null;
+    if (ending.bgImage) {
+        bgImg = this.add.image(w / 2, h / 2, ending.bgImage).setDisplaySize(w, h).setDepth(10).setAlpha(0);
+        this.tweens.add({ targets: bgImg, alpha: 1, duration: 1000 });
+        this.textPhaseElements.push(bgImg);
+    }
+    
     let dialogBox = this.add.rectangle(w / 2, h - 150, 1400, 200, 0x0a0a14)
         .setStrokeStyle(4, 0x4FD1FF)
         .setDepth(20)
@@ -80,6 +87,16 @@ class EndingScene extends Phaser.Scene {
                     charIdx = 0;
                     isTyping = true;
                     if (this.nextIcon) this.nextIcon.setVisible(false);
+                    
+                    if (ending.bgImagePost) {
+                        if (bgImg) {
+                            this.tweens.add({ targets: bgImg, alpha: 0, duration: 500, onComplete: () => { bgImg.destroy(); }});
+                        }
+                        bgImg = this.add.image(w / 2, h / 2, ending.bgImagePost).setDisplaySize(w, h).setDepth(10).setAlpha(0);
+                        this.tweens.add({ targets: bgImg, alpha: 1, duration: 1000 });
+                        this.textPhaseElements.push(bgImg);
+                    }
+                    
                     typeTimer = this.time.addEvent({
                       delay: 50,
                       callback: () => {
