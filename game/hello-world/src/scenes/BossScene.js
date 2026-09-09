@@ -239,6 +239,23 @@ class BossScene extends Phaser.Scene {
     this.bossDefeated = false;
     this.cutsceneActive = false;
 
+    if (key === 'boss2' && this.textures.exists('bg_boss2')) {
+      this.bg.setTexture('bg_boss2');
+      this.bg.setOrigin(0.5, 0.5);
+      this.bg.setPosition(1920 / 2, 1080 / 2);
+      this.bg.setScale(Math.max(1920 / this.bg.width, 1080 / this.bg.height));
+    } else if (key === 'boss3_twins' && this.textures.exists('bg_boss3')) {
+      this.bg.setTexture('bg_boss3');
+      this.bg.setOrigin(0.5, 0.5);
+      this.bg.setPosition(1920 / 2, 1080 / 2);
+      this.bg.setScale(Math.max(1920 / this.bg.width, 1080 / this.bg.height));
+    } else if (key === 'demon_lord' && this.textures.exists('bg_boss4')) {
+      this.bg.setTexture('bg_boss4');
+      this.bg.setOrigin(0.5, 0.5);
+      this.bg.setPosition(1920 / 2, 1080 / 2);
+      this.bg.setScale(Math.max(1920 / this.bg.width, 1080 / this.bg.height));
+    }
+
     // Spawn boss (hidden initially)
     var bossSpawnY = 460;
     var boss = this.physics.add.sprite(1920, bossSpawnY, cfg.texture);
