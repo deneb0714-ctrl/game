@@ -4353,19 +4353,27 @@ this.isLabTransition = true;
     this.stageBgm = this.sound.add(bgmKey, { loop: true, volume: 0.25 });
     this.stageBgm.play();
 
+    let scrollTex = null;
     if (this.currentBossIndex === 1 && this.textures.exists('bg_stage2_scroll')) {
-      if (!this.scrollBg1) {
-        this.scrollBg1 = this.add.image(0, 0, 'bg_stage2_scroll').setOrigin(0, 0).setDepth(0);
-        let scale = 1080 / this.scrollBg1.height;
-        this.scrollBg1.setScale(scale);
-        this.bgScrollWidth = this.scrollBg1.width * scale;
-        this.scrollBg2 = this.add.image(this.bgScrollWidth, 0, 'bg_stage2_scroll').setOrigin(0, 0).setDepth(0);
-        this.scrollBg2.setScale(scale);
+      scrollTex = 'bg_stage2_scroll';
+    } else if (this.currentBossIndex === 2 && this.textures.exists('bg_stage3_scroll')) {
+      scrollTex = 'bg_stage3_scroll';
+    }
+
+    if (scrollTex) {
+      if (this.scrollBg1) {
+        this.scrollBg1.destroy();
+        this.scrollBg2.destroy();
       }
+      this.scrollBg1 = this.add.image(0, 0, scrollTex).setOrigin(0, 0).setDepth(0);
+      let scale = 1080 / this.scrollBg1.height;
+      this.scrollBg1.setScale(scale);
+      this.bgScrollWidth = this.scrollBg1.width * scale;
+      this.scrollBg2 = this.add.image(this.bgScrollWidth, 0, scrollTex).setOrigin(0, 0).setDepth(0);
+      this.scrollBg2.setScale(scale);
+
       this.scrollBg1.setVisible(true);
       this.scrollBg2.setVisible(true);
-      this.scrollBg1.setTexture('bg_stage2_scroll');
-      this.scrollBg2.setTexture('bg_stage2_scroll');
       if (this.bg) this.bg.setVisible(false);
     } else {
       if (this.scrollBg1) {
