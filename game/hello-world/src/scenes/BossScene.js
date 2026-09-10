@@ -103,6 +103,10 @@ class BossScene extends Phaser.Scene {
       this.bg.setScale(4);
     }
 
+    this.scrollBg1 = null;
+    this.scrollBg2 = null;
+    this.bgScrollWidth = 0;
+
     // Groups
     this.playerBullets = this.physics.add.group({ maxSize: 500 });
     this.enemyBullets = this.physics.add.group({ maxSize: 1000 });
@@ -238,6 +242,12 @@ class BossScene extends Phaser.Scene {
     this.bossAttackTimer = 0;
     this.bossDefeated = false;
     this.cutsceneActive = false;
+
+    if (this.scrollBg1) {
+      this.scrollBg1.setVisible(false);
+      this.scrollBg2.setVisible(false);
+    }
+    if (this.bg) this.bg.setVisible(true);
 
     if (key === 'boss2' && this.textures.exists('bg_boss2')) {
       this.bg.setTexture('bg_boss2');
@@ -903,6 +913,14 @@ class BossScene extends Phaser.Scene {
 
 
   update(time, delta) {
+    if (this.scrollBg1 && this.scrollBg1.visible && this.intermissionActive) {
+      const scrollSpeed = 2;
+      this.scrollBg1.x -= scrollSpeed;
+      this.scrollBg2.x -= scrollSpeed;
+      if (this.scrollBg1.x <= -this.bgScrollWidth) this.scrollBg1.x = this.scrollBg2.x + this.bgScrollWidth;
+      if (this.scrollBg2.x <= -this.bgScrollWidth) this.scrollBg2.x = this.scrollBg1.x + this.bgScrollWidth;
+    }
+
     if (this.isLabTransition) {
         if (this.enemyBullets) this.enemyBullets.clear(true, true);
         if (this.playerBullets) this.playerBullets.clear(true, true);
@@ -4334,6 +4352,28 @@ this.isLabTransition = true;
     
     this.stageBgm = this.sound.add(bgmKey, { loop: true, volume: 0.25 });
     this.stageBgm.play();
+
+    if (this.currentBossIndex === 1 && this.textures.exists('bg_stage2_scroll')) {
+      if (!this.scrollBg1) {
+        this.scrollBg1 = this.add.image(0, 0, 'bg_stage2_scroll').setOrigin(0, 0).setDepth(0);
+        let scale = 1080 / this.scrollBg1.height;
+        this.scrollBg1.setScale(scale);
+        this.bgScrollWidth = this.scrollBg1.width * scale;
+        this.scrollBg2 = this.add.image(this.bgScrollWidth, 0, 'bg_stage2_scroll').setOrigin(0, 0).setDepth(0);
+        this.scrollBg2.setScale(scale);
+      }
+      this.scrollBg1.setVisible(true);
+      this.scrollBg2.setVisible(true);
+      this.scrollBg1.setTexture('bg_stage2_scroll');
+      this.scrollBg2.setTexture('bg_stage2_scroll');
+      if (this.bg) this.bg.setVisible(false);
+    } else {
+      if (this.scrollBg1) {
+        this.scrollBg1.setVisible(false);
+        this.scrollBg2.setVisible(false);
+      }
+      if (this.bg) this.bg.setVisible(true);
+    }
 
     // 1.5秒後に雑魚スポーン開始（GameSceneと同じウェーブ形式）
     this.time.delayedCall(1500, function () {
