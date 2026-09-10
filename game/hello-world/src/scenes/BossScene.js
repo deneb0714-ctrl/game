@@ -4358,6 +4358,8 @@ this.isLabTransition = true;
       scrollTex = 'bg_stage2_scroll';
     } else if (this.currentBossIndex === 2 && this.textures.exists('bg_stage3_scroll')) {
       scrollTex = 'bg_stage3_scroll';
+    } else if (this.currentBossIndex === 3 && this.textures.exists('bg_stage4_scroll')) {
+      scrollTex = 'bg_stage4_scroll';
     }
 
     if (scrollTex) {

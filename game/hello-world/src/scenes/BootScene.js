@@ -312,6 +312,7 @@ class BootScene extends Phaser.Scene {
     this.load.image('bg_boss1_static', 'assets/images/bg_stage1_scroll.jpg?v=' + v);
     this.load.image('bg_stage2_scroll', 'assets/images/bg_stage2_scroll.jpg?v=' + v);
     this.load.image('bg_stage3_scroll', 'assets/images/bg_stage3_scroll.jpg?v=' + v);
+    this.load.image('bg_stage4_scroll', 'assets/images/bg_stage4_scroll.jpg?v=' + v);
     this.load.image('bg_boss2', 'assets/images/bg_boss2.jpg?v=' + v);
     this.load.image('bg_boss3', 'assets/images/bg_boss3.jpg?v=' + v);
     this.load.image('bg_boss4', 'assets/images/bg_boss4.jpg?v=' + v);
