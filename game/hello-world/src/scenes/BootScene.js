@@ -203,6 +203,7 @@ class BootScene extends Phaser.Scene {
     this.load.image('cg_puppet', 'assets/images/cg_puppet.png?v=' + v);
     this.load.image('cg_useless', 'assets/images/cg_useless.png?v=' + v);
     this.load.image('cg_irresistible', 'assets/images/cg_irresistible.png?v=' + v);
+    this.load.image('cg_helloworld', 'assets/images/cg_helloworld.png?v=' + v);
     this.load.image('inuneko_stand', 'assets/images/inuneko_stand.png?v=' + v);
     this.load.image('inuneko_blink', 'assets/images/inuneko_blink.png?v=' + v);
     this.load.image('inuneko_dying', 'assets/images/inuneko_dying.png?v=' + v);
