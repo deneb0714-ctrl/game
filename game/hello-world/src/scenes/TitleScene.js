@@ -299,7 +299,7 @@ class TitleScene extends Phaser.Scene {
     box.strokeRoundedRect(boxX, boxY, boxW, boxH, 12);
     this.creditsContainer.add(box);
 
-    const creditsText = "クレジット\n\nゲーム制作\n[Hello World] 制作チーム\n・大室朋希\n・土田果奈\n・向下祐布\n\n背景イラスト提供\n・ゲームまてりあるず\n  https://game-materials.com/\n\n音楽提供\n・中村芳哉\n・魔王魂\n\n開発プラットフォーム\nPowered by Google Antigravity\n\nSpecial Thanks\n奥村研究室";
+    const creditsText = "クレジット\n\nゲーム制作\n[Hello World] 制作チーム\n・大室朋希\n・土田果奈\n・向下祐布\n\n背景イラスト提供\n背景素材サイト\nゲームまてりあるず\n[【フリー素材】ゲームまてりあるず｜無料の背景イラスト | フリーの背景素材集](https://game-materials.com/)\nAIPICT\n[AIPICT | 背景イラストのフリー素材サイト](https://aipict.com/)\nみんちりえ\n[【フリー素材】 みんちりえ 【背景イラスト配布サイト】](https://min-chi.material.jp/)\n\n音楽提供\n・中村芳哉\n\n開発プラットフォーム\nPowered by Google Antigravity\n\nSpecial Thanks\n奥村研究室";
 
     const startY = boxY + 50;
     const bodyText = this.add.text(boxX + 60, startY, creditsText, {
