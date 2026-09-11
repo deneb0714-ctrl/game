@@ -43,35 +43,85 @@ class EndingScene extends Phaser.Scene {
         .setDepth(20)
         .setAlpha(0);
         
-    var desc = this.add.text(w / 2, h - 150, '', {
+    var desc = this.add.text(w / 2 - 660, h - 220, '', {
       fontFamily: '"DotGothic16"',
       fontSize: '28px',
       color: '#E5E7EB',
       align: 'left',
       lineSpacing: 25,
-      wordWrap: { width: 1400, useAdvancedWrap: true }
-    }).setOrigin(0.5).setDepth(21).setAlpha(0);
+      wordWrap: { width: 1320, useAdvancedWrap: true }
+    }).setOrigin(0).setDepth(21).setAlpha(0);
 
-    this.textPhaseElements.push(dialogBox, desc);
+    let nameBg = this.add.rectangle(w / 2 - 700, h - 250 - 40, 200, 40, 0x4FD1FF).setOrigin(0, 0).setDepth(21).setAlpha(0);
+    let nameText = this.add.text(w / 2 - 690, h - 250 - 32, '', { fontFamily: '"DotGothic16"', fontSize: '24px', color: '#000000' }).setOrigin(0, 0).setDepth(22).setAlpha(0);
 
-    this.tweens.add({ targets: [dialogBox, desc], alpha: 1, duration: 1000, onComplete: () => {
-        var fullDesc = ending.description;
+    this.textPhaseElements.push(dialogBox, desc, nameBg, nameText);
+
+    // Build pages
+    var pages = [];
+    const parseDesc = (descVal, isPost) => {
+        if (!descVal) return;
+        if (Array.isArray(descVal)) {
+            descVal.forEach(d => {
+                if (typeof d === 'string') pages.push({text: d, speaker: null, isPost: isPost});
+                else pages.push({text: d.text, speaker: d.speaker, isPost: isPost});
+            });
+        } else {
+            pages.push({text: descVal, speaker: null, isPost: isPost});
+        }
+    };
+    parseDesc(ending.description, false);
+    parseDesc(ending.postDescription, true);
+
+    this.tweens.add({ targets: [dialogBox, desc, nameBg, nameText], alpha: 1, duration: 1000, onComplete: () => {
+        var pageIdx = 0;
+        var fullDesc = pages[pageIdx].text;
         var charIdx = 0;
         var isTyping = true;
-        var currentPhase = 1;
-        
-        var typeTimer = this.time.addEvent({
-          delay: 50,
-          callback: () => {
-            charIdx++;
-            desc.setText(fullDesc.substring(0, charIdx));
-            if (charIdx >= fullDesc.length) {
-              isTyping = false;
-              this.showNextCursor(w, h, dialogBox);
+        var typeTimer = null;
+
+        const startPage = () => {
+            let p = pages[pageIdx];
+            fullDesc = p.text;
+            desc.setText('');
+            charIdx = 0;
+            isTyping = true;
+            if (this.nextIcon) this.nextIcon.setVisible(false);
+
+            if (p.speaker) {
+                nameBg.setVisible(true);
+                nameText.setVisible(true);
+                nameText.setText(p.speaker);
+            } else {
+                nameBg.setVisible(false);
+                nameText.setVisible(false);
             }
-          },
-          repeat: fullDesc.length - 1
-        });
+
+            if (p.isPost && ending.bgImagePost && !this.bgImagePostShown) {
+                this.bgImagePostShown = true;
+                if (bgImg) {
+                    this.tweens.add({ targets: bgImg, alpha: 0, duration: 500, onComplete: () => { bgImg.destroy(); }});
+                }
+                bgImg = this.add.image(w / 2, h / 2, ending.bgImagePost).setDisplaySize(w, h).setDepth(10).setAlpha(0);
+                this.tweens.add({ targets: bgImg, alpha: 1, duration: 1000 });
+                this.textPhaseElements.push(bgImg);
+            }
+
+            typeTimer = this.time.addEvent({
+                delay: 50,
+                callback: () => {
+                    charIdx++;
+                    desc.setText(fullDesc.substring(0, charIdx));
+                    if (charIdx >= fullDesc.length) {
+                        isTyping = false;
+                        this.showNextCursor(w, h, dialogBox);
+                    }
+                },
+                repeat: fullDesc.length - 1
+            });
+        };
+
+        startPage();
 
         const finishTextPhase = () => {
             if (isTyping) {
@@ -80,35 +130,9 @@ class EndingScene extends Phaser.Scene {
                 desc.setText(fullDesc);
                 this.showNextCursor(w, h, dialogBox);
             } else {
-                if (currentPhase === 1 && ending.postDescription) {
-                    currentPhase = 2;
-                    fullDesc = ending.postDescription;
-                    desc.setText('');
-                    charIdx = 0;
-                    isTyping = true;
-                    if (this.nextIcon) this.nextIcon.setVisible(false);
-                    
-                    if (ending.bgImagePost) {
-                        if (bgImg) {
-                            this.tweens.add({ targets: bgImg, alpha: 0, duration: 500, onComplete: () => { bgImg.destroy(); }});
-                        }
-                        bgImg = this.add.image(w / 2, h / 2, ending.bgImagePost).setDisplaySize(w, h).setDepth(10).setAlpha(0);
-                        this.tweens.add({ targets: bgImg, alpha: 1, duration: 1000 });
-                        this.textPhaseElements.push(bgImg);
-                    }
-                    
-                    typeTimer = this.time.addEvent({
-                      delay: 50,
-                      callback: () => {
-                        charIdx++;
-                        desc.setText(fullDesc.substring(0, charIdx));
-                        if (charIdx >= fullDesc.length) {
-                          isTyping = false;
-                          this.showNextCursor(w, h, dialogBox);
-                        }
-                      },
-                      repeat: fullDesc.length - 1
-                    });
+                pageIdx++;
+                if (pageIdx < pages.length) {
+                    startPage();
                 } else {
                     this.input.off('pointerdown', finishTextPhase);
                     this.input.keyboard.off('keydown-ENTER', finishTextPhase);
@@ -130,7 +154,7 @@ class EndingScene extends Phaser.Scene {
                 }
             }
         };
-        
+
         this.input.on('pointerdown', finishTextPhase);
         this.input.keyboard.on('keydown-ENTER', finishTextPhase);
         this.input.keyboard.on('keydown-SPACE', finishTextPhase);
