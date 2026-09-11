@@ -56,19 +56,28 @@ class GameScene extends Phaser.Scene {
     if (this.currentStage === 3) bgKey = 'bg_stage3';
     if (this.currentStage === 4) bgKey = 'bg_stage4';
     this.bgWidth = 1920;
-    if (this.currentStage === 2 && this.textures.exists('bg_stage1_scroll') && this.textures.get('bg_stage1_scroll').key !== '__MISSING') {
-      this.bg1 = this.add.image(0, 0, 'bg_stage1_scroll').setOrigin(0, 0).setDepth(0);
+
+    let scrollTex = null;
+    if (this.currentStage === 1 && this.textures.exists('bg_tutorial_scroll')) {
+        scrollTex = 'bg_tutorial_scroll';
+    } else if (this.currentStage === 2 && this.textures.exists('bg_stage1_scroll') && this.textures.get('bg_stage1_scroll').key !== '__MISSING') {
+        scrollTex = 'bg_stage1_scroll';
+    }
+
+    if (scrollTex) {
+      this.bg1 = this.add.image(0, 0, scrollTex).setOrigin(0, 0).setDepth(0);
       let scale = 1080 / this.bg1.height;
       this.bg1.setScale(scale);
       this.bgWidth = this.bg1.width * scale;
-      this.bg2 = this.add.image(this.bgWidth, 0, 'bg_stage1_scroll').setOrigin(0, 0).setDepth(0);
+      this.bg2 = this.add.image(this.bgWidth, 0, scrollTex).setOrigin(0, 0).setDepth(0);
       this.bg2.setScale(scale);
     } else {
       this.bg1 = this.add.image(0, 0, bgKey).setOrigin(0, 0).setDepth(0);
       this.bg1.setScale(1920 / 480);
       this.bg2 = this.add.image(1920, 0, bgKey).setOrigin(0, 0).setDepth(0);
       this.bg2.setScale(1920 / 480);
-    }  this.playerBullets = this.physics.add.group({ maxSize: 500, runChildUpdate: true });
+    }
+    this.playerBullets = this.physics.add.group({ maxSize: 500, runChildUpdate: true });
     this.enemyBullets = this.physics.add.group({ maxSize: 1000, runChildUpdate: true });
     this.enemyGroup = this.physics.add.group();
     this.itemGroup = this.physics.add.group();
