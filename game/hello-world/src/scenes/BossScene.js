@@ -264,6 +264,11 @@ class BossScene extends Phaser.Scene {
       this.bg.setOrigin(0.5, 0.5);
       this.bg.setPosition(1920 / 2, 1080 / 2);
       this.bg.setScale(Math.max(1920 / this.bg.width, 1080 / this.bg.height));
+    } else if (key === 'doctor' && this.textures.exists('bg_doctor')) {
+      this.bg.setTexture('bg_doctor');
+      this.bg.setOrigin(0.5, 0.5);
+      this.bg.setPosition(1920 / 2, 1080 / 2);
+      this.bg.setScale(Math.max(1920 / this.bg.width, 1080 / this.bg.height));
     }
 
     // Spawn boss (hidden initially)
