@@ -83,28 +83,27 @@ MOT.DoctorDirective = {
     // 博士の顔アイコン (左端の枠内)
     var iconBox = scene.add.graphics();
     iconBox.fillStyle(0x000000, 1);
-    iconBox.fillRect(75, boxY + 25, 150, 150);
+    iconBox.fillRect(80, boxY + 40, 200, 200);
     iconBox.lineStyle(2, 0x39FF14, 0.8);
-    iconBox.strokeRect(75, boxY + 25, 150, 150);
+    iconBox.strokeRect(80, boxY + 40, 200, 200);
     container.add(iconBox);
 
-    var face = scene.add.image(150, boxY + 100, 'doctor_normal');
-    // もっと近づける（ズームアップ）
-    var scaleRatio = 750 / face.height; 
+    var face = scene.add.image(180, boxY + 140, 'doctor_normal');
+    // 会話中と同じアイコンサイズに合わせる
+    var scaleRatio = 1000 / face.height;
     face.setScale(scaleRatio);
     var maskShape = scene.make.graphics();
     this.currentMaskShape = maskShape;
     maskShape.fillStyle(0xffffff);
-    maskShape.fillRect(77, boxY + 27, 146, 146);
+    maskShape.fillRect(82, boxY + 42, 196, 196);
     var mask = maskShape.createGeometryMask();
     face.setMask(mask);
-    // Y座標を少し上げて顔が中心に来るように調整
-    face.setY(boxY + 100 + (face.height * scaleRatio) * 0.35);
+    face.setY(boxY + 140 + (face.height * scaleRatio) * 0.35);
     
     container.add(face);
 
     // 「博士」ラベル
-    var nameText = scene.add.text(240, boxY + 15, '博士 📡', {
+    var nameText = scene.add.text(310, boxY + 10, '博士 📡', {
       fontFamily: '"DotGothic16"',
       fontSize: '44px',
       color: '#39FF14'
@@ -112,11 +111,11 @@ MOT.DoctorDirective = {
     container.add(nameText);
 
     // 指示テキスト
-    var txt = scene.add.text(240, boxY + 60, directive.text, {
+    var txt = scene.add.text(310, boxY + 60, directive.text, {
       fontFamily: '"DotGothic16"',
       fontSize: '40px',
       color: '#FFFFFF',
-      wordWrap: { width: w - 330, useAdvancedWrap: true },
+      wordWrap: { width: w - 420, useAdvancedWrap: true },
       lineSpacing: 8
     });
     this.directiveTextObj = txt;
