@@ -3819,8 +3819,8 @@ this.isLabTransition = true;
                     if (this.inunekoImage) this.tweens.add({ targets: this.inunekoImage, alpha: 0, duration: 300 });
                     if (this.boss2Image) this.tweens.add({ targets: this.boss2Image, alpha: 0, duration: 300 });
                     if (this.boss1Image) this.tweens.add({ targets: this.boss1Image, alpha: 0, duration: 300 });
-                    if (!this.sisterImage) { this.sisterImage = this.add.image(1920 - 650, 1080/2, 'sister_normal').setDepth(90); this.sisterImage.setScale(750 / this.sisterImage.width); this.sisterImage.setY(100 + (this.sisterImage.height * this.sisterImage.scaleX) / 2); }
-                    if (!this.brotherImage) { this.brotherImage = this.add.image(1920 - 300, 1080/2, 'brother_normal').setDepth(90); this.brotherImage.setScale(750 / this.brotherImage.width); this.brotherImage.setY(100 + (this.brotherImage.height * this.brotherImage.scaleX) / 2); }
+                    if (!this.sisterImage) { this.sisterImage = this.add.image(1920 - 500, 1080/2, 'sister_normal').setDepth(90); this.sisterImage.setScale(750 / this.sisterImage.width); this.sisterImage.setY(100 + (this.sisterImage.height * this.sisterImage.scaleX) / 2); }
+                    if (!this.brotherImage) { this.brotherImage = this.add.image(1920 - 250, 1080/2, 'brother_normal').setDepth(90); this.brotherImage.setScale(750 / this.brotherImage.width); this.brotherImage.setY(100 + (this.brotherImage.height * this.brotherImage.scaleX) / 2); }
                     this.tweens.add({ targets: this.sisterImage, alpha: 1, duration: 300 });
                     this.tweens.add({ targets: this.brotherImage, alpha: 1, duration: 300 });
                     this.showDialogue(name, text, res);
@@ -3980,6 +3980,10 @@ this.isLabTransition = true;
     this.tweens.add({
       targets: [this.currentBoss, this.sisterBoss], alpha: 0.3, yoyo: true, repeat: 8, duration: 150,
       onComplete: () => {
+        // Hide the physical bosses so they don't bleed into the background
+        if (this.currentBoss) this.currentBoss.setVisible(false);
+        if (this.sisterBoss) this.sisterBoss.setVisible(false);
+        
         this.dialogActive = true;
         this.physics.pause();
         this.player.setVelocity(0, 0);
@@ -3993,7 +3997,7 @@ this.isLabTransition = true;
         this.heroImage.setY(100 + (this.heroImage.height * hScale) / 2);
 
         // Sister Portrait (Default to 'sister_hurt' for post-defeat)
-        this.sisterImage = this.add.image(1920 - 650, 1080 / 2, 'sister_hurt').setAlpha(0).setDepth(90);
+        this.sisterImage = this.add.image(1920 - 500, 1080 / 2, 'sister_hurt').setAlpha(0).setDepth(90);
         var sScale = 750 / 600;
         if (this.textures.exists('sister_hurt')) {
           var tex1 = this.textures.get('sister_hurt').getSourceImage();
@@ -4003,7 +4007,7 @@ this.isLabTransition = true;
         this.sisterImage.setY(100 + (this.sisterImage.height * sScale) / 2);
 
         // Brother Portrait (Default to 'brother_dying' for post-defeat)
-        this.brotherImage = this.add.image(1920 - 300, 1080 / 2, 'brother_dying').setAlpha(0).setDepth(90);
+        this.brotherImage = this.add.image(1920 - 250, 1080 / 2, 'brother_dying').setAlpha(0).setDepth(90);
         var bScale = 750 / 600;
         if (this.textures.exists('brother_dying')) {
           var tex2 = this.textures.get('brother_dying').getSourceImage();
