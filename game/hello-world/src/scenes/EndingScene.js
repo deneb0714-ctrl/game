@@ -227,7 +227,7 @@ class EndingScene extends Phaser.Scene {
 
     // Show ending-specific sprite
     var spriteKey = null;
-    if (ending.key === 'END_ORPHAN') spriteKey = 'demon_lord';
+    // (Removed END_ORPHAN sprite to show CG background instead)
 
     if (spriteKey) {
       var endSprite = this.add.image(w / 2, h * 0.8, spriteKey).setScale(4).setAlpha(0).setDepth(4);

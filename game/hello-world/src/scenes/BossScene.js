@@ -3772,8 +3772,8 @@ this.isLabTransition = true;
                     this.tweens.add({ targets: dimBg, alpha: 0.6, duration: 300 });
                     if (this.heroImage) this.tweens.add({ targets: this.heroImage, alpha: 0.4, duration: 300 });
                     if (doctorImage) this.tweens.add({ targets: doctorImage, alpha: 0, duration: 300 });
-                    if (!this.demonImage) this.demonImage = this.add.image(1920 - 300, 1080/2, 'demon_lord_normal').setDepth(90);
-                    if (!this.inunekoImage) this.inunekoImage = this.add.image(1920 - 550, 1080/2, 'inuneko_stand').setDepth(90);
+                    if (!this.demonImage) { this.demonImage = this.add.image(1920 - 300, 1080/2, 'demon_lord_normal').setDepth(90); this.demonImage.setScale(750 / this.demonImage.width); this.demonImage.setY(100 + (this.demonImage.height * this.demonImage.scaleX) / 2); }
+                    if (!this.inunekoImage) { this.inunekoImage = this.add.image(1920 - 550, 1080/2, 'inuneko_stand').setDepth(90); this.inunekoImage.setScale(750 / this.inunekoImage.width); this.inunekoImage.setY(100 + (this.inunekoImage.height * this.inunekoImage.scaleX) / 2); }
                     this.demonImage.setTexture('demon_lord_normal');
                     this.tweens.add({ targets: this.demonImage, alpha: 1, duration: 300 });
                     this.tweens.add({ targets: this.inunekoImage, alpha: 1, duration: 300 });
@@ -3787,8 +3787,8 @@ this.isLabTransition = true;
                     this.tweens.add({ targets: dimBg, alpha: 0.6, duration: 300 });
                     if (this.heroImage) this.tweens.add({ targets: this.heroImage, alpha: 0.4, duration: 300 });
                     if (doctorImage) this.tweens.add({ targets: doctorImage, alpha: 0, duration: 300 });
-                    if (!this.demonImage) this.demonImage = this.add.image(1920 - 300, 1080/2, 'demon_lord_normal').setDepth(90);
-                    if (!this.inunekoImage) this.inunekoImage = this.add.image(1920 - 550, 1080/2, 'inuneko_stand').setDepth(90);
+                    if (!this.demonImage) { this.demonImage = this.add.image(1920 - 300, 1080/2, 'demon_lord_normal').setDepth(90); this.demonImage.setScale(750 / this.demonImage.width); this.demonImage.setY(100 + (this.demonImage.height * this.demonImage.scaleX) / 2); }
+                    if (!this.inunekoImage) { this.inunekoImage = this.add.image(1920 - 550, 1080/2, 'inuneko_stand').setDepth(90); this.inunekoImage.setScale(750 / this.inunekoImage.width); this.inunekoImage.setY(100 + (this.inunekoImage.height * this.inunekoImage.scaleX) / 2); }
                     this.inunekoImage.setTexture('inuneko_stand');
                     this.tweens.add({ targets: this.demonImage, alpha: 1, duration: 300 });
                     this.tweens.add({ targets: this.inunekoImage, alpha: 1, duration: 300 });
@@ -3804,7 +3804,7 @@ this.isLabTransition = true;
                     if (doctorImage) this.tweens.add({ targets: doctorImage, alpha: 0, duration: 300 });
                     if (this.demonImage) this.tweens.add({ targets: this.demonImage, alpha: 0, duration: 300 });
                     if (this.inunekoImage) this.tweens.add({ targets: this.inunekoImage, alpha: 0, duration: 300 });
-                    if (!this.boss2Image) this.boss2Image = this.add.image(1920 - 300, 1080/2, 'boss2_normal').setDepth(90);
+                    if (!this.boss2Image) { this.boss2Image = this.add.image(1920 - 300, 1080/2, 'boss2_normal').setDepth(90); this.boss2Image.setScale(750 / this.boss2Image.width); this.boss2Image.setY(100 + (this.boss2Image.height * this.boss2Image.scaleX) / 2); }
                     this.tweens.add({ targets: this.boss2Image, alpha: 1, duration: 300 });
                     if (this.sisterImage) this.tweens.add({ targets: this.sisterImage, alpha: 0, duration: 300 });
                     if (this.brotherImage) this.tweens.add({ targets: this.brotherImage, alpha: 0, duration: 300 });
@@ -3819,8 +3819,8 @@ this.isLabTransition = true;
                     if (this.inunekoImage) this.tweens.add({ targets: this.inunekoImage, alpha: 0, duration: 300 });
                     if (this.boss2Image) this.tweens.add({ targets: this.boss2Image, alpha: 0, duration: 300 });
                     if (this.boss1Image) this.tweens.add({ targets: this.boss1Image, alpha: 0, duration: 300 });
-                    if (!this.sisterImage) this.sisterImage = this.add.image(1920 - 650, 1080/2, 'sister_normal').setDepth(90);
-                    if (!this.brotherImage) this.brotherImage = this.add.image(1920 - 300, 1080/2, 'brother_normal').setDepth(90);
+                    if (!this.sisterImage) { this.sisterImage = this.add.image(1920 - 650, 1080/2, 'sister_normal').setDepth(90); this.sisterImage.setScale(750 / this.sisterImage.width); this.sisterImage.setY(100 + (this.sisterImage.height * this.sisterImage.scaleX) / 2); }
+                    if (!this.brotherImage) { this.brotherImage = this.add.image(1920 - 300, 1080/2, 'brother_normal').setDepth(90); this.brotherImage.setScale(750 / this.brotherImage.width); this.brotherImage.setY(100 + (this.brotherImage.height * this.brotherImage.scaleX) / 2); }
                     this.tweens.add({ targets: this.sisterImage, alpha: 1, duration: 300 });
                     this.tweens.add({ targets: this.brotherImage, alpha: 1, duration: 300 });
                     this.showDialogue(name, text, res);
@@ -3834,7 +3834,7 @@ this.isLabTransition = true;
                     if (this.boss2Image) this.tweens.add({ targets: this.boss2Image, alpha: 0, duration: 300 });
                     if (this.sisterImage) this.tweens.add({ targets: this.sisterImage, alpha: 0, duration: 300 });
                     if (this.brotherImage) this.tweens.add({ targets: this.brotherImage, alpha: 0, duration: 300 });
-                    if (!this.boss1Image) this.boss1Image = this.add.image(1920 - 300, 1080/2, 'boss1_normal').setDepth(90);
+                    if (!this.boss1Image) { this.boss1Image = this.add.image(1920 - 300, 1080/2, 'boss1_normal').setDepth(90); this.boss1Image.setScale(750 / this.boss1Image.width); this.boss1Image.setY(100 + (this.boss1Image.height * this.boss1Image.scaleX) / 2); }
                     this.tweens.add({ targets: this.boss1Image, alpha: 1, duration: 300 });
                     this.showDialogue('クラトス', text, res);
                 });
