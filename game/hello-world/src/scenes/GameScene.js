@@ -229,12 +229,14 @@ class GameScene extends Phaser.Scene {
 
     this.stageTimer += delta;
 
-    // Scroll background
-    const scrollSpeed = 2;
-    this.bg1.x -= scrollSpeed;
-    this.bg2.x -= scrollSpeed;
-    if (this.bg1.x <= -this.bgWidth) this.bg1.x = this.bg2.x + this.bgWidth;
-    if (this.bg2.x <= -this.bgWidth) this.bg2.x = this.bg1.x + this.bgWidth;
+    // チュートリアル用の背景スクロール処理
+    if (this.bg1 && this.bg2 && this.bg1.texture.key.includes('scroll')) {
+      const scrollSpeed = 2;
+      this.bg1.x -= scrollSpeed;
+      this.bg2.x -= scrollSpeed;
+      if (this.bg1.x <= -this.bgWidth) this.bg1.x = this.bg2.x + this.bgWidth;
+      if (this.bg2.x <= -this.bgWidth) this.bg2.x = this.bg1.x + this.bgWidth;
+    }
 
     // Player movement (keyboard)
     MOT.handleMovement(this, this.player);
