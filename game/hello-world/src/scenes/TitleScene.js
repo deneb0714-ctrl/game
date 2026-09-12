@@ -462,6 +462,7 @@ class TitleScene extends Phaser.Scene {
     this.charContainer.add(descText);
 
     let currentPortrait = null;
+    let secondaryPortrait = null;
 
     const selectChar = (charData) => {
       let desc = "？？？";
@@ -477,16 +478,38 @@ class TitleScene extends Phaser.Scene {
       
       if (currentPortrait) {
         currentPortrait.destroy();
+        currentPortrait = null;
+      }
+      if (secondaryPortrait) {
+        secondaryPortrait.destroy();
+        secondaryPortrait = null;
       }
       
-      currentPortrait = this.add.image(boxX + 350, boxY + 500, charData.image);
-      let scale = 600 / currentPortrait.height;
-      if (!isFinite(scale) || scale <= 0) scale = 0.5;
-      currentPortrait.setScale(scale);
-      this.charContainer.add(currentPortrait);
+      if (charData.id === 'twins') {
+        // Sister on the left, brother on the right
+        currentPortrait = this.add.image(boxX + 220, boxY + 500, 'sister_normal');
+        secondaryPortrait = this.add.image(boxX + 500, boxY + 500, 'brother_normal');
+        
+        let scaleS = 600 / currentPortrait.height;
+        if (!isFinite(scaleS) || scaleS <= 0) scaleS = 0.5;
+        currentPortrait.setScale(scaleS);
+        
+        let scaleB = 600 / secondaryPortrait.height;
+        if (!isFinite(scaleB) || scaleB <= 0) scaleB = 0.5;
+        secondaryPortrait.setScale(scaleB);
+        
+        this.charContainer.add(currentPortrait);
+        this.charContainer.add(secondaryPortrait);
+      } else {
+        currentPortrait = this.add.image(boxX + 350, boxY + 500, charData.image);
+        let scale = 600 / currentPortrait.height;
+        if (!isFinite(scale) || scale <= 0) scale = 0.5;
+        currentPortrait.setScale(scale);
+        this.charContainer.add(currentPortrait);
+      }
     };
 
-    let btnX = boxX + 195;
+    let btnX = boxX + 145;
     let btnY = boxY + 100;
 
     chars.forEach((c) => {
@@ -500,7 +523,7 @@ class TitleScene extends Phaser.Scene {
       this.charContainer.add(bBg);
       this.charContainer.add(bTxt);
       
-      btnX += 170;
+      btnX += 190;
     });
 
     selectChar(chars[0]);
