@@ -1659,13 +1659,18 @@ class BossScene extends Phaser.Scene {
         this.onPlayerHit(p, { destroy: () => {} });
       });
       
-      // レーザー消滅
+      // レーザーの当たり判定は短時間で消滅させる（残像に当たり判定を残さない）
+      this.time.delayedCall(500, () => {
+        if (collider) collider.destroy();
+      });
+      
+      // レーザー消滅 (視覚的)
       this.tweens.add({
         targets: beam,
         alpha: 0,
-        duration: 3000,
+        duration: 800, // 長すぎると謎の当たり判定と誤認されるため短縮
+        delay: 400,
         onComplete: () => {
-          collider.destroy();
           beam.destroy();
           if (this.currentBoss && this.currentBoss.configKey === 'boss3_twins') {
             this.currentBoss.play('brother_idle');
