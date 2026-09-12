@@ -183,6 +183,12 @@ class TitleScene extends Phaser.Scene {
       this.showCredits();
     }.bind(this));
 
+    const charX = w - 80;
+    const charY = h * 0.45 + 50;
+    this.createButton(charX, charY, 'CHARACTER', hasSave ? 1100 : 900, function () {
+      this.showCharacterList();
+    }.bind(this));
+
     // Version text
     const versionText = window.GAME_VERSION ? `v0.1.0 (${window.GAME_VERSION})` : 'v0.1.0';
     this.add.text(w - 20, h - 20, versionText, {
@@ -414,6 +420,103 @@ class TitleScene extends Phaser.Scene {
         callback();
       }, [], this);
     }, this);
+  }
+
+  showCharacterList() {
+    if (this.charContainer) return;
+    this.charContainer = this.add.container(0, 0).setDepth(200000);
+    const w = 1920, h = 1080;
+    
+    const touchZone = this.add.rectangle(w/2, h/2, w, h, 0x000000, 0.7).setInteractive({ useHandCursor: true });
+    this.charContainer.add(touchZone);
+    
+    const boxW = 1400, boxH = 900;
+    const boxX = (w - boxW) / 2, boxY = (h - boxH) / 2;
+    const box = this.add.graphics();
+    box.fillStyle(0x0a0a1a, 0.92);
+    box.fillRoundedRect(boxX, boxY, boxW, boxH, 12);
+    box.lineStyle(2, 0x4FD1FF, 0.8);
+    box.strokeRoundedRect(boxX, boxY, boxW, boxH, 12);
+    this.charContainer.add(box);
+
+    const titleText = this.add.text(boxX + boxW/2, boxY + 40, "キャラ一覧", {
+      fontFamily: '"DotGothic16"', fontSize: '42px', color: '#4FD1FF'
+    }).setOrigin(0.5);
+    this.charContainer.add(titleText);
+    
+    const chars = [
+      { id: 'hero', label: '勇者', image: 'hero_stand' },
+      { id: 'doctor', label: '博士', image: 'doctor_normal' },
+      { id: 'kratos', label: 'クラトス', image: 'boss1_normal' },
+      { id: 'touleros', label: 'トゥレロス', image: 'boss2_normal' },
+      { id: 'twins', label: 'エディオ＆エナリア', image: 'sister_normal' },
+      { id: 'demon', label: '魔王', image: 'demon_lord_normal' }
+    ];
+
+    const hasHelloWorld = window.MOT && MOT.hasUnlockedEnding && MOT.hasUnlockedEnding('END_ORPHAN');
+
+    let nameText = this.add.text(boxX + 700, boxY + 200, "", { fontFamily: '"DotGothic16"', fontSize: '42px', color: '#4FD1FF' });
+    let descText = this.add.text(boxX + 700, boxY + 280, "", { fontFamily: '"DotGothic16"', fontSize: '28px', color: '#E5E7EB', wordWrap: { width: 600, useAdvancedWrap: true }, lineSpacing: 15 });
+    
+    this.charContainer.add(nameText);
+    this.charContainer.add(descText);
+
+    let currentPortrait = null;
+
+    const selectChar = (charData) => {
+      let desc = "？？？";
+      let dName = charData.label;
+      
+      if (charData.id === 'hero') {
+        dName = hasHelloWorld ? "勇者（メエリア）" : "勇者";
+        desc = "博士の研究所で目覚めた勇者。\nこの世界を救う存在になるのか、壊す存在になるのか、それはあなた次第。";
+      }
+
+      nameText.setText(dName);
+      descText.setText(desc);
+      
+      if (currentPortrait) {
+        currentPortrait.destroy();
+      }
+      
+      currentPortrait = this.add.image(boxX + 350, boxY + 500, charData.image);
+      let scale = 600 / currentPortrait.height;
+      if (!isFinite(scale) || scale <= 0) scale = 0.5;
+      currentPortrait.setScale(scale);
+      this.charContainer.add(currentPortrait);
+    };
+
+    let btnX = boxX + 195;
+    let btnY = boxY + 100;
+
+    chars.forEach((c) => {
+      let bBg = this.add.rectangle(btnX, btnY, 160, 40, 0x111122).setStrokeStyle(1, 0x4FD1FF).setInteractive({useHandCursor:true}).setOrigin(0, 0);
+      let bTxt = this.add.text(btnX + 80, btnY + 20, c.label, {fontFamily: '"DotGothic16"', fontSize: '18px', color: '#fff'}).setOrigin(0.5);
+      
+      bBg.on('pointerover', () => bBg.setFillStyle(0x333344));
+      bBg.on('pointerout', () => bBg.setFillStyle(0x111122));
+      bBg.on('pointerdown', () => selectChar(c));
+      
+      this.charContainer.add(bBg);
+      this.charContainer.add(bTxt);
+      
+      btnX += 170;
+    });
+
+    selectChar(chars[0]);
+    
+    const closeText = this.add.text(boxX + boxW / 2, boxY + boxH - 40, '[ CLOSE ]', {
+      fontFamily: '"Press Start 2P"',
+      fontSize: '20px',
+      color: '#4FD1FF'
+    }).setOrigin(0.5).setInteractive({ useHandCursor: true });
+    this.charContainer.add(closeText);
+
+    closeText.on('pointerdown', () => {
+      this.charContainer.destroy();
+      this.charContainer = null;
+      this.canClick = true;
+    });
   }
 }
 

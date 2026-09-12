@@ -173,6 +173,7 @@ class EndingScene extends Phaser.Scene {
 
   showEndingScreen(w, h, ending) {
     if (window.MOT && MOT.clearSaveData) MOT.clearSaveData();
+    if (window.MOT && MOT.saveEnding) MOT.saveEnding(ending.key);
     // Change background smoothly (we do this by adding a colored rect and fading it in)
     let endBg = this.add.rectangle(w/2, h/2, w, h, parseInt(ending.bgColor.replace('#', '0x'))).setDepth(0).setAlpha(0);
     this.tweens.add({ targets: endBg, alpha: 1, duration: 1500 });

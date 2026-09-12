@@ -131,3 +131,22 @@ MOT.clearSaveData = function() {
   }
 };
 
+MOT.saveEnding = function(endingKey) {
+  try {
+    let unlocked = JSON.parse(localStorage.getItem('MOT_UNLOCKED_ENDINGS') || '[]');
+    if (!unlocked.includes(endingKey)) {
+      unlocked.push(endingKey);
+      localStorage.setItem('MOT_UNLOCKED_ENDINGS', JSON.stringify(unlocked));
+    }
+  } catch(e) {}
+};
+
+MOT.hasUnlockedEnding = function(endingKey) {
+  try {
+    let unlocked = JSON.parse(localStorage.getItem('MOT_UNLOCKED_ENDINGS') || '[]');
+    return unlocked.includes(endingKey);
+  } catch(e) {
+    return false;
+  }
+};
+
