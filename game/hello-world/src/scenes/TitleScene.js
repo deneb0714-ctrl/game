@@ -456,7 +456,7 @@ class TitleScene extends Phaser.Scene {
     const hasHelloWorld = window.MOT && MOT.hasUnlockedEnding && MOT.hasUnlockedEnding('END_ORPHAN');
 
     let nameText = this.add.text(boxX + 700, boxY + 200, "", { fontFamily: '"DotGothic16"', fontSize: '42px', color: '#4FD1FF' });
-    let descText = this.add.text(boxX + 700, boxY + 280, "", { fontFamily: '"DotGothic16"', fontSize: '28px', color: '#E5E7EB', wordWrap: { width: 600, useAdvancedWrap: true }, lineSpacing: 15 });
+    let descText = this.add.text(boxX + 700, boxY + 260, "", { fontFamily: '"DotGothic16"', fontSize: '24px', color: '#E5E7EB', wordWrap: { width: 620, useAdvancedWrap: true }, lineSpacing: 10 });
     
     this.charContainer.add(nameText);
     this.charContainer.add(descText);
@@ -468,9 +468,39 @@ class TitleScene extends Phaser.Scene {
       let desc = "？？？";
       let dName = charData.label;
       
+      const has = (key) => window.MOT && window.MOT.hasUnlockedEnding && MOT.hasUnlockedEnding(key);
+      
       if (charData.id === 'hero') {
         dName = hasHelloWorld ? "勇者（メエリア）" : "勇者";
-        desc = "博士の研究所で目覚めた勇者。\nこの世界を救う存在になるのか、壊す存在になるのか、それはあなた次第。";
+        desc = "博士の研究所で目覚めた勇者。この世界を救う存在になるのか、壊す存在になるのか、それはあなた次第。";
+        if (hasHelloWorld) {
+          desc += "\n\n【Hello Worldエンドクリア後】\n博士によって創り出された人造人間。耳に着けているインカムによって博士に操られる。性別不明であまり表情の起伏がないように作られている。博士すら知らない隠された力がある...？";
+        }
+      } else if (charData.id === 'doctor') {
+        desc = "勇者を世界に召喚し、魔王討伐を依頼した天才博士。通信端末を使い、いつも勇者を見守っている。";
+        if (has('hidden_freedom')) {
+          desc += "\n\n【自由の身エンドクリア後】\n勇者を創り、世界を征服しようと企む黒幕。世界に人間以上の存在は不要だと考えている。魔王とはその思想の違いから過去何度も衝突している。勇者以前にも何機も人造人間を創っており、目的のためならどんな非道な手段も問わない。";
+        }
+      } else if (charData.id === 'demon') {
+        desc = "この世界を統べる魔族の王。部下たちにとても慕われている。勇者に立ち塞がる最後の壁。世界を滅ぼそうとしている...？";
+        if (has('bad_shutdown')) {
+          desc += "\n\n【強制シャットダウン後】\n世界を平和的に治め、臣民を守るために戦う作中１番の善人。尊大な言葉遣いとは裏腹に利他的で、癖の強い部下たちに振り回されることも多々ある。戦いがあまり得意ではなく、戦闘はペットの犬猫スターに助けられている。本名はヴェリタス。";
+        }
+      } else if (charData.id === 'twins') {
+        desc = "勇者に立ち塞がる３番目の敵。雰囲気が勇者に似ている。博士とは過去に何かあるようで...？";
+        if (has('normal_useless')) {
+          desc += "\n\n【役立たずエンドクリア後】\n勇者以前に博士に創られた人造人間のうちの二人。魔王によって真実を話されて寝返る。勇者のことは弟妹のように思っている。寝返った後も何人もの「勇者」が博士によって使い捨てにされている様を見ており、博士に対する恨みは大きい。";
+        }
+      } else if (charData.id === 'touleros') {
+        desc = "二番目に立ち塞がる敵。恩があり、魔王の言うことだけを聞く。強いやつと戦うのが好き。";
+        if (has('normal_daily')) {
+          desc += "\n\n【日常エンドクリア後】\n過去に人間（博士？）によって家族を皆殺しにされている。その際に魔王に助けられ、忠誠を誓う。守りたいものを守るのは力が必要だと鍛えはじめ、魔王軍幹部にまで成り上がる。その過程で戦いに目覚め、強者との戦いを好むようになり、魔王軍の中でも危険人物扱いされている。クラトスによく獲物を横取り（本人にその気はない）されるのが気に食わず、毛嫌いしている。";
+        }
+      } else if (charData.id === 'kratos') {
+        desc = "最初に立ち塞がる敵。見た目通り脳筋。銃を振り回し、衝撃波を飛ばして攻撃してくる。";
+        if (has('bad_puppet')) {
+          desc += "\n\n【傀儡エンドクリア後】\n魔王軍に長くから仕える歴戦の戦士。過去の戦いで右目を失っており、そのため上手く照準を合わせるのが難しくなったため銃を振り回しての攻撃にシフトした。銃を使うと普通に強い。仲間意識が強く、味方を守るため誰よりも早く前線に出る。";
+        }
       }
 
       nameText.setText(dName);
