@@ -184,7 +184,7 @@ class TitleScene extends Phaser.Scene {
     }.bind(this));
 
     const charX = w - 80;
-    const charY = h * 0.45 + 50;
+    const charY = h * 0.45 + 100;
     this.createButton(charX, charY, 'CHARACTER', hasSave ? 1100 : 900, function () {
       this.showCharacterList();
     }.bind(this));
@@ -486,9 +486,9 @@ class TitleScene extends Phaser.Scene {
       }
       
       if (charData.id === 'twins') {
-        // Sister on the left, brother on the right
-        currentPortrait = this.add.image(boxX + 220, boxY + 500, 'sister_normal');
-        secondaryPortrait = this.add.image(boxX + 500, boxY + 500, 'brother_normal');
+        // Sister on the left, Brother on the right, overlapping closely
+        currentPortrait = this.add.image(boxX + 270, boxY + 500, 'sister_normal');
+        secondaryPortrait = this.add.image(boxX + 430, boxY + 500, 'brother_normal');
         
         let scaleS = 600 / currentPortrait.height;
         if (!isFinite(scaleS) || scaleS <= 0) scaleS = 0.5;
