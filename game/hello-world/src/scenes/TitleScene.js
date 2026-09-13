@@ -177,22 +177,15 @@ class TitleScene extends Phaser.Scene {
       }.bind(this));
     }
 
-    const creditsX = w - 80;
-    const creditsY = h * 0.45;
-    this.createButton(creditsX, creditsY, 'CREDITS', hasSave ? 900 : 700, function () {
+    const creditsY = hasSave ? h * 0.84 + 80 : startY + 80;
+    this.createButton(w / 2, creditsY, 'CREDITS', hasSave ? 900 : 700, function () {
       this.showCredits();
     }.bind(this));
 
-    const charX = w - 80;
-    const charY = h * 0.45 + 100;
-    this.createButton(charX, charY, 'CHARACTER', hasSave ? 1100 : 900, function () {
-      this.showCharacterList();
-    }.bind(this));
-
-    const endX = w - 80;
-    const endY = h * 0.45 + 200;
-    this.createButton(endX, endY, 'ENDING', hasSave ? 1300 : 1100, function () {
-      this.showEndingList();
+    const hintX = w - 100;
+    const hintY = 100;
+    this.createButton(hintX, hintY, 'HINT', hasSave ? 1100 : 900, function () {
+      this.showHintMenu();
     }.bind(this));
 
     // Version text
@@ -381,6 +374,62 @@ class TitleScene extends Phaser.Scene {
       handleClose();
     });
   }
+  showHintMenu() {
+    if (this.hintContainer) return;
+    this.hintContainer = this.add.container(0, 0).setDepth(200000);
+    const w = 1920, h = 1080;
+
+    const touchZone = this.add.rectangle(w/2, h/2, w, h, 0x000000, 0.7).setInteractive({ useHandCursor: true });
+    this.hintContainer.add(touchZone);
+
+    const boxW = 400, boxH = 300;
+    const boxX = (w - boxW) / 2, boxY = (h - boxH) / 2;
+    const box = this.add.graphics();
+    box.fillStyle(0x0a0a1a, 0.95);
+    box.fillRoundedRect(boxX, boxY, boxW, boxH, 12);
+    box.lineStyle(2, 0x4FD1FF, 0.8);
+    box.strokeRoundedRect(boxX, boxY, boxW, boxH, 12);
+    this.hintContainer.add(box);
+
+    const charBtn = this.add.text(w/2, boxY + 100, "キャラクター", {
+      fontFamily: '"DotGothic16"', fontSize: '32px', color: '#4FD1FF',
+      backgroundColor: '#1F2933', padding: {x: 30, y: 15}
+    }).setOrigin(0.5).setInteractive({ useHandCursor: true });
+    
+    charBtn.on('pointerdown', () => {
+      if (MOT.Audio && MOT.Audio.playSelect) MOT.Audio.playSelect();
+      this.hintContainer.destroy();
+      this.hintContainer = null;
+      this.showCharacterList();
+    });
+    charBtn.on('pointerover', () => charBtn.setBackgroundColor('#2A3A4A'));
+    charBtn.on('pointerout', () => charBtn.setBackgroundColor('#1F2933'));
+    
+    const endBtn = this.add.text(w/2, boxY + 200, "エンディング", {
+      fontFamily: '"DotGothic16"', fontSize: '32px', color: '#4FD1FF',
+      backgroundColor: '#1F2933', padding: {x: 30, y: 15}
+    }).setOrigin(0.5).setInteractive({ useHandCursor: true });
+    
+    endBtn.on('pointerdown', () => {
+      if (MOT.Audio && MOT.Audio.playSelect) MOT.Audio.playSelect();
+      this.hintContainer.destroy();
+      this.hintContainer = null;
+      this.showEndingList();
+    });
+    endBtn.on('pointerover', () => endBtn.setBackgroundColor('#2A3A4A'));
+    endBtn.on('pointerout', () => endBtn.setBackgroundColor('#1F2933'));
+    
+    this.hintContainer.add([charBtn, endBtn]);
+    
+    const handleClose = () => {
+      if (this.hintContainer) {
+        this.hintContainer.destroy();
+        this.hintContainer = null;
+        this.canClick = true;
+      }
+    };
+    touchZone.on('pointerdown', handleClose);
+  }
 
   createButton(x, y, label, delay, callback) {
     const btn = this.add.image(x, y, 'ui_button').setInteractive({ useHandCursor: true }).setDepth(10);
@@ -415,7 +464,7 @@ class TitleScene extends Phaser.Scene {
     // Click
     btn.on('pointerdown', function () {
       if (window.MOT && MOT.Audio) MOT.Audio.playSelect();
-      if (label !== 'CREDITS' && label !== 'CHARACTER' && label !== 'ENDING') {
+      if (label !== 'CREDITS' && label !== 'CHARACTER' && label !== 'ENDING' && label !== 'HINT') {
         btn.disableInteractive();
       }
       // Quick flash then execute
