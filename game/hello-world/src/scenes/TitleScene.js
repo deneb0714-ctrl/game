@@ -189,6 +189,12 @@ class TitleScene extends Phaser.Scene {
       this.showCharacterList();
     }.bind(this));
 
+    const endX = w - 80;
+    const endY = h * 0.45 + 200;
+    this.createButton(endX, endY, 'ENDING', hasSave ? 1300 : 1100, function () {
+      this.showEndingList();
+    }.bind(this));
+
     // Version text
     const versionText = window.GAME_VERSION ? `v0.1.0 (${window.GAME_VERSION})` : 'v0.1.0';
     this.add.text(w - 20, h - 20, versionText, {
@@ -581,6 +587,115 @@ class TitleScene extends Phaser.Scene {
       this.charContainer.destroy();
       this.charContainer = null;
       this.canClick = true;
+    });
+  }
+
+  showEndingList() {
+    if (this.endContainer) return;
+    this.endContainer = this.add.container(0, 0).setDepth(200000);
+    const w = 1920, h = 1080;
+
+    const touchZone = this.add.rectangle(w/2, h/2, w, h, 0x000000, 0.7).setInteractive({ useHandCursor: true });
+    this.endContainer.add(touchZone);
+
+    const boxW = 1400, boxH = 900;
+    const boxX = (w - boxW) / 2, boxY = (h - boxH) / 2;
+    const box = this.add.graphics();
+    box.fillStyle(0x0a0a1a, 0.92);
+    box.fillRoundedRect(boxX, boxY, boxW, boxH, 12);
+    box.lineStyle(2, 0x4FD1FF, 0.8);
+    box.strokeRoundedRect(boxX, boxY, boxW, boxH, 12);
+    this.endContainer.add(box);
+
+    const titleText = this.add.text(boxX + boxW/2, boxY + 40, "エンディング一覧", {
+      fontFamily: '"DotGothic16"', fontSize: '42px', color: '#4FD1FF'
+    }).setOrigin(0.5);
+    this.endContainer.add(titleText);
+
+    const endings = [
+      { id: 'END_ORPHAN', label: 'HAPPY END - Hello World', cond: '幹部を全員見逃し、魔王も見逃す\n（殺意100未満 または ドルポ100以上）', cg: 'cg_helloworld' },
+      { id: 'bad_puppet', label: 'BAD END - 傀儡', cond: '幹部を全員殺害する', cg: 'cg_puppet' },
+      { id: 'normal_useless', label: 'NORMAL END - 役立たず', cond: '幹部を一部殺害し、魔王を見逃す', cg: 'cg_useless' },
+      { id: 'normal_unresistable', label: 'NORMAL END - 抗えない', cond: '幹部を全員見逃し、魔王を殺害する', cg: 'cg_irresistible' },
+      { id: 'hidden_freedom', label: '隠しエンド - 自由の身', cond: '幹部を全員見逃し、魔王を見逃す\n（殺意100以上 かつ ドルポ100未満）', cg: 'bg_lab' },
+      { id: 'bad_shutdown', label: 'BAD END - 強制シャットダウン', cond: '幹部を一部殺害し、魔王を殺害する\n（ドルポ100未満）', cg: null },
+      { id: 'normal_daily', label: 'NORMAL END - 日常', cond: '幹部を一部殺害し、魔王を殺害する\n（ドルポ100到達）', cg: null }
+    ];
+
+    let startY = boxY + 120;
+    
+    let hasUnlocked = false;
+    if (window.MOT && MOT.hasUnlockedEnding) {
+      hasUnlocked = true;
+    }
+
+    const closeBtn = this.add.text(boxX + boxW/2, boxY + boxH - 40, "閉じる", {
+      fontFamily: '"DotGothic16"', fontSize: '32px', color: '#fff',
+      backgroundColor: '#333', padding: {x:20, y:10}
+    }).setOrigin(0.5).setInteractive({ useHandCursor: true });
+    
+    closeBtn.on('pointerdown', () => {
+      if (MOT.Audio && MOT.Audio.playSelect) MOT.Audio.playSelect();
+      this.endContainer.destroy();
+      this.endContainer = null;
+    });
+    closeBtn.on('pointerover', () => closeBtn.setBackgroundColor('#555'));
+    closeBtn.on('pointerout', () => closeBtn.setBackgroundColor('#333'));
+    this.endContainer.add(closeBtn);
+
+    endings.forEach((end, idx) => {
+      const isUnlocked = hasUnlocked && MOT.hasUnlockedEnding(end.id);
+      const y = startY + idx * 95;
+      
+      let color = isUnlocked ? '#ffffff' : '#666666';
+      let labelText = isUnlocked ? end.label : '？？？';
+      let condText = isUnlocked ? end.cond : '（条件未達成）';
+      
+      let txt = this.add.text(boxX + 60, y, labelText, { fontFamily: '"DotGothic16"', fontSize: '32px', color: color });
+      let desc = this.add.text(boxX + 60, y + 45, condText, { fontFamily: '"DotGothic16"', fontSize: '20px', color: '#aaaaaa' });
+      
+      this.endContainer.add([txt, desc]);
+      
+      if (isUnlocked && end.cg) {
+        let btn = this.add.text(boxX + boxW - 200, y + 15, "CGを見る", {
+          fontFamily: '"DotGothic16"', fontSize: '24px', color: '#4FD1FF',
+          backgroundColor: '#1F2933', padding: {x:15, y:8}
+        }).setInteractive({ useHandCursor: true });
+        
+        btn.on('pointerdown', () => {
+          if (MOT.Audio && MOT.Audio.playSelect) MOT.Audio.playSelect();
+          this.showEndingCG(end.cg);
+        });
+        btn.on('pointerover', () => btn.setBackgroundColor('#2A3A4A'));
+        btn.on('pointerout', () => btn.setBackgroundColor('#1F2933'));
+        
+        this.endContainer.add(btn);
+      }
+    });
+  }
+
+  showEndingCG(cgKey) {
+    if (this.cgContainer) return;
+    this.cgContainer = this.add.container(0, 0).setDepth(300000);
+    const w = 1920, h = 1080;
+    
+    const bg = this.add.rectangle(w/2, h/2, w, h, 0x000000, 0.9).setInteractive();
+    this.cgContainer.add(bg);
+    
+    const cg = this.add.image(w/2, h/2, cgKey);
+    const scale = Math.min(w / cg.width, h / cg.height);
+    cg.setScale(scale);
+    this.cgContainer.add(cg);
+    
+    const closeTxt = this.add.text(w/2, h - 50, "クリックで戻る", {
+      fontFamily: '"DotGothic16"', fontSize: '28px', color: '#ffffff'
+    }).setOrigin(0.5);
+    this.cgContainer.add(closeTxt);
+    
+    bg.on('pointerdown', () => {
+      if (MOT.Audio && MOT.Audio.playSelect) MOT.Audio.playSelect();
+      this.cgContainer.destroy();
+      this.cgContainer = null;
     });
   }
 }
