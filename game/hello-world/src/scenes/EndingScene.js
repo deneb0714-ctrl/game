@@ -73,6 +73,14 @@ class EndingScene extends Phaser.Scene {
     parseDesc(ending.description, false);
     parseDesc(ending.postDescription, true);
 
+    if (pages.length === 0) {
+      dialogBox.destroy();
+      desc.destroy();
+      nameBg.destroy();
+      nameText.destroy();
+      this.showEndingScreen(w, h, ending);
+      return;
+    }
     this.tweens.add({ targets: [dialogBox, desc, nameBg, nameText], alpha: 1, duration: 1000, onComplete: () => {
         var pageIdx = 0;
         var fullDesc = pages[pageIdx].text;

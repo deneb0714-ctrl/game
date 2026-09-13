@@ -63,7 +63,7 @@ MOT.ENDINGS = {
     key: 'bad_shutdown',
     title: 'BAD END',
     subtitle: '— 強制シャットダウン —',
-    description: '博士に銃を構えた主人公だったが、残念ながらその権限はなかった。\n博士によって機能は強制的に停止され、二度と目覚めることはなかった。',
+    description: null,
     color: 0xFF0000,
     bgColor: '#110000'
   },
@@ -71,7 +71,7 @@ MOT.ENDINGS = {
     key: 'hidden_freedom',
     title: '隠しエンド',
     subtitle: '— 自由の身 —',
-    description: '主人公は、自分を作った博士を撃ち殺した。そうして主人公は、誰に従わなくてもよくなった。真に自由となった主人公は、これから一人何をするのだろうか。',
+    description: null,
     bgImageEnding: 'bg_lab',
     color: 0xFFD700,
     bgColor: '#1a1a00'
