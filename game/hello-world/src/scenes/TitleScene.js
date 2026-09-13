@@ -415,7 +415,7 @@ class TitleScene extends Phaser.Scene {
     // Click
     btn.on('pointerdown', function () {
       if (window.MOT && MOT.Audio) MOT.Audio.playSelect();
-      if (label !== 'CREDITS' && label !== 'CHARACTER') {
+      if (label !== 'CREDITS' && label !== 'CHARACTER' && label !== 'ENDING') {
         btn.disableInteractive();
       }
       // Quick flash then execute
