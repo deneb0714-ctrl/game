@@ -82,6 +82,19 @@ MOT.incrementMurderousOrb = function () {
 };
 
 // 博士の指示に従った回数をインクリメントする関数
+MOT.showPopup = function(text) {
+  let scene = MOT.currentScene;
+  if (!scene) return;
+  const saveNotify = scene.add.text(1920 / 2, 120, text, {
+    fontFamily: "'DotGothic16', sans-serif",
+    fontSize: "28px",
+    color: "#00FF88",
+    backgroundColor: "#111111",
+    padding: { x: 16, y: 8 }
+  }).setOrigin(0.5).setDepth(200000).setAlpha(0).setScrollFactor(0);
+  scene.tweens.add({ targets: saveNotify, alpha: 1, duration: 400, yoyo: true, hold: 1500 });
+};
+
 MOT.incrementDoctorObeyCount = function () {
   MOT.flags.doctorObeyCount++;
   MOT.flags.dollPoints = Math.min(100, MOT.flags.dollPoints + 5);
@@ -89,6 +102,7 @@ MOT.incrementDoctorObeyCount = function () {
     MOT.flags.playerMaxHP = 3 + Math.floor(MOT.flags.dollPoints / 25);
     if (MOT.flags.playerMaxHP > oldMax) {
       MOT.flags.playerHP += (MOT.flags.playerMaxHP - oldMax);
+      if (MOT.showPopup) MOT.showPopup("最大HPがアップしました！");
     }
   console.log('[MOT] doctorObeyCount:', MOT.flags.doctorObeyCount);
 };

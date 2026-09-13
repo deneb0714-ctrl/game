@@ -38,6 +38,7 @@ class GameScene extends Phaser.Scene {
   }
 
   create() {
+    MOT.currentScene = this;
     this.sound.stopAll();
     this.events.on('shutdown', () => {
       if (this.stageBgm) this.stageBgm.stop();

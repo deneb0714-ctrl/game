@@ -75,6 +75,7 @@ class BossScene extends Phaser.Scene {
   }
 
   create() {
+    MOT.currentScene = this;
       this.heroAttackSpeedBoost = false;
       this.heroFirepowerBoost = false;
       this.inunekoBoostActive = false;
