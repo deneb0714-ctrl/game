@@ -293,6 +293,9 @@ class GameScene extends Phaser.Scene {
   firePlayerBullet() {
     const bullet = this.playerBullets.create(this.player.x + 30, this.player.y, 'bullet_player');
     if (bullet) {
+      let diamondCount = Math.floor((MOT.flags.killingIntent || 0) / 5);
+      let baseDamage = Math.min(5, 1 + diamondCount * 0.25);
+      bullet.damage = baseDamage;
       bullet.setVelocityX(800);
       bullet.setScale(2);
       // 寿命は2.2秒（射程1760px）にする。
@@ -912,10 +915,10 @@ class GameScene extends Phaser.Scene {
       this.energyBarOutline.lineStyle(2, 0x4FD1FF, 0.6);
       this.energyBarOutline.strokeRect(30, 80, 300, 24);
       
-      this.iconPersonBg = this.add.image(390, 44, 'icon_person').setOrigin(0, 0).setTint(0x555555).setDepth(100).setScrollFactor(0).setScale(1.5);
-      this.iconPersonFill = this.add.image(390, 44, 'icon_person').setOrigin(0, 0).setTint(0xFFFF00).setDepth(100).setScrollFactor(0).setScale(1.5);
+//       this.iconPersonBg = this.add.image(390, 44, 'icon_person').setOrigin(0, 0).setTint(0x555555).setDepth(100).setScrollFactor(0).setScale(1.5);
+//       this.iconPersonFill = this.add.image(390, 44, 'icon_person').setOrigin(0, 0).setTint(0xFFFF00).setDepth(100).setScrollFactor(0).setScale(1.5);
       
-      this.batteryUI = this.add.graphics().setDepth(100).setScrollFactor(0);
+//       this.batteryUI = this.add.graphics().setDepth(100).setScrollFactor(0);
     }
 
     // Energy bar update (using scaleX instead of clear/fillRect)
@@ -934,39 +937,7 @@ class GameScene extends Phaser.Scene {
 
     this.energyText.setText('EN: ' + MOT.flags.energy + '/' + MOT.flags.maxEnergyThreshold);
 
-    // Doll Points update
-    const dollValue = MOT.flags.dollPoints || 0;
-    const dollPct = Phaser.Math.Clamp(dollValue / 100, 0, 1);
-    if (dollPct <= 0) {
-      this.iconPersonFill.setVisible(false);
-    } else {
-      this.iconPersonFill.setVisible(true);
-      const cropY = 60 - 60 * dollPct;
-      this.iconPersonFill.setCrop(0, cropY, 32, 64 - cropY);
-    }
-
-    // Killing Intent update
-    const intentValue = MOT.flags.killingIntent || 0;
-    const intentPct = Phaser.Math.Clamp(intentValue / 100, 0, 1);
-    if (this.batteryUI) {
-      this.batteryUI.clear();
-      // 電池のキャップ部分
-      this.batteryUI.fillStyle(0x555555, 1);
-      this.batteryUI.fillRect(450 + 12, 44, 24, 6);
-      // 電池の枠線
-      this.batteryUI.lineStyle(3, 0x555555, 1);
-      this.batteryUI.strokeRect(450 + 3, 44 + 6, 42, 87);
-      
-      // 赤い中身（殺意ゲージ）
-      if (intentPct > 0) {
-        this.batteryUI.fillStyle(0xFF0000, 1);
-        const fillMaxHeight = 81;
-        const fillH = fillMaxHeight * intentPct;
-        const fillY = (44 + 6 + 84) - fillH;
-        this.batteryUI.fillRect(450 + 6, fillY, 36, fillH);
-      }
-    }
-
+    // UI Meters removed per user request
     const iconX = 360;
     const iconY = 92;
     const iconRadius = 18;

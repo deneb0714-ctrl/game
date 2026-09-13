@@ -22,8 +22,8 @@ MOT.flags = {
   diedCount: 0,
   energy: 0,
   maxEnergyThreshold: 100,
-  playerHP: 5,
-  playerMaxHP: 5,
+  playerHP: 3,
+  playerMaxHP: 3,
   dollPoints: 0,
   killingIntent: 0
 };
@@ -41,8 +41,8 @@ MOT.resetFlags = function () {
   MOT.flags.maxEnergy = false;
   MOT.flags.diedCount = 0;
   MOT.flags.energy = 0;
-  MOT.flags.playerHP = 5;
-  MOT.flags.playerMaxHP = 5;
+  MOT.flags.playerHP = 3;
+  MOT.flags.playerMaxHP = 3;
   MOT.flags.dollPoints = 0;
   MOT.flags.killingIntent = 0;
 
@@ -85,6 +85,11 @@ MOT.incrementMurderousOrb = function () {
 MOT.incrementDoctorObeyCount = function () {
   MOT.flags.doctorObeyCount++;
   MOT.flags.dollPoints = Math.min(100, MOT.flags.dollPoints + 5);
+    let oldMax = MOT.flags.playerMaxHP;
+    MOT.flags.playerMaxHP = 3 + Math.floor(MOT.flags.dollPoints / 25);
+    if (MOT.flags.playerMaxHP > oldMax) {
+      MOT.flags.playerHP += (MOT.flags.playerMaxHP - oldMax);
+    }
   console.log('[MOT] doctorObeyCount:', MOT.flags.doctorObeyCount);
 };
 
