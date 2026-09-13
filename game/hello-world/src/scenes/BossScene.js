@@ -3391,11 +3391,12 @@ class BossScene extends Phaser.Scene {
                   }
 
                   MOT.flags.killedDemonLord = true;
+                  await sayDevice('「よくやった。さぁ早くとどめを！」');
                   await sayDemon('「ぐっ…すまないわがしもべたち…ここまでのようだ」');
                   await sayHero('「…」');
                   MOT.Audio.playSelect();
                   
-                  if (DP >= 3) {
+                  if (DP >= 20) {
                       this.cameras.main.fadeOut(1000);
                       await new Promise(r => this.time.delayedCall(1000, r));
                       let blackText = this.add.text(1920/2, 1080/2, '無言で残党も出会い次第殺しながら博士の研究室に戻る。', {fontFamily: '"DotGothic16"', fontSize: '32px', color: '#fff'}).setOrigin(0.5).setDepth(300).setAlpha(0);
@@ -3521,7 +3522,7 @@ class BossScene extends Phaser.Scene {
                       this.cameras.main.fadeIn(1000);
                       await sayDoctorLab('「よくやったな、勇者よ」');
                       await sayHeroLab('「…」');
-                      await sayDoctorLab('「ふむ。すでに物言わぬお人形にでも堕ちたか。」');
+                      await sayDoctorLab('「ふむ？」');
                       
                       if (this.choiceContainer) this.choiceContainer.destroy();
                       this.choiceContainer = this.add.container(0, 0).setDepth(110);
@@ -3554,25 +3555,6 @@ class BossScene extends Phaser.Scene {
                       
                       this.isLabTransition = true;
                           // 立ち絵と背景を消して、真の魔王を表示
-                      if (this.heroImage) this.heroImage.setVisible(false);
-                      if (this.doctorImage) this.doctorImage.setVisible(false);
-                      if (this.dimBg) this.dimBg.setVisible(false);
-                      if (this.bg) this.bg.setVisible(false);
-                      if (labBg) labBg.setVisible(false); // 追加: 真の魔王表示時に研究室の背景を隠す
-                      
-                      this.isLabTransition = true;
-                      let trueDemonLordImg = document.createElement('img');
-                      trueDemonLordImg.id = 'trueDemonLordImg';
-                      trueDemonLordImg.src = 'assets/images/true_demon_lord.gif?v=' + window.GAME_VERSION;
-                      trueDemonLordImg.style.position = 'absolute';
-                      trueDemonLordImg.style.top = '0';
-                      trueDemonLordImg.style.left = '0';
-                      trueDemonLordImg.style.width = '100%';
-                      trueDemonLordImg.style.height = '100%';
-                      trueDemonLordImg.style.objectFit = 'cover';
-                      trueDemonLordImg.style.zIndex = '-1';
-                      trueDemonLordImg.style.pointerEvents = 'none';
-                      document.getElementById('game-root').appendChild(trueDemonLordImg);
                       
                       await sayHeroLab('「…」');
                       await sayDoctorLab('「こちらに銃を構えてどうした？私を倒したいでも言うのか。」');
