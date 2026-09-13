@@ -3396,7 +3396,7 @@ class BossScene extends Phaser.Scene {
                   await sayHero('「…」');
                   MOT.Audio.playSelect();
                   
-                  if (DP >= 20) {
+                  if (DP >= 100) {
                       this.cameras.main.fadeOut(1000);
                       await new Promise(r => this.time.delayedCall(1000, r));
                       let blackText = this.add.text(1920/2, 1080/2, '無言で残党も出会い次第殺しながら博士の研究室に戻る。', {fontFamily: '"DotGothic16"', fontSize: '32px', color: '#fff'}).setOrigin(0.5).setDepth(300).setAlpha(0);

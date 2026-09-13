@@ -84,7 +84,7 @@ MOT.incrementMurderousOrb = function () {
 // 博士の指示に従った回数をインクリメントする関数
 MOT.incrementDoctorObeyCount = function () {
   MOT.flags.doctorObeyCount++;
-  MOT.flags.dollPoints = Math.min(100, MOT.flags.dollPoints + 10);
+  MOT.flags.dollPoints = Math.min(100, MOT.flags.dollPoints + 5);
   console.log('[MOT] doctorObeyCount:', MOT.flags.doctorObeyCount);
 };
 
