@@ -3119,6 +3119,13 @@ class BossScene extends Phaser.Scene {
                             await sayDoctorLab('「残念だが、お前にその権限はない。」');
                             await sayDoctorLab('「お前にできることは、このまま邪魔者を倒し私の役に立つことだけだ。」');
                             await sayDoctorLab('「だが、歯向かってきたお前をこのまま使う必要もないな。処分するとでもしようか。」');
+                            if (window.MOT && MOT.Audio && MOT.Audio.playCrack) MOT.Audio.playCrack();
+                            this.cameras.main.shake(300, 0.02);
+                            const cg = this.add.image(1920/2, 1080/2, "cg_shutdown").setDepth(300000).setAlpha(0);
+                            const scale = Math.min(1920 / cg.width, 1080 / cg.height);
+                            cg.setScale(scale);
+                            this.tweens.add({ targets: cg, alpha: 1, duration: 100 });
+                            await new Promise(res => this.time.delayedCall(2500, res));
                             ending('bad_shutdown');
                         }
                         return;

@@ -653,7 +653,7 @@ class TitleScene extends Phaser.Scene {
       { id: "normal_useless", label: "NORMAL END - 役立たず", cond: "幹部を一部殺害し、魔王を見逃す", cg: "cg_useless" },
       { id: "normal_unresistable", label: "NORMAL END - 抗えない", cond: "幹部を全員見逃し、魔王を殺害する", cg: "cg_irresistible" },
       { id: "hidden_freedom", label: "隠しエンド - 自由の身", cond: "幹部を全員見逃し、魔王を見逃す\n（赤いダイヤ20個以上、かつ博士の命令に20回未満）", cg: "bg_lab" },
-      { id: "bad_shutdown", label: "BAD END - 強制シャットダウン", cond: "幹部を一部殺害し、魔王を殺害する\n（博士の命令に20回未満）", cg: null },
+      { id: "bad_shutdown", label: "BAD END - 強制シャットダウン", cond: "幹部を一部殺害し、魔王を殺害する\n（博士の命令に20回未満）", cg: 'cg_shutdown' },
       { id: "normal_daily", label: "NORMAL END - 日常", cond: "幹部を一部殺害し、魔王を殺害する\n（博士の命令に20回以上従う）", cg: null }
     ];
 
