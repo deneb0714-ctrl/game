@@ -638,6 +638,7 @@ class TitleScene extends Phaser.Scene {
       if (MOT.Audio && MOT.Audio.playSelect) MOT.Audio.playSelect();
       this.endContainer.destroy();
       this.endContainer = null;
+      this.canClick = true;
     });
     closeBtn.on('pointerover', () => closeBtn.setBackgroundColor('#555'));
     closeBtn.on('pointerout', () => closeBtn.setBackgroundColor('#333'));
