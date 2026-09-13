@@ -3778,7 +3778,7 @@ this.isLabTransition = true;
                     if (this.heroImage) this.tweens.add({ targets: this.heroImage, alpha: 0.4, duration: 300 });
                     if (doctorImage) this.tweens.add({ targets: doctorImage, alpha: 0, duration: 300 });
                     if (!this.demonImage) { this.demonImage = this.add.image(1920 - 300, 1080/2, 'demon_lord_normal').setDepth(90); this.demonImage.setScale(750 / this.demonImage.width); this.demonImage.setY(100 + (this.demonImage.height * this.demonImage.scaleX) / 2); }
-                    if (!this.inunekoImage) { this.inunekoImage = this.add.image(1920 - 550, 1080/2, 'inuneko_stand').setDepth(90); this.inunekoImage.setScale(750 / this.inunekoImage.width); this.inunekoImage.setY(100 + (this.inunekoImage.height * this.inunekoImage.scaleX) / 2); }
+                    if (!this.inunekoImage) { this.inunekoImage = this.add.image(1920 - 550, 1080/2, 'inuneko_stand').setDepth(90); this.inunekoImage.setScale(500 / this.inunekoImage.height); this.inunekoImage.setY(100 + (this.inunekoImage.height * this.inunekoImage.scaleY) / 2); }
                     this.demonImage.setTexture('demon_lord_normal');
                     this.tweens.add({ targets: this.demonImage, alpha: 1, duration: 300 });
                     this.tweens.add({ targets: this.inunekoImage, alpha: 1, duration: 300 });
@@ -3793,7 +3793,7 @@ this.isLabTransition = true;
                     if (this.heroImage) this.tweens.add({ targets: this.heroImage, alpha: 0.4, duration: 300 });
                     if (doctorImage) this.tweens.add({ targets: doctorImage, alpha: 0, duration: 300 });
                     if (!this.demonImage) { this.demonImage = this.add.image(1920 - 300, 1080/2, 'demon_lord_normal').setDepth(90); this.demonImage.setScale(750 / this.demonImage.width); this.demonImage.setY(100 + (this.demonImage.height * this.demonImage.scaleX) / 2); }
-                    if (!this.inunekoImage) { this.inunekoImage = this.add.image(1920 - 550, 1080/2, 'inuneko_stand').setDepth(90); this.inunekoImage.setScale(750 / this.inunekoImage.width); this.inunekoImage.setY(100 + (this.inunekoImage.height * this.inunekoImage.scaleX) / 2); }
+                    if (!this.inunekoImage) { this.inunekoImage = this.add.image(1920 - 550, 1080/2, 'inuneko_stand').setDepth(90); this.inunekoImage.setScale(500 / this.inunekoImage.height); this.inunekoImage.setY(100 + (this.inunekoImage.height * this.inunekoImage.scaleY) / 2); }
                     this.inunekoImage.setTexture('inuneko_stand');
                     this.tweens.add({ targets: this.demonImage, alpha: 1, duration: 300 });
                     this.tweens.add({ targets: this.inunekoImage, alpha: 1, duration: 300 });
