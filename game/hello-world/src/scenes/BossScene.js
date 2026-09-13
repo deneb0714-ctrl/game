@@ -3155,10 +3155,10 @@ class BossScene extends Phaser.Scene {
                           
                           this.bg.setTexture('bg_lab');
                           this.bg.setTint(0xffffff); // 背景色が変えられていた場合に戻す
-                          this.bg.setOrigin(0, 0.5);
+                          this.bg.setOrigin(0.5, 0.5);
                           if (this.laneGraphics) { this.laneGraphics.setVisible(false); }
-                          this.bg.setPosition(0, 1080 / 2);
-                          this.bg.setScale(1920 / 1024);
+                          this.bg.setPosition(1920 / 2, 1080 / 2);
+                          this.bg.setScale(Math.max(1920 / this.bg.width, 1080 / this.bg.height));
                           
                           if (this.demonImage) { this.demonImage.destroy(); this.demonImage = null; }
                           if (this.inunekoImage) { this.inunekoImage.destroy(); this.inunekoImage = null; }

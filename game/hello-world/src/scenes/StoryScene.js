@@ -21,6 +21,7 @@ class StoryScene extends Phaser.Scene {
     this.cameras.main.setBackgroundColor('#000000');
     // Lab background (invisible at first)
     this.bg = this.add.image(w / 2, h / 2, 'bg_lab').setAlpha(0);
+    this.bg.setScale(Math.max(w / this.bg.width, h / this.bg.height));
 
     // Dialogue Data
     this.dialogue = [
