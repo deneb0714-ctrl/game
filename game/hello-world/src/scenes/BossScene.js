@@ -3027,7 +3027,11 @@ class BossScene extends Phaser.Scene {
                       ending('normal_unresistable');
                       return;
                   } else {
-                        await localSayDevice('「よくやった。さぁ早くとどめを！」');
+                                const localSayDevice = (text) => new Promise(res => { this.tweens.add({ targets: this.dimBg, alpha: 0.6, duration: 300 }); if(this.heroImage) this.tweens.add({targets: this.heroImage, alpha: 0.4, duration: 300}); if(this.demonImage) this.tweens.add({targets: this.demonImage, alpha: 0.4, duration: 300}); this.showDeviceDialogue(text, res); });
+                                const localSayDemon = (text) => new Promise(res => { this.tweens.add({ targets: this.dimBg, alpha: 0.6, duration: 300 }); if(this.heroImage) this.tweens.add({targets: this.heroImage, alpha: 0.4, duration: 300}); if(this.demonImage) this.tweens.add({targets: this.demonImage, alpha: 1, duration: 300}); this.showDialogue('魔王', text, res); });
+                                const sayHero = (text) => new Promise(res => { this.tweens.add({ targets: this.dimBg, alpha: 0.6, duration: 300 }); if(this.heroImage) this.tweens.add({targets: this.heroImage, alpha: 1, duration: 300}); if(this.demonImage) this.tweens.add({targets: this.demonImage, alpha: 0.4, duration: 300}); this.showDialogue(MOT.flags.heroName || '勇者', text, res); });
+                                
+                                await localSayDevice('「よくやった。さぁ早くとどめを！」');
                         await localSayDemon('「ぐっ…すまないわがしもべたち…ここまでのようだ」');
                         await sayHero('「…」');
                         MOT.Audio.playSelect(); // 銃声
