@@ -3558,8 +3558,9 @@ class BossScene extends Phaser.Scene {
                       if (this.doctorImage) this.doctorImage.setVisible(false);
                       if (this.dimBg) this.dimBg.setVisible(false);
                       if (this.bg) this.bg.setVisible(false);
+                      if (labBg) labBg.setVisible(false); // 追加: 真の魔王表示時に研究室の背景を隠す
                       
-this.isLabTransition = true;
+                      this.isLabTransition = true;
                       let trueDemonLordImg = document.createElement('img');
                       trueDemonLordImg.id = 'trueDemonLordImg';
                       trueDemonLordImg.src = 'assets/images/true_demon_lord.gif?v=' + window.GAME_VERSION;
