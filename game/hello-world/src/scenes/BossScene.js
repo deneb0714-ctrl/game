@@ -3536,11 +3536,17 @@ class BossScene extends Phaser.Scene {
                     await new Promise(r => this.time.delayedCall(500, r));
                     let currentText = '';
                     for (let line of lines) {
-                        currentText += line + "\n";
-                        txt.setText(currentText);
-                        if(MOT.Audio.playSelect) MOT.Audio.playSelect();
-                        await new Promise(r => this.time.delayedCall(1200, r));
+                        for (let i = 0; i < line.length; i++) {
+                            currentText += line[i];
+                            txt.setText(currentText + "_");
+                            if (i % 2 === 0 && window.MOT && MOT.Audio && MOT.Audio.playTick) MOT.Audio.playTick();
+                            await new Promise(r => this.time.delayedCall(40, r));
+                        }
+                        currentText += "\n";
+                        txt.setText(currentText + "_");
+                        await new Promise(r => this.time.delayedCall(200, r));
                     }
+                    txt.setText(currentText);
                     await new Promise(r => this.time.delayedCall(2000, r));
                     this.cameras.main.fadeOut(1000, 0, 0, 0);
                     await new Promise(r => this.time.delayedCall(1000, r));
