@@ -1945,18 +1945,16 @@ class BossScene extends Phaser.Scene {
   }
 
   onBossHit(bullet, boss) {
-    if (this.twinsReviving) {
-      bullet.destroy();
-      return;
-    }
     if (!bullet || !bullet.active) return;
-    // 画面外 (x > 1920) にいる敵はダメージを受けない (弾は消去されるが敵はノーダメージ)
     if (boss.x > 1920) {
       bullet.destroy();
       return;
     }
-    bullet.destroy(); // 弾を消す
-    const dmg = bullet.damage || 1;
+    bullet.destroy();
+    let dmg = bullet.damage || 1;
+    if (this.twinsReviving) {
+      dmg = dmg * 0.5;
+    }
 
     // 犬猫バリア中は魔王ボスへのダメージ無効（バリア光エフェクト）
     if (this.demonLordBarrierActive && boss === this.currentBoss) {
