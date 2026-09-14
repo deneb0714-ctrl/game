@@ -102,7 +102,13 @@ MOT.incrementDoctorObeyCount = function () {
     MOT.flags.playerMaxHP = 3 + Math.floor(MOT.flags.dollPoints / 25);
     if (MOT.flags.playerMaxHP > oldMax) {
       MOT.flags.playerHP += (MOT.flags.playerMaxHP - oldMax);
-      if (MOT.showPopup) MOT.showPopup("最大HPがアップしました！");
+      if (MOT.showPopup) {
+      if (MOT.flags.playerMaxHP >= 7) {
+        MOT.showPopup("最大HPが7で最大になりました。");
+      } else {
+        MOT.showPopup("最大HPが" + oldMax + "から" + MOT.flags.playerMaxHP + "になりました。");
+      }
+    }
     }
   console.log('[MOT] doctorObeyCount:', MOT.flags.doctorObeyCount);
 };

@@ -84,14 +84,14 @@ class StoryScene extends Phaser.Scene {
     
     // Name Tag
     this.nameBox = this.add.graphics();
-    this.nameText = this.add.text(400, boxY, '', { fontFamily: '"DotGothic16"', fontSize: '44px', color: '#ffffff' }).setOrigin(0.5);
+    this.nameText = this.add.text(100, boxY+10, '', { fontFamily: '"DotGothic16"', fontSize: '44px', color: '#4FD1FF' }).setOrigin(0, 0);
 
     // Message Text
-    this.messageText = this.add.text(260, boxY + 40, '', {
+    this.messageText = this.add.text(100, boxY + 60, '', {
       fontFamily: '"DotGothic16"',
       fontSize: '48px',
       color: '#E5E7EB',
-      wordWrap: { width: w - 300, useAdvancedWrap: true },
+      wordWrap: { width: w - 220, useAdvancedWrap: true },
       lineSpacing: 10
     });
 

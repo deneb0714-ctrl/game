@@ -122,7 +122,13 @@ MOT.collectItem = function (scene, player, item) {
     MOT.flags.killingIntent = Math.min(100, MOT.flags.killingIntent + item.value);
         let newAttack = Math.min(5, 1 + Math.floor((MOT.flags.killingIntent || 0) / 5) * 0.25);
         if (Math.floor(newAttack) > Math.floor(oldAttack)) {
-          if (window.MOT && MOT.showPopup) MOT.showPopup("攻撃力がアップしました！");
+          if (window.MOT && MOT.showPopup) {
+            if (newAttack >= 5) {
+              MOT.showPopup("攻撃力が5で最大になりました。");
+            } else {
+              MOT.showPopup("攻撃力が" + Math.floor(oldAttack) + "から" + Math.floor(newAttack) + "になりました。");
+            }
+          }
         }
     MOT.addEnergy(15);
     // MOT.showPickupText(scene, item.x, item.y, '殺意 +' + item.value + ' / EN +15', 0xFF0000);
