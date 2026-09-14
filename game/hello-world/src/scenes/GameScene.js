@@ -310,7 +310,7 @@ class GameScene extends Phaser.Scene {
 
   onBarrierUse() {
     if (this.barrierCooldown <= 0 && !this.barrierActive && !this.dialogActive) {
-      MOT.Audio.playBleep();
+      MOT.Audio.playBleep('博士');
       this.barrierActive = true;
       this.barrierTime = 0;
       this.barrierCooldown = 2000;
@@ -534,7 +534,7 @@ class GameScene extends Phaser.Scene {
         
         // Sound for every character (excluding spaces)
         if (text[charIndex-1] !== ' ' && window.MOT && MOT.Audio) {
-          MOT.Audio.playBleep();
+          MOT.Audio.playBleep('博士');
         }
 
         if (charIndex >= text.length) {
@@ -1041,7 +1041,7 @@ class GameScene extends Phaser.Scene {
       delay: 40, callback: function () {
         charIndex++;
         bodyText.setText(text.substring(0, charIndex));
-        if (text[charIndex - 1] !== ' ' && window.MOT && MOT.Audio) MOT.Audio.playBleep();
+        if (text[charIndex - 1] !== ' ' && window.MOT && MOT.Audio) MOT.Audio.playBleep('博士');
         if (charIndex >= text.length) {
           typeTimer.destroy();
           contText.setAlpha(1);

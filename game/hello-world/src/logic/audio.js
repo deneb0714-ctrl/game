@@ -40,8 +40,28 @@ MOT.Audio = (function () {
       playTone(freq, 'square', 0.1, 0.1);
     },
     // Typewriter bleep
-    playBleep: function () {
-      playTone(Phaser.Math.Between(200, 300), 'square', 0.05, 0.05);
+        playBleep: function (speaker) {
+      if (!speaker) speaker = "";
+      let freqBase = 250;
+      let freqSpread = 50;
+
+      if (speaker.includes('犬猫')) {
+        freqBase = 800; freqSpread = 100;
+      } else if (speaker.includes('エナリア')) {
+        freqBase = 650; freqSpread = 50;
+      } else if (speaker.includes('魔王')) {
+        freqBase = 500; freqSpread = 50;
+      } else if (speaker.includes('勇者') || speaker.includes('主人公') || (window.MOT && MOT.flags && speaker === MOT.flags.heroName)) {
+        freqBase = 400; freqSpread = 50;
+      } else if (speaker.includes('エディオ')) {
+        freqBase = 300; freqSpread = 50;
+      } else if (speaker.includes('トゥレロス')) {
+        freqBase = 200; freqSpread = 40;
+      } else if (speaker.includes('クラトス') || speaker.includes('博士')) {
+        freqBase = 120; freqSpread = 20;
+      }
+
+      playTone(Phaser.Math.Between(Math.floor(freqBase - freqSpread/2), Math.floor(freqBase + freqSpread/2)), 'square', 0.05, 0.05);
     },
     // Shot sound
     playShot: function () {

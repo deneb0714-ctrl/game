@@ -1222,7 +1222,7 @@ class BossScene extends Phaser.Scene {
 
   onBarrierUse() {
     if (this.barrierCooldown <= 0 && !this.barrierActive && !this.dialogActive) {
-      MOT.Audio.playBleep();
+      MOT.Audio.playBleep(speaker);
       this.barrierActive = true;
       this.barrierTime = 0;
       this.barrierCooldown = 2000;
@@ -1913,7 +1913,7 @@ class BossScene extends Phaser.Scene {
         this.playerInvincible = true;
         this.time.delayedCall(3000, () => { this.playerInvincible = false; });
         
-        MOT.Audio.playBleep();
+        MOT.Audio.playBleep(speaker);
         let w = 1920, h = 1080;
         if (this.assistDialog) {
           this.assistDialog.destroy();
@@ -2714,7 +2714,7 @@ class BossScene extends Phaser.Scene {
                       if (downPresses >= 10 && downPresses < 20) {
                         let scale = (downPresses - 9) * 0.5; // 0.5, 1.0, 1.5...
                         drawCrack(w/2, y2 - 40, scale);
-                        if (MOT.Audio.playBleep) MOT.Audio.playBleep();
+                        if (MOT.Audio.playBleep) MOT.Audio.playBleep(speaker);
                       }
                       
                       if (downPresses >= 20) {
@@ -2807,7 +2807,7 @@ class BossScene extends Phaser.Scene {
                   
                   const addLog = async (msg, delay) => {
                       consoleText.text += msg + '\n';
-                      MOT.Audio.playBleep();
+                      MOT.Audio.playBleep(speaker);
                       await new Promise(r => this.time.delayedCall(delay, r));
                   };
                   
@@ -2826,7 +2826,7 @@ class BossScene extends Phaser.Scene {
                   }).setOrigin(0.5).setDepth(202);
                   
                   this.cameras.main.shake(1500, 0.05);
-                  MOT.Audio.playBleep();
+                  MOT.Audio.playBleep(speaker);
                   
                   await new Promise(r => this.time.delayedCall(2000, r));
                   garbledText.destroy();
@@ -2935,7 +2935,7 @@ class BossScene extends Phaser.Scene {
                       var currentIndex = 2;
                       const kh = (e) => {
                           if (e.key === 'ArrowUp' || e.key === 'w') {
-                              if (MOT.Audio.playBleep) MOT.Audio.playBleep();
+                              if (MOT.Audio.playBleep) MOT.Audio.playBleep(speaker);
                           } else if (e.key === 'Enter' || e.key === ' ') {
                               this.input.keyboard.off('keydown', kh);
                               this.choiceContainer.destroy();
@@ -4401,7 +4401,7 @@ class BossScene extends Phaser.Scene {
       delay: 40, callback: function () {
         charIndex++;
         bodyText.setText(text.substring(0, charIndex));
-        if (text[charIndex - 1] !== ' ') MOT.Audio.playBleep();
+        if (text[charIndex - 1] !== ' ') MOT.Audio.playBleep(speaker);
         if (charIndex >= text.length) {
           typeTimer.destroy();
           contText.setAlpha(1);
@@ -4567,7 +4567,7 @@ class BossScene extends Phaser.Scene {
       delay: 40, callback: function () {
         charIndex++;
         bodyText.setText(text.substring(0, charIndex));
-        if (text[charIndex - 1] !== ' ') MOT.Audio.playBleep();
+        if (text[charIndex - 1] !== ' ') MOT.Audio.playBleep(speaker);
         
         // まばたき演出（話し始めのみ一瞬）
         const isHero = speaker && speaker.includes('勇者');
@@ -4824,7 +4824,7 @@ class BossScene extends Phaser.Scene {
     }
     
     this.assistText.setText(msg);
-    MOT.Audio.playBleep(); 
+    MOT.Audio.playBleep(speaker); 
     
     // Auto hide
     this.time.delayedCall(3000, () => {
