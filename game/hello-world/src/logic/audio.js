@@ -56,9 +56,11 @@ MOT.Audio = (function () {
       } else if (speaker.includes('エディオ')) {
         freqBase = 300; freqSpread = 50;
       } else if (speaker.includes('トゥレロス')) {
-        freqBase = 200; freqSpread = 40;
-      } else if (speaker.includes('クラトス') || speaker.includes('博士')) {
-        freqBase = 120; freqSpread = 20;
+        freqBase = 220; freqSpread = 40;
+      } else if (speaker.includes('博士')) {
+        freqBase = 160; freqSpread = 30;
+      } else if (speaker.includes('クラトス')) {
+        freqBase = 100; freqSpread = 20;
       }
 
       playTone(Phaser.Math.Between(Math.floor(freqBase - freqSpread/2), Math.floor(freqBase + freqSpread/2)), 'square', 0.05, 0.05);
