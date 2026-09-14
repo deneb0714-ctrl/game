@@ -930,6 +930,11 @@ class GameScene extends Phaser.Scene {
 
     // 必殺技ゲージのハイライト
     this.energyBar.clear();
+    if (this.isHPHighlighted) {
+      const flash = (Math.sin(Date.now() / 150) + 1) / 2;
+      this.energyBar.lineStyle(4, 0xFFFF00, 0.4 + 0.6 * flash);
+      this.energyBar.strokeRect(26, 16, 200, 44);
+    }
     if (this.isEnergyHighlighted) {
       const flash = (Math.sin(Date.now() / 150) + 1) / 2;
       this.energyBar.lineStyle(4, 0xFFFF00, 0.4 + 0.6 * flash);
@@ -1129,7 +1134,9 @@ class GameScene extends Phaser.Scene {
             this.physics.pause();
             this.dialogActive = true;
             this.showDeviceDialogue('「敵がやってきたな。お前は敵の前に移動して撃ち殺すんだ。」', () => {
-              this.showDeviceDialogue('「移動方法は、パソコンなら矢印キーで移動できる。スマホなら画面をスライドしろ。」', () => {
+              let isMobile = this.sys.game.device.os.android || this.sys.game.device.os.iOS;
+              let msg = isMobile ? '「移動方法は、画面をスライドだ。」' : '「移動方法は、矢印キーだ。」';
+              this.showDeviceDialogue(msg, () => {
                 this.dialogActive = false;
                 this.tutorialPhase = 2;
                 this.physics.resume();
@@ -1145,7 +1152,9 @@ class GameScene extends Phaser.Scene {
         this.dialogActive = true;
         this.showDeviceDialogue('「よくやった。」', () => {
           this.showDeviceDialogue('「それと、今くらいの敵なら問題ないと思うが、魔王城に近づくにつれて敵の攻撃も強くなる。」', () => {
-            this.showDeviceDialogue('「よけきれないときはシールドを張るんだ。パソコンはスペース、スマホは長押しだ。タイミング良く敵の攻撃にシールドを張れた場合、反撃することもできるだろう。」', () => {
+            let isMobile = this.sys.game.device.os.android || this.sys.game.device.os.iOS;
+            let msg = isMobile ? '「攻撃を避けきれないときはシールドを張れ。画面を長押しでシールドを展開できる。タイミング良く敵の攻撃にシールドを張れた場合、反撃することもできるだろう。」' : '「攻撃を避けきれないときはシールドを張れ。スペースキーを押すことでシールドを展開できる。タイミング良く敵の攻撃にシールドを張れた場合、反撃することもできるだろう。」';
+            this.showDeviceDialogue(msg, () => {
               this.showDeviceDialogue('「気を付けないといけないのは、シールドはすぐに何度も張り直しはできない。左上の緑の円がクールタイムだ。それが溜まりきれば張れる状態になっている。」', () => {
                 this.dialogActive = false;
                 this.tutorialPhase = 3;
@@ -1179,11 +1188,15 @@ class GameScene extends Phaser.Scene {
         this.physics.pause();
         this.dialogActive = true;
         this.showDeviceDialogue('「よくやった。今、倒したときに青と赤のダイヤがドロップしただろう？」', () => {
-          this.showDeviceDialogue('「それを拾うことで左上にある必殺技ゲージを貯めることができる。赤の方がドロップ確率は低いが、ゲージを多く溜まる。うまく拾っていくんだな。」', () => {
-            this.dialogActive = false;
-            this.tutorialPhase = 5;
-            this.physics.resume();
-          }, { x: 180, y: 75, width: 340, height: 75 });
+          this.showDeviceDialogue('「このダイヤはお前の意志の力だ」', () => {
+            this.showDeviceDialogue('「それを拾うことで左上にある必殺技ゲージを貯めることができる。赤の方がドロップ確率は低いが、ゲージを多く溜まる。うまく拾っていくんだな。」', () => {
+              this.showDeviceDialogue('「赤いダイヤを拾うとお前の攻撃力が上がる。また、意思の力が高まることでお前の秘められた力が解放されるかもしれない」', () => {
+                this.dialogActive = false;
+                this.tutorialPhase = 5;
+                this.physics.resume();
+              });
+            }, { x: 180, y: 75, width: 340, height: 75 });
+          });
         });
       }
     } else if (this.tutorialPhase === 5) {
@@ -1203,7 +1216,9 @@ class GameScene extends Phaser.Scene {
           MOT.flags.energy = 100;
           MOT.flags.maxEnergy = true;
 
-          this.showDeviceDialogue('「ゲージが溜まったな。それが溜まると必殺技を打つことができる。パソコンならエンター、スマホならダブルタップで打てる。試してみろ。」', () => {
+          let isMobile = this.sys.game.device.os.android || this.sys.game.device.os.iOS;
+          let msg = isMobile ? '「ゲージが溜まったな。それが溜まると必殺技を打つことができる。画面をダブルタップで打てる。試してみろ。」' : '「ゲージが溜まったな。それが溜まると必殺技を打つことができる。エンターキーを押すことで打てる。試してみろ。」';
+          this.showDeviceDialogue(msg, () => {
             this.dialogActive = false;
             this.tutorialPhase = 6;
             this.physics.resume();
@@ -1223,13 +1238,22 @@ class GameScene extends Phaser.Scene {
         this.promptCount++;
         this.physics.pause();
         this.dialogActive = true;
-        if (this.promptCount < 3) {
-          this.showDeviceDialogue('「何をしている？早くenterを押すんだ」', () => {
+        if (this.promptCount === 1) {
+          let isMobile = this.sys.game.device.os.android || this.sys.game.device.os.iOS;
+          let msg = isMobile ? '「何をしている？早く画面をダブルタップするんだ。」' : '「何をしている？早くエンターキーを押すんだ。」';
+          this.showDeviceDialogue(msg, () => {
+            this.dialogActive = false;
+            this.physics.resume();
+          });
+        } else if (this.promptCount === 2) {
+          let isMobile = this.sys.game.device.os.android || this.sys.game.device.os.iOS;
+          let msg = isMobile ? '「聞いているのか？早く画面をダブルタップしろ。」' : '「聞いているのか？早くエンターキーを押せ。」';
+          this.showDeviceDialogue(msg, () => {
             this.dialogActive = false;
             this.physics.resume();
           });
         } else {
-          this.showDeviceDialogue('「もういい、俺が押してやる」', () => {
+          this.showDeviceDialogue('「もういい。代わりに私が押す。」', () => {
             this.dialogActive = false;
             this.physics.resume();
             this.onSpecialAttack();
@@ -1244,15 +1268,25 @@ class GameScene extends Phaser.Scene {
         this.time.delayedCall(500, () => {
           this.physics.pause();
           this.dialogActive = true;
-          this.showDeviceDialogue('「使えたな。戦闘中、上手く使ってこのまま敵を倒していくといい。」', () => {
+          let firstMsg = this.promptCount >= 3 ? '「戦闘中も使わないなんてことはするなよ。上手く使って敵を倒せ。」' : '「使えたな。戦闘中、上手く使ってこのまま敵を倒していくといい。」';
+          this.showDeviceDialogue(firstMsg, () => {
             this.showDeviceDialogue('「ああそうだ。戦闘中に進むべき道の指示を出す。ちゃんと従うんだ。」', () => {
-              this.dialogActive = false;
-              this.physics.pause(); // 物理演算を止める
-              this.player.setCollideWorldBounds(false);
-              this.tweens.add({ targets: this.player, x: 2100, duration: 1000, ease: 'Power2' });
-              this.cameras.main.fadeOut(1000, 0,0,0);
-              this.time.delayedCall(1000, () => {
-                this.scene.start('GameScene', { stage: 2 });
+              this.showDeviceDialogue('「従ったかどうか確認しているからな。」', () => {
+                this.isEnergyHighlighted = false;
+                this.isHPHighlighted = true;
+                this.showDeviceDialogue('「従った回数によって体力をあげてやる。」', () => {
+                  this.isHPHighlighted = false;
+                  this.showDeviceDialogue('「これで説明は終了だ。進んでいくといい。」', () => {
+                    this.dialogActive = false;
+                    this.physics.pause(); // 物理演算を止める
+                    this.player.setCollideWorldBounds(false);
+                    this.tweens.add({ targets: this.player, x: 2100, duration: 1000, ease: 'Power2' });
+                    this.cameras.main.fadeOut(1000, 0,0,0);
+                    this.time.delayedCall(1000, () => {
+                      this.scene.start('GameScene', { stage: 2 });
+                    });
+                  });
+                }, { x: 30, y: 16, width: 200, height: 44 });
               });
             });
           });
