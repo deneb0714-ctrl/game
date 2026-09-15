@@ -156,6 +156,7 @@ MOT.setupTouchControls = function (scene, player) {
     if (adx < threshold && ady < threshold) return; // 閾値未満
 
     scene.hasSwiped = true;
+    scene.ignoreCurrentTouch = true;
 
     if (ady > adx) {
       // 上下スワイプ → レーン変更
