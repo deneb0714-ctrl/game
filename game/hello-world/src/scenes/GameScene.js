@@ -297,6 +297,7 @@ class GameScene extends Phaser.Scene {
       let diamondCount = Math.floor((MOT.flags.killingIntent || 0) / 10);
       let baseDamage = Math.min(5, 1 + diamondCount * 0.2);
       bullet.damage = baseDamage;
+      if (baseDamage >= 5) bullet.setTint(0xff0000);
       bullet.setVelocityX(800);
       bullet.setScale(2);
       // 寿命は2.2秒（射程1760px）にする。

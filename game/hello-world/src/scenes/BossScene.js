@@ -241,6 +241,8 @@ class BossScene extends Phaser.Scene {
     this.bossHP = cfg.hp;
     this.bossPhase = 0;
     this.bossAttackTimer = 0;
+    this.twinsReviving = false;
+    this.isLaneBeamActive = false;
     this.bossDefeated = false;
     this.cutsceneActive = false;
 
@@ -1076,6 +1078,7 @@ class BossScene extends Phaser.Scene {
                 b.setVelocityX(this.heroFirepowerBoost ? 1000 : 600);
                 b.setScale(this.heroFirepowerBoost ? 4 : 2);
                 b.damage = this.heroFirepowerBoost ? Math.min(5, baseDamage * 2) : baseDamage;
+                if (baseDamage >= 5) b.setTint(0xff0000);
                 if (this.heroFirepowerBoost) {
                   b.setTint(0xffaa00);
                 }
