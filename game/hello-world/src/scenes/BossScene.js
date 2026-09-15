@@ -2946,7 +2946,7 @@ class BossScene extends Phaser.Scene {
                   await sayDevice('「よくやった。さぁ早くとどめを！」');
                   await sayDemon('「ぐっ…ここまでか…」');
                   
-                  let isFreedomRoute = (Kills === 0 && MOT.flags.dollPoints < 100 && MOT.flags.killingIntent >= 100);
+                  let isFreedomRoute = (Kills === 0 && MOT.flags.dollPoints < 100 && MOT.flags.killingIntent >= 80);
                   if (isFreedomRoute) {
                       c = await new Promise(res => {
                           this.showChoice([
