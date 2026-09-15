@@ -190,7 +190,7 @@ class BossScene extends Phaser.Scene {
   getBossConfig(key) {
     var configs = {
       boss1: {
-        texture: 'boss1_combat', name: 'クラトス', hp: 80, scale: 2.0,
+        texture: 'boss1_combat', name: 'クラトス', hp: 160, scale: 2.0,
         intro: '「貴様が博士の人形か。\nこの俺の拳で叩き潰してやる！」',
         defeat: '「馬鹿な…この俺が…！」',
         choices: [
@@ -199,7 +199,7 @@ class BossScene extends Phaser.Scene {
         ]
       },
       boss2: {
-        texture: 'boss2_combat_down_open', name: 'トゥレロス', hp: 120, scale: 2.0,
+        texture: 'boss2_combat_down_open', name: 'トゥレロス', hp: 240, scale: 2.0,
         intro: '「ヒャハハ！ 踊れ踊れぇ！！\n俺の双銃から逃げられるかなぁ！？」',
         defeat: '「アハハハハ…最高にイカれた気分だぜ…」',
         choices: [
@@ -208,18 +208,18 @@ class BossScene extends Phaser.Scene {
         ]
       },
       boss3_twins: {
-        texture: 'brother_stand_open', name: 'エディオ', hp: 150, scale: 0.9,
-        texture2: 'sister_shoot1', name2: 'エナリア', hp2: 150, scale2: 1.2,
+        texture: 'brother_stand_open', name: 'エディオ', hp: 300, scale: 0.9,
+        texture2: 'sister_shoot1', name2: 'エナリア', hp2: 300, scale2: 1.2,
         // Intro and defeat are handled custom via playTwinsIntro and post-battle logic
       },
       demon_lord: {
-        texture: 'demon_combat_down_open', name: '魔王 – ヴェリタス', hp: 300, scale: 1.5,
+        texture: 'demon_combat_down_open', name: '魔王 – ヴェリタス', hp: 600, scale: 1.5,
         intro: '「…来たか、博士の人形よ。\nお前に真実を伝えなければならない。」',
         defeat: '「聞いてくれ。博士こそが…この世界を壊そうとしている。\n俺は…それを止めたかっただけだ。」',
         choices: []
       },
       doctor: {
-        texture: 'doctor_combat', name: '博士', hp: 450, scale: 2.5,
+        texture: 'doctor_combat', name: '博士', hp: 900, scale: 2.5,
         intro: '「さぁ、最終決戦といこうじゃないか！」',
         defeat: '「驚いた...まさかお前がここまでやるとはな」',
         choices: []
