@@ -652,7 +652,7 @@ class TitleScene extends Phaser.Scene {
       { id: "bad_puppet", label: "BAD END - 傀儡", cond: "幹部を全員殺害する", cg: "cg_puppet" },
       { id: "normal_useless", label: "NORMAL END - 役立たず", cond: "幹部を一部殺害し、魔王を見逃す", cg: "cg_useless" },
       { id: "normal_unresistable", label: "NORMAL END - 抗えない", cond: "幹部を全員見逃し、魔王を殺害する", cg: "cg_irresistible" },
-      { id: "hidden_freedom", label: "隠しエンド - 自由の身", cond: "幹部を全員見逃し、魔王を見逃す\n（赤いダイヤ20個以上、かつ博士の命令に20回未満）", cg: "bg_lab" },
+      { id: "hidden_freedom", label: "隠しエンド - 自由の身", cond: "幹部を全員見逃し、魔王を見逃す\n（赤いダイヤ20個以上、かつ博士の命令に20回未満）", cg: "true_demon_lord_gif" },
       { id: "bad_shutdown", label: "BAD END - 強制シャットダウン", cond: "幹部を一部殺害し、魔王を殺害する\n（博士の命令に20回未満）", cg: 'cg_shutdown' },
       { id: "normal_daily", label: "NORMAL END - 日常", cond: "幹部を一部殺害し、魔王を殺害する\n（博士の命令に20回以上従う）", cg: null }
     ];
@@ -666,6 +666,14 @@ class TitleScene extends Phaser.Scene {
     
     const cgImage = this.add.image(w/2, h/2 - 20, "cg_helloworld").setVisible(false);
     this.endContainer.add(cgImage);
+    
+    const gifEl = document.createElement('img');
+    gifEl.src = 'assets/images/true_demon_lord.gif?v=' + (window.GAME_VERSION || 'v1');
+    gifEl.style.width = '1200px';
+    gifEl.style.height = '675px';
+    gifEl.style.objectFit = 'contain';
+    const domThumb = this.add.dom(w/2, h/2 - 20, gifEl).setVisible(false);
+    this.endContainer.add(domThumb);
     
     const blackBg = this.add.rectangle(w/2, h/2 - 20, 1200, 675, 0x0a0a1a, 1).setVisible(false);
     blackBg.setStrokeStyle(4, 0x4FD1FF);
@@ -681,26 +689,34 @@ class TitleScene extends Phaser.Scene {
         const end = endings[currentIndex];
         const isUnlocked = hasUnlocked && MOT.hasUnlockedEnding(end.id);
         
-        titleText.setText((currentIndex + 1) + " / " + endings.length + "  " + (isUnlocked ? end.label : "？？？"));
+        titleText.setText((currentIndex + 1) + " / " + endings.length + "  " + (isUnlocked ? end.label : ""));
         
         if (isUnlocked) {
-            if (end.cg) {
+            if (end.cg === "true_demon_lord_gif") {
+                cgImage.setVisible(false);
+                if (typeof domThumb !== 'undefined') domThumb.setVisible(true);
+                blackBg.setVisible(true);
+                condText.setVisible(false);
+            } else if (end.cg) {
                 cgImage.setTexture(end.cg);
                 const scale = Math.min(1200 / cgImage.width, 675 / cgImage.height);
                 cgImage.setScale(scale);
                 cgImage.setVisible(true);
+                if (typeof domThumb !== 'undefined') domThumb.setVisible(false);
                 blackBg.setVisible(false);
                 condText.setVisible(false);
             } else {
                 cgImage.setVisible(false);
+                if (typeof domThumb !== 'undefined') domThumb.setVisible(false);
                 blackBg.setVisible(true);
-                condText.setText("このエンディングには一枚絵がありません");
+                condText.setText("未解放");
                 condText.setVisible(true);
             }
         } else {
             cgImage.setVisible(false);
+            if (typeof domThumb !== 'undefined') domThumb.setVisible(false);
             blackBg.setVisible(true);
-            condText.setText("【回収条件】\n" + end.cond);
+            condText.setText("【解放条件】\n" + end.cond);
             condText.setVisible(true);
         }
     };
