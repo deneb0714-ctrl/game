@@ -4043,12 +4043,20 @@ class BossScene extends Phaser.Scene {
     this.tweens.add({ targets: this.player, x: 2100, duration: 1500, ease: 'Power2' });
     this.cameras.main.fadeOut(1500, 0, 0, 0);
     this.time.delayedCall(1500, () => { 
-      this.bg.setTexture('bg_boss_stage5');
-      this.bg.setOrigin(0, 0);
-      this.bg.setPosition(0, 0);
-      this.bg.setScale(4);
+      let dKey = this.textures.exists('bg_doctor') ? 'bg_doctor' : 'bg_boss_stage5';
+      this.bg.setTexture(dKey);
+      if (dKey === 'bg_doctor') {
+        this.bg.setOrigin(0.5, 0.5);
+        this.bg.setPosition(1920 / 2, 1080 / 2);
+        this.bg.setScale(Math.max(1920 / this.bg.width, 1080 / this.bg.height));
+      } else {
+        this.bg.setOrigin(0, 0);
+        this.bg.setPosition(0, 0);
+        this.bg.setScale(4);
+      }
       this.tweens.killTweensOf(this.player);
       this.player.setPosition(-200, this.player.y);
+      this.player.currentCol = 1;
       if (this.player.body) {
         this.player.body.reset(-200, this.player.y);
       }
@@ -4152,18 +4160,28 @@ class BossScene extends Phaser.Scene {
         this.cameras.main.fadeOut(1000, 0, 0, 0);
         
         this.time.delayedCall(1000, () => {
-          var bgKey = 'bg_boss_stage2';
-          if (this.currentBossIndex === 1) bgKey = 'bg_boss_stage3';
-          else if (this.currentBossIndex === 2) bgKey = 'bg_boss_stage4';
-          else if (this.currentBossIndex === 3) bgKey = 'bg_boss_stage5';
+          var nextBoss = this.bossQueue[this.currentBossIndex];
+          var bgKey = 'bg_boss1_static';
+          if (nextBoss === 'boss2' && this.textures.exists('bg_boss2')) bgKey = 'bg_boss2';
+          else if (nextBoss === 'boss3_twins' && this.textures.exists('bg_boss3')) bgKey = 'bg_boss3';
+          else if (nextBoss === 'demon_lord' && this.textures.exists('bg_boss4')) bgKey = 'bg_boss4';
+          else if (nextBoss === 'doctor' && this.textures.exists('bg_doctor')) bgKey = 'bg_doctor';
+          
           this.bg.setTexture(bgKey);
-          this.bg.setOrigin(0, 0);
-          this.bg.setPosition(0, 0);
-          this.bg.setScale(4);
+          if (bgKey.startsWith('bg_boss_stage')) {
+              this.bg.setOrigin(0, 0);
+              this.bg.setPosition(0, 0);
+              this.bg.setScale(4);
+          } else {
+              this.bg.setOrigin(0.5, 0.5);
+              this.bg.setPosition(1920 / 2, 1080 / 2);
+              this.bg.setScale(Math.max(1920 / this.bg.width, 1080 / this.bg.height));
+          }
           
           // Player enters from the left off-screen
           this.tweens.killTweensOf(this.player);
           this.player.setPosition(-200, this.player.y);
+          this.player.currentCol = 1;
           if (this.player.body) {
             this.player.body.reset(-200, this.player.y);
           }
