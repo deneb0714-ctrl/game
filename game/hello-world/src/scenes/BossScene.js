@@ -519,9 +519,8 @@ class BossScene extends Phaser.Scene {
     this.heroImage.setY(100 + (this.heroImage.height * hScale) / 2);
     
     this.demonImage = this.add.image(1920 - 300, 1080 / 2, 'demon_lord_normal').setAlpha(0).setDepth(90);
-    var dScale = 1000 / this.demonImage.width;
-    this.demonImage.setScale(dScale);
-    this.demonImage.setY(100 + (this.demonImage.height * dScale) / 2 - 200);
+            this.demonImage.setScale(1000 / this.demonImage.width);
+            this.demonImage.setY(100 + (this.demonImage.height * this.demonImage.scaleY) / 2 - 200);
 
     // 犬猫スター会話用立ち絵
     this.inunekoImage = this.add.image(1920 - 120, 1080 / 2 - 250, 'inuneko_stand').setAlpha(0).setDepth(91);
@@ -2549,14 +2548,12 @@ class BossScene extends Phaser.Scene {
             this.dimBg = dimBg;
             
             this.demonImage = this.add.image(1920 - 300, 1080 / 2, 'demon_lord_dying').setAlpha(0).setDepth(90);
-            var dScale = 1000 / this.demonImage.width;
-            this.demonImage.setScale(dScale);
-            this.demonImage.setY(100 + (this.demonImage.height * dScale) / 2 - 200);
+            this.demonImage.setScale(1000 / this.demonImage.width);
+            this.demonImage.setY(100 + (this.demonImage.height * this.demonImage.scaleY) / 2 - 200);
 
             // 撃退後の犬猫立ち絵（ハイライトなし）
             this.inunekoImage = this.add.image(1920 - 120, 1080 / 2 - 250, 'inuneko_dying').setAlpha(0).setDepth(91);
-            var iScale = 300 / 691;
-            this.inunekoImage.setScale(iScale);
+            this.inunekoImage.setScale(300 / this.inunekoImage.width);
             this.inunekoImage.setY(350);
 
             const sayDevice = (text) => new Promise(res => { this.tweens.add({ targets: dimBg, alpha: 0.6, duration: 300 }); this.tweens.add({targets: this.heroImage, alpha: 0.4, duration: 300}); this.tweens.add({ targets: this.demonImage, alpha: 0.4, duration: 300 }); if(this.inunekoImage) this.tweens.add({ targets: this.inunekoImage, alpha: 0.4, duration: 300 }); this.showDeviceDialogue(text, res); });
@@ -3395,8 +3392,8 @@ class BossScene extends Phaser.Scene {
                               this.showDialogue(MOT.flags.heroName || '勇者', text, res);
                           });
 
-                          const localSayDemon = (text, tex='demon_lord_dying') => new Promise(res => { this.tweens.add({ targets: dimBg, alpha: 0.6, duration: 300 }); if(this.heroImage) this.tweens.add({targets: this.heroImage, alpha: 0.4, duration: 300}); if(this.inunekoImage) this.tweens.add({targets: this.inunekoImage, alpha: 1, duration: 300}); if(this.doctorImage) this.tweens.add({targets: this.doctorImage, alpha: 0, duration: 300}); if(this.demonImage) { this.tweens.add({targets: this.demonImage, alpha: 1, duration: 300}); this.demonImage.setTexture(tex); } this.showDialogue('魔王', text, res); });
-                          const localSayInuneko = (text, tex='inuneko_stand') => new Promise(res => { this.tweens.add({ targets: dimBg, alpha: 0.6, duration: 300 }); if(this.heroImage) this.tweens.add({targets: this.heroImage, alpha: 0.4, duration: 300}); if(this.demonImage) this.tweens.add({targets: this.demonImage, alpha: 1, duration: 300}); if(this.doctorImage) this.tweens.add({targets: this.doctorImage, alpha: 0, duration: 300}); if(this.inunekoImage) { this.tweens.add({targets: this.inunekoImage, alpha: 1, duration: 300}); this.inunekoImage.setTexture(tex); } this.showDialogue('犬猫☆すたー', text, res); });
+                          const localSayDemon = (text, tex='demon_lord_dying') => new Promise(res => { this.tweens.add({ targets: dimBg, alpha: 0.6, duration: 300 }); if(this.heroImage) this.tweens.add({targets: this.heroImage, alpha: 0.4, duration: 300}); if(this.inunekoImage) this.tweens.add({targets: this.inunekoImage, alpha: 1, duration: 300}); if(this.doctorImage) this.tweens.add({targets: this.doctorImage, alpha: 0, duration: 300}); if(this.demonImage) { this.tweens.add({targets: this.demonImage, alpha: 1, duration: 300}); this.demonImage.setTexture(tex); this.demonImage.setScale(1000 / this.demonImage.width); this.demonImage.setY(100 + (this.demonImage.height * this.demonImage.scaleY) / 2 - 200); } this.showDialogue('魔王', text, res); });
+                          const localSayInuneko = (text, tex='inuneko_stand') => new Promise(res => { this.tweens.add({ targets: dimBg, alpha: 0.6, duration: 300 }); if(this.heroImage) this.tweens.add({targets: this.heroImage, alpha: 0.4, duration: 300}); if(this.demonImage) this.tweens.add({targets: this.demonImage, alpha: 1, duration: 300}); if(this.doctorImage) this.tweens.add({targets: this.doctorImage, alpha: 0, duration: 300}); if(this.inunekoImage) { this.tweens.add({targets: this.inunekoImage, alpha: 1, duration: 300}); this.inunekoImage.setTexture(tex); this.inunekoImage.setScale(300 / this.inunekoImage.width); this.inunekoImage.setY(350); } this.showDialogue('犬猫☆すたー', text, res); });
 
                           await localSayDemon('「……結局我々を殺さず、お前は何をしにきたんだ？あの法螺吹きにけしかけられて、わらわたちを滅ぼしに来たんだろう？」');
                           
@@ -3635,9 +3632,13 @@ class BossScene extends Phaser.Scene {
                     this.tweens.add({ targets: dimBg, alpha: 0.6, duration: 300 });
                     if (this.heroImage) this.tweens.add({ targets: this.heroImage, alpha: 0.4, duration: 300 });
                     if (doctorImage) this.tweens.add({ targets: doctorImage, alpha: 0, duration: 300 });
-                    if (!this.demonImage) { this.demonImage = this.add.image(1920 - 300, 1080/2, 'demon_lord_normal').setDepth(90); this.demonImage.setScale(750 / this.demonImage.width); this.demonImage.setY(100 + (this.demonImage.height * this.demonImage.scaleX) / 2); }
-                    if (!this.inunekoImage) { this.inunekoImage = this.add.image(1920 - 550, 1080/2, 'inuneko_stand').setDepth(90); this.inunekoImage.setScale(500 / this.inunekoImage.height); this.inunekoImage.setY(100 + (this.inunekoImage.height * this.inunekoImage.scaleY) / 2); }
+                    if (!this.demonImage) { this.demonImage = this.add.image(1920 - 300, 1080/2, 'demon_lord_normal').setDepth(90); this.demonImage.setScale(1000 / this.demonImage.width);
+                    this.demonImage.setY(100 + (this.demonImage.height * this.demonImage.scaleY) / 2 - 200); }
+                    if (!this.inunekoImage) { this.inunekoImage = this.add.image(1920 - 550, 1080/2, 'inuneko_stand').setDepth(90); this.inunekoImage.setScale(300 / this.inunekoImage.width);
+                    this.inunekoImage.setY(350); }
                     this.demonImage.setTexture('demon_lord_normal');
+                    this.demonImage.setScale(1000 / this.demonImage.width);
+                    this.demonImage.setY(100 + (this.demonImage.height * this.demonImage.scaleY) / 2 - 200);
                     this.tweens.add({ targets: this.demonImage, alpha: 1, duration: 300 });
                     this.tweens.add({ targets: this.inunekoImage, alpha: 1, duration: 300 });
                     if (this.sisterImage) this.tweens.add({ targets: this.sisterImage, alpha: 0, duration: 300 });
@@ -3650,9 +3651,13 @@ class BossScene extends Phaser.Scene {
                     this.tweens.add({ targets: dimBg, alpha: 0.6, duration: 300 });
                     if (this.heroImage) this.tweens.add({ targets: this.heroImage, alpha: 0.4, duration: 300 });
                     if (doctorImage) this.tweens.add({ targets: doctorImage, alpha: 0, duration: 300 });
-                    if (!this.demonImage) { this.demonImage = this.add.image(1920 - 300, 1080/2, 'demon_lord_normal').setDepth(90); this.demonImage.setScale(750 / this.demonImage.width); this.demonImage.setY(100 + (this.demonImage.height * this.demonImage.scaleX) / 2); }
-                    if (!this.inunekoImage) { this.inunekoImage = this.add.image(1920 - 550, 1080/2, 'inuneko_stand').setDepth(90); this.inunekoImage.setScale(500 / this.inunekoImage.height); this.inunekoImage.setY(100 + (this.inunekoImage.height * this.inunekoImage.scaleY) / 2); }
+                    if (!this.demonImage) { this.demonImage = this.add.image(1920 - 300, 1080/2, 'demon_lord_normal').setDepth(90); this.demonImage.setScale(1000 / this.demonImage.width);
+                    this.demonImage.setY(100 + (this.demonImage.height * this.demonImage.scaleY) / 2 - 200); }
+                    if (!this.inunekoImage) { this.inunekoImage = this.add.image(1920 - 550, 1080/2, 'inuneko_stand').setDepth(90); this.inunekoImage.setScale(300 / this.inunekoImage.width);
+                    this.inunekoImage.setY(350); }
                     this.inunekoImage.setTexture('inuneko_stand');
+                    this.inunekoImage.setScale(300 / this.inunekoImage.width);
+                    this.inunekoImage.setY(350);
                     this.tweens.add({ targets: this.demonImage, alpha: 1, duration: 300 });
                     this.tweens.add({ targets: this.inunekoImage, alpha: 1, duration: 300 });
                     if (this.sisterImage) this.tweens.add({ targets: this.sisterImage, alpha: 0, duration: 300 });
