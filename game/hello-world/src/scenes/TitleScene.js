@@ -653,8 +653,8 @@ class TitleScene extends Phaser.Scene {
       { id: "normal_useless", label: "NORMAL END - 役立たず", cond: "幹部を一部殺害し、魔王を見逃す", cg: "cg_useless" },
       { id: "bad_shutdown", label: "BAD END - 強制シャットダウン", cond: "幹部を一部殺害し、魔王を殺害する\n（博士の命令に20回未満）", cg: 'cg_shutdown' },
       { id: "normal_unresistable", label: "NORMAL END - 抗えない", cond: "幹部を全員見逃し、魔王を殺害する", cg: "cg_irresistible" },
-      { id: "END_ORPHAN", label: "HAPPY END - Hello World", cond: "幹部を全員見逃し、魔王も見逃す\n（赤いダイヤ16個未満（攻撃力4以下）、または博士の命令20回以上（最大HP7以上））", cg: "cg_helloworld" },
-      { id: "hidden_freedom", label: "隠しエンド - 自由の身", cond: "幹部を全員見逃し、魔王を見逃す\n（赤いダイヤ16個以上（攻撃力5）、かつ博士の命令20回未満（最大HP6以下））", cg: "true_demon_lord_gif" }
+      { id: "END_ORPHAN", label: "HAPPY END - Hello World", cond: "幹部を全員見逃し、魔王も見逃す\n（赤いダイヤ20個未満、または博士の命令に20回以上従う）", cg: "cg_helloworld" },
+      { id: "hidden_freedom", label: "隠しエンド - 自由の身", cond: "幹部を全員見逃し、魔王を見逃す\n（赤いダイヤ20個以上、かつ博士の命令に20回未満（最大HP6以下））", cg: "true_demon_lord_gif" }
     ];
 
     let hasUnlocked = false;

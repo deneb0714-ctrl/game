@@ -294,8 +294,8 @@ class GameScene extends Phaser.Scene {
   firePlayerBullet() {
     const bullet = this.playerBullets.create(this.player.x + 30, this.player.y, 'bullet_player');
     if (bullet) {
-      let diamondCount = Math.floor((MOT.flags.killingIntent || 0) / 5);
-      let baseDamage = Math.min(5, 1 + diamondCount * 0.25);
+      let diamondCount = Math.floor((MOT.flags.killingIntent || 0) / 10);
+      let baseDamage = Math.min(5, 1 + diamondCount * 0.2);
       bullet.damage = baseDamage;
       bullet.setVelocityX(800);
       bullet.setScale(2);

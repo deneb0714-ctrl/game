@@ -128,7 +128,7 @@ MOT.decideEnding = function () {
     if (!f.killedDemonLord) {
       // 魔王を生かす -> YES -> ドールポイントが100未満か？
       if (f.dollPoints < 100) { // 100未満＝YES
-        if (f.killingIntent >= 80) {
+        if (f.killingIntent >= 200) {
           // 殺意がたまっている(100以上)＝YES -> 自由の身エンド
           return MOT.ENDINGS.hidden_freedom;
         } else {

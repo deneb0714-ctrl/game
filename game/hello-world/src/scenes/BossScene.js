@@ -1071,8 +1071,8 @@ class BossScene extends Phaser.Scene {
         this.autoShootTimer = 0;
               var b = this.playerBullets.create(this.player.x + 30, this.player.y, 'bullet_player');
               if (b) {
-                let diamondCount = Math.floor((MOT.flags.killingIntent || 0) / 5);
-                let baseDamage = Math.min(5, 1 + diamondCount * 0.25);
+                let diamondCount = Math.floor((MOT.flags.killingIntent || 0) / 10);
+                let baseDamage = Math.min(5, 1 + diamondCount * 0.2);
                 b.setVelocityX(this.heroFirepowerBoost ? 1000 : 600);
                 b.setScale(this.heroFirepowerBoost ? 4 : 2);
                 b.damage = this.heroFirepowerBoost ? Math.min(5, baseDamage * 2) : baseDamage;
@@ -2946,7 +2946,7 @@ class BossScene extends Phaser.Scene {
                   await sayDevice('「よくやった。さぁ早くとどめを！」');
                   await sayDemon('「ぐっ…ここまでか…」');
                   
-                  let isFreedomRoute = (Kills === 0 && MOT.flags.dollPoints < 100 && MOT.flags.killingIntent >= 80);
+                  let isFreedomRoute = (Kills === 0 && MOT.flags.dollPoints < 100 && MOT.flags.killingIntent >= 200);
                   if (isFreedomRoute) {
                       c = await new Promise(res => {
                           this.showChoice([
@@ -3133,7 +3133,7 @@ class BossScene extends Phaser.Scene {
                   MOT.flags.killedDemonLord = false;
                   
                   // 生かした場合の分岐演出 (True Demon Lord or others)
-                  if (Kills === 0 && Satsui >= 100 && DP < 100) {
+                  if (Kills === 0 && Satsui >= 200 && DP < 100) {
                       // 自由の身エンドの特別演出
                           const localSayDevice = (text) => new Promise(res => { this.tweens.add({ targets: this.dimBg, alpha: 0.6, duration: 300 }); if(this.heroImage) this.tweens.add({targets: this.heroImage, alpha: 0.4, duration: 300}); if(this.inunekoImage) this.tweens.add({targets: this.inunekoImage, alpha: 0.4, duration: 300}); if(this.demonImage) this.tweens.add({targets: this.demonImage, alpha: 0.4, duration: 300}); this.showDeviceDialogue(text, res); });
                           const localSayInuneko = (text) => new Promise(res => { this.tweens.add({ targets: this.dimBg, alpha: 0.6, duration: 300 }); if(this.heroImage) this.tweens.add({targets: this.heroImage, alpha: 0.4, duration: 300}); if(this.demonImage) this.tweens.add({targets: this.demonImage, alpha: 0.4, duration: 300}); if(this.inunekoImage) this.tweens.add({targets: this.inunekoImage, alpha: 1, duration: 300}); this.showDialogue('犬猫☆すたー', text, res); });
