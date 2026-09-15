@@ -277,7 +277,8 @@ class EndingScene extends Phaser.Scene {
       this.cameras.main.fadeIn(1500, 0, 0, 0);
       
       this.time.delayedCall(3000, () => {
-        this.createReturnButton(w / 2, h * 0.92);
+        this.createReturnButton(w / 2, h * 0.86);
+        this.createContinueButton(w / 2, h * 0.94);
       });
   }
 
@@ -303,6 +304,43 @@ class EndingScene extends Phaser.Scene {
       this.cameras.main.fadeOut(800, 0, 0, 0);
       this.time.delayedCall(800, function () {
         this.scene.start('TitleScene');
+      }, [], this);
+    }, this);
+  }
+
+
+  createContinueButton(x, y) {
+    if (!window.MOT || !MOT.loadGame || !MOT.hasSaveData()) return;
+    
+    var btn = this.add.image(x, y, 'ui_button').setInteractive({ useHandCursor: true }).setAlpha(0).setDepth(10);
+    var txt = this.add.text(x, y, 'CONTINUE', {
+      fontFamily: '"DotGothic16"',
+      fontSize: '24px',
+      color: '#4FD1FF'
+    }).setOrigin(0.5).setAlpha(0).setDepth(11);
+
+    this.tweens.add({ targets: [btn, txt], alpha: 1, duration: 800 });
+
+    btn.on('pointerover', function () {
+      this.tweens.add({ targets: [btn, txt], scale: 1.08, duration: 150 });
+      txt.setColor('#ffffff');
+    }, this);
+    btn.on('pointerout', function () {
+      this.tweens.add({ targets: [btn, txt], scale: 1.0, duration: 150 });
+      txt.setColor('#4FD1FF');
+    }, this);
+    btn.on('pointerdown', function () {
+      if (MOT.Audio && MOT.Audio.playSelect) MOT.Audio.playSelect();
+      const saveData = MOT.loadGame();
+      if (saveData && saveData.flags) {
+        MOT.flags = JSON.parse(JSON.stringify(saveData.flags));
+        MOT.flags.diedCount = 0;
+        MOT.flags.playerHP = MOT.flags.playerMaxHP || 5;
+        MOT.flags.useGlitchTitle = false;
+      }
+      this.cameras.main.fadeOut(800, 5, 8, 20);
+      this.time.delayedCall(800, function () {
+        this.scene.start('BossScene', { startBossIndex: saveData ? saveData.bossIndex : 1, fromContinue: true });
       }, [], this);
     }, this);
   }
