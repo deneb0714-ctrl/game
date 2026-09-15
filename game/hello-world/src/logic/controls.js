@@ -129,7 +129,7 @@ MOT.setupTouchControls = function (scene, player) {
     if (scene.longPressTimer) {
       scene.longPressTimer.remove();
     }
-    scene.longPressTimer = scene.time.delayedCall(300, () => {
+    scene.longPressTimer = scene.time.delayedCall(200, () => {
       if (pointer.isDown && !scene.hasSwiped && !scene.ignoreCurrentTouch && !scene.dialogActive) {
         scene.ignoreCurrentTouch = true;
         if (scene.onBarrierUse) scene.onBarrierUse();
