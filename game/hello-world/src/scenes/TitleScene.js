@@ -648,13 +648,13 @@ class TitleScene extends Phaser.Scene {
     this.endContainer.add(touchZone);
 
     const endings = [
-      { id: "END_ORPHAN", label: "HAPPY END - Hello World", cond: "幹部を全員見逃し、魔王も見逃す\n（赤いダイヤ20個未満、または博士の命令に20回以上従う）", cg: "cg_helloworld" },
       { id: "bad_puppet", label: "BAD END - 傀儡", cond: "幹部を全員殺害する", cg: "cg_puppet" },
+      { id: "normal_daily", label: "NORMAL END - 日常", cond: "幹部を一部殺害し、魔王を殺害する\n（博士の命令に20回以上従う）", cg: null },
       { id: "normal_useless", label: "NORMAL END - 役立たず", cond: "幹部を一部殺害し、魔王を見逃す", cg: "cg_useless" },
-      { id: "normal_unresistable", label: "NORMAL END - 抗えない", cond: "幹部を全員見逃し、魔王を殺害する", cg: "cg_irresistible" },
-      { id: "hidden_freedom", label: "隠しエンド - 自由の身", cond: "幹部を全員見逃し、魔王を見逃す\n（赤いダイヤ20個以上、かつ博士の命令に20回未満）", cg: "true_demon_lord_gif" },
       { id: "bad_shutdown", label: "BAD END - 強制シャットダウン", cond: "幹部を一部殺害し、魔王を殺害する\n（博士の命令に20回未満）", cg: 'cg_shutdown' },
-      { id: "normal_daily", label: "NORMAL END - 日常", cond: "幹部を一部殺害し、魔王を殺害する\n（博士の命令に20回以上従う）", cg: null }
+      { id: "normal_unresistable", label: "NORMAL END - 抗えない", cond: "幹部を全員見逃し、魔王を殺害する", cg: "cg_irresistible" },
+      { id: "END_ORPHAN", label: "HAPPY END - Hello World", cond: "幹部を全員見逃し、魔王も見逃す\n（赤いダイヤ20個未満、または博士の命令に20回以上従う）", cg: "cg_helloworld" },
+      { id: "hidden_freedom", label: "隠しエンド - 自由の身", cond: "幹部を全員見逃し、魔王を見逃す\n（赤いダイヤ20個以上、かつ博士の命令に20回未満）", cg: "true_demon_lord_gif" }
     ];
 
     let hasUnlocked = false;
