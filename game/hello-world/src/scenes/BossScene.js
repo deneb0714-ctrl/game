@@ -2914,8 +2914,12 @@ class BossScene extends Phaser.Scene {
                       this.input.keyboard.on('keydown', kh);
                   });
               } else {
-                  if (Kills === 0) {
-                      await sayDevice('「よくやった。早く止めを刺すんだ。そして、見逃した幹部も殺しに行け。」');
+                  await sayDevice('「よくやった。とどめを刺せ」');
+                  await sayDemon('「…ここまでか…」');
+                  
+                  let isFreedomRoute = (Kills === 0 && MOT.flags.dollPoints < 100 && MOT.flags.killingIntent >= 200);
+                  if (isFreedomRoute) {
+                      await sayDevice('「早く止めを刺すんだ。そして、見逃した幹部も殺しに行け。」');
                       await sayHero('「…」');
                       await sayDemon('「殺すならわらわだけで十分であろう！？わらわを殺せば組織は終わる！お前の目的だって達成される！！！」');
                       if (!this.inunekoImage || !this.inunekoImage.active) {
@@ -2926,24 +2930,14 @@ class BossScene extends Phaser.Scene {
                       }
                       await sayInuneko('「何を言っとるにゃ！？魔王様も殺すなわん！！」');
                       await sayHero('「…」');
-                  } else {
-                      await sayDevice('「よくやった。とどめを刺せ」');
-                      await sayDemon('「…ここまでか…」');
-                  }
-                  
-                  if (Kills === 0) {
+                      
                       c = await new Promise(res => {
                           let opts = [{ text: '見逃す', callback: () => { if(MOT.Audio.playSelect) MOT.Audio.playSelect(); res(2); } }];
+                          opts.title = '選択してください';
                           this.showChoice(opts);
                       });
                   } else {
-                      c = await new Promise(res => {
-                          let opts = [
-                              { text: '1. 殺す', callback: () => { if(MOT.Audio.playSelect) MOT.Audio.playSelect(); res(1); } },
-                              { text: '2. 見逃す', callback: () => { if(MOT.Audio.playSelect) MOT.Audio.playSelect(); res(2); } }
-                          ];
-                          this.showChoice(opts);
-                      });
+                      c = await askShatterChoice('1. 殺す', '2. 見逃す', Kills === 0);
                   }
               }
               
