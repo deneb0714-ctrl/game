@@ -4857,12 +4857,13 @@ class BossScene extends Phaser.Scene {
       this.time.delayedCall(8000, () => { this.heroFirepowerBoost = false; });
     }
     
-    this.assistImage = this.add.sprite(w / 2 - 500, h - 80, tex).setScale(2.0).setDepth(201);
+    this.assistImage = this.add.sprite(w / 2 - 500, h - 80, tex).setScale(1.1).setDepth(201);
     // scale and animation correction
     if (chosen === 'twins') {
       // no animation
     } else if (chosen === 'demon') {
       this.assistImage.play('demon_combat_anim');
+      this.assistImage.setScale(0.95);
     } else if (chosen === 'boss2') {
       this.assistImage.play('boss2_battle_play');
     } else if (chosen === 'boss1') {
