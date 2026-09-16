@@ -709,7 +709,7 @@ class GameScene extends Phaser.Scene {
     this.physics.pause();
     this.player.setCollideWorldBounds(false);
     this.tweens.add({ targets: this.player, x: 2100, duration: 800, ease: 'Power2' });
-    this.cameras.main.fadeOut(800, 5, 8, 20);
+    this.cameras.main.fadeOut(800, 0, 0, 0);
     this.time.delayedCall(800, function () {
       this.scene.start('BossScene', { bossIndex: 0, normalTransition: true });
     }, [], this);

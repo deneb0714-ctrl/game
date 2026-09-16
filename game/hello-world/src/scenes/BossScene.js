@@ -173,12 +173,12 @@ class BossScene extends Phaser.Scene {
     this.physics.add.overlap(this.player, this.itemGroup, MOT.collectItem.bind(null, this), null, this);
 
     this.createHUD();
-    this.cameras.main.fadeIn(800, 5, 8, 20);
+    this.cameras.main.fadeIn(800, 0, 0, 0);
 
     // Start first boss or intermission when resuming from continue
     if (!(this.startData && this.startData.jumpToEndingSetup)) {
       if (this.startData && this.startData.fromContinue && this.currentBossIndex > 0 && this.bossQueue[this.currentBossIndex] !== 'doctor') {
-        this.time.delayedCall(1000, function () { this.startIntermission(); }, [], this);
+        this.time.delayedCall(1000, function () { this.startBoss(); }, [], this);
       } else {
         this.time.delayedCall(1000, function () { this.startBoss(); }, [], this);
       }
@@ -4107,7 +4107,7 @@ class BossScene extends Phaser.Scene {
         }
       });
       this.cameras.main.fadeIn(1000, 0, 0, 0);
-      this.startIntermission(); 
+      this.startBoss(); 
     }, [], this);
   }
 
@@ -4232,7 +4232,7 @@ class BossScene extends Phaser.Scene {
                 if (this.bossQueue[this.currentBossIndex] === 'doctor') {
                   this.time.delayedCall(1500, () => { this.startBoss(); });
                 } else {
-                  this.startIntermission();
+                  this.startBoss();
                 }
               } else {
                 this.time.delayedCall(1500, () => { this.startBoss(); });
