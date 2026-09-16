@@ -1020,8 +1020,14 @@ class BossScene extends Phaser.Scene {
       if (this.barrierActive) {
         this.barrierTime += delta;
         if (this.barrierVisual) {
-          this.barrierVisual.setPosition(this.player.x, this.player.y);
-          this.barrierHitbox.setPosition(this.player.x, this.player.y);
+                  this.barrierVisual.setPosition(this.player.x, this.player.y);
+        this.barrierHitbox.setPosition(this.player.x, this.player.y);
+        if (this.barrierVisual.type === 'Star') this.barrierVisual.rotation += 0.02;
+        if (this.barrierTime > 2000 && this.barrierTime < 3000) {
+          this.barrierVisual.setVisible(Math.floor(this.barrierTime / 100) % 2 === 0);
+        } else {
+          this.barrierVisual.setVisible(true);
+        }
         }
         if (this.barrierTime >= 3000) {
           this.deactivateBarrier();
@@ -1097,8 +1103,14 @@ class BossScene extends Phaser.Scene {
     if (this.barrierActive) {
       this.barrierTime += delta;
       if (this.barrierVisual) {
-        this.barrierVisual.setPosition(this.player.x, this.player.y);
+                this.barrierVisual.setPosition(this.player.x, this.player.y);
         this.barrierHitbox.setPosition(this.player.x, this.player.y);
+        if (this.barrierVisual.type === 'Star') this.barrierVisual.rotation += 0.02;
+        if (this.barrierTime > 2000 && this.barrierTime < 3000) {
+          this.barrierVisual.setVisible(Math.floor(this.barrierTime / 100) % 2 === 0);
+        } else {
+          this.barrierVisual.setVisible(true);
+        }
       }
       if (this.barrierTime >= 3000) {
         this.deactivateBarrier();
@@ -1230,7 +1242,7 @@ class BossScene extends Phaser.Scene {
       this.barrierCooldown = 2000;
       this.barrierActivatedTime = this.time.now; // ジャストガード用タイマー記録
 
-      this.barrierVisual = this.add.circle(this.player.x, this.player.y, 60, 0x00FFaa, 0.3);
+      this.barrierVisual = this.add.star(this.player.x, this.player.y, 5, 30, 60, 0x00FFaa, 0.3);
       this.barrierVisual.setStrokeStyle(4, 0x00FFaa, 0.8);
       this.barrierVisual.setDepth(9);
     }
@@ -4823,24 +4835,24 @@ class BossScene extends Phaser.Scene {
       msg = 'ヴェリタス「人間よ、少しは休むがよい！」\n【効果：HP回復】';
       MOT.flags.playerHP = Math.min((MOT.flags.playerMaxHP || 5), MOT.flags.playerHP + 2);
     } else if (chosen === 'twins') {
-      tex = 'boss3_sister'; // 妹立ち絵
+      tex = 'sister_normal'; // 妹立ち絵
       msg = 'エナリア「ふんっ、今回だけ特別に守ってあげるんだから！」\n【効果：無敵バリア展開】';
       this.barrierActive = true;
       this.barrierTime = 0;
       this.barrierCooldown = 0;
       if (!this.barrierVisual) {
-        this.barrierVisual = this.add.circle(this.player.x, this.player.y, 60, 0x00FFaa, 0.3);
+        this.barrierVisual = this.add.star(this.player.x, this.player.y, 5, 30, 60, 0x00FFaa, 0.3);
         this.barrierVisual.setStrokeStyle(4, 0x00FFaa, 0.8);
         this.barrierVisual.setDepth(9);
       }
     } else if (chosen === 'boss2') {
       tex = 'boss2_combat_down_open';
-      msg = '戦闘狂「もっと速く、もっと激しく撃ちまくれぇ！！」\n【効果：連射速度超UP】';
+      msg = 'トゥレロス「もっと速く、もっと激しく撃ちまくれぇ！！」\n【効果：連射速度超UP】';
       this.heroAttackSpeedBoost = true;
       this.time.delayedCall(8000, () => { this.heroAttackSpeedBoost = false; });
     } else if (chosen === 'boss1') {
-      tex = 'boss1_muscle';
-      msg = '筋肉「お前の力、そんなものではないだろう！！」\n【効果：攻撃力＆サイズUP】';
+      tex = 'boss1_normal';
+      msg = 'クラトス「お前の力、そんなものではないだろう！！」\n【効果：攻撃力＆サイズUP】';
       this.heroFirepowerBoost = true;
       this.time.delayedCall(8000, () => { this.heroFirepowerBoost = false; });
     }
