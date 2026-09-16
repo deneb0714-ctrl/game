@@ -471,35 +471,15 @@ class BossScene extends Phaser.Scene {
 
     } else {
          // Minion phase
-         this.minionBattleActive = true;
-         if (key === 'boss1') {
-           this.minionsToKill = 1;
-           this.time.delayedCall(100, () => {
-             var dummy = this.enemyGroup.create(-1000, -1000, 'enemy_basic');
-             dummy.isScenarioMinion = true;
-             this.onBossHit({ active: true, damage: 9999, silent: true, destroy: () => {} }, dummy);
-           });
-         } else {
-           this.minionsToKill = 3;
-           var laneYs = [220, 460, 700];
-           for(let i = 0; i < 3; i++) {
-             this.time.delayedCall(1000 + i * 800, () => {
-               var e = this.enemyGroup.create(1920 + 50, laneYs[Phaser.Math.Between(0, 2)], 'enemy_basic');
-               e.setVelocityX(-200);
-               e.hp = (key === 'boss3_twins') ? 2 : 3;
-               e.isScenarioMinion = true;
-               this.tweens.add({
-                 targets: e, y: e.y + Phaser.Math.Between(-40, 40),
-                 yoyo: true, repeat: -1, duration: 900, ease: 'Sine.easeInOut'
-               });
-               e.fireTimer = this.time.addEvent({
-                 delay: 1500, callback: () => { if (e.active) { let b = MOT.fireLinear(this, e.x, e.y, -300, 0); if(b) b.shooter = e; } }, loop: true, callbackScope: this
-               });
-               e.on('destroy', () => { if (e.fireTimer) e.fireTimer.destroy(); });
-             }, [], this);
-           }
-         }
-      }
+    this.minionBattleActive = true;
+    this.minionsToKill = 1;
+    this.time.delayedCall(100, () => {
+      var dummy = this.enemyGroup.create(-1000, -1000, 'enemy_basic');
+      dummy.isScenarioMinion = true;
+      this.onBossHit({ active: true, damage: 9999, silent: true, destroy: () => {} }, dummy);
+    });
+  }
+}
   }
   playDemonLordIntro(onComplete) {
     var dimBg = this.add.rectangle(1920/2, 1080/2, 1920, 1080, 0x000000, 0.6).setAlpha(0).setDepth(89);
@@ -4329,8 +4309,9 @@ class BossScene extends Phaser.Scene {
           { time: 500, action: 'wave', count: 5, speed: 200 },
           { time: 4500, action: 'wave', count: 7, speed: 220 },
           { time: 8500, action: 'items' },
-          { time: 10500, action: 'items' },
-          { time: 12500, action: 'stage_end' }
+          { time: 10500, action: 'wave', count: 8, speed: 250 },
+          { time: 14500, action: 'items' },
+          { time: 16500, action: 'stage_end' }
         ];
 
         schedule.forEach(event => {
@@ -4367,7 +4348,7 @@ class BossScene extends Phaser.Scene {
           });
         });
         
-        self.intermissionTimeout = self.time.delayedCall(16000, function () {
+        self.intermissionTimeout = self.time.delayedCall(20000, function () {
           self.endIntermission();
         });
       });
@@ -4391,14 +4372,35 @@ class BossScene extends Phaser.Scene {
       this.intermissionTimeout.destroy();
       this.intermissionTimeout = null;
     }
-    // 残っている雑魚をすべて破棄
     this.enemyGroup.getChildren().slice().forEach(function (e) {
       if (e.isIntermissionEnemy && e.active) e.destroy();
     });
     this.enemyBullets.clear(true, true);
-    // 次のボスを開始
-    this.time.delayedCall(800, function () { this.startBoss(); }, [], this);
+    
+    this.dialogActive = true;
+    this.player.setCollideWorldBounds(false);
+    this.tweens.add({ targets: this.player, x: 2100, duration: 1000, ease: 'Power2' });
+    this.cameras.main.fadeOut(1000, 0, 0, 0);
+    
+    this.time.delayedCall(1000, () => {
+      this.tweens.killTweensOf(this.player);
+      this.player.setPosition(-200, this.player.y);
+      this.player.currentCol = 1;
+      if (this.player.body) this.player.body.reset(-200, this.player.y);
+      
+      this.startBoss();
+      
+      this.cameras.main.fadeIn(500, 0, 0, 0);
+      this.tweens.add({
+        targets: this.player, x: 300, duration: 1000, ease: 'Power2',
+        onComplete: () => {
+          this.dialogActive = false;
+          this.player.setCollideWorldBounds(true);
+        }
+      });
+    });
   }
+
 
   showDeviceDialogue(text, onComplete) {
     this.dialogActive = true;
