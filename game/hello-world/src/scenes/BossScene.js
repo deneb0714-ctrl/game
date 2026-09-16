@@ -2914,18 +2914,31 @@ class BossScene extends Phaser.Scene {
                       this.input.keyboard.on('keydown', kh);
                   });
               } else {
-                  await sayDevice('「よくやった。さぁ早くとどめを！」');
-                  await sayDemon('「ぐっ…ここまでか…」');
+                  if (Kills === 0) {
+                      await sayDevice('「よくやった。早く止めを刺すんだ。そして、見逃した幹部も殺しに行け。」');
+                      await sayHero('「…」');
+                      await sayDemon('「殺すならわらわだけで十分であろう！？わらわを殺せば組織は終わる！お前の目的だって達成される！！！」');
+                      if (!this.inunekoImage || !this.inunekoImage.active) {
+                          this.inunekoImage = this.add.image(1920 - 120, 1080 / 2 - 250, 'inuneko_stand').setAlpha(0).setDepth(91);
+                          this.inunekoImage.setScale(300 / 691);
+                          this.inunekoImage.setY(350);
+                          this.tweens.add({targets: this.inunekoImage, alpha: 0.4, duration: 300});
+                      }
+                      await sayInuneko('「何を言っとるにゃ！？魔王様も殺すなわん！！」');
+                      await sayHero('「…」');
+                  } else {
+                      await sayDevice('「よくやった。とどめを刺せ」');
+                      await sayDemon('「…ここまでか…」');
+                  }
                   
                   let isFreedomRoute = (Kills === 0 && MOT.flags.dollPoints < 100 && MOT.flags.killingIntent >= 200);
                   if (isFreedomRoute) {
                       c = await new Promise(res => {
-                          this.showChoice([
-                              { text: '見逃す', callback: () => { if(MOT.Audio.playSelect) MOT.Audio.playSelect(); res(2); } }
-                          ]);
+                          let opts = [{ text: '', callback: () => { if(MOT.Audio.playSelect) MOT.Audio.playSelect(); res(2); } }];
+                          this.showChoice(opts);
                       });
                   } else {
-                      c = await askShatterChoice('1. 心臓を打ち抜く', '2. 見逃す', Kills === 0);
+                      c = await askShatterChoice('1. 殺す', '2. 見逃す', Kills === 0);
                   }
               }
               
@@ -3060,28 +3073,13 @@ class BossScene extends Phaser.Scene {
                             await sayHeroLab('「…」');
                             await sayDoctorLab('「ふむ？」');
                             if (this.choiceContainer) this.choiceContainer.destroy();
-                            this.choiceContainer = this.add.container(0, 0).setDepth(110);
-                            var w = 1920, h = 1080;
-                            var bgChoice = this.add.rectangle(w / 2, h / 2, w, h, 0x000000, 0.4).setInteractive();
-                            this.choiceContainer.add(bgChoice);
-                            var title = this.add.text(w / 2, h / 2 - 180, '選択してください', { fontFamily: '"DotGothic16"', fontSize: '40px', color: '#ffffff' }).setOrigin(0.5);
-                            this.choiceContainer.add(title);
-                            let yStart = h / 2 - 100;
-                            for(let i=0; i<4; i++){
-                                let box = this.add.rectangle(w / 2, yStart + i * 60, 500, 50, 0x1F2933, 0.8).setStrokeStyle(2, 0x4FD1FF);
-                                let txt = this.add.text(w / 2, yStart + i * 60, (i+1)+'. 博士を倒す', { fontFamily: '"DotGothic16"', fontSize: '24px', color: '#ffffff' }).setOrigin(0.5);
-                                this.choiceContainer.add([box, txt]);
-                            }
                             await new Promise(res => {
-                                let cursor = this.add.text(w / 2 - 280, yStart, '▶', { fontFamily: '"DotGothic16"', fontSize: '24px', color: '#39FF14' }).setOrigin(0.5);
-                                this.choiceContainer.add(cursor);
-                                let idx = 0;
-                                const kh = (e) => {
-                                    if(e.key==='ArrowUp' || e.key==='w') { idx = Math.max(0, idx-1); cursor.setY(yStart + idx*60); }
-                                    if(e.key==='ArrowDown' || e.key==='s') { idx = Math.min(3, idx+1); cursor.setY(yStart + idx*60); }
-                                    if(e.key==='Enter' || e.key===' ') { this.input.keyboard.off('keydown', kh); this.choiceContainer.destroy(); res(); }
-                                };
-                                this.input.keyboard.on('keydown', kh);
+                                let opts = [];
+                                for (let i = 0; i < 4; i++) {
+                                    opts.push({ text: (i+1) + ' 博士を倒す', callback: () => { if(MOT.Audio.playSelect) MOT.Audio.playSelect(); res(); } });
+                                }
+                                opts.title = '選択してください';
+                                this.showChoice(opts);
                             });
                             await sayHeroLab('「…」');
                             await sayDoctorLab('「こちらに銃を構えてどうした？私を倒したいでも言うのか。」');
@@ -3111,18 +3109,6 @@ class BossScene extends Phaser.Scene {
                           const localSayDemon = (text) => new Promise(res => { this.tweens.add({ targets: this.dimBg, alpha: 0.6, duration: 300 }); if(this.heroImage) this.tweens.add({targets: this.heroImage, alpha: 0.4, duration: 300}); if(this.inunekoImage) this.tweens.add({targets: this.inunekoImage, alpha: 0.4, duration: 300}); if(this.demonImage) this.tweens.add({targets: this.demonImage, alpha: 1, duration: 300}); this.showDialogue('魔王', text, res); });
                           const sayHero = (text) => new Promise(res => { this.tweens.add({ targets: this.dimBg, alpha: 0.6, duration: 300 }); if(this.demonImage) this.tweens.add({targets: this.demonImage, alpha: 0.4, duration: 300}); if(this.inunekoImage) this.tweens.add({targets: this.inunekoImage, alpha: 0.4, duration: 300}); if(this.heroImage) this.tweens.add({targets: this.heroImage, alpha: 1, duration: 300}); this.showDialogue(MOT.flags.heroName || '勇者', text, res); });
 
-                          await localSayDevice('「よくやった。早く止めを刺すんだ。そして、見逃した幹部も殺しに行け。」');
-                          await sayHero('「…」');
-                          await localSayDemon('「殺すならわらわだけで十分であろう！？わらわを殺せば組織は終わる！お前の目的だって達成される！！！」');
-                          
-                          if (!this.inunekoImage || !this.inunekoImage.active) {
-                              this.inunekoImage = this.add.image(1920 - 120, 1080 / 2 - 250, 'inuneko_stand').setAlpha(0).setDepth(91);
-                              this.inunekoImage.setScale(300 / 691);
-                              this.inunekoImage.setY(350);
-                              this.tweens.add({targets: this.inunekoImage, alpha: 0.4, duration: 300});
-                          }
-                          await localSayInuneko('「何を言っとるにゃ！？魔王様も殺すなわん！！」');
-                          
                           await sayHero('「…」');
                           await localSayDevice('「何をしている？早くしろ。」');
                           if (MOT.Audio.playShatter) MOT.Audio.playShatter(); // （破壊音SE（通信機を壊す））
@@ -3251,37 +3237,14 @@ class BossScene extends Phaser.Scene {
                           
                           // 5つの選択肢
                           if (this.choiceContainer) this.choiceContainer.destroy();
-                          this.choiceContainer = this.add.container(0, 0).setDepth(200);
-                          var w = 1920, h = 1080;
-                          var bgChoice = this.add.rectangle(w / 2, h / 2, w, h, 0x000000, 0.4).setInteractive();
-                          this.choiceContainer.add(bgChoice);
-                          var titleChoice = this.add.text(w / 2, h / 2 - 220, '選択してください', { fontFamily: '"DotGothic16"', fontSize: '40px', color: '#ffffff' }).setOrigin(0.5);
-                          this.choiceContainer.add(titleChoice);
-                          
-                          let yStart = h / 2 - 150;
-                          for(let i=0; i<5; i++){
-                              let numTxt = (i + 1).toString();
-                              let box = this.add.rectangle(w / 2, yStart + i * 60, 500, 50, 0x1F2933, 0.8).setStrokeStyle(2, 0x4FD1FF);
-                              let txt = this.add.text(w / 2, yStart + i * 60, numTxt + ' 博士を倒す', { fontFamily: '"DotGothic16"', fontSize: '24px', color: '#ffffff' }).setOrigin(0.5);
-                              this.choiceContainer.add([box, txt]);
-                          }
                           await new Promise(res => {
-                              let cursor = this.add.text(w / 2 - 280, yStart, '▶', { fontFamily: '"DotGothic16"', fontSize: '24px', color: '#39FF14' }).setOrigin(0.5);
-                              this.choiceContainer.add(cursor);
-                              let idx = 0;
-                              const kh = (e) => {
-                                  if(e.key==='ArrowUp' || e.key==='w') { idx = Math.max(0, idx-1); cursor.setY(yStart + idx*60); }
-                                  if(e.key==='ArrowDown' || e.key==='s') { idx = Math.min(4, idx+1); cursor.setY(yStart + idx*60); }
-                                  if(e.key==='Enter' || e.key===' ') {
-                                      this.input.keyboard.off('keydown', kh);
-                                      this.choiceContainer.destroy();
-                                      if(MOT.Audio.playSelect) MOT.Audio.playSelect();
-                                      res();
-                                  }
-                              };
-                              this.input.keyboard.on('keydown', kh);
+                              let opts = [];
+                              for (let i = 0; i < 5; i++) {
+                                  opts.push({ text: (i+1) + ' 博士を倒す', callback: () => { if(MOT.Audio.playSelect) MOT.Audio.playSelect(); res(); } });
+                              }
+                              opts.title = '選択してください';
+                              this.showChoice(opts);
                           });
-                          
                           this.isLabTransition = true;
                           // 立ち絵と背景を消して、真の魔王を表示
                           if (this.heroImage) this.heroImage.setVisible(false);
