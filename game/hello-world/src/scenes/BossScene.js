@@ -178,7 +178,7 @@ class BossScene extends Phaser.Scene {
     // Start first boss or intermission when resuming from continue
     if (!(this.startData && this.startData.jumpToEndingSetup)) {
       if (this.startData && this.startData.fromContinue && this.currentBossIndex > 0 && this.bossQueue[this.currentBossIndex] !== 'doctor') {
-        this.time.delayedCall(1000, function () { this.startBoss(); }, [], this);
+        this.time.delayedCall(1000, function () { this.startIntermission(); }, [], this);
       } else {
         this.time.delayedCall(1000, function () { this.startBoss(); }, [], this);
       }
@@ -369,12 +369,6 @@ class BossScene extends Phaser.Scene {
       this.inunekoEnemy.play('inuneko_anim');
     }
 
-    let areaText = '';
-    if (key === 'boss1') areaText = ''; // Removed redundant dialogue
-    else if (key === 'boss2') areaText = '「次のエリアに着いたか。そこは、宵闇の森だ。」';
-    else if (key === 'boss3_twins') areaText = '「次のエリアに着いたか。そこは、子夜の城塞 だ。そろそろ魔王城に着くだろう。敵も強くなっている。気を付けてくれ」';
-    else if (key === 'demon_lord') areaText = '「とうとう魔王城に着いたか。そこには魔王がいるはずだ。警戒を怠らないように」';
-
     // デバッグ用: 戦闘スキップして即死させる
     if (this.debugSkipCombat && key === 'demon_lord') {
       boss.setVisible(true);
@@ -385,13 +379,7 @@ class BossScene extends Phaser.Scene {
       return;
     }
 
-    if (areaText !== '') {
-      this.showDeviceDialogue(areaText, () => {
-        this.startBossIntro(key, boss);
-      });
-    } else {
-      this.startBossIntro(key, boss);
-    }
+    this.startBossIntro(key, boss);
   }
 
   async playDialogSequence(seq, onComplete) {
@@ -4232,7 +4220,7 @@ class BossScene extends Phaser.Scene {
                 if (this.bossQueue[this.currentBossIndex] === 'doctor') {
                   this.time.delayedCall(1500, () => { this.startBoss(); });
                 } else {
-                  this.startBoss();
+                  this.startIntermission();
                 }
               } else {
                 this.time.delayedCall(1500, () => { this.startBoss(); });
@@ -4329,57 +4317,42 @@ class BossScene extends Phaser.Scene {
       if (this.bg) this.bg.setVisible(true);
     }
 
-    // 1.5秒後に雑魚スポーン開始（GameSceneと同じウェーブ形式）
-    this.time.delayedCall(1500, function () {
-      let schedule = [
-        { time: 500, action: 'wave', count: 5, speed: 200 },
-        { time: 4500, action: 'wave', count: 7, speed: 220 },
-        { time: 8500, action: 'items' },
-        { time: 10500, action: 'wave', count: 8, speed: 250 },
-        { time: 14500, action: 'items' },
-        { time: 16500, action: 'stage_end' }
-      ];
+    let key = this.bossQueue[this.currentBossIndex];
+    let areaText = '';
+    if (key === 'boss2') areaText = '「次のエリアに着いたか。そこは、宵闇の森だ。」';
+    else if (key === 'boss3_twins') areaText = '「次のエリアに着いたか。そこは、子夜の城塞 だ。そろそろ魔王城に着くだろう。敵も強くなっている。気を付けてくれ」';
+    else if (key === 'demon_lord') areaText = '「とうとう魔王城に着いたか。そこには魔王がいるはずだ。警戒を怠らないように」';
 
-      schedule.forEach(event => {
-        self.time.delayedCall(event.time, () => {
-          if (!self.intermissionActive) return;
-          if (event.action === 'wave') {
-            if (MOT.spawnWave) {
-              MOT.spawnWave(self, event.count, 200, event.speed);
-              // 追加された敵（ボス以外）にisIntermissionEnemyフラグを付与し、HPを3に固定
-              self.enemyGroup.getChildren().forEach(e => {
-                if (!e.configKey) {
-                  e.isIntermissionEnemy = true;
-                  e.hp = 3;
-                }
-              });
+    let beginIntermission = () => {
+      this.time.delayedCall(1000, function () {
+        let schedule = [
+          { time: 500, action: 'items' },
+          { time: 3000, action: 'items' },
+          { time: 5500, action: 'stage_end' }
+        ];
+
+        schedule.forEach(event => {
+          self.time.delayedCall(event.time, () => {
+            if (!self.intermissionActive) return;
+            if (event.action === 'items') {
+              if (MOT.spawnHealthItem) MOT.spawnHealthItem(self, 1920, Phaser.Math.Between(300, 700));
+            } else if (event.action === 'stage_end') {
+              self.endIntermission();
             }
-          } else if (event.action === 'items') {
-            if (MOT.spawnHealthItem) MOT.spawnHealthItem(self, 1920, Phaser.Math.Between(300, 700));
-          } else if (event.action === 'stage_end') {
-            self.checkIntermissionEndTimer = self.time.addEvent({
-              delay: 500,
-              loop: true,
-              callback: () => {
-                let hasEnemies = false;
-                self.enemyGroup.getChildren().forEach(e => {
-                  if (e.isIntermissionEnemy && e.active && e.x > -100) hasEnemies = true;
-                });
-                if (!hasEnemies) {
-                  self.checkIntermissionEndTimer.destroy();
-                  self.endIntermission();
-                }
-              }
-            });
-          }
+          });
+        });
+        
+        self.intermissionTimeout = self.time.delayedCall(8000, function () {
+          self.endIntermission();
         });
       });
-      
-      // タイムアウト保険：20秒後に強制進行
-      self.intermissionTimeout = self.time.delayedCall(20000, function () {
-        self.endIntermission();
-      });
-    });
+    };
+
+    if (areaText !== '') {
+      this.showDeviceDialogue(areaText, beginIntermission);
+    } else {
+      beginIntermission();
+    }
   }
 
   // 幕間クリア（全滅 or タイムアウト）→ 次のボスへ
