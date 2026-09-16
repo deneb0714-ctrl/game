@@ -1194,7 +1194,7 @@ class GameScene extends Phaser.Scene {
                 this.tutorialPhase = 5;
                 this.physics.resume();
               });
-            }, { x: 180, y: 75, width: 340, height: 75 });
+            }, { x: 100, y: 70, width: 170, height: 60 });
           });
         });
       }
@@ -1285,7 +1285,7 @@ class GameScene extends Phaser.Scene {
                       this.scene.start('GameScene', { stage: 2 });
                     });
                   });
-                }, { x: 30, y: 16, width: 200, height: 44 });
+                }, { x: 100, y: 35, width: 170, height: 50 });
               });
             });
           });
