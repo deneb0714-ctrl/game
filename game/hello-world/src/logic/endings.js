@@ -24,14 +24,18 @@ MOT.ENDINGS = {
   normal_daily: {
     key: 'normal_daily',
     title: 'NORMAL END',
-    subtitle: '— 日常 —',
+    subtitle: '日常',
     description: [
-      'こうして魔王は打倒された。主人公は博士の研究所に戻った。\n結局魔王とはいったい何だったのか。',
-      '彼女は本当に倒さなければならなかったのか。\nその答えを知る機会はもう一生訪れない。'
+      'こうして魔王は打倒された。',
+      '主人公は博士の研究所に戻った。',
+      '結局魔王とはいったい何だったのか。彼女は本当に倒さなければならなかったのか。',
+      'その答えを知る機会はもう一生訪れない。'
     ],
+    bgImage: 'cg_daily_1',
     postDescription: [
       { speaker: '博士', text: '「よく魔王を倒してくれた。\nこれで私の世界平和に一歩近づいたな。\nふふ、これからが楽しみだよ」' }
     ],
+    bgImagePost: 'cg_daily_3',
     color: 0xE5E7EB,
     bgColor: '#0a0a14'
   },

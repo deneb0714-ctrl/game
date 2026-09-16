@@ -201,6 +201,9 @@ class BootScene extends Phaser.Scene {
     // Inuneko Star
     this.load.image('true_demon_lord', 'assets/images/true_demon_lord.gif?v=' + v);
     this.load.image('cg_puppet', 'assets/images/cg_puppet.png?v=' + v);
+    this.load.image('cg_daily_1', 'assets/images/cg_daily_1.png?v=' + v);
+    this.load.image('cg_daily_2', 'assets/images/cg_daily_2.png?v=' + v);
+    this.load.image('cg_daily_3', 'assets/images/cg_daily_3.jpg?v=' + v);
     this.load.image('cg_shutdown', 'assets/images/cg_shutdown.png?v=' + v);
     this.load.image('cg_useless', 'assets/images/cg_useless.png?v=' + v);
     this.load.image('cg_irresistible', 'assets/images/cg_irresistible.png?v=' + v);
@@ -466,6 +469,22 @@ class BootScene extends Phaser.Scene {
     this.makeBackgrounds();
     this.makeUIButton();
     this.makeParticles();
+
+    const noiseCanvas = document.createElement('canvas');
+    noiseCanvas.width = 256;
+    noiseCanvas.height = 256;
+    const ctx = noiseCanvas.getContext('2d');
+    const imgData = ctx.createImageData(256, 256);
+    for (let i = 0; i < imgData.data.length; i += 4) {
+        let v = Math.random() * 255;
+        imgData.data[i] = v;
+        imgData.data[i+1] = v;
+        imgData.data[i+2] = v;
+        imgData.data[i+3] = 255;
+    }
+    ctx.putImageData(imgData, 0, 0);
+    this.textures.addSpriteSheet('noise_tex', this.textures.createCanvas('noise_tex', 256, 256).draw(0, 0, noiseCanvas).getSourceImage(), { frameWidth: 256, frameHeight: 256 });
+
   }
 
   // --- Player: 48x48 人造人間 (blue energy lines) ---

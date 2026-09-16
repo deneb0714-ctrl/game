@@ -105,28 +105,58 @@ class EndingScene extends Phaser.Scene {
                 nameText.setVisible(false);
             }
 
+            let proceedTyping = () => {
+                typeTimer = this.time.addEvent({
+                    delay: 50,
+                    callback: () => {
+                        charIdx++;
+                        desc.setText(fullDesc.substring(0, charIdx));
+                        if (charIdx >= fullDesc.length) {
+                            isTyping = false;
+                            this.showNextCursor(w, h, dialogBox);
+                        }
+                    },
+                    repeat: fullDesc.length - 1
+                });
+            };
+
             if (p.isPost && ending.bgImagePost && !this.bgImagePostShown) {
                 this.bgImagePostShown = true;
-                if (bgImg) {
-                    this.tweens.add({ targets: bgImg, alpha: 0, duration: 500, onComplete: () => { bgImg.destroy(); }});
-                }
-                bgImg = this.add.image(w / 2, h / 2, ending.bgImagePost).setDisplaySize(w, h).setDepth(10).setAlpha(0);
-                this.tweens.add({ targets: bgImg, alpha: 1, duration: 1000 });
-                this.textPhaseElements.push(bgImg);
-            }
-
-            typeTimer = this.time.addEvent({
-                delay: 50,
-                callback: () => {
-                    charIdx++;
-                    desc.setText(fullDesc.substring(0, charIdx));
-                    if (charIdx >= fullDesc.length) {
-                        isTyping = false;
-                        this.showNextCursor(w, h, dialogBox);
+                if (ending.key === 'normal_daily') {
+                    isTyping = true;
+                    // static effect
+                    let noiseObj = this.add.sprite(w/2, h/2, 'noise_tex').setDisplaySize(w, h).setDepth(11).setAlpha(0.6).setBlendMode(Phaser.BlendModes.ADD);
+                    this.tweens.add({
+                        targets: noiseObj,
+                        alpha: 0.3,
+                        duration: 50,
+                        yoyo: true,
+                        repeat: -1
+                    });
+                    this.cameras.main.shake(1000, 0.02);
+                    if (window.MOT && MOT.Audio && MOT.Audio.playCrack) MOT.Audio.playCrack();
+                    else if (window.MOT && MOT.Audio && MOT.Audio.playExplosion) MOT.Audio.playExplosion();
+                    
+                    this.time.delayedCall(1000, () => {
+                        if (bgImg) { bgImg.setTexture('cg_daily_2'); bgImg.setDisplaySize(w, h); }
+                        noiseObj.destroy();
+                        this.time.delayedCall(1500, () => {
+                            if (bgImg) { bgImg.setTexture('cg_daily_3'); bgImg.setDisplaySize(w, h); }
+                            proceedTyping();
+                        });
+                    });
+                } else {
+                    if (bgImg) {
+                        this.tweens.add({ targets: bgImg, alpha: 0, duration: 500, onComplete: () => { bgImg.destroy(); }});
                     }
-                },
-                repeat: fullDesc.length - 1
-            });
+                    bgImg = this.add.image(w / 2, h / 2, ending.bgImagePost).setDisplaySize(w, h).setDepth(10).setAlpha(0);
+                    this.tweens.add({ targets: bgImg, alpha: 1, duration: 1000 });
+                    this.textPhaseElements.push(bgImg);
+                    proceedTyping();
+                }
+            } else {
+                proceedTyping();
+            }
         };
 
         startPage();

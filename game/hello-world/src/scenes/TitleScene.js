@@ -649,7 +649,7 @@ class TitleScene extends Phaser.Scene {
 
     const endings = [
       { id: "bad_puppet", label: "BAD END - 傀儡", cond: "幹部を全員殺害する", cg: "cg_puppet" },
-      { id: "normal_daily", label: "NORMAL END - 日常", cond: "幹部を一部殺害し、魔王を殺害する\n（博士の命令に20回以上従う）", cg: null },
+      { id: "normal_daily", label: "NORMAL END - 日常", cond: "幹部を一部殺害し、魔王を殺害する\n（博士の命令に20回以上従う）", cg: "cg_daily_3" },
       { id: "normal_useless", label: "NORMAL END - 役立たず", cond: "幹部を一部殺害し、魔王を見逃す", cg: "cg_useless" },
       { id: "bad_shutdown", label: "BAD END - 強制シャットダウン", cond: "幹部を一部殺害し、魔王を殺害する\n（博士の命令に20回未満）", cg: 'cg_shutdown' },
       { id: "normal_unresistable", label: "NORMAL END - 抗えない", cond: "幹部を全員見逃し、魔王を殺害する", cg: "cg_irresistible" },
