@@ -4326,23 +4326,48 @@ class BossScene extends Phaser.Scene {
     let beginIntermission = () => {
       this.time.delayedCall(1000, function () {
         let schedule = [
-          { time: 500, action: 'items' },
-          { time: 3000, action: 'items' },
-          { time: 5500, action: 'stage_end' }
+          { time: 500, action: 'wave', count: 5, speed: 200 },
+          { time: 4500, action: 'wave', count: 7, speed: 220 },
+          { time: 8500, action: 'items' },
+          { time: 10500, action: 'items' },
+          { time: 12500, action: 'stage_end' }
         ];
 
         schedule.forEach(event => {
           self.time.delayedCall(event.time, () => {
             if (!self.intermissionActive) return;
-            if (event.action === 'items') {
+            if (event.action === 'wave') {
+              if (MOT.spawnWave) {
+                MOT.spawnWave(self, event.count, 200, event.speed);
+                self.enemyGroup.getChildren().forEach(e => {
+                  if (!e.configKey) {
+                    e.isIntermissionEnemy = true;
+                    e.hp = 3;
+                  }
+                });
+              }
+            } else if (event.action === 'items') {
               if (MOT.spawnHealthItem) MOT.spawnHealthItem(self, 1920, Phaser.Math.Between(300, 700));
             } else if (event.action === 'stage_end') {
-              self.endIntermission();
+              self.checkIntermissionEndTimer = self.time.addEvent({
+                delay: 500,
+                loop: true,
+                callback: () => {
+                  let hasEnemies = false;
+                  self.enemyGroup.getChildren().forEach(e => {
+                    if (e.isIntermissionEnemy && e.active && e.x > -100) hasEnemies = true;
+                  });
+                  if (!hasEnemies) {
+                    self.checkIntermissionEndTimer.destroy();
+                    self.endIntermission();
+                  }
+                }
+              });
             }
           });
         });
         
-        self.intermissionTimeout = self.time.delayedCall(8000, function () {
+        self.intermissionTimeout = self.time.delayedCall(16000, function () {
           self.endIntermission();
         });
       });
