@@ -15,7 +15,7 @@ MOT.spawnEnergyItem = function (scene, x, y, forceRed = false) {
       if(Math.abs(y - lanes[i]) < minDist) { minDist = Math.abs(y - lanes[i]); closestY = lanes[i]; }
   }
   y = closestY;
-  const isMurderous = forceRed || Phaser.Math.Between(0, 100) < 5; // 15% chance for Red Diamond
+  const isMurderous = forceRed || Phaser.Math.Between(0, 100) < 15; // 15% chance for Red Diamond
   
   let item;
   if (isMurderous) {
