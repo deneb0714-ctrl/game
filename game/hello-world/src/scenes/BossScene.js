@@ -2591,6 +2591,10 @@ class BossScene extends Phaser.Scene {
               var box2 = this.add.rectangle(w / 2, y2, 500, 80, 0x1F2933, 0.8).setStrokeStyle(2, 0x4FD1FF);
               var txt2 = this.add.text(w / 2, y2, label2, { fontFamily: '"DotGothic16"', fontSize: '32px', color: '#ffffff' }).setOrigin(0.5);
               this.choiceContainer.add([box1, txt1, box2, txt2]);
+              box1.setInteractive({ useHandCursor: true });
+              box2.setInteractive({ useHandCursor: true });
+              box1.on('pointerdown', () => { keyHandler({ key: 'Enter' }); });
+              box2.on('pointerdown', () => { if (!shattered) keyHandler({ key: 'ArrowDown' }); else keyHandler({ key: 'Enter' }); });
               
               var cursor = this.add.text(w / 2 - 280, y1, '▶', { fontFamily: '"DotGothic16"', fontSize: '32px', color: '#39FF14' }).setOrigin(0.5);
               this.choiceContainer.add(cursor);
@@ -2765,7 +2769,7 @@ class BossScene extends Phaser.Scene {
                     currentIndex = 2;
                     cursor.setY(y2);
                   }
-                } else if (event.key === 'Enter' || event.key === ' ') {
+                } else if (event.key === 'Enter') {
                   if (isBlocked && !shattered && currentIndex === 2) {
                     // グレーアウト状態では選べない
                     return;
@@ -4471,7 +4475,7 @@ class BossScene extends Phaser.Scene {
     };
 
     const handleKey = (event) => {
-      if (event.key === ' ' || event.code === 'Space' || event.key === 'Enter' || event.code === 'Enter') {
+      if (event.key === ' ' || event.code === 'Space') {
         handleInput();
       }
     };
@@ -4666,7 +4670,7 @@ class BossScene extends Phaser.Scene {
     };
 
     const handleKey = (event) => {
-      if (event.key === ' ' || event.code === 'Space' || event.key === 'Enter' || event.code === 'Enter') {
+      if (event.key === ' ' || event.code === 'Space') {
         handleInput();
       }
     };
@@ -4704,7 +4708,7 @@ class BossScene extends Phaser.Scene {
 
     choices.forEach(function (choice, i) {
       const y = startY + i * 110;
-      const btn = self.add.image(w / 2, y, 'ui_button_wide').setInteractive({ useHandCursor: true }).setDepth(200002).setScrollFactor(0);
+      const btn = self.add.image(w / 2, y, 'ui_button_wide').setInteractive(new Phaser.Geom.Rectangle(-100, -30, 560, 110), Phaser.Geom.Rectangle.Contains).setDepth(200002).setScrollFactor(0);
       
       const txt = self.add.text(w / 2, y, choice.text, {
         fontFamily: '"DotGothic16"',

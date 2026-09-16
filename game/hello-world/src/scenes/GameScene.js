@@ -583,14 +583,13 @@ class GameScene extends Phaser.Scene {
     };
 
     const handleKey = (event) => {
-      if (event.key === ' ' || event.code === 'Space' || event.key === 'Enter' || event.code === 'Enter') {
+      if (event.key === ' ' || event.code === 'Space') {
         handleInput();
       }
     };
 
     touchZone.on('pointerdown', handleInput);
-    this.input.off('pointerdown', handleInput);
-    this.input.on('pointerdown', handleInput);
+    
     this.input.keyboard.on('keydown', handleKey);
   }
 
@@ -620,7 +619,7 @@ class GameScene extends Phaser.Scene {
 
     choices.forEach(function (choice, i) {
       const y = startY + i * 110;
-      const btn = self.add.image(w / 2, y, 'ui_button_wide').setInteractive({ useHandCursor: true }).setDepth(200002);
+      const btn = self.add.image(w / 2, y, 'ui_button_wide').setInteractive(new Phaser.Geom.Rectangle(-100, -30, 560, 110), Phaser.Geom.Rectangle.Contains).setDepth(200002);
       
       const txt = self.add.text(w / 2, y, choice.text, {
         fontFamily: '"DotGothic16"',
@@ -1086,14 +1085,13 @@ class GameScene extends Phaser.Scene {
     };
 
     const handleKey = (event) => {
-      if (event.key === ' ' || event.code === 'Space' || event.key === 'Enter' || event.code === 'Enter') {
+      if (event.key === ' ' || event.code === 'Space') {
         handleInput();
       }
     };
 
     touchZone.on('pointerdown', handleInput);
-    this.input.off('pointerdown', handleInput);
-    this.input.on('pointerdown', handleInput);
+    
     this.input.keyboard.on('keydown', handleKey);
   }
 
