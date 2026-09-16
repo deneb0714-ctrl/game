@@ -672,7 +672,8 @@ class TitleScene extends Phaser.Scene {
     gifEl.style.width = '1200px';
     gifEl.style.height = '675px';
     gifEl.style.objectFit = 'contain';
-    const domThumb = this.add.dom(w/2, h/2 - 20, gifEl).setVisible(false);
+    gifEl.style.display = 'block';
+    const domThumb = this.add.dom(w/2, h/2 - 20, gifEl).setOrigin(0.5, 0.5).setVisible(false);
     this.endContainer.add(domThumb);
     
     const blackBg = this.add.rectangle(w/2, h/2 - 20, 1200, 675, 0x0a0a1a, 1).setVisible(false);

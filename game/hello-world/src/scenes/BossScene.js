@@ -3244,6 +3244,7 @@ class BossScene extends Phaser.Scene {
                           
                           this.playerBullets.clear(true, true);
                           this.enemyBullets.clear(true, true);
+                          this.itemGroup.clear(true, true);
                           
                           this.bg.setTexture('bg_lab');
                           this.bg.setTint(0xffffff); // 背景色が変えられていた場合に戻す
