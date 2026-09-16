@@ -202,8 +202,8 @@ class BootScene extends Phaser.Scene {
     this.load.image('true_demon_lord', 'assets/images/true_demon_lord.gif?v=' + v);
     this.load.image('cg_puppet', 'assets/images/cg_puppet.png?v=' + v);
     this.load.image('cg_daily_1', 'assets/images/cg_daily_1.png?v=' + v);
-    this.load.image('cg_daily_2', 'assets/images/cg_daily_2.png?v=' + v);
-    this.load.image('cg_daily_3', 'assets/images/cg_daily_3.jpg?v=' + v);
+    this.load.image('cg_daily_2', 'assets/images/cg_daily_2.jpg?v=' + v);
+    this.load.image('cg_daily_3', 'assets/images/cg_daily_3.png?v=' + v);
     this.load.image('cg_shutdown', 'assets/images/cg_shutdown.png?v=' + v);
     this.load.image('cg_useless', 'assets/images/cg_useless.png?v=' + v);
     this.load.image('cg_irresistible', 'assets/images/cg_irresistible.png?v=' + v);
