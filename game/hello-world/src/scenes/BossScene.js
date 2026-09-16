@@ -2931,14 +2931,19 @@ class BossScene extends Phaser.Scene {
                       await sayDemon('「…ここまでか…」');
                   }
                   
-                  let isFreedomRoute = (Kills === 0 && MOT.flags.dollPoints < 100 && MOT.flags.killingIntent >= 200);
-                  if (isFreedomRoute) {
+                  if (Kills === 0) {
                       c = await new Promise(res => {
-                          let opts = [{ text: '', callback: () => { if(MOT.Audio.playSelect) MOT.Audio.playSelect(); res(2); } }];
+                          let opts = [{ text: '見逃す', callback: () => { if(MOT.Audio.playSelect) MOT.Audio.playSelect(); res(2); } }];
                           this.showChoice(opts);
                       });
                   } else {
-                      c = await askShatterChoice('1. 殺す', '2. 見逃す', Kills === 0);
+                      c = await new Promise(res => {
+                          let opts = [
+                              { text: '1. 殺す', callback: () => { if(MOT.Audio.playSelect) MOT.Audio.playSelect(); res(1); } },
+                              { text: '2. 見逃す', callback: () => { if(MOT.Audio.playSelect) MOT.Audio.playSelect(); res(2); } }
+                          ];
+                          this.showChoice(opts);
+                      });
                   }
               }
               
