@@ -118,8 +118,8 @@ class BossScene extends Phaser.Scene {
     this.player = this.physics.add.sprite(-100, 460, 'hero_combat_down_open').setScale(1.5).setDepth(10);
     
     // 当たり判定可視化用グラフィックス
-    this.playerHitboxGraphics = this.add.graphics();
-    this.playerHitboxGraphics.setDepth(11);
+//     this.playerHitboxGraphics = this.add.graphics();
+//     this.playerHitboxGraphics.setDepth(11);
 
     this.player.play('hero_combat_anim');
     // アニメーション再生後にサイズを指定（アニメーションによって上書きされるのを防ぐ）
@@ -898,7 +898,7 @@ class BossScene extends Phaser.Scene {
     if (this.isLabTransition) {
         if (this.enemyBullets) this.enemyBullets.clear(true, true);
         if (this.playerBullets) this.playerBullets.clear(true, true);
-        if (this.playerHitboxGraphics) this.playerHitboxGraphics.clear();
+//         if (this.playerHitboxGraphics) this.playerHitboxGraphics.clear();
         if (this.currentBoss) { this.currentBoss.setActive(false); this.currentBoss.setVisible(false); }
         if (this.sisterBoss) { this.sisterBoss.setActive(false); this.sisterBoss.setVisible(false); }
         if (this.batteryUI) this.batteryUI.clear();
@@ -937,19 +937,19 @@ class BossScene extends Phaser.Scene {
     }
 
     // 当たり判定の描画（常にプレイヤーのbodyに追従する水色の線）
-    if (this.playerHitboxGraphics) {
-      this.playerHitboxGraphics.clear();
+//     if (this.playerHitboxGraphics) {
+//       this.playerHitboxGraphics.clear();
       if (this.player && this.player.active && this.player.alpha > 0) {
-        this.playerHitboxGraphics.lineStyle(3, 0x00ffff, 0.8);
-        this.playerHitboxGraphics.strokeRect(this.player.body.x, this.player.body.y, this.player.body.width, this.player.body.height);
+//         this.playerHitboxGraphics.lineStyle(3, 0x00ffff, 0.8);
+//         this.playerHitboxGraphics.strokeRect(this.player.body.x, this.player.body.y, this.player.body.width, this.player.body.height);
       }
       if (this.currentBoss && this.currentBoss.active && this.currentBoss.visible) {
-        this.playerHitboxGraphics.lineStyle(3, 0xff00ff, 0.8);
-        this.playerHitboxGraphics.strokeRect(this.currentBoss.body.x, this.currentBoss.body.y, this.currentBoss.body.width, this.currentBoss.body.height);
+//         this.playerHitboxGraphics.lineStyle(3, 0xff00ff, 0.8);
+//         this.playerHitboxGraphics.strokeRect(this.currentBoss.body.x, this.currentBoss.body.y, this.currentBoss.body.width, this.currentBoss.body.height);
       }
       if (this.sisterBoss && this.sisterBoss.active && this.sisterBoss.visible) {
-        this.playerHitboxGraphics.lineStyle(3, 0xff00ff, 0.8);
-        this.playerHitboxGraphics.strokeRect(this.sisterBoss.body.x, this.sisterBoss.body.y, this.sisterBoss.body.width, this.sisterBoss.body.height);
+//         this.playerHitboxGraphics.lineStyle(3, 0xff00ff, 0.8);
+//         this.playerHitboxGraphics.strokeRect(this.sisterBoss.body.x, this.sisterBoss.body.y, this.sisterBoss.body.width, this.sisterBoss.body.height);
       }
     }
 
@@ -3035,7 +3035,7 @@ class BossScene extends Phaser.Scene {
                             this.tweens.add({targets: blackText, alpha: 0, duration: 1000});
                             await new Promise(r => this.time.delayedCall(1000, r));
                             if (this.player) { this.player.setVisible(false); this.player.setActive(false); }
-                            if (this.playerHitboxGraphics) this.playerHitboxGraphics.setVisible(false);
+//                             if (this.playerHitboxGraphics) this.playerHitboxGraphics.setVisible(false);
                             if (this.bossHpBg) this.bossHpBg.setVisible(false);
                             if (this.bossHpBar) this.bossHpBar.setVisible(false);
                             if (this.barrierVisual) this.barrierVisual.setVisible(false);
@@ -3175,7 +3175,7 @@ class BossScene extends Phaser.Scene {
 
                           // 戦闘UIとオブジェクトを全て隠す
                           if (this.player) { this.player.setVisible(false); this.player.setActive(false); }
-                          if (this.playerHitboxGraphics) this.playerHitboxGraphics.setVisible(false);
+//                           if (this.playerHitboxGraphics) this.playerHitboxGraphics.setVisible(false);
                           if (this.bossHpBg) this.bossHpBg.setVisible(false);
                           if (this.bossHpBar) this.bossHpBar.setVisible(false);
                           if (this.barrierVisual) this.barrierVisual.setVisible(false);
@@ -3202,7 +3202,7 @@ class BossScene extends Phaser.Scene {
                           
                           // Hide all boss fight UI elements
                           if (this.player) { this.player.setVisible(false); this.player.setActive(false); }
-                          if (this.playerHitboxGraphics) { this.playerHitboxGraphics.setVisible(false); this.playerHitboxGraphics.clear(); }
+//                           if (this.playerHitboxGraphics) { this.playerHitboxGraphics.setVisible(false); this.playerHitboxGraphics.clear(); }
                           if (this.bossHPBar) { this.bossHPBar.setVisible(false); this.bossHPBar.clear(); }
                           if (this.bossHPText) { this.bossHPText.setVisible(false); }
                           if (this.barrierVisual) { this.barrierVisual.setVisible(false); }
@@ -4074,7 +4074,7 @@ class BossScene extends Phaser.Scene {
         }
       });
       this.cameras.main.fadeIn(1000, 0, 0, 0);
-      this.startBoss(); 
+      this.startIntermission(); 
     }, [], this);
   }
 

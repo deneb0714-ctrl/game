@@ -103,8 +103,8 @@ class GameScene extends Phaser.Scene {
     this.player.body.setSize(19, 80);
     this.player.body.setOffset(40, 10);
 
-    this.playerHitboxGraphics = this.add.graphics();
-    this.playerHitboxGraphics.setDepth(11);
+//     this.playerHitboxGraphics = this.add.graphics();
+//     this.playerHitboxGraphics.setDepth(11);
 
     // Player trail effect
     this.playerTrail = this.add.particles(0, 0, 'particle', {
@@ -242,11 +242,11 @@ class GameScene extends Phaser.Scene {
     // Player movement (keyboard)
     MOT.handleMovement(this, this.player);
 
-    if (this.playerHitboxGraphics) {
-      this.playerHitboxGraphics.clear();
+//     if (this.playerHitboxGraphics) {
+//       this.playerHitboxGraphics.clear();
       if (this.player && this.player.active && this.player.alpha > 0) {
-        this.playerHitboxGraphics.lineStyle(3, 0x00ffff, 0.8);
-        this.playerHitboxGraphics.strokeRect(this.player.body.x, this.player.body.y, this.player.body.width, this.player.body.height);
+//         this.playerHitboxGraphics.lineStyle(3, 0x00ffff, 0.8);
+//         this.playerHitboxGraphics.strokeRect(this.player.body.x, this.player.body.y, this.player.body.width, this.player.body.height);
       }
     }
 
@@ -1296,7 +1296,6 @@ class GameScene extends Phaser.Scene {
 }
 
 window.GameScene = GameScene;
-
 
 
 
