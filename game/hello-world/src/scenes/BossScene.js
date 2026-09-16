@@ -937,21 +937,6 @@ class BossScene extends Phaser.Scene {
     }
 
     // 当たり判定の描画（常にプレイヤーのbodyに追従する水色の線）
-//     if (this.playerHitboxGraphics) {
-//       this.playerHitboxGraphics.clear();
-      if (this.player && this.player.active && this.player.alpha > 0) {
-//         this.playerHitboxGraphics.lineStyle(3, 0x00ffff, 0.8);
-//         this.playerHitboxGraphics.strokeRect(this.player.body.x, this.player.body.y, this.player.body.width, this.player.body.height);
-      }
-      if (this.currentBoss && this.currentBoss.active && this.currentBoss.visible) {
-//         this.playerHitboxGraphics.lineStyle(3, 0xff00ff, 0.8);
-//         this.playerHitboxGraphics.strokeRect(this.currentBoss.body.x, this.currentBoss.body.y, this.currentBoss.body.width, this.currentBoss.body.height);
-      }
-      if (this.sisterBoss && this.sisterBoss.active && this.sisterBoss.visible) {
-//         this.playerHitboxGraphics.lineStyle(3, 0xff00ff, 0.8);
-//         this.playerHitboxGraphics.strokeRect(this.sisterBoss.body.x, this.sisterBoss.body.y, this.sisterBoss.body.width, this.sisterBoss.body.height);
-      }
-    }
 
     // 博士の指示システム update（ダイアログ判定より先に実行して、表示非表示を管理する）
     if (this.currentBossIndex >= 4 || MOT.flags.demonLordFinished) {

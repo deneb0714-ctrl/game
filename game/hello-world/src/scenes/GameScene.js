@@ -242,13 +242,6 @@ class GameScene extends Phaser.Scene {
     // Player movement (keyboard)
     MOT.handleMovement(this, this.player);
 
-//     if (this.playerHitboxGraphics) {
-//       this.playerHitboxGraphics.clear();
-      if (this.player && this.player.active && this.player.alpha > 0) {
-//         this.playerHitboxGraphics.lineStyle(3, 0x00ffff, 0.8);
-//         this.playerHitboxGraphics.strokeRect(this.player.body.x, this.player.body.y, this.player.body.width, this.player.body.height);
-      }
-    }
 
     // 博士の指示システム update (チュートリアル中は出さない)
     if (this.currentStage !== 1) {
@@ -1296,6 +1289,5 @@ class GameScene extends Phaser.Scene {
 }
 
 window.GameScene = GameScene;
-
 
 
