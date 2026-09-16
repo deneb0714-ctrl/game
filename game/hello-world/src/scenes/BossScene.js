@@ -3548,22 +3548,37 @@ class BossScene extends Phaser.Scene {
                     this.cameras.main.fadeOut(1000, 0, 0, 0);
                     await new Promise(r => this.time.delayedCall(1000, r));
                     const termBg = this.add.rectangle(1920/2, 1080/2, 1920, 1080, 0x000000).setDepth(300000);
-                    const txt = this.add.text(100, 100, '', { fontFamily: '"DotGothic16"', fontSize: '32px', color: '#39FF14' }).setDepth(300001);
+                    const w = 1920, h = 1080;
+                    const txt = this.add.text(w / 2 - 500, h / 2 - 320, '', {
+                      fontFamily: '"DotGothic16", "Courier New", Courier, monospace',
+                      fontSize: '28px',
+                      color: '#00FF66',
+                      fontStyle: 'bold',
+                      lineSpacing: 16,
+                      shadow: {
+                        offsetX: 0,
+                        offsetY: 0,
+                        color: '#00FF66',
+                        blur: 10,
+                        stroke: true,
+                        fill: true
+                      }
+                    }).setDepth(300001);
                     this.cameras.main.fadeIn(500, 0, 0, 0);
                     await new Promise(r => this.time.delayedCall(500, r));
                     let currentText = '';
                     for (let line of lines) {
                         for (let i = 0; i < line.length; i++) {
                             currentText += line[i];
-                            txt.setText(currentText + "_");
+                            txt.setText(currentText + "■");
                             if (i % 2 === 0 && window.MOT && MOT.Audio && MOT.Audio.playTick) MOT.Audio.playTick();
                             await new Promise(r => this.time.delayedCall(40, r));
                         }
                         currentText += "\n";
-                        txt.setText(currentText + "_");
+                        txt.setText(currentText + "■");
                         await new Promise(r => this.time.delayedCall(200, r));
                     }
-                    txt.setText(currentText);
+                    txt.setText(currentText + '■');
                     await new Promise(r => this.time.delayedCall(2000, r));
                     this.cameras.main.fadeOut(1000, 0, 0, 0);
                     await new Promise(r => this.time.delayedCall(1000, r));
