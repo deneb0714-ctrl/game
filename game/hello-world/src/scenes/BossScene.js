@@ -1242,7 +1242,7 @@ class BossScene extends Phaser.Scene {
       this.barrierCooldown = 2000;
       this.barrierActivatedTime = this.time.now; // ジャストガード用タイマー記録
 
-      this.barrierVisual = this.add.star(this.player.x, this.player.y, 5, 30, 60, 0x00FFaa, 0.3);
+      this.barrierVisual = this.add.circle(this.player.x, this.player.y, 60, 0x00FFaa, 0.3);
       this.barrierVisual.setStrokeStyle(4, 0x00FFaa, 0.8);
       this.barrierVisual.setDepth(9);
     }
@@ -5019,4 +5019,3 @@ class BossScene extends Phaser.Scene {
 }
 
 window.BossScene = BossScene;
-
