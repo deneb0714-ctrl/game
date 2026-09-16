@@ -654,7 +654,7 @@ class TitleScene extends Phaser.Scene {
       { id: "bad_shutdown", label: "BAD END - 強制シャットダウン", cond: "幹部を一部殺害し、魔王を殺害する\n（博士の命令に20回未満）", cg: 'cg_shutdown' },
       { id: "normal_unresistable", label: "NORMAL END - 抗えない", cond: "幹部を全員見逃し、魔王を殺害する", cg: "cg_irresistible" },
       { id: "END_ORPHAN", label: "HAPPY END - Hello World", cond: "幹部を全員見逃し、魔王も見逃す\n（赤いダイヤ20個未満、または博士の命令に20回以上従う）", cg: "cg_helloworld" },
-      { id: "hidden_freedom", label: "隠しエンド - 自由の身", cond: "幹部を全員見逃し、魔王を見逃す\n（赤いダイヤ20個以上、かつ博士の命令に20回未満（最大HP6以下））", cg: "true_demon_lord_gif" }
+      { id: "hidden_freedom", label: "隠しエンド - 自由の身", cond: "幹部を全員見逃し、魔王を見逃す\n（赤いダイヤ20個以上、かつ博士の命令に20回未満（最大HP6以下））", cg: "true_demon_lord" }
     ];
 
     let hasUnlocked = false;
@@ -667,14 +667,6 @@ class TitleScene extends Phaser.Scene {
     const cgImage = this.add.image(w/2, h/2 - 20, "cg_helloworld").setVisible(false);
     this.endContainer.add(cgImage);
     
-    const gifEl = document.createElement('img');
-    gifEl.src = 'assets/images/true_demon_lord.gif?v=' + (window.GAME_VERSION || 'v1');
-    gifEl.style.width = '1200px';
-    gifEl.style.height = '675px';
-    gifEl.style.objectFit = 'contain';
-    gifEl.style.display = 'block';
-    const domThumb = this.add.dom(w/2, h/2 - 20, gifEl).setOrigin(0.5, 0.5).setVisible(false);
-    this.endContainer.add(domThumb);
     
     const blackBg = this.add.rectangle(w/2, h/2 - 20, 1200, 675, 0x0a0a1a, 1).setVisible(false);
     blackBg.setStrokeStyle(4, 0x4FD1FF);
@@ -693,29 +685,21 @@ class TitleScene extends Phaser.Scene {
         titleText.setText((currentIndex + 1) + " / " + endings.length + "  " + (isUnlocked ? end.label : ""));
         
         if (isUnlocked) {
-            if (end.cg === "true_demon_lord_gif") {
-                cgImage.setVisible(false);
-                if (typeof domThumb !== 'undefined') domThumb.setVisible(true);
-                blackBg.setVisible(true);
-                condText.setVisible(false);
-            } else if (end.cg) {
+            if (end.cg) {
                 cgImage.setTexture(end.cg);
                 const scale = Math.min(1200 / cgImage.width, 675 / cgImage.height);
                 cgImage.setScale(scale);
                 cgImage.setVisible(true);
-                if (typeof domThumb !== 'undefined') domThumb.setVisible(false);
                 blackBg.setVisible(false);
                 condText.setVisible(false);
             } else {
                 cgImage.setVisible(false);
-                if (typeof domThumb !== 'undefined') domThumb.setVisible(false);
                 blackBg.setVisible(true);
                 condText.setText("未解放");
                 condText.setVisible(true);
             }
         } else {
             cgImage.setVisible(false);
-            if (typeof domThumb !== 'undefined') domThumb.setVisible(false);
             blackBg.setVisible(true);
             condText.setText("【解放条件】\n" + end.cond);
             condText.setVisible(true);
