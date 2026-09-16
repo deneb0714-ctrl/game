@@ -106,6 +106,7 @@ class EndingScene extends Phaser.Scene {
             }
 
             let proceedTyping = () => {
+                if (!isTyping) return; // User already skipped
                 typeTimer = this.time.addEvent({
                     delay: 50,
                     callback: () => {
@@ -125,7 +126,7 @@ class EndingScene extends Phaser.Scene {
                 if (ending.key === 'normal_daily') {
                     isTyping = true;
                     // static effect
-                    let noiseObj = this.add.sprite(w/2, h/2, 'noise_tex').setDisplaySize(w, h).setDepth(11).setAlpha(0.6).setBlendMode(Phaser.BlendModes.ADD);
+                    let noiseObj = this.add.image(w/2, h/2, 'noise_tex').setDisplaySize(w, h).setDepth(11).setAlpha(0.6).setBlendMode(Phaser.BlendModes.ADD);
                     this.tweens.add({
                         targets: noiseObj,
                         alpha: 0.3,
@@ -163,7 +164,7 @@ class EndingScene extends Phaser.Scene {
 
         const finishTextPhase = () => {
             if (isTyping) {
-                typeTimer.remove();
+                if (typeTimer) typeTimer.remove();
                 isTyping = false;
                 desc.setText(fullDesc);
                 this.showNextCursor(w, h, dialogBox);

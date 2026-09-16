@@ -483,7 +483,8 @@ class BootScene extends Phaser.Scene {
         imgData.data[i+3] = 255;
     }
     ctx.putImageData(imgData, 0, 0);
-    this.textures.addSpriteSheet('noise_tex', this.textures.createCanvas('noise_tex', 256, 256).draw(0, 0, noiseCanvas).getSourceImage(), { frameWidth: 256, frameHeight: 256 });
+    if (this.textures.exists('noise_tex')) this.textures.remove('noise_tex');
+    this.textures.createCanvas('noise_tex', 256, 256).draw(0, 0, noiseCanvas);
 
   }
 
