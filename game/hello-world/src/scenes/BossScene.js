@@ -4835,7 +4835,7 @@ class BossScene extends Phaser.Scene {
       msg = 'ヴェリタス「人間よ、少しは休むがよい！」\n【効果：HP回復】';
       MOT.flags.playerHP = Math.min((MOT.flags.playerMaxHP || 5), MOT.flags.playerHP + 2);
     } else if (chosen === 'twins') {
-      tex = 'sister_normal'; // 妹立ち絵
+      tex = 'sister_shoot1'; // 妹立ち絵
       msg = 'エナリア「ふんっ、今回だけ特別に守ってあげるんだから！」\n【効果：無敵バリア展開】';
       this.barrierActive = true;
       this.barrierTime = 0;
@@ -4851,19 +4851,22 @@ class BossScene extends Phaser.Scene {
       this.heroAttackSpeedBoost = true;
       this.time.delayedCall(8000, () => { this.heroAttackSpeedBoost = false; });
     } else if (chosen === 'boss1') {
-      tex = 'boss1_normal';
+      tex = 'boss1_combat';
       msg = 'クラトス「お前の力、そんなものではないだろう！！」\n【効果：攻撃力＆サイズUP】';
       this.heroFirepowerBoost = true;
       this.time.delayedCall(8000, () => { this.heroFirepowerBoost = false; });
     }
     
-    this.assistImage = this.add.sprite(w / 2 - 500, h - 80, tex).setScale(0.15).setDepth(201);
+    this.assistImage = this.add.sprite(w / 2 - 500, h - 80, tex).setScale(2.0).setDepth(201);
     // scale and animation correction
-    if (chosen === 'twins') this.assistImage.setScale(1.5);
-    else if (chosen === 'demon') this.assistImage.setScale(0.25);
-    else if (chosen === 'boss2') {
-      this.assistImage.setScale(0.3);
+    if (chosen === 'twins') {
+      // no animation
+    } else if (chosen === 'demon') {
+      this.assistImage.play('demon_combat_anim');
+    } else if (chosen === 'boss2') {
       this.assistImage.play('boss2_battle_play');
+    } else if (chosen === 'boss1') {
+      this.assistImage.play('boss1_idle');
     }
     
     this.assistText.setText(msg);
