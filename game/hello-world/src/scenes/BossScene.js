@@ -3382,7 +3382,6 @@ class BossScene extends Phaser.Scene {
                           await localSayDemon('「なんだ？！」', 'demon_lord_shock');
                           await localSayInuneko('「にゃわわ！？」', 'inuneko_blink');
                           
-                          await localSayDoctor('「さぁ、最終決戦といこうじゃないか！」', 'doctor_awaken_straight_weapon');
 
                           if (this.boss1Bgm) this.boss1Bgm.stop();
                           if (this.boss2Bgm) this.boss2Bgm.stop();
@@ -3656,8 +3655,17 @@ class BossScene extends Phaser.Scene {
                     this.showDialogue('クラトス', text, res);
                 });
                 
-                await localSayHero('「博士は、自分に向かって引き金を引いた。」');
-                await localSayHero('「僕が止めようとするも間に合わず、博士は満足したかの様に自害をした。」');
+                const sayNarration = (text) => new Promise(res => { 
+                    this.tweens.add({ targets: dimBg, alpha: 0.6, duration: 300 }); 
+                    if(this.heroImage) this.tweens.add({targets: this.heroImage, alpha: 0.4, duration: 300}); 
+                    if(this.demonImage) this.tweens.add({targets: this.demonImage, alpha: 0.4, duration: 300});
+                    if(this.inunekoImage) this.tweens.add({targets: this.inunekoImage, alpha: 0.4, duration: 300});
+                    if(doctorImage) this.tweens.add({targets: doctorImage, alpha: 0.4, duration: 300});
+                    if(this.boss1Image) this.tweens.add({targets: this.boss1Image, alpha: 0.4, duration: 300});
+                    this.showDialogue('', text, res); 
+                });
+                await sayNarration('博士は、自分に向かって引き金を引いた。');
+                await sayNarration('僕が止めようとするも間に合わず、博士は満足したかの様に自害をした。');
                 await localSayHero('「止められなかった…」');
                 await localSayHero('「……」');
                 await localSayHero('「でも、これで全部終わったんだよね……」');
