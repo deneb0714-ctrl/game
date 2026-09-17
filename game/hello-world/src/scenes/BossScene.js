@@ -1084,7 +1084,7 @@ class BossScene extends Phaser.Scene {
     }
 
     // Boss attacks
-    if (this.currentBoss && this.currentBoss.active && this.currentBoss.visible) {
+    if (this.currentBoss && this.currentBoss.active && this.currentBoss.visible && !this.dialogActive) {
       this.bossAttackTimer += delta;
       var interval = this.bossHP < this.bossMaxHP * 0.5 ? 600 : 1000;
       if (this.currentBoss.configKey === 'boss1') interval = 3000; // ボス1の攻撃頻度を下げる
