@@ -3476,7 +3476,7 @@ class BossScene extends Phaser.Scene {
                     await new Promise(r => this.time.delayedCall(1000, r));
                     const termBg = this.add.rectangle(1920/2, 1080/2, 1920, 1080, 0x000000).setDepth(300000);
                     const w = 1920, h = 1080;
-                    const txt = this.add.text(w / 2 - 500, h / 2 - 320, '', {
+                    const txt = this.add.text(w / 2 - 750, h / 2 - 450, '', {
                       fontFamily: '"DotGothic16", "Courier New", Courier, monospace',
                       fontSize: '28px',
                       color: '#00FF66',
