@@ -91,17 +91,31 @@ class BossScene extends Phaser.Scene {
       if (this.boss5Bgm) this.boss5Bgm.stop();
     });
     const w = 1920, h = 1080;
-    var bgKey = 'bg_boss_stage2';
-    if (this.currentBossIndex === 1) bgKey = 'bg_boss_stage3';
-    else if (this.currentBossIndex === 2) bgKey = 'bg_boss_stage4';
-    else if (this.currentBossIndex === 3) bgKey = 'bg_boss_stage5';
-    if (this.currentBossIndex === 0 && this.textures.exists('bg_boss1_static') && this.textures.get('bg_boss1_static').key !== '__MISSING') {
-      this.bg = this.add.image(w / 2, h / 2, 'bg_boss1_static').setOrigin(0.5, 0.5);
-      let scale = Math.max(1920 / this.bg.width, 1080 / this.bg.height);
-      this.bg.setScale(scale);
+    var bgKey = 'bg_boss1_static';
+    if (this.bossQueue[this.currentBossIndex] !== 'doctor') {
+        if (this.currentBossIndex === 0 && this.textures.exists('bg_stage1_scroll')) bgKey = 'bg_stage1_scroll';
+        else if (this.currentBossIndex === 1 && this.textures.exists('bg_stage2_scroll')) bgKey = 'bg_stage2_scroll';
+        else if (this.currentBossIndex === 2 && this.textures.exists('bg_stage3_scroll')) bgKey = 'bg_stage3_scroll';
+        else if (this.currentBossIndex === 3 && this.textures.exists('bg_stage4_scroll')) bgKey = 'bg_stage4_scroll';
     } else {
-      this.bg = this.add.image(0, 0, bgKey).setOrigin(0, 0);
-      this.bg.setScale(4);
+        if (this.textures.exists('bg_doctor')) bgKey = 'bg_doctor';
+    }
+    // 
+    //     if (this.currentBossIndex === 1) bgKey = 'bg_boss_stage3';
+    //     else if (this.currentBossIndex === 2) bgKey = 'bg_boss_stage4';
+    //     else if (this.currentBossIndex === 3) bgKey = 'bg_boss_stage5';
+    this.bg = this.add.image(0, 0, bgKey);
+    if (bgKey.startsWith('bg_boss_stage')) {
+        this.bg.setOrigin(0, 0);
+        this.bg.setScale(4);
+    } else if (bgKey.includes('scroll')) {
+        this.bg.setOrigin(0, 0);
+        this.bg.setScale(1080 / this.bg.height);
+    } else {
+        this.bg.setOrigin(0.5, 0.5);
+        this.bg.setPosition(w/2, h/2);
+        let scale = Math.max(1920 / this.bg.width, 1080 / this.bg.height);
+        this.bg.setScale(scale);
     }
 
     this.scrollBg1 = null;
@@ -4119,10 +4133,10 @@ class BossScene extends Phaser.Scene {
         this.time.delayedCall(1000, () => {
           var nextBoss = this.bossQueue[this.currentBossIndex];
           var bgKey = 'bg_boss1_static';
-          if (nextBoss === 'boss2' && this.textures.exists('bg_boss2')) bgKey = 'bg_boss2';
-          else if (nextBoss === 'boss3_twins' && this.textures.exists('bg_boss3')) bgKey = 'bg_boss3';
-          else if (nextBoss === 'demon_lord' && this.textures.exists('bg_boss4')) bgKey = 'bg_boss4';
-          else if (nextBoss === 'doctor' && this.textures.exists('bg_doctor')) bgKey = 'bg_doctor';
+          if (nextBoss === 'doctor' && this.textures.exists('bg_doctor')) bgKey = 'bg_doctor';
+          else if (this.currentBossIndex === 1 && this.textures.exists('bg_stage2_scroll')) bgKey = 'bg_stage2_scroll';
+          else if (this.currentBossIndex === 2 && this.textures.exists('bg_stage3_scroll')) bgKey = 'bg_stage3_scroll';
+          else if (this.currentBossIndex === 3 && this.textures.exists('bg_stage4_scroll')) bgKey = 'bg_stage4_scroll';
           
           this.bg.setTexture(bgKey);
           if (bgKey.startsWith('bg_boss_stage')) {
