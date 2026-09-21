@@ -1214,13 +1214,17 @@ class GameScene extends Phaser.Scene {
         });
       }
     } else if (this.tutorialPhase === 2.15) {
+      // 攻撃弾1を自機に向かってホーミング移動（絶対に避けられないように追尾）
+      if (this.tutBullet1 && this.tutBullet1.active && this.player && this.player.active) {
+        this.physics.moveToObject(this.tutBullet1, this.player, 550);
+      }
       // 攻撃弾1が画面中央付近（x <= 1100）に到達したら時が止まり、敵と攻撃弾以外を暗くして強調表示
       if (this.tutBullet1 && this.tutBullet1.active && this.tutBullet1.x <= 1100) {
         this.tutorialPhase = 2.2;
         this.physics.pause();
         this.dialogActive = true;
 
-        let attackHighlight = { x: this.tutBullet1.x, y: 460, radius: 70, darkOverlay: true, color: 0xFF3333 };
+        let attackHighlight = { x: this.tutBullet1.x, y: this.tutBullet1.y, radius: 70, darkOverlay: true, color: 0xFF3333 };
 
         this.showDeviceDialogue('「今度は敵が攻撃をしてきたぞ。上下左右に避けながら撃ち殺せ。」', () => {
           this.dialogActive = false;
@@ -1228,8 +1232,15 @@ class GameScene extends Phaser.Scene {
         }, attackHighlight);
       }
     } else if (this.tutorialPhase === 2.2) {
-      // 弾1が自機にヒット（または自機位置到達）
-      if (this.tutBullet1 && this.tutBullet1.active && this.tutBullet1.x <= this.player.x + 40) {
+      // 攻撃弾1は自機に必中するよう追尾移動を継続
+      if (this.tutBullet1 && this.tutBullet1.active && this.player && this.player.active) {
+        this.physics.moveToObject(this.tutBullet1, this.player, 550);
+      }
+      // 弾1が自機にヒット（判定：距離60以内 または x <= player.x + 40）
+      const dist1 = (this.tutBullet1 && this.tutBullet1.active && this.player && this.player.active)
+        ? Phaser.Math.Distance.Between(this.tutBullet1.x, this.tutBullet1.y, this.player.x, this.player.y)
+        : 9999;
+      if (this.tutBullet1 && this.tutBullet1.active && (dist1 <= 60 || this.tutBullet1.x <= this.player.x + 40)) {
         this.tutBullet1.destroy();
         MOT.flags.playerHP = Math.max(1, MOT.flags.playerHP - 1);
         this.cameras.main.shake(150, 0.008);
@@ -1249,9 +1260,9 @@ class GameScene extends Phaser.Scene {
             this.dialogActive = false;
             this.physics.resume();
 
-            // 600ms後に敵2が弾2を発射
+            // 600ms後に敵2が自機に向けて弾2を発射
             this.time.delayedCall(600, () => {
-              let b2 = MOT.fireLinear(this, this.tutEnemy2.x, this.tutEnemy2.y, -300, 0);
+              let b2 = MOT.fireLinear(this, this.tutEnemy2.x, this.player.y, -300, 0);
               if (b2) b2.shooter = this.tutEnemy2;
               this.tutBullet2 = b2;
               this.tutorialPhase = 2.4;
@@ -1260,8 +1271,15 @@ class GameScene extends Phaser.Scene {
         });
       }
     } else if (this.tutorialPhase === 2.4) {
-      // 弾2が自機の目の前（x <= player.x + 140）に到達したら時が止まる
-      if (this.player && this.player.active && this.tutBullet2 && this.tutBullet2.active && this.tutBullet2.x <= this.player.x + 140) {
+      // 弾2も自機に向かって進行
+      if (this.tutBullet2 && this.tutBullet2.active && this.player && this.player.active) {
+        this.physics.moveToObject(this.tutBullet2, this.player, 400);
+      }
+      // 弾2が自機の目の前（距離140以内 または x <= player.x + 140）に到達したら時が止まる
+      const dist2 = (this.tutBullet2 && this.tutBullet2.active && this.player && this.player.active)
+        ? Phaser.Math.Distance.Between(this.tutBullet2.x, this.tutBullet2.y, this.player.x, this.player.y)
+        : 9999;
+      if (this.player && this.player.active && this.tutBullet2 && this.tutBullet2.active && (dist2 <= 140 || this.tutBullet2.x <= this.player.x + 140)) {
         this.tutorialPhase = 2.5;
         this.physics.pause();
         this.dialogActive = true;
