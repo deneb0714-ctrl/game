@@ -136,9 +136,9 @@ class StoryScene extends Phaser.Scene {
       
       this.isEyeOpening = true;
       console.log('【StoryScene】覚醒まばたき演出：1回モード再生');
-      const eyeMask = this.add.graphics().setDepth(150);
+      const eyeMask = this.add.graphics().setDepth(300);
       
-      // UIをアイリスマスクの上（または見えやすい階層）にするためDepth設定
+      // UIのDepth設定
       this.dialogBox.setDepth(200);
       this.nameBox.setDepth(200);
       this.nameText.setDepth(201);
@@ -147,11 +147,11 @@ class StoryScene extends Phaser.Scene {
       this.areaNameText.setDepth(201);
       
       // 最初は横幅を保ちつつ、上下の瞼（ry）が閉じた状態からスタート
-      let eye = { rx: 450, ry: 0 };
+      let eye = { rx: 550, ry: 0 };
       const drawIris = () => {
         eyeMask.clear();
         const w = 1920, h = 1080;
-        const cx = w / 2, cy = 400; // 楕円を少し上に配置 (背景・立ち絵の中心に合わせる)
+        const cx = w / 2, cy = h / 2; // 画面中央を中心に目をあける
         if (eye.rx <= 0 || eye.ry <= 0) {
           eyeMask.fillStyle(0x000000, 1);
           eyeMask.fillRect(0, 0, w, h);
@@ -192,21 +192,20 @@ class StoryScene extends Phaser.Scene {
       
       drawIris();
       
-      // 1. 半開き（薄目を開ける。小さめの楕円で顔は見えない）
-      // 横幅(rx)はあまり変えずに上下(ry)だけを開くことで「上下から瞼が開く瞬き感」を強調
+      // 1. 半開き（薄目を開ける）
       this.tweens.add({
         targets: eye,
-        rx: 520,
-        ry: 130,
+        rx: 600,
+        ry: 160,
         duration: 800,
         ease: 'Sine.easeOut',
         onUpdate: drawIris
       });
       
-      // 2. 瞬き（上下からパタッと閉じる）
+      // 2. 瞬き（閉じる）
       this.tweens.add({
         targets: eye,
-        rx: 500,
+        rx: 550,
         ry: 0,
         duration: 400,
         delay: 1300,
@@ -214,12 +213,12 @@ class StoryScene extends Phaser.Scene {
         onUpdate: drawIris
       });
       
-      // 3. 最後に上下からゆっくり視界が全開になり、博士と勇者の顔が現れる
+      // 3. 最後に上下からゆっくり視界が全開になり、画面全体（セリフ含む）が視認できるようになる
       this.tweens.add({
         targets: eye,
-        rx: 1600,
-        ry: 950,
-        duration: 1100,
+        rx: 1800,
+        ry: 1100,
+        duration: 1200,
         delay: 1950,
         ease: 'Sine.easeOut',
         onUpdate: drawIris,
