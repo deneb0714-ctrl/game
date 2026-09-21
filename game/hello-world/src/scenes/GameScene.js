@@ -1202,62 +1202,47 @@ class GameScene extends Phaser.Scene {
             e2.fireDisabled = true;
             this.tutEnemy2 = e2;
 
-            // 800ms後に敵2が弾1を発射（強制ヒット＆1ダメージ）
-            this.time.delayedCall(800, () => {
-              let b1 = MOT.fireLinear(this, e2.x, e2.y, -700, 0);
-              if (b1) {
-                b1.shooter = e2;
-                b1.isTutorialForced = true;
-              }
+            // 600ms後に敵2が攻撃弾1を発射
+            this.time.delayedCall(600, () => {
+              let b1 = MOT.fireLinear(this, e2.x, e2.y, -350, 0);
+              if (b1) b1.shooter = e2;
               this.tutBullet1 = b1;
+              this.tutorialPhase = 2.2;
             });
           });
         });
       }
-    } else if (this.tutorialPhase === 2.1) {
-      // 弾1が自機にヒットまたは到達した時
-      if (this.tutBullet1 && this.tutBullet1.active && this.tutBullet1.x <= this.player.x + 40) {
-        this.tutBullet1.destroy();
-        MOT.flags.playerHP = Math.max(1, MOT.flags.playerHP - 1);
-        this.cameras.main.shake(150, 0.008);
-        this.player.setTint(0xFF4B6E);
-        this.time.delayedCall(200, () => { if (this.player.active) this.player.clearTint(); });
-
-        this.tutorialPhase = 2.2;
+    } else if (this.tutorialPhase === 2.2) {
+      // 敵2の攻撃弾1が放たれた瞬間に時を止め、敵と攻撃弾以外を暗くして強調
+      if (this.tutBullet1 && this.tutBullet1.active && this.tutBullet1.x <= 1250) {
+        this.tutorialPhase = 2.3;
         this.physics.pause();
         this.dialogActive = true;
 
-        let hpHighlight = { x: 120, y: 35, width: 220, height: 40, darkOverlay: true, color: 0xFF3366 };
+        let attackHighlight = { x: 1250, y: 460, width: 350, height: 260, darkOverlay: true, color: 0xFF3333 };
 
-        const afterHitDialogue = () => {
+        const afterAttackDialogue = () => {
           this.dialogActive = false;
           this.physics.resume();
-          
-          // 1000ms後に敵2が弾2を発射
-          this.time.delayedCall(1000, () => {
-            let b2 = MOT.fireLinear(this, this.tutEnemy2.x, this.tutEnemy2.y, -300, 0);
-            if (b2) b2.shooter = this.tutEnemy2;
-            this.tutBullet2 = b2;
-            this.tutorialPhase = 2.3;
-          });
+          this.tutorialPhase = 2.4;
         };
 
         if (isMobile) {
           this.showDeviceDialogue('「今度は敵が攻撃をしてきたぞ。前後左右に避けながら撃ち殺せ。」', () => {
             this.showDeviceDialogue('「避けきれないときはシールドを張れ。」', () => {
-              afterHitDialogue();
+              afterAttackDialogue();
             });
-          }, hpHighlight);
+          }, attackHighlight);
         } else {
           this.showDeviceDialogue('「今度は敵が攻撃をしてきたぞ。避けきれないときはシールドを張れ。」', () => {
-            afterHitDialogue();
-          }, hpHighlight);
+            afterAttackDialogue();
+          }, attackHighlight);
         }
       }
-    } else if (this.tutorialPhase === 2.3) {
-      // 弾2が自機の手前に到達したら時が止まる
-      if (this.tutBullet2 && this.tutBullet2.active && this.tutBullet2.x <= this.player.x + 160) {
-        this.tutorialPhase = 2.4;
+    } else if (this.tutorialPhase === 2.4) {
+      // 敵攻撃弾1が自機の手前（x <= player.x + 160）に到達したら再び時が止まる
+      if (this.player && this.player.active && this.tutBullet1 && this.tutBullet1.active && this.tutBullet1.x <= this.player.x + 160) {
+        this.tutorialPhase = 2.5;
         this.physics.pause();
         this.dialogActive = true;
 
@@ -1265,11 +1250,11 @@ class GameScene extends Phaser.Scene {
           ? '「画面を【長押し】でシールドを展開できる。タイミング良く敵の攻撃にシールドを張れた場合、反撃することもできるだろう。」'
           : '「【スペースキー】を押すことでシールドを展開できる。タイミング良く敵の攻撃にシールドを張れた場合、反撃することもできるだろう。」';
 
-        let attackHighlight = { x: this.tutBullet2.x, y: this.tutBullet2.y, radius: 60, darkOverlay: true, color: 0xFF3333 };
+        let attackHighlight = { x: this.tutBullet1.x, y: this.tutBullet1.y, radius: 60, darkOverlay: true, color: 0xFF3333 };
 
         this.showDeviceDialogue(attackMsg, () => {
           // セリフ終了後、シールドカウンター発動＆敵2撃破
-          if (this.tutBullet2 && this.tutBullet2.active) this.tutBullet2.destroy();
+          if (this.tutBullet1 && this.tutBullet1.active) this.tutBullet1.destroy();
           if (this.tutEnemy2 && this.tutEnemy2.active) {
             this.tutEnemy2.isInvulnerable = false;
             this.showExplosion(this.tutEnemy2.x, this.tutEnemy2.y);
