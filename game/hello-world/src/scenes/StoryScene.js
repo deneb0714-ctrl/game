@@ -127,6 +127,95 @@ class StoryScene extends Phaser.Scene {
     if (index >= this.dialogue.length) return;
     const data = this.dialogue[index];
 
+    const startTypingAndUI = () => {
+      const rawSpeaker = data.speaker || '';
+      const isDeviceComm = rawSpeaker.includes('『');
+      const displayName = rawSpeaker.replace(/[『』]/g, '');
+
+      // Set Text
+      this.nameText.setText(displayName);
+      this.messageText.setText('');
+      
+      let boxW = Math.max(240, this.nameText.width + 60);
+      const boxY = this.cameras.main.height - 320 - 40;
+      this.nameBox.clear();
+      if (displayName) {
+        this.nameBox.fillStyle(0x1F2933);
+        this.nameBox.fillRect(80, boxY - 30, boxW + 40, 60);
+        this.nameBox.lineStyle(2, 0x4FD1FF);
+        this.nameBox.strokeRect(80, boxY - 30, boxW + 40, 60);
+        this.nameText.setX(100);
+        this.nameText.setY(boxY);
+        this.nameText.setOrigin(0, 0.5);
+      }
+
+      if (this.typeTimer) this.typeTimer.destroy();
+      let charIndex = 0;
+      let fullText = data.text;
+      this.typeTimer = this.time.addEvent({
+        delay: 40,
+        callback: () => {
+          charIndex++;
+          this.messageText.setText(fullText.substring(0, charIndex));
+          if (fullText[charIndex - 1] !== ' ' && window.MOT && MOT.Audio) {
+            MOT.Audio.playBleep(displayName);
+          }
+          if (charIndex >= fullText.length) {
+            if (this.typeTimer) {
+                this.typeTimer.destroy();
+                this.typeTimer = null;
+            }
+          }
+        },
+        callbackScope: this,
+        loop: true
+      });
+
+      // ガイドの表示制御
+      if (data.choice) {
+        this.contText.setText('▶ SELECT [TAP/ENTER]');
+        this.contText.setAlpha(1);
+      } else {
+        this.contText.setText('▶ NEXT [TAP/SPACE]');
+        this.contText.setAlpha(1);
+      }
+
+      // まばたき演出 (勇者のセリフが切り替わるときのみ)
+      const isHero = displayName.includes('勇者');
+      if (isHero && this.heroImage && this.heroImage.active) {
+        this.heroImage.setTexture('hero_stand_blink');
+        this.time.delayedCall(150, () => {
+          if (this.heroImage && this.heroImage.active) {
+            this.heroImage.setTexture('hero_stand');
+          }
+        });
+      }
+
+      // Portrait highlighting and Device UI
+      if (isDeviceComm) {
+        this.heroImage.setAlpha(0);
+        this.doctorImage.setAlpha(0);
+        this.deviceCommFrame.setAlpha(1);
+        this.deviceCommFace.setAlpha(1);
+      } else {
+        this.deviceCommFrame.setAlpha(0);
+        this.deviceCommFace.setAlpha(0);
+        if (this.bg.alpha > 0 || data.bg === 'lab') {
+          const isDoctor = displayName.includes('博士') || displayName === '？？？';
+          this.heroImage.setAlpha(isHero ? 1 : 0.4);
+          this.doctorImage.setAlpha(isDoctor ? 1 : 0.4);
+        }
+      }
+
+      // Handle Choice
+      if (data.choice) {
+        this.isWaitingForChoice = true;
+        this.time.delayedCall(500, () => {
+          this.showChoices();
+        });
+      }
+    };
+
     // Background transition (まばたき風アイリスイン・アウト演出)
     if (data.bg === 'lab' && this.bg.alpha === 0) {
       this.bg.setAlpha(1);
@@ -179,7 +268,7 @@ class StoryScene extends Phaser.Scene {
         for (let i = 1; i <= layers; i++) {
           const t = i / layers;
           const alpha = 0.15 * Math.pow(1 - t, 1.5);
-          const rScale = 1.0 - t * 0.35; // 1.0から0.65までなめらかにボカシ領域を作る
+          const rScale = 1.0 - t * 0.35;
           const ringRx = eye.rx * rScale;
           const ringRy = eye.ry * rScale;
           if (ringRx <= 0 || ringRy <= 0) continue;
@@ -192,7 +281,7 @@ class StoryScene extends Phaser.Scene {
       
       drawIris();
       
-      // 1. 半開き（薄目を開ける）
+      // 1. 薄目を開ける
       this.tweens.add({
         targets: eye,
         rx: 600,
@@ -213,7 +302,7 @@ class StoryScene extends Phaser.Scene {
         onUpdate: drawIris
       });
       
-      // 3. 最後に上下からゆっくり視界が全開になり、画面全体（セリフ含む）が視認できるようになる
+      // 3. 画面全体が完全に明るくなってから文字タイピング・UI表示を開始する
       this.tweens.add({
         targets: eye,
         rx: 1800,
@@ -225,93 +314,11 @@ class StoryScene extends Phaser.Scene {
         onComplete: () => {
           eyeMask.destroy();
           this.isEyeOpening = false;
+          startTypingAndUI();
         }
       });
-    }
-
-    // Set Text
-    this.nameText.setText(data.speaker);
-    this.messageText.setText('');
-    
-    let boxW = Math.max(240, this.nameText.width + 60);
-    const boxY = this.cameras.main.height - 320 - 40;
-    this.nameBox.clear();
-    if (data.speaker) {
-      this.nameBox.fillStyle(0x1F2933);
-      this.nameBox.fillRect(80, boxY - 30, boxW + 40, 60);
-      this.nameBox.lineStyle(2, 0x4FD1FF);
-      this.nameBox.strokeRect(80, boxY - 30, boxW + 40, 60);
-      this.nameText.setX(100);
-      this.nameText.setY(boxY);
-      this.nameText.setOrigin(0, 0.5);
-    }
-
-    if (this.typeTimer) this.typeTimer.destroy();
-    let charIndex = 0;
-    let fullText = data.text;
-    this.typeTimer = this.time.addEvent({
-      delay: 40,
-      callback: () => {
-        charIndex++;
-        this.messageText.setText(fullText.substring(0, charIndex));
-        if (fullText[charIndex - 1] !== ' ' && window.MOT && MOT.Audio) {
-          MOT.Audio.playBleep(data.speaker);
-        }
-        if (charIndex >= fullText.length) {
-          if (this.typeTimer) {
-              this.typeTimer.destroy();
-              this.typeTimer = null;
-          }
-        }
-      },
-      callbackScope: this,
-      loop: true
-    });
-
-    // ガイドの表示制御
-    if (data.choice) {
-      this.contText.setText('▶ SELECT [TAP/ENTER]');
-      this.contText.setAlpha(1);
     } else {
-      this.contText.setText('▶ NEXT [TAP/SPACE]');
-      this.contText.setAlpha(1);
-    }
-
-    // まばたき演出 (勇者のセリフが切り替わるときのみ)
-    const isHero = data.speaker && data.speaker.includes('勇者');
-    if (isHero && this.heroImage && this.heroImage.active) {
-      this.heroImage.setTexture('hero_stand_blink');
-      this.time.delayedCall(150, () => {
-        if (this.heroImage && this.heroImage.active) {
-          this.heroImage.setTexture('hero_stand');
-        }
-      });
-    }
-
-    // Portrait highlighting and Device UI
-    if (data.speaker === '『博士』' || data.speaker === '博士') {
-      this.heroImage.setAlpha(0);
-      this.doctorImage.setAlpha(0);
-      this.deviceCommFrame.setAlpha(1);
-      this.deviceCommFace.setAlpha(1);
-      this.nameText.setText('博士');
-    } else {
-      this.deviceCommFrame.setAlpha(0);
-      this.deviceCommFace.setAlpha(0);
-      if (this.bg.alpha > 0 || data.bg === 'lab') {
-        const isHero = data.speaker.includes('勇者');
-        const isDoctor = data.speaker.includes('博士') || data.speaker === '？？？';
-        this.heroImage.setAlpha(isHero ? 1 : 0.4);
-        this.doctorImage.setAlpha(isDoctor ? 1 : 0.4);
-      }
-    }
-
-    // Handle Choice
-    if (data.choice) {
-      this.isWaitingForChoice = true;
-      this.time.delayedCall(500, () => {
-        this.showChoices();
-      });
+      startTypingAndUI();
     }
   }
 
