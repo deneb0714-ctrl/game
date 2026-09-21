@@ -801,12 +801,6 @@ class GameScene extends Phaser.Scene {
           MOT.spawnEnergyItem(this, enemy.x, enemy.y); // 40%でエネルギー
         }
       }
-      // 倒された敵が発射した弾を消去する
-      this.enemyBullets.getChildren().forEach(function(b) {
-        if (b.shooter === enemy) {
-          b.destroy();
-        }
-      });
       enemy.destroy();
     }
   }
