@@ -981,15 +981,16 @@ class GameScene extends Phaser.Scene {
     const touchZone = this.add.rectangle(960, 540, 1920, 1080, 0x000000, 0).setScrollFactor(0).setInteractive({ useHandCursor: true });
     this.dialogContainer.add(touchZone);
 
-    if (highlightConfig) {
+    if (highlightConfig && typeof highlightConfig.x === 'number' && typeof highlightConfig.y === 'number' && !isNaN(highlightConfig.x) && !isNaN(highlightConfig.y)) {
+      let hX = highlightConfig.x;
+      let hY = highlightConfig.y;
+
       if (highlightConfig.darkOverlay) {
         var darkBg = this.add.graphics();
         darkBg.fillStyle(0x000000, 0.78);
 
-        let hX = highlightConfig.x;
-        let hY = highlightConfig.y;
-        let halfW = highlightConfig.radius ? highlightConfig.radius : (highlightConfig.width / 2);
-        let halfH = highlightConfig.radius ? highlightConfig.radius : (highlightConfig.height / 2);
+        let halfW = highlightConfig.radius ? highlightConfig.radius : ((highlightConfig.width || 100) / 2);
+        let halfH = highlightConfig.radius ? highlightConfig.radius : ((highlightConfig.height || 100) / 2);
 
         let x1 = Math.max(0, hX - halfW);
         let x2 = Math.min(1920, hX + halfW);
@@ -1010,17 +1011,17 @@ class GameScene extends Phaser.Scene {
       highlight.lineStyle(6, hColor, 0.95);
       
       if (highlightConfig.width && highlightConfig.height) {
-        highlight.strokeRoundedRect(highlightConfig.x - highlightConfig.width/2, highlightConfig.y - highlightConfig.height/2, highlightConfig.width, highlightConfig.height, 8);
+        highlight.strokeRoundedRect(hX - highlightConfig.width/2, hY - highlightConfig.height/2, highlightConfig.width, highlightConfig.height, 8);
       } else if (highlightConfig.radius) {
-        highlight.strokeCircle(highlightConfig.x, highlightConfig.y, highlightConfig.radius);
+        highlight.strokeCircle(hX, hY, highlightConfig.radius);
       }
 
       var highlightGlow = this.add.graphics();
       highlightGlow.lineStyle(12, hColor, 0.4);
       if (highlightConfig.width && highlightConfig.height) {
-        highlightGlow.strokeRoundedRect(highlightConfig.x - highlightConfig.width/2 - 3, highlightConfig.y - highlightConfig.height/2 - 3, highlightConfig.width + 6, highlightConfig.height + 6, 12);
+        highlightGlow.strokeRoundedRect(hX - highlightConfig.width/2 - 3, hY - highlightConfig.height/2 - 3, highlightConfig.width + 6, highlightConfig.height + 6, 12);
       } else if (highlightConfig.radius) {
-        highlightGlow.strokeCircle(highlightConfig.x, highlightConfig.y, highlightConfig.radius + 4);
+        highlightGlow.strokeCircle(hX, hY, highlightConfig.radius + 4);
       }
 
       this.tweens.add({ targets: [highlight, highlightGlow], alpha: 0.3, yoyo: true, repeat: -1, duration: 450 });
@@ -1164,14 +1165,18 @@ class GameScene extends Phaser.Scene {
           let e = this.spawnTutorialEnemy(1, 0);
           e.x = 1300;
           e.fireDisabled = true;
+          e.isInvulnerable = true;
           
           this.time.delayedCall(500, () => {
             this.physics.pause();
             this.dialogActive = true;
-            let enemyHighlight = { x: e.x, y: e.y, radius: 80, darkOverlay: true, color: 0xFF3333 };
+            let hX = (e && e.active) ? e.x : 1300;
+            let hY = (e && e.active) ? e.y : 460;
+            let enemyHighlight = { x: hX, y: hY, radius: 80, darkOverlay: true, color: 0xFF3333 };
             this.showDeviceDialogue('「敵がやってきたな。敵の前に移動して撃ち殺すんだ。」', () => {
               let msg = isMobile ? '「移動方法は、画面を【スライド】だ。」' : '「移動方法は、【矢印キー】だ。」';
               this.showDeviceDialogue(msg, () => {
+                if (e && e.active) e.isInvulnerable = false;
                 this.dialogActive = false;
                 this.tutorialPhase = 2;
                 this.physics.resume();

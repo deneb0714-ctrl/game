@@ -37,7 +37,7 @@ class BootScene extends Phaser.Scene {
       scanlines.fillRect(0, y, w, 2);
     }
 
-    const prefix = "mmƂ̃````bbggggO: ";
+    const prefix = "観測者のログ: ";
     const lines = [
       prefix + "...link established",
       prefix + "...signal drift: 0.03",
