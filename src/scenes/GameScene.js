@@ -1109,25 +1109,31 @@ class GameScene extends Phaser.Scene {
           this.physics.resume();
           
           let e = this.spawnTutorialEnemy(1, 0);
-          e.x = 1300;
+          e.x = 1920;
           e.fireDisabled = true;
           e.isInvulnerable = true;
           
-          this.time.delayedCall(500, () => {
-            this.physics.pause();
-            this.dialogActive = true;
-            let hX = (e && e.active) ? e.x : 1300;
-            let hY = (e && e.active) ? e.y : 460;
-            let enemyHighlight = { x: hX, y: hY, radius: 80, darkOverlay: true, color: 0xFF3333 };
-            this.showDeviceDialogue('「敵がやってきたな。敵の前に移動して撃ち殺すんだ。」', () => {
-              let msg = isMobile ? '「移動方法は、画面を【スライド】だ。」' : '「移動方法は、【矢印キー】だ。」';
-              this.showDeviceDialogue(msg, () => {
-                if (e && e.active) e.isInvulnerable = false;
-                this.dialogActive = false;
-                this.tutorialPhase = 2;
-                this.physics.resume();
+          this.tweens.add({
+            targets: e,
+            x: 1300,
+            duration: 800,
+            ease: 'Power2',
+            onComplete: () => {
+              this.physics.pause();
+              this.dialogActive = true;
+              let hX = (e && e.active) ? e.x : 1300;
+              let hY = (e && e.active) ? e.y : 460;
+              let enemyHighlight = { x: hX, y: hY, radius: 80, darkOverlay: true, color: 0xFF3333 };
+              this.showDeviceDialogue('「敵がやってきたな。敵の前に移動して撃ち殺すんだ。」', () => {
+                let msg = isMobile ? '「移動方法は、画面を【スライド】だ。」' : '「移動方法は、【矢印キー】だ。」';
+                this.showDeviceDialogue(msg, () => {
+                  if (e && e.active) e.isInvulnerable = false;
+                  this.dialogActive = false;
+                  this.tutorialPhase = 2;
+                  this.physics.resume();
+                }, enemyHighlight);
               }, enemyHighlight);
-            }, enemyHighlight);
+            }
           });
         });
       });
@@ -1141,19 +1147,25 @@ class GameScene extends Phaser.Scene {
             this.dialogActive = false;
             this.physics.resume();
             
-            // 敵2がやってくる（無敵＆自動射撃無効）
+            // 敵2が右からやってくる（無敵＆自動射撃無効）
             let e2 = this.spawnTutorialEnemy(1, 0);
-            e2.x = 1300;
+            e2.x = 1920;
             e2.isInvulnerable = true;
             e2.fireDisabled = true;
             this.tutEnemy2 = e2;
 
-            // 600ms後に敵2が攻撃弾1を発射
-            this.time.delayedCall(600, () => {
-              let b1 = MOT.fireLinear(this, e2.x, e2.y, -400, 0);
-              if (b1) b1.shooter = e2;
-              this.tutBullet1 = b1;
-              this.tutorialPhase = 2.15;
+            this.tweens.add({
+              targets: e2,
+              x: 1300,
+              duration: 800,
+              ease: 'Power2',
+              onComplete: () => {
+                // 敵2が1300に到着後、攻撃弾1を発射
+                let b1 = MOT.fireLinear(this, e2.x, e2.y, -400, 0);
+                if (b1) b1.shooter = e2;
+                this.tutBullet1 = b1;
+                this.tutorialPhase = 2.15;
+              }
             });
           });
         });
@@ -1419,31 +1431,40 @@ class GameScene extends Phaser.Scene {
             : '「使えたな。戦闘中、上手く使ってこのまま敵を倒していくといい。」';
 
           this.showDeviceDialogue(afterSpecialMsg, () => {
+            this.dialogActive = false;
+            this.physics.resume();
+
             if (MOT.DoctorDirective) {
               let directives = MOT.DoctorDirective.directives;
               let d = directives[Math.floor(Math.random() * directives.length)];
               MOT.DoctorDirective.showDirective(this, d, this.player);
             }
 
-            this.showDeviceDialogue('「このように、戦闘中に進むべき道の指示を出す。」', () => {
-              if (MOT.DoctorDirective && MOT.DoctorDirective.directiveContainer) {
-                MOT.DoctorDirective.directiveContainer.destroy();
-                MOT.DoctorDirective.directiveContainer = null;
-              }
+            // 前のセリフから3秒経過してから「このように、戦闘中に進むべき道の指示を出す。」を表示
+            this.time.delayedCall(3000, () => {
+              this.physics.pause();
+              this.dialogActive = true;
 
-              let hpHighlight = { x: 120, y: 35, width: 220, height: 40, darkOverlay: true, color: 0xFF3366 };
-              this.showDeviceDialogue('「従った回数によって体力をあげてやるから指示に従えよ。」', () => {
-                this.showDeviceDialogue('「これで説明は終了だ。進んでいくといい。」', () => {
-                  this.dialogActive = false;
-                  this.physics.pause();
-                  this.player.setCollideWorldBounds(false);
-                  this.tweens.add({ targets: this.player, x: 2100, duration: 1200, ease: 'Power2' });
-                  this.cameras.main.fadeOut(1000, 0, 0, 0);
-                  this.time.delayedCall(1000, () => {
-                    this.scene.start('GameScene', { stage: 2 });
+              this.showDeviceDialogue('「このように、戦闘中に進むべき道の指示を出す。」', () => {
+                if (MOT.DoctorDirective && MOT.DoctorDirective.directiveContainer) {
+                  MOT.DoctorDirective.directiveContainer.destroy();
+                  MOT.DoctorDirective.directiveContainer = null;
+                }
+
+                let hpHighlight = { x: 120, y: 35, width: 220, height: 40, darkOverlay: true, color: 0xFF3366 };
+                this.showDeviceDialogue('「従った回数によって体力をあげてやるから指示に従えよ。」', () => {
+                  this.showDeviceDialogue('「これで説明は終了だ。進んでいくといい。」', () => {
+                    this.dialogActive = false;
+                    this.physics.pause();
+                    this.player.setCollideWorldBounds(false);
+                    this.tweens.add({ targets: this.player, x: 2100, duration: 1200, ease: 'Power2' });
+                    this.cameras.main.fadeOut(1000, 0, 0, 0);
+                    this.time.delayedCall(1000, () => {
+                      this.scene.start('GameScene', { stage: 2 });
+                    });
                   });
-                });
-              }, hpHighlight);
+                }, hpHighlight);
+              });
             });
           });
         });
