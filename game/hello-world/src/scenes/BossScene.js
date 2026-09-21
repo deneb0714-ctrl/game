@@ -1841,14 +1841,50 @@ class BossScene extends Phaser.Scene {
             MOT.Audio.playMusicalNote(freqs[idx]);
         }
         
-        // 以前通りの単発反射弾
+        // 追尾式反射弾
         const reflectBullet = this.playerBullets.create(player.x + 30, player.y, 'bullet_player');
         if (reflectBullet) {
-          reflectBullet.setVelocityX(1200);
           reflectBullet.setScale(3);
           reflectBullet.setTint(color); 
           reflectBullet.damage = 5; 
+
+          let target = (this.currentBoss && this.currentBoss.active) ? this.currentBoss : null;
+          if (!target && this.enemyGroup) {
+            let closestDist = 999999;
+            this.enemyGroup.getChildren().forEach(e => {
+              if (e.active) {
+                let d = Phaser.Math.Distance.Between(player.x, player.y, e.x, e.y);
+                if (d < closestDist) {
+                  closestDist = d;
+                  target = e;
+                }
+              }
+            });
+          }
+
+          if (target) {
+            reflectBullet.homingTarget = target;
+            this.physics.moveToObject(reflectBullet, target, 1400);
+          } else {
+            reflectBullet.setVelocityX(1400);
+          }
+
+          const homeTimer = this.time.addEvent({
+            delay: 30,
+            loop: true,
+            callback: () => {
+              if (!reflectBullet.active) {
+                homeTimer.destroy();
+                return;
+              }
+              if (reflectBullet.homingTarget && reflectBullet.homingTarget.active) {
+                this.physics.moveToObject(reflectBullet, reflectBullet.homingTarget, 1400);
+              }
+            }
+          });
+
           this.time.delayedCall(2000, function () {
+            if (homeTimer) homeTimer.destroy();
             if (reflectBullet.active) reflectBullet.destroy();
           });
         }

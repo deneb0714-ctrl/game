@@ -715,22 +715,90 @@ class GameScene extends Phaser.Scene {
       obj.destroy();
       this.deactivateBarrier();
 
-      // 通常のバリア（緑のエフェクト）
-      for (let i = 0; i < 8; i++) {
-        const p = this.add.circle(player.x, player.y, 4, 0x00FFaa).setDepth(20);
+      // 短い無敵時間
+      this.playerInvincible = true;
+      this.time.delayedCall(150, () => {
+        this.playerInvincible = false;
+      });
+
+      // 反撃SE＆エフェクト（イエローフラッシュ＆ゴールド粒子）
+      this.cameras.main.flash(200, 255, 215, 0);
+      for (let i = 0; i < 12; i++) {
+        const p = this.add.circle(player.x, player.y, 6, 0xFFD700).setDepth(20);
         this.tweens.add({
           targets: p,
-          x: player.x + Phaser.Math.Between(-100, 100),
-          y: player.y + Phaser.Math.Between(-100, 100),
+          x: player.x + Phaser.Math.Between(-150, 150),
+          y: player.y + Phaser.Math.Between(-150, 150),
           alpha: 0,
           scale: 0,
-          duration: 300,
+          duration: 400,
           onComplete: function () { p.destroy(); }
         });
       }
 
-      // 通常弾で反撃
-      this.firePlayerBullet();
+      // 反射音階SE
+      if (this.barrierGuardCount === undefined) this.barrierGuardCount = 0;
+      const freqs = [
+        493.88, 523.25, 587.33, 659.25, 698.46, 783.99, 880.00, 987.77, 1046.50, 1174.66, 1318.51, 1396.91, 1567.98
+      ];
+      let idx = this.barrierGuardCount % freqs.length;
+      let isRed = (idx >= 4 && idx < 12);
+      let color = isRed ? 0xff0000 : 0xffff00;
+
+      if (window.MOT && MOT.Audio && MOT.Audio.playMusicalNote) {
+        MOT.Audio.playMusicalNote(freqs[idx]);
+      }
+      this.barrierGuardCount++;
+
+      // 追尾式の反撃弾（敵に必ず当たる）
+      const reflectBullet = this.playerBullets.create(player.x + 30, player.y, 'bullet_player');
+      if (reflectBullet) {
+        reflectBullet.setScale(3);
+        reflectBullet.setTint(color);
+        reflectBullet.damage = 10;
+
+        let target = null;
+        if (this.tutEnemy2 && this.tutEnemy2.active) {
+          target = this.tutEnemy2;
+        } else if (this.enemyGroup) {
+          let closestDist = 999999;
+          this.enemyGroup.getChildren().forEach(e => {
+            if (e.active && e.x > player.x) {
+              let d = Phaser.Math.Distance.Between(player.x, player.y, e.x, e.y);
+              if (d < closestDist) {
+                closestDist = d;
+                target = e;
+              }
+            }
+          });
+        }
+
+        if (target) {
+          reflectBullet.homingTarget = target;
+          this.physics.moveToObject(reflectBullet, target, 1400);
+        } else {
+          reflectBullet.setVelocityX(1400);
+        }
+
+        const homeTimer = this.time.addEvent({
+          delay: 30,
+          loop: true,
+          callback: () => {
+            if (!reflectBullet.active) {
+              homeTimer.destroy();
+              return;
+            }
+            if (reflectBullet.homingTarget && reflectBullet.homingTarget.active) {
+              this.physics.moveToObject(reflectBullet, reflectBullet.homingTarget, 1400);
+            }
+          }
+        });
+
+        this.time.delayedCall(2000, function () {
+          if (homeTimer) homeTimer.destroy();
+          if (reflectBullet.active) reflectBullet.destroy();
+        });
+      }
       return;
     }
 
