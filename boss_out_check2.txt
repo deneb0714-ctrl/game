@@ -1,0 +1,100 @@
+3081:                           trueDemonLordImg.style.objectFit = 'cover';
+3082:                           trueDemonLordImg.style.zIndex = '-1';
+3083:                           trueDemonLordImg.style.pointerEvents = 'none';
+3084:                           document.getElementById('game-root').appendChild(trueDemonLordImg);
+3085:                           
+3086:                           // Ensure hero and doctor are NOT hidden while true demon lord is shown
+3087:                           if (this.heroImage) this.heroImage.setVisible(false);
+3088:                           if (this.doctorImage) this.doctorImage.setVisible(false);
+3089:                           await sayHeroLab('「…」');
+3090:                           await sayDoctorLab('「こちらに銃を構えてどうした？ああ、私を倒したいとでも言うのか。」');
+3091:                           await sayDoctorLab('「残念だが、お前にその権限はない。」');
+3092:                           await sayDoctorLab('「反抗するのならお前を……」');
+3093:                           await sayDoctorLab('「……！？」');
+3094:                           await sayHeroLab('「いつまでも自分が優位に立てるとは思わない方がいい。」');
+3095:                           await sayHeroLab('「僕にこれだけの力を与えたのは貴方だ。」');
+3096:                           await sayDoctorLab('「まさか、システムを乗っ取られるとはな！！！ははは、面白い。」');
+3097:                           await sayHeroLab('「僕はその力を掌握した。それが意味することは……分かっているでしょう？」');
+3098:                           await sayDoctorLab('「そうだな。お前は晴れて自由の身になったというわけだ。そして、私を殺してお前は何がしたい？」');
+3099:                           await sayHeroLab('「僕はもう、誰の命令も聞かない、それだけだ。」');
+3100:                           await sayDoctorLab('「そうか。やはりお前は私の最高傑作のようだ！！！まさか、思想まで似てしまうとは。想定外だが、それもいいだろう。」');
+3101:                           await sayHeroLab('「うるさいな！もうお前は必要ない。」');
+3102:                           
+3103:                           // 真の魔王で撃った後、そのままエンディングへ
+3104:                           if (MOT.Audio.playSelect) MOT.Audio.playSelect();
+3105:                           
+3106:                           this.cameras.main.fadeOut(1000);
+3107:                           let fadeImg = document.getElementById('trueDemonLordImg');
+3108:                           if(fadeImg) { fadeImg.style.transition = 'opacity 1s'; fadeImg.style.opacity = '0'; }
+3109:                           await new Promise(r => this.time.delayedCall(1000, r));
+3110: 
+3111:                           MOT.flags.finalEnding = 'hidden_freedom';
+3112:                           let __img = document.getElementById('trueDemonLordImg'); if (__img) __img.remove(); this.scene.start('EndingScene');
+3113:                           return;
+3114:                       } else if (Kills === 0) {
+3115:                           if (this.heroImage) {
+3116:                               this.heroImage.setTexture('hero_stand');
+3117:                               this.heroImage.setScale(750 / this.heroImage.width);
+3118:                               this.heroImage.setY(100 + (this.heroImage.height * this.heroImage.scaleY) / 2);
+3119:                           }
+3120:                           
+3121:                           const localSayDoctor = (text, tex='doctor_awaken_normal') => new Promise(res => {
+3122:                               if (!this.doctorImage || !this.doctorImage.active) {
+3123:                                   this.doctorImage = this.add.image(1920 - 300, 1080 / 2, tex).setAlpha(0).setDepth(90);
+3124:                               }
+3125:                               this.doctorImage.setTexture(tex);
+3126:                               this.textures.get(tex).setFilter(Phaser.Textures.FilterMode.LINEAR);
+3127:                               var docScale = 600 / (this.textures.get(tex).getSourceImage().width || 750);
+3128:                               this.doctorImage.setScale(docScale);
+3129:                               this.doctorImage.setY(100 + ((this.textures.get(tex).getSourceImage().height || 1000) * docScale) / 2);
+3130:                               
+3131:                               this.tweens.add({ targets: dimBg, alpha: 0.6, duration: 300 });
+3132:                               if(this.heroImage) this.tweens.add({targets: this.heroImage, alpha: 0.4, duration: 300});
+3133:                               if(this.demonImage) this.tweens.add({targets: this.demonImage, alpha: 0, duration: 300});
+3134:                               if(this.inunekoImage) this.tweens.add({targets: this.inunekoImage, alpha: 0, duration: 300});
+3135:                               if(this.doctorImage) this.tweens.add({targets: this.doctorImage, alpha: 1, duration: 300});
+3136:                               this.showDialogue('博士', text, res);
+3137:                           });
+3138:                           
+3139:                           const localSayHero = (text) => new Promise(res => {
+3140:                               this.tweens.add({ targets: dimBg, alpha: 0.6, duration: 300 });
+3141:                               if(this.heroImage) this.tweens.add({targets: this.heroImage, alpha: 1, duration: 300});
+3142:                               if(this.demonImage) this.tweens.add({targets: this.demonImage, alpha: 0, duration: 300});
+3143:                               if(this.inunekoImage) this.tweens.add({targets: this.inunekoImage, alpha: 0, duration: 300});
+3144:                               if(this.doctorImage) this.tweens.add({targets: this.doctorImage, alpha: 0.4, duration: 300});
+3145:                               this.showDialogue(MOT.flags.heroName || '勇者', text, res);
+3146:                           });
+3147: 
+3148:                           await localSayHero('「……魔王は……殺さなきゃ……エラーを消去……」');
+3149: 
+3150:                           let c = await askShatterChoice('1. 殺す', '2. 殺さない', true);
+3151:                           if (c === 1) {
+3152:                               ending('normal_unresistable');
+3153:                               return;
+3154:                           }
+3155:                           await sayDemon('「……結局我々を殺さず、お前は何をしにきたんだ？あの法螺吹きにけしかけられて、わらわたちを滅ぼしに来たんだろう？」');
+3156:                           
+3157:                           await localSayDemon('「そうか……英断だな…。」', 'demon_lord_normal');
+3158:                           await localSayDemon('「そしてここから話すのは、信じるも信じないもお前の自由だ。」');
+3159:                           await localSayDemon('「お前は、あいつに”魔王が世界を滅ぼそうとしている”とでも言われたのだろう？だが、残念なことに、それはわらわたちを滅ぼすための方便にすぎぬ。」');
+3160:                           await localSayDemon('「あいつはこの世界に人間以上の存在がいることが許せないのだ。わらわはやつに襲われていた魔族を保護し、あいつとながい間戦ってきた。」');
+3161:                           await localSayDemon('「ながい、ながい戦いだった。……やつは気の毒な奴じゃ。だが、それはわらわたちを滅ぼす理由にはならない。」');
+3162:                           
+3163:                           await localSayDoctor('「…はははは。すべて話されてしまったみたいだな」', 'doctor_awaken_smile');
+3164:                           await localSayHero('「！」');
+3165:                           await localSayHero('「僕は……ずっとあなたに嘘をつかれていたんだね。」');
+3166:                           await localSayDoctor('「嘘？違うな、そいつらを殺せば平和な世界が訪れる。」');
+3167:                           await localSayDoctor('「私にとってな。」');
+3168:                           await localSayHero('「それでみんなを殺すだなんて、身勝手じゃないか。」');
+3169:                           await localSayDoctor('「そうだな。しかしそれがどうした？自分の望む世界を目指すのは普通のことだろう？」');
+3170:                           await localSayDoctor('「それに、私だけじゃない。魔族に恐怖し、滅んでほしいと願う人間はごまんといる。そいつらにとっても、いい世界となるんだ。」');
+3171:                           
+3172:                           await localSayDemon('「わらわたちはただ生きているだけだ！むやみに人を傷つけたことなど、一度もない！」');
+3173:                           await localSayInuneko('「そうわん！魔王様は、お前とは違って優しいにゃん！！」');
+3174:                           
+3175:                           await localSayHero('「僕はみんなを殺したくないと思った。」');
+3176:                           await localSayHero('「だって、みんな、魔王を殺しに来ているはずの僕も殺そうとしなかった。」');
+3177:                           await localSayHero('「僕は知った。魔族は悪い奴じゃないって。みんなを殺そうとしているあなたこそ、この世界の悪だ！！！」');
+3178:                           await localSayHero('「だからもう、あなたに従ったりはしない。」');
+3179:                           
+3180:                           await localSayDoctor('「……面白い。ただ創られた存在であるはずのお前が、そんな感情を持つなんてな。」');

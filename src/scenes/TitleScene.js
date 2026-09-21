@@ -7,35 +7,24 @@ class TitleScene extends Phaser.Scene {
   }
 
   create() {
+    this.sound.stopAll();
     const w = this.cameras.main.width;
     const h = this.cameras.main.height;
 
     const isGlitch = (window.MOT && window.MOT.flags && window.MOT.flags.useGlitchTitle);
+    const isShutdown = (window.MOT && window.MOT.flags && window.MOT.flags.finalEnding === 'bad_shutdown');
 
-    if (!isGlitch) {
-      this.add.image(w / 2, h / 2, 'title_1x_back').setDisplaySize(w, h).setDepth(0);
-      this.add.image(w / 2, h / 2, 'title_1x_back').setDisplaySize(w, h).setDepth(0);
-      
-      // プログラムによる動的なマトリックス風・文字降らしエフェクト（単一テキスト・完全整列版）
-      const sourceSeq = "01010100 01010010 01010101 01010011 01010100 00100000 01001110 01001111 00100000 01001111 01001110 01000101 00100000 01011001 01001111 01010101 00100000 01000001 01010010 01000101 00100000 01001110 01001111 01010100 00100000 01000001 00100000 01000100 01001111 01001100 01001100 ";
-      this.sourceSeq = sourceSeq;
-      // 左右に動かすため、画面幅より少し広く（72文字＝8単語分）確保して見切れを防ぐ
-      this.matrixCols = 72; 
-      this.matrixRows = Math.ceil(h / 68) + 3; 
-
-      this.matrixTextObj = this.add.text(w / 2, 0, "", {
-        fontFamily: '"HG 明朝B", "HG Mincho B", "MS Mincho", serif',
-        fontSize: '60px', 
-        fontWeight: 'bold',
-        color: '#044f60', 
-        align: 'center',
-        lineSpacing: 8
-      }).setOrigin(0.5, 0).setDepth(1);
-
-      this.matrixTimer = 0;
-      this.matrixXOffset = 0; // Yの代わりにXオフセットを使用
-      this.matrixStartIdx = 0;
-      
+    if (isShutdown) {
+      // 強制シャットダウン後の特殊タイトル
+      this.add.image(w / 2, h / 2, '404_bg').setDisplaySize(w, h).setDepth(0);
+      let notFoundImg = this.add.image(0, h / 2, 'not_found_text').setOrigin(0, 0.5).setDepth(1);
+      // 画面の高さにぴったり合わせる
+      let scaleY = h / notFoundImg.height;
+      notFoundImg.setScale(scaleY);
+      this.heroGif = null;
+      this.matrixTextObj = null;
+    } else {
+      // 共通: 主人公のアニメーションをロード
       if (this.textures.exists('hero_title_anim')) {
         if (!this.anims.exists('play_hero_title')) {
           this.anims.create({
@@ -45,78 +34,170 @@ class TitleScene extends Phaser.Scene {
             repeat: 0
           });
         }
+        
+        // エラータイトル・通常タイトルともに全く同じ位置・サイズ（x=0, scale=2.25）に統一
         this.heroGif = this.add.sprite(0, h, 'hero_title_anim', 0).setOrigin(0, 1).setScale(2.25).setDepth(2);
       } else {
         this.heroGif = null;
       }
-      
-      this.helloImg = this.add.image(w / 2, h / 2, 'title_1x_hello_world').setDisplaySize(w, h).setDepth(3);
-      this.add.image(w / 2, h / 2, 'title_1x_baria').setDisplaySize(w, h).setDepth(3);
-    } else {
-      // エラータイトルの場合は静止画とSTARTボタンのみ
-      this.add.image(w / 2, h / 2, 'title_bg_glitch').setDisplaySize(w, h).setDepth(0);
-      this.heroGif = null;
-      this.matrixTextObj = null;
-    }
 
-    // 砂嵐（ノイズ）用のテクスチャを動的に生成
-    if (!this.textures.exists('tv_noise')) {
-      const size = 256;
-      const canvas = document.createElement('canvas');
-      canvas.width = size;
-      canvas.height = size;
-      const ctx = canvas.getContext('2d');
-      const imgData = ctx.createImageData(size, size);
-      for (let i = 0; i < imgData.data.length; i += 4) {
-        const val = Math.floor(Math.random() * 255);
-        imgData.data[i] = val;     // R
-        imgData.data[i+1] = val;   // G
-        imgData.data[i+2] = val;   // B
-        imgData.data[i+3] = 255;   // A (はっきりと見せるため不透明に)
+      if (!isGlitch) {
+        this.add.image(w / 2, h / 2, 'title_1x_back').setDisplaySize(w, h).setDepth(0);
+        this.add.image(w / 2, h / 2, 'title_1x_back').setDisplaySize(w, h).setDepth(0);
+        
+        // プログラムによる動的なマトリックス風・文字降らしエフェクト（単一テキスト・完全整列版）
+        const sourceSeq = "01010100 01010010 01010101 01010011 01010100 00100000 01001110 01001111 00100000 01001111 01001110 01000101 00100000 01011001 01001111 01010101 00100000 01000001 01010010 01000101 00100000 01001110 01001111 01010100 00100000 01000001 00100000 01000100 01001111 01001100 01001100 ";
+        this.sourceSeq = sourceSeq;
+        // 左右に動かすため、画面幅より少し広く（72文字＝8単語分）確保して見切れを防ぐ
+        this.matrixCols = 72; 
+        this.matrixRows = Math.ceil(h / 68) + 3; 
+
+        this.matrixTextObj = this.add.text(w / 2, 0, "", {
+          fontFamily: '"HG 明朝B", "HG Mincho B", "MS Mincho", serif',
+          fontSize: '60px', 
+          fontWeight: 'bold',
+          color: '#044f60', 
+          align: 'center',
+          lineSpacing: 8
+        }).setOrigin(0.5, 0).setDepth(1);
+
+        this.matrixTimer = 0;
+        this.matrixXOffset = 0; // Yの代わりにXオフセットを使用
+        this.matrixStartIdx = 0;
+        
+        this.helloImg = this.add.image(w / 2, h / 2, 'title_1x_hello_world').setDisplaySize(w, h).setDepth(3);
+        this.add.image(w / 2, h / 2, 'title_1x_baria').setDisplaySize(w, h).setDepth(3);
+      } else {
+        // エラータイトルの場合
+        this.add.image(w / 2, h / 2, 'title_bg_glitch').setDisplaySize(w, h).setDepth(0);
+        this.matrixTextObj = null;
+        
+        // 色を反転して不気味な演出にする
+        if (this.heroGif) {
+          try {
+            // preFXによるテクスチャ境界での見切れ（アホ毛のカット）を防ぐため postFX を使用
+            if (this.heroGif.postFX) {
+              this.heroGif.postFX.addColorMatrix().negative();
+            } else if (this.heroGif.preFX) {
+              this.heroGif.preFX.addColorMatrix().negative();
+              this.heroGif.preFX.setPadding(32); // 見切れ防止
+            } else {
+              this.heroGif.setTint(0xff0000);
+            }
+          } catch (e) {
+            console.warn("Negative FX failed:", e);
+            this.heroGif.setTint(0xff0000);
+          }
+        }
       }
-      ctx.putImageData(imgData, 0, 0);
-      this.textures.addCanvas('tv_noise', canvas);
     }
 
-    // ノイズ用のTileSpriteを画面全体に配置
-    this.noiseSprite = this.add.tileSprite(w / 2, h / 2, w, h, 'tv_noise').setDepth(8).setAlpha(0);
-    if (!isGlitch && this.helloImg) {
-      // 全体のノイズを消し、hello world.png のみにノイズを走らせるためのマスクを設定
-      const mask = this.helloImg.createBitmapMask();
-      this.noiseSprite.setMask(mask);
+    if (!isShutdown) {
+      // 砂嵐（ノイズ）用のテクスチャを動的に生成
+      if (!this.textures.exists('tv_noise')) {
+        const size = 256;
+        const canvas = document.createElement('canvas');
+        canvas.width = size;
+        canvas.height = size;
+        const ctx = canvas.getContext('2d');
+        const imgData = ctx.createImageData(size, size);
+        for (let i = 0; i < imgData.data.length; i += 4) {
+          const val = Math.floor(Math.random() * 255);
+          imgData.data[i] = val;     // R
+          imgData.data[i+1] = val;   // G
+          imgData.data[i+2] = val;   // B
+          imgData.data[i+3] = 255;   // A (はっきりと見せるため不透明に)
+        }
+        ctx.putImageData(imgData, 0, 0);
+        this.textures.addCanvas('tv_noise', canvas);
+      }
+
+      // ノイズ用のTileSpriteを画面全体に配置
+      this.noiseSprite = this.add.tileSprite(w / 2, h / 2, w, h, 'tv_noise').setDepth(8).setAlpha(0);
+      if (!isGlitch && this.helloImg) {
+        // 全体のノイズを消し、hello world.png のみにノイズを走らせるためのマスクを設定
+        const mask = this.helloImg.createBitmapMask();
+        this.noiseSprite.setMask(mask);
+      }
+      this.isNoisy = false;
+      this.noiseTimer = Phaser.Math.Between(2000, 5000); // 最初のノイズまでの時間
+    } else {
+      this.noiseSprite = null;
     }
-    this.isNoisy = false;
-    this.noiseTimer = Phaser.Math.Between(2000, 5000); // 最初のノイズまでの時間
 
     // Fade in camera
     this.cameras.main.fadeIn(600, 5, 8, 20);
 
-    // START button
-    this.createButton(w / 2, h * 0.85, 'START', 500, function () {
+    // START, CONTINUE, CREDITS buttons
+    const hasSave = (window.MOT && MOT.hasSaveData && MOT.hasSaveData());
+    const startY = hasSave ? h * 0.75 : h * 0.80;
+
+    this.createButton(w / 2, startY, 'START', 500, function () {
+      if (window.MOT && MOT.clearSaveData) MOT.clearSaveData();
+      if (window.MOT && MOT.resetFlags) MOT.resetFlags();
       if (this.heroGif) {
         this.heroGif.play('play_hero_title');
         this.heroGif.once('animationcomplete', function() {
           this.cameras.main.fadeOut(500, 5, 8, 20);
           this.time.delayedCall(500, function () {
-            MOT.resetFlags();
-            this.scene.start('StoryScene');
+            this.scene.start('StoryScene', { bossIndex: 0 });
           }, [], this);
         }, this);
       } else {
         this.cameras.main.fadeOut(500, 5, 8, 20);
         this.time.delayedCall(500, function () {
-          MOT.resetFlags();
-          this.scene.start('StoryScene');
+          this.scene.start('StoryScene', { bossIndex: 0 });
         }, [], this);
       }
     }.bind(this));
 
+    if (hasSave) {
+      this.createButton(w / 2, h * 0.84, 'CONTINUE', 700, function () {
+        const saveData = window.MOT && MOT.loadGame ? MOT.loadGame() : null;
+        if (saveData && saveData.flags) {
+          MOT.flags = JSON.parse(JSON.stringify(saveData.flags));
+          MOT.flags.diedCount = 0;
+          MOT.flags.playerHP = MOT.flags.playerMaxHP || 5;
+          MOT.flags.useGlitchTitle = false;
+        }
+        if (this.heroGif) {
+          this.heroGif.play('play_hero_title');
+          this.heroGif.once('animationcomplete', function() {
+            this.cameras.main.fadeOut(500, 5, 8, 20);
+            this.time.delayedCall(500, function () {
+              this.scene.start('BossScene', { startBossIndex: saveData ? saveData.bossIndex : 1, fromContinue: true });
+            }, [], this);
+          }, this);
+        } else {
+          this.cameras.main.fadeOut(500, 5, 8, 20);
+          this.time.delayedCall(500, function () {
+            this.scene.start('BossScene', { startBossIndex: saveData ? saveData.bossIndex : 1, fromContinue: true });
+          }, [], this);
+        }
+      }.bind(this));
+    }
+
+    const creditsY = hasSave ? h * 0.84 + 80 : startY + 80;
+    this.createButton(w / 2, creditsY, 'CREDITS', hasSave ? 900 : 700, function () {
+      this.showCredits();
+    }.bind(this));
+
+    const hintX = w - 100;
+    const hintY = 100;
+    this.createButton(hintX, hintY, 'HINT', hasSave ? 1100 : 900, function () {
+      this.showHintMenu();
+    }.bind(this));
+
     // Version text
-    this.add.text(w - 20, h - 20, 'v0.1.0', {
+    const versionText = window.GAME_VERSION ? `v0.1.0 (${window.GAME_VERSION})` : 'v0.1.0';
+    this.add.text(w - 20, h - 20, versionText, {
       fontFamily: '"Press Start 2P"',
       fontSize: '10px',
       color: '#ffffff'
     }).setOrigin(1, 1).setDepth(10);
+
+    // Debug shortcuts
+
   }
 
   update(time, delta) {
@@ -204,6 +285,152 @@ class TitleScene extends Phaser.Scene {
     }
   }
 
+  showCredits() {
+    if (this.creditsContainer) return;
+    this.creditsContainer = this.add.container(0, 0).setDepth(200000);
+    const w = 1920, h = 1080;
+    
+    // Dim background
+    const touchZone = this.add.rectangle(w/2, h/2, w, h, 0x000000, 0.7).setInteractive({ useHandCursor: true });
+    this.creditsContainer.add(touchZone);
+
+    // Box (dialogue style)
+    const boxW = 1200, boxH = 900;
+    const boxX = (w - boxW) / 2, boxY = (h - boxH) / 2;
+    const box = this.add.graphics();
+    box.fillStyle(0x0a0a1a, 0.92);
+    box.fillRoundedRect(boxX, boxY, boxW, boxH, 12);
+    box.lineStyle(2, 0x4FD1FF, 0.8);
+    box.strokeRoundedRect(boxX, boxY, boxW, boxH, 12);
+    this.creditsContainer.add(box);
+
+    const creditsText = "クレジット\n\nゲーム制作\n[Hello World] 制作チーム\n・たまご\n・かすてゐら\n・こひぺん\n\n背景イラスト提供\n\n背景素材サイト\nゲームまてりあるず\nhttps://game-materials.com/\n：墓、森\n\nAIPICT\nhttps://aipict.com/\n：研究室、\n\nみんちりえ\nhttps://min-chi.material.jp/\n\n森、墓地\n\n\n音楽提供\n・9uo(@muranaka_san)\n\n開発プラットフォーム\nPowered by Google Antigravity\n\nSpecial Thanks\n奥村研究室";
+
+    const startY = boxY + 50;
+    const bodyText = this.add.text(boxX + 60, startY, creditsText, {
+      fontFamily: '"DotGothic16"', fontSize: '36px', color: '#E5E7EB',
+      wordWrap: { width: boxW - 120, useAdvancedWrap: true }, lineSpacing: 14
+    });
+    this.creditsContainer.add(bodyText);
+
+    // Mask for scrolling
+    const maskGraphics = this.add.graphics();
+    maskGraphics.fillStyle(0xffffff);
+    maskGraphics.fillRect(boxX, boxY + 20, boxW, boxH - 100);
+    const mask = maskGraphics.createGeometryMask();
+    bodyText.setMask(mask);
+
+    // Scroll zone
+    const scrollZone = this.add.zone(boxX + boxW/2, boxY + boxH/2, boxW, boxH).setInteractive();
+    this.creditsContainer.add(scrollZone);
+
+    let isDragging = false;
+    let lastY = 0;
+    scrollZone.on('pointerdown', (pointer, localX, localY, event) => {
+      event.stopPropagation();
+      isDragging = true;
+      lastY = pointer.y;
+    });
+    scrollZone.on('wheel', (pointer, deltaX, deltaY, deltaZ, event) => {
+      event.stopPropagation();
+      let newY = bodyText.y - deltaY;
+      let minTextY = startY - Math.max(0, bodyText.height - (boxH - 140));
+      if (newY > startY) newY = startY;
+      if (newY < minTextY) newY = minTextY;
+      bodyText.y = newY;
+    });
+    
+    this.input.on('pointerup', () => {
+      isDragging = false;
+    });
+    this.input.on('pointermove', (pointer) => {
+      if (isDragging && this.creditsContainer) {
+        let deltaY = pointer.y - lastY;
+        lastY = pointer.y;
+        let newY = bodyText.y + deltaY;
+        let minTextY = startY - Math.max(0, bodyText.height - (boxH - 140));
+        if (newY > startY) newY = startY;
+        if (newY < minTextY) newY = minTextY;
+        bodyText.y = newY;
+      }
+    });
+
+    const closeText = this.add.text(boxX + boxW - 60, boxY + boxH - 50, '▶ CLOSE [TAP/CLICK]', {
+      fontFamily: '"Press Start 2P"', fontSize: '20px', color: '#9CA3AF'
+    }).setOrigin(1, 0).setInteractive({ useHandCursor: true });
+    this.creditsContainer.add(closeText);
+    
+    this.tweens.add({ targets: closeText, alpha: 0.3, yoyo: true, repeat: -1, duration: 500 });
+
+    const handleClose = () => {
+      if (window.MOT && MOT.Audio) MOT.Audio.playSelect();
+      if (maskGraphics) maskGraphics.destroy();
+      this.creditsContainer.destroy();
+      this.creditsContainer = null;
+    };
+    touchZone.on('pointerdown', handleClose);
+    closeText.on('pointerdown', (pointer, localX, localY, event) => {
+      event.stopPropagation();
+      handleClose();
+    });
+  }
+  showHintMenu() {
+    if (this.hintContainer) return;
+    this.hintContainer = this.add.container(0, 0).setDepth(200000);
+    const w = 1920, h = 1080;
+
+    const touchZone = this.add.rectangle(w/2, h/2, w, h, 0x000000, 0.7).setInteractive({ useHandCursor: true });
+    this.hintContainer.add(touchZone);
+
+    const boxW = 400, boxH = 300;
+    const boxX = (w - boxW) / 2, boxY = (h - boxH) / 2;
+    const box = this.add.graphics();
+    box.fillStyle(0x0a0a1a, 0.95);
+    box.fillRoundedRect(boxX, boxY, boxW, boxH, 12);
+    box.lineStyle(2, 0x4FD1FF, 0.8);
+    box.strokeRoundedRect(boxX, boxY, boxW, boxH, 12);
+    this.hintContainer.add(box);
+
+    const charBtn = this.add.text(w/2, boxY + 100, "キャラクター", {
+      fontFamily: '"DotGothic16"', fontSize: '32px', color: '#4FD1FF',
+      backgroundColor: '#1F2933', padding: {x: 30, y: 15}
+    }).setOrigin(0.5).setInteractive({ useHandCursor: true });
+    
+    charBtn.on('pointerdown', () => {
+      if (MOT.Audio && MOT.Audio.playSelect) MOT.Audio.playSelect();
+      this.hintContainer.destroy();
+      this.hintContainer = null;
+      this.showCharacterList();
+    });
+    charBtn.on('pointerover', () => charBtn.setBackgroundColor('#2A3A4A'));
+    charBtn.on('pointerout', () => charBtn.setBackgroundColor('#1F2933'));
+    
+    const endBtn = this.add.text(w/2, boxY + 200, "エンディング", {
+      fontFamily: '"DotGothic16"', fontSize: '32px', color: '#4FD1FF',
+      backgroundColor: '#1F2933', padding: {x: 30, y: 15}
+    }).setOrigin(0.5).setInteractive({ useHandCursor: true });
+    
+    endBtn.on('pointerdown', () => {
+      if (MOT.Audio && MOT.Audio.playSelect) MOT.Audio.playSelect();
+      this.hintContainer.destroy();
+      this.hintContainer = null;
+      this.showEndingList();
+    });
+    endBtn.on('pointerover', () => endBtn.setBackgroundColor('#2A3A4A'));
+    endBtn.on('pointerout', () => endBtn.setBackgroundColor('#1F2933'));
+    
+    this.hintContainer.add([charBtn, endBtn]);
+    
+    const handleClose = () => {
+      if (this.hintContainer) {
+        this.hintContainer.destroy();
+        this.hintContainer = null;
+        this.canClick = true;
+      }
+    };
+    touchZone.on('pointerdown', handleClose);
+  }
+
   createButton(x, y, label, delay, callback) {
     const btn = this.add.image(x, y, 'ui_button').setInteractive({ useHandCursor: true }).setDepth(10);
     const txt = this.add.text(x, y, label, {
@@ -237,7 +464,9 @@ class TitleScene extends Phaser.Scene {
     // Click
     btn.on('pointerdown', function () {
       if (window.MOT && MOT.Audio) MOT.Audio.playSelect();
-      btn.disableInteractive();
+      if (label !== 'CREDITS' && label !== 'CHARACTER' && label !== 'ENDING' && label !== 'HINT') {
+        btn.disableInteractive();
+      }
       // Quick flash then execute
       txt.setColor('#ffffff');
       btn.setAlpha(0.5);
@@ -246,6 +475,298 @@ class TitleScene extends Phaser.Scene {
         callback();
       }, [], this);
     }, this);
+  }
+
+  showCharacterList() {
+    if (this.charContainer) return;
+    this.charContainer = this.add.container(0, 0).setDepth(200000);
+    const w = 1920, h = 1080;
+    
+    const touchZone = this.add.rectangle(w/2, h/2, w, h, 0x000000, 0.7).setInteractive({ useHandCursor: true });
+    this.charContainer.add(touchZone);
+    
+    const boxW = 1400, boxH = 900;
+    const boxX = (w - boxW) / 2, boxY = (h - boxH) / 2;
+    const box = this.add.graphics();
+    box.fillStyle(0x0a0a1a, 0.92);
+    box.fillRoundedRect(boxX, boxY, boxW, boxH, 12);
+    box.lineStyle(2, 0x4FD1FF, 0.8);
+    box.strokeRoundedRect(boxX, boxY, boxW, boxH, 12);
+    this.charContainer.add(box);
+
+    const titleText = this.add.text(boxX + boxW/2, boxY + 40, "キャラ一覧", {
+      fontFamily: '"DotGothic16"', fontSize: '42px', color: '#4FD1FF'
+    }).setOrigin(0.5);
+    this.charContainer.add(titleText);
+    
+    const chars = [
+      { id: 'hero', label: '勇者', image: 'hero_stand' },
+      { id: 'doctor', label: '博士', image: 'doctor_normal' },
+      { id: 'kratos', label: 'クラトス', image: 'boss1_normal' },
+      { id: 'touleros', label: 'トゥレロス', image: 'boss2_normal' },
+      { id: 'twins', label: 'エディオ＆エナリア', image: 'sister_normal' },
+      { id: 'demon', label: '魔王', image: 'demon_lord_normal' }
+    ];
+
+    const hasHelloWorld = window.MOT && MOT.hasUnlockedEnding && MOT.hasUnlockedEnding('END_ORPHAN');
+
+    let nameText = this.add.text(boxX + 700, boxY + 200, "", { fontFamily: '"DotGothic16"', fontSize: '42px', color: '#4FD1FF' });
+    let descText = this.add.text(boxX + 700, boxY + 260, "", { fontFamily: '"DotGothic16"', fontSize: '24px', color: '#E5E7EB', wordWrap: { width: 620, useAdvancedWrap: true }, lineSpacing: 10 });
+    
+    this.charContainer.add(nameText);
+    this.charContainer.add(descText);
+
+    let currentPortrait = null;
+    let secondaryPortrait = null;
+
+    const selectChar = (charData) => {
+      let desc = "？？？";
+      let dName = charData.label;
+      
+      const has = (key) => window.MOT && window.MOT.hasUnlockedEnding && MOT.hasUnlockedEnding(key);
+      
+      if (charData.id === 'hero') {
+        dName = hasHelloWorld ? "勇者（メエリア）" : "勇者";
+        desc = "博士の研究所で目覚めた勇者。この世界を救う存在になるのか、壊す存在になるのか、それはあなた次第。";
+        if (hasHelloWorld) {
+          desc += "\n\n【Hello Worldエンドクリア後】\n博士によって創り出された人造人間。耳に着けているインカムによって博士に操られる。性別不明であまり表情の起伏がないように作られている。博士すら知らない隠された力がある...？";
+        } else {
+          desc += "\n\n【Hello Worldエンドクリア後 解放】\n？？？";
+        }
+      } else if (charData.id === 'doctor') {
+        desc = "勇者を世界に召喚し、魔王討伐を依頼した天才博士。通信端末を使い、いつも勇者を見守っている。";
+        if (has('hidden_freedom')) {
+          desc += "\n\n【自由の身エンドクリア後】\n勇者を創り、世界を征服しようと企む黒幕。世界に人間以上の存在は不要だと考えている。魔王とはその思想の違いから過去何度も衝突している。勇者以前にも何機も人造人間を創っており、目的のためならどんな非道な手段も問わない。";
+        } else {
+          desc += "\n\n【自由の身エンドクリア後 解放】\n？？？";
+        }
+      } else if (charData.id === 'demon') {
+        desc = "この世界を統べる魔族の王。部下たちにとても慕われている。勇者に立ち塞がる最後の壁。世界を滅ぼそうとしている...？";
+        if (has('bad_shutdown')) {
+          desc += "\n\n【強制シャットダウン後】\n世界を平和的に治め、臣民を守るために戦う作中１番の善人。尊大な言葉遣いとは裏腹に利他的で、癖の強い部下たちに振り回されることも多々ある。戦いがあまり得意ではなく、戦闘はペットの犬猫スターに助けられている。本名はヴェリタス。";
+        } else {
+          desc += "\n\n【強制シャットダウン後 解放】\n？？？";
+        }
+      } else if (charData.id === 'twins') {
+        desc = "勇者に立ち塞がる３番目の敵。雰囲気が勇者に似ている。博士とは過去に何かあるようで...？";
+        if (has('normal_useless')) {
+          desc += "\n\n【役立たずエンドクリア後】\n勇者以前に博士に創られた人造人間のうちの二人。魔王によって真実を話されて寝返る。勇者のことは弟妹のように思っている。寝返った後も何人もの「勇者」が博士によって使い捨てにされている様を見ており、博士に対する恨みは大きい。";
+        } else {
+          desc += "\n\n【役立たずエンドクリア後 解放】\n？？？";
+        }
+      } else if (charData.id === 'touleros') {
+        desc = "二番目に立ち塞がる敵。恩があり、魔王の言うことだけを聞く。強いやつと戦うのが好き。";
+        if (has('normal_daily')) {
+          desc += "\n\n【日常エンドクリア後】\n過去に人間（博士？）によって家族を皆殺しにされている。その際に魔王に助けられ、忠誠を誓う。守りたいものを守るのは力が必要だと鍛えはじめ、魔王軍幹部にまで成り上がる。その過程で戦いに目覚め、強者との戦いを好むようになり、魔王軍の中でも危険人物扱いされている。クラトスによく獲物を横取り（本人にその気はない）されるのが気に食わず、毛嫌いしている。";
+        } else {
+          desc += "\n\n【日常エンドクリア後 解放】\n？？？";
+        }
+      } else if (charData.id === 'kratos') {
+        desc = "最初に立ち塞がる敵。見た目通り脳筋。銃を振り回し、衝撃波を飛ばして攻撃してくる。";
+        if (has('bad_puppet')) {
+          desc += "\n\n【傀儡エンドクリア後】\n魔王軍に長くから仕える歴戦の戦士。過去の戦いで右目を失っており、そのため上手く照準を合わせるのが難しくなったため銃を振り回しての攻撃にシフトした。銃を使うと普通に強い。仲間意識が強く、味方を守るため誰よりも早く前線に出る。";
+        } else {
+          desc += "\n\n【傀儡エンドクリア後 解放】\n？？？";
+        }
+      }
+
+      nameText.setText(dName);
+      descText.setText(desc);
+      
+      if (currentPortrait) {
+        currentPortrait.destroy();
+        currentPortrait = null;
+      }
+      if (secondaryPortrait) {
+        secondaryPortrait.destroy();
+        secondaryPortrait = null;
+      }
+      
+      if (charData.id === 'twins') {
+        // Sister on the left, Brother on the right, overlapping closely
+        currentPortrait = this.add.image(boxX + 270, boxY + 500, 'sister_normal');
+        secondaryPortrait = this.add.image(boxX + 430, boxY + 500, 'brother_normal');
+        
+        let scaleS = 600 / currentPortrait.height;
+        if (!isFinite(scaleS) || scaleS <= 0) scaleS = 0.5;
+        currentPortrait.setScale(scaleS);
+        
+        let scaleB = 600 / secondaryPortrait.height;
+        if (!isFinite(scaleB) || scaleB <= 0) scaleB = 0.5;
+        secondaryPortrait.setScale(scaleB);
+        
+        this.charContainer.add(currentPortrait);
+        this.charContainer.add(secondaryPortrait);
+      } else {
+        currentPortrait = this.add.image(boxX + 350, boxY + 500, charData.image);
+        let scale = 600 / currentPortrait.height;
+        if (!isFinite(scale) || scale <= 0) scale = 0.5;
+        currentPortrait.setScale(scale);
+        this.charContainer.add(currentPortrait);
+      }
+    };
+
+    let btnX = boxX + 145;
+    let btnY = boxY + 100;
+
+    chars.forEach((c) => {
+      let bBg = this.add.rectangle(btnX, btnY, 160, 40, 0x111122).setStrokeStyle(1, 0x4FD1FF).setInteractive({useHandCursor:true}).setOrigin(0, 0);
+      let bTxt = this.add.text(btnX + 80, btnY + 20, c.label, {fontFamily: '"DotGothic16"', fontSize: '18px', color: '#fff'}).setOrigin(0.5);
+      
+      bBg.on('pointerover', () => bBg.setFillStyle(0x333344));
+      bBg.on('pointerout', () => bBg.setFillStyle(0x111122));
+      bBg.on('pointerdown', () => selectChar(c));
+      
+      this.charContainer.add(bBg);
+      this.charContainer.add(bTxt);
+      
+      btnX += 190;
+    });
+
+    selectChar(chars[0]);
+    
+    const closeText = this.add.text(boxX + boxW / 2, boxY + boxH - 40, '[ CLOSE ]', {
+      fontFamily: '"Press Start 2P"',
+      fontSize: '20px',
+      color: '#4FD1FF'
+    }).setOrigin(0.5).setInteractive({ useHandCursor: true });
+    this.charContainer.add(closeText);
+
+    closeText.on('pointerdown', () => {
+      this.charContainer.destroy();
+      this.charContainer = null;
+      this.canClick = true;
+    });
+  }
+
+  showEndingList() {
+    if (this.endContainer) return;
+    this.endContainer = this.add.container(0, 0).setDepth(200000);
+    const w = 1920, h = 1080;
+
+    const touchZone = this.add.rectangle(w/2, h/2, w, h, 0x000000, 0.9).setInteractive({ useHandCursor: true });
+    this.endContainer.add(touchZone);
+
+    const endings = [
+      { id: "bad_puppet", label: "BAD END - 傀儡", cond: "幹部を全員殺害する", cg: "cg_puppet" },
+      { id: "normal_daily", label: "NORMAL END - 日常", cond: "幹部を一部殺害し、魔王を殺害する\n（博士の命令に20回以上従う）", cg: "cg_daily_3" },
+      { id: "normal_useless", label: "NORMAL END - 役立たず", cond: "幹部を一部殺害し、魔王を見逃す", cg: "cg_useless" },
+      { id: "bad_shutdown", label: "BAD END - 強制シャットダウン", cond: "幹部を一部殺害し、魔王を殺害する\n（博士の命令に20回未満）", cg: 'cg_shutdown' },
+      { id: "normal_unresistable", label: "NORMAL END - 抗えない", cond: "幹部を全員見逃し、魔王を殺害する", cg: "cg_irresistible" },
+      { id: "END_ORPHAN", label: "HAPPY END - Hello World", cond: "幹部を全員見逃し、魔王も見逃す\n（赤いダイヤ20個未満、または博士の命令に20回以上従う）", cg: "cg_helloworld" },
+      { id: "hidden_freedom", label: "隠しエンド - 自由の身", cond: "幹部を全員見逃し、魔王を見逃す\n（赤いダイヤ20個以上、かつ博士の命令に20回未満（最大HP6以下））", cg: "true_demon_lord" }
+    ];
+
+    let hasUnlocked = false;
+    if (window.MOT && MOT.hasUnlockedEnding) {
+      hasUnlocked = true;
+    }
+
+    let currentIndex = 0;
+    
+    const cgImage = this.add.image(w/2, h/2 - 20, "cg_helloworld").setVisible(false);
+    this.endContainer.add(cgImage);
+    
+    
+    const blackBg = this.add.rectangle(w/2, h/2 - 20, 1200, 675, 0x0a0a1a, 1).setVisible(false);
+    blackBg.setStrokeStyle(4, 0x4FD1FF);
+    this.endContainer.add(blackBg);
+    
+    const titleText = this.add.text(w/2, 80, "", { fontFamily: '"DotGothic16"', fontSize: '50px', color: '#4FD1FF' }).setOrigin(0.5);
+    this.endContainer.add(titleText);
+    
+    const condText = this.add.text(w/2, h/2 - 20, "", { fontFamily: '"DotGothic16"', fontSize: '32px', color: '#ffffff', align: 'center', lineSpacing: 20 }).setOrigin(0.5).setVisible(false);
+    this.endContainer.add(condText);
+
+    const updateSlide = () => {
+        const end = endings[currentIndex];
+        const isUnlocked = hasUnlocked && MOT.hasUnlockedEnding(end.id);
+        
+        titleText.setText((currentIndex + 1) + " / " + endings.length + "  " + (isUnlocked ? end.label : ""));
+        
+        if (isUnlocked) {
+            if (end.cg) {
+                cgImage.setTexture(end.cg);
+                const scale = Math.min(1200 / cgImage.width, 675 / cgImage.height);
+                cgImage.setScale(scale);
+                cgImage.setVisible(true);
+                blackBg.setVisible(false);
+                condText.setVisible(false);
+            } else {
+                cgImage.setVisible(false);
+                blackBg.setVisible(true);
+                condText.setText("未解放");
+                condText.setVisible(true);
+            }
+        } else {
+            cgImage.setVisible(false);
+            blackBg.setVisible(true);
+            condText.setText("【解放条件】\n" + end.cond);
+            condText.setVisible(true);
+        }
+    };
+    
+    updateSlide();
+
+    const leftArrow = this.add.text(150, h/2, "◀", { fontFamily: '"DotGothic16"', fontSize: '100px', color: '#4FD1FF' }).setOrigin(0.5).setInteractive({ useHandCursor: true });
+    leftArrow.on('pointerdown', () => {
+        if (MOT.Audio && MOT.Audio.playSelect) MOT.Audio.playSelect();
+        currentIndex = (currentIndex - 1 + endings.length) % endings.length;
+        updateSlide();
+    });
+    leftArrow.on('pointerover', () => leftArrow.setColor('#ffffff'));
+    leftArrow.on('pointerout', () => leftArrow.setColor('#4FD1FF'));
+    this.endContainer.add(leftArrow);
+    
+    const rightArrow = this.add.text(w - 150, h/2, "▶", { fontFamily: '"DotGothic16"', fontSize: '100px', color: '#4FD1FF' }).setOrigin(0.5).setInteractive({ useHandCursor: true });
+    rightArrow.on('pointerdown', () => {
+        if (MOT.Audio && MOT.Audio.playSelect) MOT.Audio.playSelect();
+        currentIndex = (currentIndex + 1) % endings.length;
+        updateSlide();
+    });
+    rightArrow.on('pointerover', () => rightArrow.setColor('#ffffff'));
+    rightArrow.on('pointerout', () => rightArrow.setColor('#4FD1FF'));
+    this.endContainer.add(rightArrow);
+
+    const closeBtn = this.add.text(w/2, h - 100, "閉じる", {
+      fontFamily: '"DotGothic16"', fontSize: '32px', color: '#fff',
+      backgroundColor: '#333', padding: {x:20, y:10}
+    }).setOrigin(0.5).setInteractive({ useHandCursor: true });
+    
+    closeBtn.on('pointerdown', () => {
+      if (MOT.Audio && MOT.Audio.playSelect) MOT.Audio.playSelect();
+      this.endContainer.destroy();
+      this.endContainer = null;
+      this.canClick = true;
+    });
+    closeBtn.on('pointerover', () => closeBtn.setBackgroundColor('#555'));
+    closeBtn.on('pointerout', () => closeBtn.setBackgroundColor('#333'));
+    this.endContainer.add(closeBtn);
+  }
+
+  showEndingCG(cgKey) {
+    if (this.cgContainer) return;
+    this.cgContainer = this.add.container(0, 0).setDepth(300000);
+    const w = 1920, h = 1080;
+    
+    const bg = this.add.rectangle(w/2, h/2, w, h, 0x000000, 0.9).setInteractive();
+    this.cgContainer.add(bg);
+    
+    const cg = this.add.image(w/2, h/2, cgKey);
+    const scale = Math.min(w / cg.width, h / cg.height);
+    cg.setScale(scale);
+    this.cgContainer.add(cg);
+    
+    const closeTxt = this.add.text(w/2, h - 50, "クリックで戻る", {
+      fontFamily: '"DotGothic16"', fontSize: '28px', color: '#ffffff'
+    }).setOrigin(0.5);
+    this.cgContainer.add(closeTxt);
+    
+    bg.on('pointerdown', () => {
+      if (MOT.Audio && MOT.Audio.playSelect) MOT.Audio.playSelect();
+      this.cgContainer.destroy();
+      this.cgContainer = null;
+    });
   }
 }
 

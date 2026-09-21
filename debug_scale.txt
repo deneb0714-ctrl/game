@@ -1,0 +1,5 @@
+181:         texture: 'boss1_combat', name: 'クラトス', hp: 80, scale: 2.0,
+190:         texture: 'boss2_combat_down_open', name: 'トゥレロス', hp: 120, scale: 0.3,
+199:         texture: 'boss3_battle_anim', name: 'エディオ', hp: 150, scale: 0.25,
+204:         texture: 'demon_stand_combat', name: '魔王 – ヴェリタス', hp: 300, scale: 0.5,
+210:         texture: 'doctor_combat', name: '博士', hp: 450, scale: 2.5,

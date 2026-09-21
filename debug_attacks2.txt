@@ -1,0 +1,140 @@
+SISTER - 1056:       if (this.sisterAttackTimer >= 2000) {
+1057:         this.sisterAttackTimer = 0;
+1058:         MOT.fireCircle(this, this.sisterBoss.x, this.sisterBoss.y, 8, 200, 0x7CFF00, 'bullet_star');
+1059:       }
+1060:     }
+1061: 
+1062:     // Cleanup
+1063:     this.enemyGroup.getChildren().forEach(function (e) {
+1064:       if (e.x < -100) {
+1065:         if (e.isScenarioMinion || e.isIntermissionEnemy) {
+1188:         this.fireLaneBeam();
+1189:       }
+1190:       return;
+1191:     }
+1192: 
+1193:     // doctor（博士）の攻撃パターン
+1194:     if (this.currentBoss.configKey === 'doctor') {
+1195:       let silver = 0xE0E0E0; // 白よりのシルバー
+1196:       let docPattern = Phaser.Math.Between(0, 6); // パターンを7種類に増加
+1197:       
+1198:       if (docPattern !== 6) {
+1199:         if (this.currentBoss && this.currentBoss.active && this.currentBoss.texture.key !== 'doctor_combat') {
+1200:           this.currentBoss.setTexture('doctor_combat');
+1201:         }
+1202:       }
+1203:       
+1204:       if (docPattern === 0) {
+1205:         // 幹部1の斬撃（シルバー化）
+1206:         var laneYs = [220, 460, 700];
+1207:         let ty = laneYs[Phaser.Math.Between(0, 2)];
+1208:         var slash = this.enemyBullets.create(x, ty, 'slash_attack');
+1209:         if (slash) {
+1210:           slash.setVelocityX(-400); slash.setScale(2); slash.setDepth(9); slash.setTintFill(silver);
+1211:           this.time.delayedCall(5000, () => { if (slash.active) slash.destroy(); });
+1212:         }
+1213:       } else if (docPattern === 1) {
+1214:         // 幹部2の銃弾（シルバー化）
+1215:         var laneYs = [220, 460, 700];
+1216:         let ty = laneYs[Phaser.Math.Between(0, 2)];
+1217:         MOT.fireLinear(this, x, ty, -800, 0, silver, 'bullet_enemy_white');
+1218:         this.time.delayedCall(200, () => MOT.fireLinear(this, x, ty, -800, 0, silver, 'bullet_enemy_white'));
+1219:       } else if (docPattern === 2) {
+1220:         // 兄のレーザー（シルバー化）
+1221:         MOT.fireHoming(this, x, y, 1000, this.player, silver, 'bullet_laser');
+1222:         this.time.delayedCall(300, () => MOT.fireHoming(this, x, y, 1400, this.player, silver, 'bullet_laser'));
+1223:       } else if (docPattern === 3) {
+1224:         // 魔王の分裂球（シルバー化）
+1225:         let ball = MOT.fireLinear(this, x, y, -400, 0, silver, 'bullet_enemy_white');
+1226:         if (ball) {
+1227:           ball.setScale(3);
+1228:           let self = this;
+1229:           ball.updateBehavior = function(now, delta) {
+1230:             if (this.x < 1100 && !this.hasSplit) {
+1231:               this.hasSplit = true;
+1232:               let bx = this.x, by = this.y;
+1233:               this.destroy(); MOT.Audio.playShot();
+1234:               let targetAngle = Phaser.Math.Angle.Between(bx, by, self.player.x, self.player.y);
+1235:               for (let i = 0; i < 3; i++) {
+1236:                 let angle = targetAngle - 0.4 + 0.4 * i;
+1237:                 let b = MOT.fireLinear(self, bx, by, Math.cos(angle)*400, Math.sin(angle)*400, silver, 'bullet_enemy_white');
+1238:                 if(b) b.setScale(1.5);
+1239:               }
+1240:             }
+1241:           };
+1242:         }
+1243:       } else if (docPattern === 4) {
+1244:         // 魔王の螺旋弾幕（シルバー化）
+1245:         let spiralCount = 20; 
+1246:         let baseAngle = Phaser.Math.FloatBetween(0, Math.PI * 2);
+1247:         let direction = Phaser.Math.Between(0, 1) === 0 ? 1 : -1;
+1248:         for (let i = 0; i < spiralCount; i++) {
+1249:           this.time.delayedCall(i * 80, () => {
+1250:              if (!this.currentBoss || !this.currentBoss.active) return;
+1251:              let angle = baseAngle + i * 0.3 * direction;
+1252:              let b = MOT.fireLinear(this, this.currentBoss.x, this.currentBoss.y, Math.cos(angle)*400, Math.sin(angle)*400, silver, 'bullet_enemy_white');
+1253:              if (b) b.setScale(1.2);
+1254:           });
+1487:   fireLaneBeam() {
+1488:     if (this.dialogActive) return;
+1489:     this.isLaneBeamActive = true;
+1490:     
+1491:     const laneYs = [220, 460, 700];
+1492:     const targetY = laneYs[Phaser.Math.Between(0, 2)];
+1493:     
+1494:     // 警告演出 (赤い半透明の帯を点滅させる)
+1495:     let warningRect = this.add.rectangle(1920 / 2, targetY, 1920, 100, 0xff0000, 0.2).setDepth(8);
+1496:     this.tweens.add({
+1497:       targets: warningRect,
+1498:       alpha: 0.5,
+1499:       duration: 250,
+1500:       yoyo: true,
+1501:       repeat: 19 // 計5秒 (20回 * 250ms = 5000ms)
+1502:     });
+1503:     
+1504:     // 5秒後に極太レーザー発射
+1505:     this.time.delayedCall(5000, () => {
+1506:       if (warningRect) warningRect.destroy();
+1507:       
+1508:       // レーザー実体
+1509:       let beam = this.add.rectangle(1920 / 2, targetY, 1920, 100, 0x4FD1FF, 1).setDepth(9);
+1510:       this.physics.add.existing(beam);
+1511:       beam.body.setAllowGravity(false);
+1512:       beam.body.setImmovable(true);
+1513:       
+1514:       // プレイヤーとの衝突判定
+1515:       let collider = this.physics.add.overlap(this.player, beam, (p, b) => {
+1516:         this.onPlayerHit(p, { destroy: () => {} });
+1517:       });
+1518:       
+1519:       // レーザー消滅
+1520:       this.tweens.add({
+1521:         targets: beam,
+1522:         alpha: 0,
+1523:         duration: 800,
+1524:         onComplete: () => {
+1525:           collider.destroy();
+1526:           beam.destroy();
+1527:           this.isLaneBeamActive = false;
+1528:         }
+1529:       });
+1530:     });
+1531:   }
+1532: 
+1533:   // 単一斬撃弾を発射する
+1534:   fireSlash(fromX, fromY) {
+1535:     var slash = this.enemyBullets.create(fromX, fromY, 'slash_attack');
+1536:     if (!slash) return;
+1537:     slash.damage = 2; // ボス1の斬撃ダメージを2にする
+1538:     slash.setVelocityX(-300); // 左方向に低速（大幅に緩和）
+1539:     slash.setScale(2);        // 縦長の斬撃を少し拡大
+1540:     slash.setDepth(9);
+1541:     // 小さな振動で斬撃っぽさを演出
+1542:     this.tweens.add({
+1543:       targets: slash,
+1544:       y: fromY + Phaser.Math.Between(-15, 15),
+1545:       duration: 150,
+1546:       yoyo: true,
+1547:       repeat: -1,
+1548:       ease: 'Sine.easeInOut'
+1549:     });

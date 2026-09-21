@@ -24,29 +24,87 @@ class GameScene extends Phaser.Scene {
     this.barrierVisual = null;
     // 博士指示システム初期化
     MOT.DoctorDirective.init();
+
+    // UI初期化（シーン再開時の参照残存を防ぐため）
+    this.energyBarBgObj = null;
+    this.energyBarFgObj = null;
+    this.energyBarOutline = null;
+    this.iconPersonBg = null;
+    this.iconPersonFill = null;
+    this.dollText = null;
+    this.iconBatteryBg = null;
+    this.iconBatteryFill = null;
+    this.intentText = null;
   }
 
   create() {
+    MOT.currentScene = this;
+    this.sound.stopAll();
+    this.events.on('shutdown', () => {
+      if (this.stageBgm) this.stageBgm.stop();
+    });
+
+    this.stageBgm = this.sound.add('mob_bgm_boss1', { loop: true, volume: 0.25 });
+    if (this.currentStage > 1) {
+      this.stageBgm.play();
+    }
+
     const w = 1920, h = 1080;
 
     // Background (scrolling)
-    const bgKey = this.currentStage === 1 ? 'bg_stage1' : 'bg_stage2';
-    this.bg1 = this.add.image(0, 0, bgKey).setOrigin(0, 0);
-    this.bg2 = this.add.image(w, 0, bgKey).setOrigin(0, 0);
+    let bgKey = 'bg_stage1';
+    if (this.currentStage === 2) bgKey = 'bg_stage2';
+    if (this.currentStage === 3) bgKey = 'bg_stage3';
+    if (this.currentStage === 4) bgKey = 'bg_stage4';
+    this.bgWidth = 1920;
 
-    // Groups
+    let scrollTex = null;
+    if (this.currentStage === 1 && this.textures.exists('bg_tutorial_scroll')) {
+        scrollTex = 'bg_tutorial_scroll';
+    } else if (this.currentStage === 2 && this.textures.exists('bg_stage1_scroll') && this.textures.get('bg_stage1_scroll').key !== '__MISSING') {
+        scrollTex = 'bg_stage1_scroll';
+    }
+
+    if (scrollTex) {
+      this.bg1 = this.add.image(0, 0, scrollTex).setOrigin(0, 0).setDepth(0);
+      let scale = 1080 / this.bg1.height;
+      this.bg1.setScale(scale);
+      this.bgWidth = this.bg1.width * scale;
+      this.bg2 = this.add.image(this.bgWidth, 0, scrollTex).setOrigin(0, 0).setDepth(0);
+      this.bg2.setScale(scale);
+    } else {
+      this.bg1 = this.add.image(0, 0, bgKey).setOrigin(0, 0).setDepth(0);
+      this.bg1.setScale(1920 / 480);
+      this.bg2 = this.add.image(1920, 0, bgKey).setOrigin(0, 0).setDepth(0);
+      this.bg2.setScale(1920 / 480);
+    }
     this.playerBullets = this.physics.add.group({ maxSize: 500, runChildUpdate: true });
     this.enemyBullets = this.physics.add.group({ maxSize: 1000, runChildUpdate: true });
     this.enemyGroup = this.physics.add.group();
     this.itemGroup = this.physics.add.group();
 
     // Player
-    this.player = this.physics.add.sprite(200, h / 2, 'player');
-    this.player.setCollideWorldBounds(true);
+    this.player = this.physics.add.sprite(-100, 460, 'hero_combat_down_open').setScale(1.5);
+    this.player.play('hero_combat_anim');
+    this.player.moveTween = this.tweens.add({ 
+      targets: this.player, 
+      x: 300, 
+      duration: 1000, 
+      ease: 'Power2',
+      onComplete: () => {
+        this.player.setCollideWorldBounds(true);
+      }
+    });
     this.player.setDrag(800, 800);
     this.player.setMaxVelocity(400, 400);
     this.player.setDepth(10);
-    this.player.setScale(2);
+    this.player.setScale(1.5);
+    // STG風の小さな当たり判定（未スケール時8x8、画面上16x16）
+    this.player.body.setSize(19, 80);
+    this.player.body.setOffset(40, 10);
+
+//     this.playerHitboxGraphics = this.add.graphics();
+//     this.playerHitboxGraphics.setDepth(11);
 
     // Player trail effect
     this.playerTrail = this.add.particles(0, 0, 'particle', {
@@ -60,7 +118,7 @@ class GameScene extends Phaser.Scene {
     });
 
     // Draw 3 lanes visually
-    const laneYs = [300, 540, 780];
+    const laneYs = [220, 460, 700];
     const laneGraphics = this.add.graphics().setDepth(1);
     laneGraphics.lineStyle(2, 0x4FD1FF, 0.25); // faint blue glow
     laneYs.forEach(y => {
@@ -70,6 +128,7 @@ class GameScene extends Phaser.Scene {
     // Controls
     MOT.setupControls(this);
     MOT.setupTouchControls(this, this.player);
+    MOT.createVirtualGamepad(this, this.player);
 
     // Collisions
     this.physics.add.overlap(this.player, this.enemyBullets, this.onPlayerHit, null, this);
@@ -81,7 +140,10 @@ class GameScene extends Phaser.Scene {
     this.createHUD();
 
     // Stage info text
-    const stageLabel = 'STAGE 1 – ○○';
+    let stageLabel = 'TUTORIAL – 始まりの村';
+    if (this.currentStage === 2) stageLabel = 'STAGE 1 – 黄昏の荒野';
+    if (this.currentStage === 3) stageLabel = 'STAGE 2 – 宵闇の森';
+    if (this.currentStage === 4) stageLabel = 'STAGE 3 – 子夜の城塞';
     const stageText = this.add.text(w / 2, h / 2, stageLabel, {
       fontFamily: '"Press Start 2P"',
       fontSize: '28px',
@@ -99,11 +161,13 @@ class GameScene extends Phaser.Scene {
     // Wave schedule
     this.waveSchedule = this.getWaveSchedule();
 
-    // Tutorial State
+    // Tutorial / Intro State
     if (this.currentStage === 1) {
       this.tutorialPhase = 1;
       this.tutorialTimer = 0;
       this.tutorialWaitSpecial = false;
+    } else {
+      this.stageIntroDone = false;
     }
 
     // Fade in
@@ -114,44 +178,70 @@ class GameScene extends Phaser.Scene {
     if (this.currentStage === 1) {
       // Tutorial stage handles spawning manually in updateTutorial
       return [];
+    } else if (this.currentStage === 2) {
+      // ボス1の前の雑魚戦（少し減らす）
+      return [
+        { time: 2000, action: 'wave', count: 5, speed: 200 },
+        { time: 6000, action: 'wave', count: 7, speed: 220 },
+        { time: 10000, action: 'items' },
+        { time: 12000, action: 'wave', count: 8, speed: 250 },
+        { time: 16000, action: 'items' },
+        { time: 18000, action: 'stage_end' }
+      ];
     } else {
       return [
         { time: 2000, action: 'wave', count: 5, speed: 200 },
-        { time: 6000, action: 'wave', count: 6, speed: 220 },
+        { time: 6000, action: 'wave', count: 7, speed: 220 },
         { time: 10000, action: 'items' },
-        { time: 12000, action: 'wave', count: 7, speed: 250 },
-        { time: 17000, action: 'wave', count: 8, speed: 260 },
-        { time: 22000, action: 'items' },
-        { time: 25000, action: 'stage_end' }
+        { time: 12000, action: 'wave', count: 8, speed: 250 },
+        { time: 16000, action: 'items' },
+        { time: 18000, action: 'stage_end' }
       ];
     }
   }
 
   update(time, delta) {
-    // 会話が終わった瞬間（dialogActive が true から false に変わった時）に、バリアのクールタイムを挟む
+    // 会話が終わった瞬間（dialogActive が true から false に変わった時）に、バリアのクールタイムを最大（0%からチャージ）にする
     if (!this.dialogActive && this.lastDialogActive) {
-      // 1.5秒（1500ms）のクールタイムをセット（連打によるバリア暴発防止）
-      this.barrierCooldown = 1500;
+      // 2秒（2000ms）のフルクールタイムをセットし、戦闘開始直後のバリアを完全に防ぐ
+      this.barrierCooldown = 2000;
     }
     this.lastDialogActive = this.dialogActive;
 
     if (this.currentStage === 1 && this.tutorialPhase) {
       this.updateTutorial(delta);
+    } else if (this.currentStage > 1 && !this.stageIntroDone && this.stageTimer > 1000 && !this.dialogActive) {
+      this.stageIntroDone = true;
+      this.physics.pause();
+      this.dialogActive = true;
+      
+      let text = '';
+      if (this.currentStage === 2) text = '「次のエリアに着いたか。そこは、黄昏の荒野だ。魔王城までまだ距離があるからそこまで敵は強くないが気は抜くなよ。」';
+      if (this.currentStage === 3) text = '「次のエリアに着いたか。そこは、宵闇の森だ。」';
+      if (this.currentStage === 4) text = '「次のエリアに着いたか。そこは、子夜の城塞だ。そろそろ魔王城に着くだろう。敵も強くなっている。気を付けてくれ」';
+      
+      this.showDeviceDialogue(text, () => {
+        this.dialogActive = false;
+        this.physics.resume();
+      });
     }
     
     if (this.dialogActive) return;
 
     this.stageTimer += delta;
 
-    // Scroll background
-    const scrollSpeed = 2;
-    this.bg1.x -= scrollSpeed;
-    this.bg2.x -= scrollSpeed;
-    if (this.bg1.x <= -1920) this.bg1.x = this.bg2.x + 1920;
-    if (this.bg2.x <= -1920) this.bg2.x = this.bg1.x + 1920;
+    // チュートリアル用の背景スクロール処理
+    if (this.bg1 && this.bg2 && this.bg1.texture.key.includes('scroll')) {
+      const scrollSpeed = 2;
+      this.bg1.x -= scrollSpeed;
+      this.bg2.x -= scrollSpeed;
+      if (this.bg1.x <= -this.bgWidth) this.bg1.x = this.bg2.x + this.bgWidth;
+      if (this.bg2.x <= -this.bgWidth) this.bg2.x = this.bg1.x + this.bgWidth;
+    }
 
     // Player movement (keyboard)
     MOT.handleMovement(this, this.player);
+
 
     // 博士の指示システム update (チュートリアル中は出さない)
     if (this.currentStage !== 1) {
@@ -184,42 +274,6 @@ class GameScene extends Phaser.Scene {
       }
     }
 
-    // Minion 1 Battle Logic
-    if (this.minionBattleActive && this.minion1 && this.minion1.active) {
-      this.minion1.fireTimer = (this.minion1.fireTimer || 0) + delta;
-      if (this.minion1.fireTimer >= 1000) {
-        this.minion1.fireTimer = 0;
-        MOT.fireFan(this, this.minion1.x, this.minion1.y, 3, 300, 180, 40);
-      }
-      
-      // Periodically move to a random lane Y
-      this.minion1.laneChangeTimer = (this.minion1.laneChangeTimer || 0) + delta;
-      if (this.minion1.laneChangeTimer >= 3000) {
-        this.minion1.laneChangeTimer = 0;
-        const laneYs = [300, 540, 780];
-        const targetY = laneYs[Phaser.Math.Between(0, 2)];
-        this.tweens.killTweensOf(this.minion1);
-        this.tweens.add({
-          targets: this.minion1,
-          y: targetY,
-          duration: 600,
-          ease: 'Cubic.easeInOut',
-          onComplete: function () {
-            if (this.minion1 && this.minion1.active) {
-              this.tweens.add({
-                targets: this.minion1,
-                y: targetY - 10,
-                yoyo: true,
-                repeat: -1,
-                duration: 1000,
-                ease: 'Sine.easeInOut'
-              });
-            }
-          }.bind(this)
-        });
-      }
-    }
-
     // Process wave schedule
     this.processWaves();
 
@@ -233,6 +287,10 @@ class GameScene extends Phaser.Scene {
   firePlayerBullet() {
     const bullet = this.playerBullets.create(this.player.x + 30, this.player.y, 'bullet_player');
     if (bullet) {
+      let diamondCount = Math.floor((MOT.flags.killingIntent || 0) / 10);
+      let baseDamage = Math.min(5, 1 + diamondCount * 0.2);
+      bullet.damage = baseDamage;
+      if (baseDamage >= 5) bullet.setTint(0xff0000);
       bullet.setVelocityX(800);
       bullet.setScale(2);
       // 寿命は2.2秒（射程1760px）にする。
@@ -246,7 +304,7 @@ class GameScene extends Phaser.Scene {
 
   onBarrierUse() {
     if (this.barrierCooldown <= 0 && !this.barrierActive && !this.dialogActive) {
-      MOT.Audio.playBleep();
+      MOT.Audio.playBleep('博士');
       this.barrierActive = true;
       this.barrierTime = 0;
       this.barrierCooldown = 2000;
@@ -275,6 +333,7 @@ class GameScene extends Phaser.Scene {
   }
 
   onSpecialAttack() {
+    if (this.dialogActive) return;
     if (MOT.flags.maxEnergy) {
       MOT.Audio.playSpecial();
       this.cameras.main.flash(500, 79, 209, 255);
@@ -317,7 +376,7 @@ class GameScene extends Phaser.Scene {
           break;
         case 'items':
           {
-            const laneYs = [300, 540, 780];
+            const laneYs = [220, 460, 700];
             for (let i = 0; i < 3; i++) {
               const laneY = laneYs[Phaser.Math.Between(0, 2)];
               MOT.spawnEnergyItem(this, 1900 + i * 100, laneY);
@@ -326,11 +385,23 @@ class GameScene extends Phaser.Scene {
             MOT.spawnHealthItem(this, 1950, healthLaneY);
           }
           break;
-        case 'minion1_encounter':
-          this.triggerMinion1Encounter();
-          break;
+
         case 'stage_end':
-          this.endStage();
+          this.checkStageEndTimer = this.time.addEvent({
+            delay: 500,
+            loop: true,
+            callback: () => {
+              let hasEnemies = false;
+              this.enemyGroup.getChildren().forEach(e => {
+                // まだ画面内にいるアクティブな敵がいれば待機
+                if (e.active && e.x > -100) hasEnemies = true;
+              });
+              if (!hasEnemies) {
+                this.checkStageEndTimer.destroy();
+                this.endStage();
+              }
+            }
+          });
           break;
       }
     }
@@ -346,9 +417,9 @@ class GameScene extends Phaser.Scene {
     this.enemyBullets.clear(true, true);
 
     // Spawn minion1
-    const minion = this.physics.add.sprite(1400, 540, 'minion1').setScale(3);
+    const minion = this.physics.add.sprite(1400, 460, 'minion1').setScale(3);
     minion.setAlpha(0);
-    minion.hp = 15;
+    minion.hp = 50;
     this.minion1 = minion;
     this.enemyGroup.add(minion);
 
@@ -415,6 +486,8 @@ class GameScene extends Phaser.Scene {
   }
 
   showDialogue(speaker, text, onComplete) {
+    this.dialogActive = true;
+    this.input.setTopOnly(true);
     const w = 1920, h = 1080;
     const boxH = 280;
     const boxY = h - boxH - 20;
@@ -424,13 +497,14 @@ class GameScene extends Phaser.Scene {
     box.fillRoundedRect(60, boxY, w - 120, boxH, 12);
     box.lineStyle(2, 0x4FD1FF, 0.8);
     box.strokeRoundedRect(60, boxY, w - 120, boxH, 12);
-    box.setDepth(50);
+    const touchZone = this.add.rectangle(960, 540, 1920, 1080, 0x000000, 0).setScrollFactor(0).setDepth(200000).setInteractive({ useHandCursor: true });
+    box.setScrollFactor(0).setDepth(200001);
 
     const nameText = this.add.text(100, boxY + 10, speaker, {
       fontFamily: '"DotGothic16"',
       fontSize: '44px',
       color: '#4FD1FF'
-    }).setDepth(51);
+    }).setScrollFactor(0).setDepth(200002);
 
     const bodyText = this.add.text(100, boxY + 60, '', {
       fontFamily: '"DotGothic16"',
@@ -438,10 +512,14 @@ class GameScene extends Phaser.Scene {
       color: '#E5E7EB',
       wordWrap: { width: w - 220, useAdvancedWrap: true },
       lineSpacing: 8
-    }).setDepth(51);
+    }).setScrollFactor(0).setDepth(200002);
 
     // Typewriter effect
     let charIndex = 0;
+    const contText = this.add.text(w - 100, boxY + boxH - 40, '▶ NEXT [TAP/SPACE]', {
+      fontFamily: '"Press Start 2P"', fontSize: '20px', color: '#9CA3AF'
+    }).setOrigin(1, 0).setAlpha(0).setScrollFactor(0).setDepth(200003);
+
     const typeTimer = this.time.addEvent({
       delay: 40,
       callback: function () {
@@ -449,30 +527,63 @@ class GameScene extends Phaser.Scene {
         bodyText.setText(text.substring(0, charIndex));
         
         // Sound for every character (excluding spaces)
-        if (text[charIndex-1] !== ' ') {
-          MOT.Audio.playBleep();
+        if (text[charIndex-1] !== ' ' && window.MOT && MOT.Audio) {
+          MOT.Audio.playBleep('博士');
         }
 
         if (charIndex >= text.length) {
           typeTimer.destroy();
-          // Space to continue
-          const contText = this.add.text(w - 240, boxY + boxH - 40, '▶ [SPACE] KEY', {
-            fontFamily: '"Press Start 2P"', fontSize: '20px', color: '#9CA3AF'
-          }).setDepth(51);
-          this.tweens.add({ targets: contText, alpha: 0.3, yoyo: true, repeat: -1, duration: 500 });
-
-          this.input.keyboard.once('keydown-SPACE', function () {
-            box.destroy();
-            nameText.destroy();
-            bodyText.destroy();
-            contText.destroy();
-            if (onComplete) onComplete();
-          });
+          contText.setAlpha(1);
+          if (this.tweens) this.tweens.add({ targets: contText, alpha: 0.3, yoyo: true, repeat: -1, duration: 500 });
         }
       },
       callbackScope: this,
       loop: true
     });
+
+    const advance = () => {
+      this.dialogActive = false;
+      this.input.off('pointerdown', handleInput);
+      if (touchZone && touchZone.active) {
+        touchZone.off('pointerdown', handleInput);
+        touchZone.destroy();
+      }
+      this.input.keyboard.off('keydown', handleKey);
+      if (box && box.active) box.destroy();
+      if (nameText && nameText.active) nameText.destroy();
+      if (bodyText && bodyText.active) bodyText.destroy();
+      if (contText && contText.active) contText.destroy();
+      if (onComplete) onComplete();
+    };
+
+    let lastTapTime = 0;
+    const handleInput = (arg1, arg2, arg3, event) => {
+      if (event && typeof event.stopPropagation === 'function') event.stopPropagation();
+      else if (arg1 && typeof arg1.stopPropagation === 'function') arg1.stopPropagation();
+      const now = Date.now();
+      if (now - lastTapTime < 200) return;
+      lastTapTime = now;
+
+      if (charIndex < text.length) {
+        typeTimer.destroy();
+        charIndex = text.length;
+        bodyText.setText(text);
+        contText.setAlpha(1);
+        if (this.tweens) this.tweens.add({ targets: contText, alpha: 0.3, yoyo: true, repeat: -1, duration: 500 });
+      } else {
+        advance();
+      }
+    };
+
+    const handleKey = (event) => {
+      if (event.key === ' ' || event.code === 'Space') {
+        handleInput();
+      }
+    };
+
+    touchZone.on('pointerdown', handleInput);
+    
+    this.input.keyboard.on('keydown', handleKey);
   }
 
     showChoice(choices) {
@@ -483,15 +594,15 @@ class GameScene extends Phaser.Scene {
     const overlay = this.add.graphics();
     overlay.fillStyle(0x000000, 0.5);
     overlay.fillRect(0, 0, w, h);
-    overlay.setDepth(49);
+    overlay.setDepth(200000);
     elements.push(overlay);
 
     // [ENTER] KEY ガイドテキストを右下に追加
-    const contText = this.add.text(w - 240, h - 60, '▶ [ENTER] KEY', {
+    const contText = this.add.text(w - 100, h - 60, '▶ [ENTER] KEY', {
       fontFamily: '"Press Start 2P"',
       fontSize: '20px',
       color: '#9CA3AF'
-    }).setDepth(51);
+    }).setOrigin(1, 0.5).setDepth(200001);
     this.tweens.add({ targets: contText, alpha: 0.3, yoyo: true, repeat: -1, duration: 500 });
     elements.push(contText);
 
@@ -501,13 +612,13 @@ class GameScene extends Phaser.Scene {
 
     choices.forEach(function (choice, i) {
       const y = startY + i * 110;
-      const btn = self.add.image(w / 2, y, 'ui_button_wide').setInteractive({ useHandCursor: true }).setDepth(50);
+      const btn = self.add.image(w / 2, y, 'ui_button_wide').setInteractive(new Phaser.Geom.Rectangle(-100, -30, 560, 110), Phaser.Geom.Rectangle.Contains).setDepth(200002);
       
       const txt = self.add.text(w / 2, y, choice.text, {
         fontFamily: '"DotGothic16"',
         fontSize: '26px',
         color: '#E5E7EB'
-      }).setOrigin(0.5).setDepth(51);
+      }).setOrigin(0.5).setDepth(200003);
 
       elements.push(btn, txt);
       choicesList.push({ btn: btn, txt: txt, callback: choice.callback });
@@ -588,9 +699,12 @@ class GameScene extends Phaser.Scene {
 
   endStage() {
     // Go to boss fight after this stage
-    this.cameras.main.fadeOut(800, 5, 8, 20);
+    this.physics.pause();
+    this.player.setCollideWorldBounds(false);
+    this.tweens.add({ targets: this.player, x: 2100, duration: 800, ease: 'Power2' });
+    this.cameras.main.fadeOut(800, 0, 0, 0);
     this.time.delayedCall(800, function () {
-      this.scene.start('BossScene', { bossIndex: 0 });
+      this.scene.start('BossScene', { bossIndex: 0, normalTransition: true });
     }, [], this);
   }
 
@@ -619,19 +733,38 @@ class GameScene extends Phaser.Scene {
           });
         }
         
-        // 反射弾を発射 (威力と速度が高い)
-        const reflectBullet = this.playerBullets.create(player.x + 30, player.y, 'bullet_player');
-        if (reflectBullet) {
-          reflectBullet.setVelocityX(1200);
-          reflectBullet.setScale(3);
-          reflectBullet.setTint(0xFFD700); // ゴールドに光る
-          reflectBullet.damage = 3; // ダメージ3倍
-          // 寿命は2.0秒にする。
-          const lifespan = 2000;
-          this.time.delayedCall(lifespan, function () {
-            if (reflectBullet.active) reflectBullet.destroy();
-          });
-        }
+        // 反射弾幕を発射（シドレミファソラシの音階付き）
+        let noteIndex = 0;
+        this.time.addEvent({
+          delay: 80, // 80ms間隔で発射
+          repeat: 15, // 計16発（2周）
+          callback: () => {
+            if (!this.player || !this.player.active) return;
+            
+            // シ(0), ド(1), レ(2), ミ(3) -> 黄色
+            // ファ(4), ソ(5), ラ(6), シ(7) -> 赤色
+            let isRed = (noteIndex % 8) >= 4; 
+            let color = isRed ? 0xff0000 : 0xffff00;
+            
+            if (MOT.Audio.playJustGuardNote) MOT.Audio.playJustGuardNote(noteIndex);
+            
+            // 扇状に3発同時発射で弾幕感を出す
+            for (let angleOffset of [-0.08, 0, 0.08]) {
+              const reflectBullet = this.playerBullets.create(player.x + 30, player.y, 'bullet_player');
+              if (reflectBullet) {
+                let speed = 1200;
+                reflectBullet.setVelocity(Math.cos(angleOffset) * speed, Math.sin(angleOffset) * speed);
+                reflectBullet.setScale(2); // 少し小さくして数を増やす
+                reflectBullet.setTint(color); 
+                reflectBullet.damage = 1; // 1発あたりのダメージは1（合計ヒットで大ダメージ）
+                this.time.delayedCall(2000, function () {
+                  if (reflectBullet.active) reflectBullet.destroy();
+                });
+              }
+            }
+            noteIndex++;
+          }
+        });
       } else {
         // 通常のバリア（緑のエフェクト）
         for (let i = 0; i < 8; i++) {
@@ -708,6 +841,12 @@ class GameScene extends Phaser.Scene {
           MOT.spawnEnergyItem(this, enemy.x, enemy.y); // 40%でエネルギー
         }
       }
+      // 倒された敵が発射した弾を消去する
+      this.enemyBullets.getChildren().forEach(function(b) {
+        if (b.shooter === enemy) {
+          b.destroy();
+        }
+      });
       enemy.destroy();
     }
   }
@@ -720,7 +859,7 @@ class GameScene extends Phaser.Scene {
       if (b.x < -50 || b.x > 2000 || b.y < -50 || b.y > 1130) b.destroy();
     });
     this.playerBullets.getChildren().forEach(function (b) {
-      if (b.x > 2000) b.destroy();
+      if (b.x > 1600) b.destroy();
     });
     this.itemGroup.getChildren().forEach(function (i) {
       if (i.x < -50) i.destroy();
@@ -729,17 +868,29 @@ class GameScene extends Phaser.Scene {
 
   createHUD() {
     this.hpText = this.add.text(30, 20, '', {
-      fontFamily: '"Press Start 2P"', fontSize: '16px', color: '#FF4B6E'
+      fontFamily: '"Press Start 2P"', fontSize: '24px', color: '#FF4B6E'
     }).setDepth(100).setScrollFactor(0);
 
     this.energyText = this.add.text(30, 50, '', {
-      fontFamily: '"Press Start 2P"', fontSize: '14px', color: '#4FD1FF'
+      fontFamily: '"Press Start 2P"', fontSize: '18px', color: '#4FD1FF'
     }).setDepth(100).setScrollFactor(0);
 
     this.energyBar = this.add.graphics().setDepth(100).setScrollFactor(0);
     this.barrierIconBg = this.add.graphics().setDepth(100).setScrollFactor(0);
     this.barrierIconFg = this.add.graphics().setDepth(100).setScrollFactor(0);
     this.isEnergyHighlighted = false;
+
+    let areaText = '';
+    if (this.currentStage === 2) areaText = '黄昏の荒野';
+    else if (this.currentStage === 3) areaText = '宵闇の森';
+    else if (this.currentStage === 4) areaText = '子夜の城塞';
+    
+    if (areaText !== '') {
+      this.areaNameText = this.add.text(1920 - 30, 20, areaText, {
+        fontFamily: '"DotGothic16"', fontSize: '32px', color: '#FFFFFF',
+        backgroundColor: 'rgba(0,0,0,0.5)', padding: { x: 10, y: 5 }
+      }).setOrigin(1, 0).setDepth(100).setScrollFactor(0);
+    }
   }
 
   updateHUD() {
@@ -750,29 +901,45 @@ class GameScene extends Phaser.Scene {
     }
     this.hpText.setText(hearts);
 
-    // Energy bar
+    // HUD Elements Initialization
+    if (!this.energyBarBgObj) {
+      this.energyBarBgObj = this.add.rectangle(180, 92, 300, 24, 0x1F2933).setDepth(100).setScrollFactor(0);
+      this.energyBarFgObj = this.add.rectangle(32, 82, 296, 20, 0x4FD1FF).setOrigin(0, 0).setDepth(100).setScrollFactor(0);
+      this.energyBarOutline = this.add.graphics().setDepth(100).setScrollFactor(0);
+      this.energyBarOutline.lineStyle(2, 0x4FD1FF, 0.6);
+      this.energyBarOutline.strokeRect(30, 80, 300, 24);
+      
+//       this.iconPersonBg = this.add.image(390, 44, 'icon_person').setOrigin(0, 0).setTint(0x555555).setDepth(100).setScrollFactor(0).setScale(1.5);
+//       this.iconPersonFill = this.add.image(390, 44, 'icon_person').setOrigin(0, 0).setTint(0xFFFF00).setDepth(100).setScrollFactor(0).setScale(1.5);
+      
+//       this.batteryUI = this.add.graphics().setDepth(100).setScrollFactor(0);
+    }
+
+    // Energy bar update (using scaleX instead of clear/fillRect)
     const pct = MOT.flags.energy / MOT.flags.maxEnergyThreshold;
-    this.energyBar.clear();
-    this.energyBar.fillStyle(0x1F2933, 1);
-    this.energyBar.fillRect(30, 80, 200, 16);
     const barColor = MOT.flags.maxEnergy ? 0xFF4B6E : 0x4FD1FF;
-    this.energyBar.fillStyle(barColor, 1);
-    this.energyBar.fillRect(32, 82, 196 * pct, 12);
-    this.energyBar.lineStyle(1, 0x4FD1FF, 0.6);
-    this.energyBar.strokeRect(30, 80, 200, 16);
+    this.energyBarFgObj.setFillStyle(barColor, 1);
+    this.energyBarFgObj.scaleX = Math.max(0.001, pct);
 
     // 必殺技ゲージのハイライト
+    this.energyBar.clear();
+    if (this.isHPHighlighted) {
+      const flash = (Math.sin(Date.now() / 150) + 1) / 2;
+      this.energyBar.lineStyle(4, 0xFFFF00, 0.4 + 0.6 * flash);
+      this.energyBar.strokeRect(26, 16, 200, 44);
+    }
     if (this.isEnergyHighlighted) {
       const flash = (Math.sin(Date.now() / 150) + 1) / 2;
-      this.energyBar.lineStyle(4, 0xFFFF00, 0.4 + 0.6 * flash); // 太めの点滅する黄色枠
-      this.energyBar.strokeRect(26, 76, 208, 24);
+      this.energyBar.lineStyle(4, 0xFFFF00, 0.4 + 0.6 * flash);
+      this.energyBar.strokeRect(26, 76, 308, 32);
     }
 
     this.energyText.setText('EN: ' + MOT.flags.energy + '/' + MOT.flags.maxEnergyThreshold);
 
-    const iconX = 260;
-    const iconY = 88;
-    const iconRadius = 12;
+    // UI Meters removed per user request
+    const iconX = 360;
+    const iconY = 92;
+    const iconRadius = 18;
 
     this.barrierIconBg.clear();
     this.barrierIconFg.clear();
@@ -795,45 +962,71 @@ class GameScene extends Phaser.Scene {
       this.barrierIconFg.fillPath();
     }
   }
-  showDeviceDialogue(text, onComplete) {
+  showDeviceDialogue(text, onComplete, highlightConfig) {
+    this.dialogActive = true;
+    this.input.setTopOnly(true);
     if (this.dialogContainer) {
       this.dialogContainer.destroy();
     }
-    this.dialogContainer = this.add.container(0, 0).setDepth(100);
+    this.dialogContainer = this.add.container(0, 0).setScrollFactor(0).setDepth(200000);
+    const touchZone = this.add.rectangle(960, 540, 1920, 1080, 0x000000, 0).setScrollFactor(0).setInteractive({ useHandCursor: true });
+    this.dialogContainer.add(touchZone);
+
+    if (highlightConfig) {
+      var highlight = this.add.graphics();
+      var hColor = highlightConfig.color || 0x39FF14;
+      highlight.fillStyle(hColor, 0.25);
+      highlight.lineStyle(4, hColor, 0.8);
+      
+      if (highlightConfig.width && highlightConfig.height) {
+        highlight.fillRoundedRect(highlightConfig.x - highlightConfig.width/2, highlightConfig.y - highlightConfig.height/2, highlightConfig.width, highlightConfig.height, 8);
+        highlight.strokeRoundedRect(highlightConfig.x - highlightConfig.width/2, highlightConfig.y - highlightConfig.height/2, highlightConfig.width, highlightConfig.height, 8);
+      } else {
+        highlight.fillCircle(highlightConfig.x, highlightConfig.y, highlightConfig.radius);
+        highlight.strokeCircle(highlightConfig.x, highlightConfig.y, highlightConfig.radius);
+      }
+      this.tweens.add({ targets: highlight, alpha: 0.1, yoyo: true, repeat: -1, duration: 500 });
+      this.dialogContainer.add(highlight);
+    }
 
     var w = 1920, h = 1080, boxH = 280, boxY = h - boxH - 20;
-
-
 
     var box = this.add.graphics();
     box.fillStyle(0x0a0a1a, 0.92);
     box.fillRoundedRect(60, boxY, w - 120, boxH, 12);
-    box.lineStyle(2, 0x39FF14, 0.8);
+    box.lineStyle(2, 0x4FD1FF, 0.8);
     box.strokeRoundedRect(60, boxY, w - 120, boxH, 12);
     this.dialogContainer.add(box);
 
     var iconBox = this.add.graphics();
-    iconBox.lineStyle(2, 0x39FF14, 0.8);
-    iconBox.strokeRect(80, boxY + 40, 100, 100);
+    iconBox.lineStyle(2, 0x4FD1FF, 0.8);
+    iconBox.strokeRect(80, boxY + 40, 200, 200);
     this.dialogContainer.add(iconBox);
     
-    var face = this.add.image(130, boxY + 90, 'doctor_face').setDisplaySize(96, 96);
+    var face = this.add.image(180, boxY + 140, 'doctor_normal');
+    var scaleRatio = 1000 / face.height;
+    face.setScale(scaleRatio);
+    var maskShape = this.make.graphics();
+    maskShape.fillStyle(0xffffff);
+    maskShape.fillRect(82, boxY + 42, 196, 196);
+    face.setMask(maskShape.createGeometryMask());
+    face.setY(boxY + 140 + (face.height * scaleRatio) * 0.35);
     this.dialogContainer.add(face);
 
-    var nameText = this.add.text(210, boxY + 10, '博士 📡', {
-      fontFamily: '"DotGothic16"', fontSize: '44px', color: '#39FF14'
+    var nameText = this.add.text(310, boxY + 10, '『博士』', {
+      fontFamily: '"DotGothic16"', fontSize: '44px', color: '#4FD1FF'
     });
     this.dialogContainer.add(nameText);
 
-    var bodyText = this.add.text(210, boxY + 60, '', {
+    var bodyText = this.add.text(310, boxY + 60, '', {
       fontFamily: '"DotGothic16"', fontSize: '40px', color: '#E5E7EB',
-      wordWrap: { width: w - 330, useAdvancedWrap: true }, lineSpacing: 8
+      wordWrap: { width: w - 420, useAdvancedWrap: true }, lineSpacing: 8
     });
     this.dialogContainer.add(bodyText);
 
-    var contText = this.add.text(w - 240, boxY + boxH - 40, '▶ [SPACE] KEY', {
+    var contText = this.add.text(w - 100, boxY + boxH - 40, '▶ NEXT [TAP/SPACE]', {
       fontFamily: '"Press Start 2P"', fontSize: '20px', color: '#9CA3AF'
-    }).setAlpha(0);
+    }).setOrigin(1, 0).setAlpha(0);
     this.dialogContainer.add(contText);
 
     var charIndex = 0;
@@ -841,31 +1034,71 @@ class GameScene extends Phaser.Scene {
       delay: 40, callback: function () {
         charIndex++;
         bodyText.setText(text.substring(0, charIndex));
-        if (text[charIndex - 1] !== ' ' && window.MOT && MOT.Audio) MOT.Audio.playBleep();
+        if (text[charIndex - 1] !== ' ' && window.MOT && MOT.Audio) MOT.Audio.playBleep('博士');
         if (charIndex >= text.length) {
           typeTimer.destroy();
           contText.setAlpha(1);
-          this.tweens.add({ targets: contText, alpha: 0.3, yoyo: true, repeat: -1, duration: 500 });
-          this.input.keyboard.once('keydown-SPACE', function () {
-            if (this.dialogContainer) this.dialogContainer.destroy();
-            this.dialogContainer = null;
-            if (onComplete) onComplete();
-          }, this);
+          if (this.tweens) this.tweens.add({ targets: contText, alpha: 0.3, yoyo: true, repeat: -1, duration: 500 });
         }
       }, callbackScope: this, loop: true
     });
+
+    const advance = () => {
+      this.dialogActive = false;
+      this.input.off('pointerdown', handleInput);
+      if (touchZone && touchZone.active) {
+        touchZone.off('pointerdown', handleInput);
+        touchZone.destroy();
+      }
+      this.input.keyboard.off('keydown', handleKey);
+      if (this.dialogContainer) {
+        this.dialogContainer.destroy();
+        this.dialogContainer = null;
+      }
+      if (onComplete) onComplete();
+    };
+
+    let lastTapTime = 0;
+    const handleInput = (arg1, arg2, arg3, event) => {
+      if (event && typeof event.stopPropagation === 'function') event.stopPropagation();
+      else if (arg1 && typeof arg1.stopPropagation === 'function') arg1.stopPropagation();
+      const now = Date.now();
+      if (now - lastTapTime < 200) return;
+      lastTapTime = now;
+
+      if (charIndex < text.length) {
+        typeTimer.destroy();
+        charIndex = text.length;
+        bodyText.setText(text);
+        contText.setAlpha(1);
+        if (this.tweens) this.tweens.add({ targets: contText, alpha: 0.3, yoyo: true, repeat: -1, duration: 500 });
+      } else {
+        advance();
+      }
+    };
+
+    const handleKey = (event) => {
+      if (event.key === ' ' || event.code === 'Space') {
+        handleInput();
+      }
+    };
+
+    touchZone.on('pointerdown', handleInput);
+    
+    this.input.keyboard.on('keydown', handleKey);
   }
 
   spawnTutorialEnemy(laneIndex, speed) {
-    const laneYs = [300, 540, 780];
+    const laneYs = [220, 460, 700];
     const enemy = this.enemyGroup.create(1920, laneYs[laneIndex], 'enemy_basic');
     enemy.setVelocityX(-speed);
-    enemy.hp = 1;
+    enemy.hp = this.currentStage >= 3 ? 2 : 1;
     enemy.fireTimer = this.time.addEvent({
       delay: Phaser.Math.Between(1500, 2500),
       callback: () => {
         if (enemy.active) {
-          MOT.fireLinear(this, enemy.x, enemy.y, -300, 0);
+          let b = MOT.fireLinear(this, enemy.x, enemy.y, -300, 0);
+          if (b) b.shooter = enemy;
         }
       },
       loop: true
@@ -886,19 +1119,21 @@ class GameScene extends Phaser.Scene {
           this.dialogActive = false;
           this.physics.resume();
           
-          let e = this.spawnTutorialEnemy(1, 0);
-          e.x = 1700;
+          let e = this.spawnTutorialEnemy(0, 0);
+          e.x = 1300;
           
           this.time.delayedCall(500, () => {
             this.physics.pause();
             this.dialogActive = true;
             this.showDeviceDialogue('「敵がやってきたな。お前は敵の前に移動して撃ち殺すんだ。」', () => {
-              this.showDeviceDialogue('「移動方法は、パソコンなら矢印キーで移動できる。スマホなら画面をスライドしろ。」', () => {
+              let isMobile = this.sys.game.device.os.android || this.sys.game.device.os.iOS;
+              let msg = isMobile ? '「移動方法は、画面をスライドだ。」' : '「移動方法は、矢印キーだ。」';
+              this.showDeviceDialogue(msg, () => {
                 this.dialogActive = false;
                 this.tutorialPhase = 2;
                 this.physics.resume();
               });
-            });
+            }, { x: 300, y: 260, radius: 60, color: 0x4FD1FF });
           });
         });
       });
@@ -909,11 +1144,13 @@ class GameScene extends Phaser.Scene {
         this.dialogActive = true;
         this.showDeviceDialogue('「よくやった。」', () => {
           this.showDeviceDialogue('「それと、今くらいの敵なら問題ないと思うが、魔王城に近づくにつれて敵の攻撃も強くなる。」', () => {
-            this.showDeviceDialogue('「よけきれないときはシールドを貼るんだ。パソコンはスペース、スマホは長押しだ。タイミング良く敵の攻撃にシールドを貼れた場合、反撃することもできるだろう。」', () => {
-              this.showDeviceDialogue('「気を付けないといけないのは、シールドはすぐに何度も貼り直しはできない。左上の緑の円がクールタイムだ。それが溜まりきれば貼れる状態になっている。」', () => {
+            let isMobile = this.sys.game.device.os.android || this.sys.game.device.os.iOS;
+            let msg = isMobile ? '「攻撃を避けきれないときはシールドを張れ。画面を長押しでシールドを展開できる。タイミング良く敵の攻撃にシールドを張れた場合、反撃することもできるだろう。」' : '「攻撃を避けきれないときはシールドを張れ。スペースキーを押すことでシールドを展開できる。タイミング良く敵の攻撃にシールドを張れた場合、反撃することもできるだろう。」';
+            this.showDeviceDialogue(msg, () => {
+              this.showDeviceDialogue('「気を付けないといけないのは、シールドはすぐに何度も張り直しはできない。左上の緑の円がクールタイムだ。それが溜まりきれば張れる状態になっている。」', () => {
                 this.dialogActive = false;
                 this.tutorialPhase = 3;
-              });
+              }, { x: 360, y: 92, radius: 26 });
             });
           });
         });
@@ -923,7 +1160,7 @@ class GameScene extends Phaser.Scene {
       
       for(let i=0; i<3; i++) {
         let e = this.spawnTutorialEnemy(i, 0);
-        e.x = 1700 + Phaser.Math.Between(0, 100);
+        e.x = 1300 + Phaser.Math.Between(0, 100);
         e.tutorialDrop = true;
         e.tutorialRed = (i === 1);
       }
@@ -943,10 +1180,14 @@ class GameScene extends Phaser.Scene {
         this.physics.pause();
         this.dialogActive = true;
         this.showDeviceDialogue('「よくやった。今、倒したときに青と赤のダイヤがドロップしただろう？」', () => {
-          this.showDeviceDialogue('「それを拾うことで左上にある必殺技ゲージを貯めることができる。赤の方がドロップ確率は低いが、ゲージを多く溜まる。うまく拾っていくんだな。」', () => {
-            this.dialogActive = false;
-            this.tutorialPhase = 5;
-            this.physics.resume();
+          this.showDeviceDialogue('「このダイヤはお前の意志の力だ」', () => {
+            this.showDeviceDialogue('「それを拾うことで左上にある必殺技ゲージを貯めることができる。赤の方がドロップ確率は低いが、ゲージを多く溜まる。うまく拾っていくんだな。」', () => {
+              this.showDeviceDialogue('「赤いダイヤを拾うとお前の攻撃力が上がる。また、意思の力が高まることでお前の秘められた力が解放されるかもしれない」', () => {
+                this.dialogActive = false;
+                this.tutorialPhase = 5;
+                this.physics.resume();
+              });
+            }, { x: 100, y: 70, width: 170, height: 60 });
           });
         });
       }
@@ -967,7 +1208,9 @@ class GameScene extends Phaser.Scene {
           MOT.flags.energy = 100;
           MOT.flags.maxEnergy = true;
 
-          this.showDeviceDialogue('「ゲージが溜まったな。それが溜まると必殺技を打つことができる。パソコンならエンター、スマホならダブルタップで打てる。試してみろ。」', () => {
+          let isMobile = this.sys.game.device.os.android || this.sys.game.device.os.iOS;
+          let msg = isMobile ? '「ゲージが溜まったな。それが溜まると必殺技を打つことができる。画面をダブルタップで打てる。試してみろ。」' : '「ゲージが溜まったな。それが溜まると必殺技を打つことができる。エンターキーを押すことで打てる。試してみろ。」';
+          this.showDeviceDialogue(msg, () => {
             this.dialogActive = false;
             this.tutorialPhase = 6;
             this.physics.resume();
@@ -987,13 +1230,22 @@ class GameScene extends Phaser.Scene {
         this.promptCount++;
         this.physics.pause();
         this.dialogActive = true;
-        if (this.promptCount < 3) {
-          this.showDeviceDialogue('「何をしている？早くenterを押すんだ」', () => {
+        if (this.promptCount === 1) {
+          let isMobile = this.sys.game.device.os.android || this.sys.game.device.os.iOS;
+          let msg = isMobile ? '「何をしている？早く画面をダブルタップするんだ。」' : '「何をしている？早くエンターキーを押すんだ。」';
+          this.showDeviceDialogue(msg, () => {
+            this.dialogActive = false;
+            this.physics.resume();
+          });
+        } else if (this.promptCount === 2) {
+          let isMobile = this.sys.game.device.os.android || this.sys.game.device.os.iOS;
+          let msg = isMobile ? '「聞いているのか？早く画面をダブルタップしろ。」' : '「聞いているのか？早くエンターキーを押せ。」';
+          this.showDeviceDialogue(msg, () => {
             this.dialogActive = false;
             this.physics.resume();
           });
         } else {
-          this.showDeviceDialogue('「もういい、俺が押してやる」', () => {
+          this.showDeviceDialogue('「もういい。代わりに私が押す。」', () => {
             this.dialogActive = false;
             this.physics.resume();
             this.onSpecialAttack();
@@ -1008,11 +1260,26 @@ class GameScene extends Phaser.Scene {
         this.time.delayedCall(500, () => {
           this.physics.pause();
           this.dialogActive = true;
-          this.showDeviceDialogue('「使えたな。戦闘中、上手く使ってこのまま敵を倒していくといい。」', () => {
-            this.dialogActive = false;
-            this.cameras.main.fadeOut(1000, 0,0,0);
-            this.time.delayedCall(1000, () => {
-              this.scene.start('GameScene', { stage: 2 });
+          let firstMsg = this.promptCount >= 3 ? '「戦闘中も使わないなんてことはするなよ。上手く使って敵を倒せ。」' : '「使えたな。戦闘中、上手く使ってこのまま敵を倒していくといい。」';
+          this.showDeviceDialogue(firstMsg, () => {
+            this.showDeviceDialogue('「ああそうだ。戦闘中に進むべき道の指示を出す。ちゃんと従うんだ。」', () => {
+              this.showDeviceDialogue('「従ったかどうか確認しているからな。」', () => {
+                this.isEnergyHighlighted = false;
+                this.isHPHighlighted = true;
+                this.showDeviceDialogue('「従った回数によって体力をあげてやる。」', () => {
+                  this.isHPHighlighted = false;
+                  this.showDeviceDialogue('「これで説明は終了だ。進んでいくといい。」', () => {
+                    this.dialogActive = false;
+                    this.physics.pause(); // 物理演算を止める
+                    this.player.setCollideWorldBounds(false);
+                    this.tweens.add({ targets: this.player, x: 2100, duration: 1000, ease: 'Power2' });
+                    this.cameras.main.fadeOut(1000, 0,0,0);
+                    this.time.delayedCall(1000, () => {
+                      this.scene.start('GameScene', { stage: 2 });
+                    });
+                  });
+                }, { x: 100, y: 35, width: 170, height: 50 });
+              });
             });
           });
         });
@@ -1022,7 +1289,5 @@ class GameScene extends Phaser.Scene {
 }
 
 window.GameScene = GameScene;
-
-
 
 

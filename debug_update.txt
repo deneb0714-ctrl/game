@@ -1,0 +1,200 @@
+861:   update(time, delta) {
+862:     if (this.isLabTransition) {
+863:         if (this.enemyBullets) this.enemyBullets.clear(true, true);
+864:         if (this.playerBullets) this.playerBullets.clear(true, true);
+865:         if (this.playerHitboxGraphics) this.playerHitboxGraphics.clear();
+866:         if (this.currentBoss) { this.currentBoss.setActive(false); this.currentBoss.setVisible(false); }
+867:         if (this.sisterBoss) { this.sisterBoss.setActive(false); this.sisterBoss.setVisible(false); }
+868:         if (this.batteryUI) this.batteryUI.clear();
+869:         if (this.energyBarOutline) this.energyBarOutline.clear();
+870:         if (MOT.DoctorDirective && MOT.DoctorDirective.directiveContainer) {
+871:             MOT.DoctorDirective.hideDirective(this);
+872:         }
+873:         return;
+874:     }
+875:     // レーザー全体でのカスタム当たり判定
+876:     if (this.player && this.player.active && this.player.alpha > 0 && !this.player.isInvincible) {
+877:       if (this.enemyBullets) {
+878:         this.enemyBullets.getChildren().forEach(b => {
+879:           if (b.active && b.texture.key === 'bullet_laser') {
+880:             let px = this.player.body.center.x;
+881:             let py = this.player.body.center.y;
+882:             let pr = Math.max(this.player.body.width, this.player.body.height) / 2;
+883:             
+884:             let dx = px - b.x;
+885:             let dy = py - b.y;
+886:             let lx = Math.cos(b.rotation);
+887:             let ly = Math.sin(b.rotation);
+888:             
+889:             let t = dx * lx + dy * ly;
+890:             if (t >= 0 && t <= 400) {
+891:               let projX = b.x + t * lx;
+892:               let projY = b.y + t * ly;
+893:               let distSq = (px - projX) * (px - projX) + (py - projY) * (py - projY);
+894:               if (distSq <= (pr + 6) * (pr + 6)) {
+895:                 this.onPlayerHit(this.player, b);
+896:               }
+897:             }
+898:           }
+899:         });
+900:       }
+901:     }
+902: 
+903:     // 当たり判定の描画（常にプレイヤーのbodyに追従する水色の線）
+904:     if (this.playerHitboxGraphics) {
+905:       this.playerHitboxGraphics.clear();
+906:       if (this.player && this.player.active && this.player.alpha > 0) {
+907:         this.playerHitboxGraphics.lineStyle(3, 0x00ffff, 0.8);
+908:         this.playerHitboxGraphics.strokeRect(this.player.body.x, this.player.body.y, this.player.body.width, this.player.body.height);
+909:       }
+910:       if (this.currentBoss && this.currentBoss.active && this.currentBoss.visible) {
+911:         this.playerHitboxGraphics.lineStyle(3, 0xff00ff, 0.8);
+912:         this.playerHitboxGraphics.strokeRect(this.currentBoss.body.x, this.currentBoss.body.y, this.currentBoss.body.width, this.currentBoss.body.height);
+913:       }
+914:       if (this.sisterBoss && this.sisterBoss.active && this.sisterBoss.visible) {
+915:         this.playerHitboxGraphics.lineStyle(3, 0xff00ff, 0.8);
+916:         this.playerHitboxGraphics.strokeRect(this.sisterBoss.body.x, this.sisterBoss.body.y, this.sisterBoss.body.width, this.sisterBoss.body.height);
+917:       }
+918:     }
+919: 
+920:     // 博士の指示システム update（ダイアログ判定より先に実行して、表示非表示を管理する）
+921:     if (this.currentBossIndex >= 4 || MOT.flags.demonLordFinished) {
+922:       if (MOT.DoctorDirective && MOT.DoctorDirective.directiveContainer) {
+923:         MOT.DoctorDirective.hideDirective(this);
+924:       }
+925:     } else {
+926:       let isDialogOrChoice = this.dialogActive || this.choiceActive || (this.choiceContainer && this.choiceContainer.active);
+927:       MOT.DoctorDirective.update(this, delta, this.player, isDialogOrChoice);
+928:     }
+929: 
+930:     let isDialog = this.dialogActive || this.choiceActive || (this.choiceContainer && this.choiceContainer.active);
+931:     
+932:     // 会話が終わった瞬間（dialogActive が true から false に変わった時）に、バリアのクールタイムを最大（0%からチャージ）にする
+933:     if (!isDialog && this.lastDialogActive) {
+934:       // 2秒（2000ms）のフルクールタイムをセットし、戦闘開始直後のバリアを完全に防ぐ
+935:       this.barrierCooldown = 2000;
+936:     }
+937:     this.lastDialogActive = isDialog;
+938: 
+939:     if (isDialog) {
+940:       return;
+941:     }
+942:     
+943:     if (this.cutsceneActive) {
+944:       MOT.handleMovement(this, this.player);
+945:       
+946:       // バリアの更新（移動時に追従させるため）
+947:       if (this.barrierCooldown > 0) {
+948:         this.barrierCooldown -= delta;
+949:         if (this.barrierCooldown < 0) this.barrierCooldown = 0;
+950:       }
+951:       if (this.barrierActive) {
+952:         this.barrierTime += delta;
+953:         if (this.barrierVisual) {
+954:           this.barrierVisual.setPosition(this.player.x, this.player.y);
+955:           this.barrierHitbox.setPosition(this.player.x, this.player.y);
+956:         }
+957:         if (this.barrierTime >= 3000) {
+958:           this.deactivateBarrier();
+959:         }
+960:       }
+927:       MOT.DoctorDirective.update(this, delta, this.player, isDialogOrChoice);
+928:     }
+929: 
+930:     let isDialog = this.dialogActive || this.choiceActive || (this.choiceContainer && this.choiceContainer.active);
+931:     
+932:     // 会話が終わった瞬間（dialogActive が true から false に変わった時）に、バリアのクールタイムを最大（0%からチャージ）にする
+933:     if (!isDialog && this.lastDialogActive) {
+934:       // 2秒（2000ms）のフルクールタイムをセットし、戦闘開始直後のバリアを完全に防ぐ
+935:       this.barrierCooldown = 2000;
+936:     }
+937:     this.lastDialogActive = isDialog;
+938: 
+939:     if (isDialog) {
+940:       return;
+941:     }
+942:     
+943:     if (this.cutsceneActive) {
+944:       MOT.handleMovement(this, this.player);
+945:       
+946:       // バリアの更新（移動時に追従させるため）
+947:       if (this.barrierCooldown > 0) {
+948:         this.barrierCooldown -= delta;
+949:         if (this.barrierCooldown < 0) this.barrierCooldown = 0;
+950:       }
+951:       if (this.barrierActive) {
+952:         this.barrierTime += delta;
+953:         if (this.barrierVisual) {
+954:           this.barrierVisual.setPosition(this.player.x, this.player.y);
+955:           this.barrierHitbox.setPosition(this.player.x, this.player.y);
+956:         }
+957:         if (this.barrierTime >= 3000) {
+958:           this.deactivateBarrier();
+959:         }
+960:       }
+961:       return;
+962:     }
+963: 
+964:     // 軽量なレーザー当たり判定
+965:     if (this.activeLasers) {
+966:       for (let laser of this.activeLasers) {
+967:         if (!laser.active) continue;
+968:         let px = this.player.x;
+969:         let py = this.player.y;
+970:         let l2 = (laser.x2 - laser.x1)**2 + (laser.y2 - laser.y1)**2;
+971:         if (l2 === 0) continue;
+972:         let t = ((px - laser.x1) * (laser.x2 - laser.x1) + (py - laser.y1) * (laser.y2 - laser.y1)) / l2;
+973:         t = Math.max(0, Math.min(1, t));
+974:         let projX = laser.x1 + t * (laser.x2 - laser.x1);
+975:         let projY = laser.y1 + t * (laser.y2 - laser.y1);
+976:         let dist = Math.sqrt((px - projX)**2 + (py - projY)**2);
+977:         if (dist < laser.thickness / 2) {
+978:           this.onPlayerHit(this.player, { destroy: () => {} });
+979:         }
+980:       }
+981:       this.activeLasers = this.activeLasers.filter(l => l.active);
+982:     }
+983: 
+984:     MOT.handleMovement(this, this.player);
+985: 
+986:     // 博士戦の味方支援システム
+987:     if (this.currentBoss && this.currentBoss.configKey === 'doctor' && !this.dialogActive) {
+988:       if (!this.assistTimer) this.assistTimer = 0;
+989:       this.assistTimer += delta;
+990:       if (this.assistTimer >= 8000 + Phaser.Math.Between(0, 4000)) { // 8-12 seconds
+991:         this.assistTimer = 0;
+992:         this.triggerAllyAssist();
+993:       }
+994:     }
+995: 
+996:     // Auto-shoot
+997:     let isBossAlive = (this.currentBoss && this.currentBoss.active && this.currentBoss.visible && this.bossHP > 0);
+998:     let isSisterAlive = (this.sisterBoss && this.sisterBoss.active && this.sisterBoss.visible && this.sisterBoss.hp > 0);
+999:     let canShoot = !this.dialogActive && (isBossAlive || isSisterAlive || this.minionBattleActive || this.intermissionActive);
+1000:     if (canShoot) {
+1001:       this.autoShootTimer += delta;
+1002:       let shootInterval = this.heroAttackSpeedBoost ? 80 : 200;
+1003:       if (this.autoShootTimer >= shootInterval) {
+1004:         this.autoShootTimer = 0;
+1005:         var b = this.playerBullets.create(this.player.x + 30, this.player.y, 'bullet_player');
+1006:         if (b) {
+1007:           b.setVelocityX(this.heroFirepowerBoost ? 1000 : 600); 
+1008:           b.setScale(this.heroFirepowerBoost ? 4 : 2);
+1009:           if (this.heroFirepowerBoost) {
+1010:             b.setTint(0xffaa00);
+1011:             b.damage = 2;
+1012:           }
+1013:           MOT.Audio.playShot();
+1014:           this.time.delayedCall(4000, function () { if (b.active) b.destroy(); });
+1015:         }
+1016:       }
+1017:     }
+1018: 
+1019:     // Barrier Logic
+1020:     if (this.barrierCooldown > 0) {
+1021:       this.barrierCooldown -= delta;
+1022:       if (this.barrierCooldown < 0) this.barrierCooldown = 0;
+1023:     }
+1024: 
+1025:     if (this.barrierActive) {
+1026:       this.barrierTime += delta;

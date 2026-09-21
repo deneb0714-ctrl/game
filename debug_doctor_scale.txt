@@ -1,0 +1,76 @@
+210:         texture: 'doctor_combat', name: '博士', hp: 450, scale: 2.5,
+211:         intro: '「さぁ、最終決戦といこうじゃないか！」',
+212:         defeat: '「驚いた...まさかお前がここまでやるとはな」',
+213:         choices: []
+399:              var docScale = 600 / this.doctorImage.width;
+400:              this.doctorImage.setScale(docScale);
+401:              this.doctorImage.setY(100 + (this.doctorImage.height * docScale) / 2);
+402:              
+400:              this.doctorImage.setScale(docScale);
+401:              this.doctorImage.setY(100 + (this.doctorImage.height * docScale) / 2);
+402:              
+403:              this.tweens.add({ targets: [dimBg, this.doctorImage], alpha: 1, duration: 500 });
+401:              this.doctorImage.setY(100 + (this.doctorImage.height * docScale) / 2);
+402:              
+403:              this.tweens.add({ targets: [dimBg, this.doctorImage], alpha: 1, duration: 500 });
+404:              
+3065:                           var docScale = 600 / this.doctorImage.width;
+3066:                           this.doctorImage.setScale(docScale);
+3067:                           this.doctorImage.setY(100 + (this.doctorImage.height * docScale) / 2);
+3068:                           
+3066:                           this.doctorImage.setScale(docScale);
+3067:                           this.doctorImage.setY(100 + (this.doctorImage.height * docScale) / 2);
+3068:                           
+3069:                           // 勇者の立ち絵（既に覚醒済み）
+3067:                           this.doctorImage.setY(100 + (this.doctorImage.height * docScale) / 2);
+3068:                           
+3069:                           // 勇者の立ち絵（既に覚醒済み）
+3070:                           this.heroImage = this.add.image(300, 1080 / 2, 'hero_stand_corrupted').setAlpha(0).setDepth(90);
+3186:                               this.doctorImage.setScale(docScale);
+3187:                               this.doctorImage.setY(100 + ((this.textures.get(tex).getSourceImage().height || 1000) * docScale) / 2);
+3188:                               
+3189:                               this.tweens.add({ targets: dimBg, alpha: 0.6, duration: 300 });
+3187:                               this.doctorImage.setY(100 + ((this.textures.get(tex).getSourceImage().height || 1000) * docScale) / 2);
+3188:                               
+3189:                               this.tweens.add({ targets: dimBg, alpha: 0.6, duration: 300 });
+3190:                               if(this.heroImage) this.tweens.add({targets: this.heroImage, alpha: 0.4, duration: 300});
+3334:                       var docScaleDaily = 750 / this.textures.get('doctor_stand').getSourceImage().width;
+3335:                       docImgDaily.setScale(docScaleDaily);
+3336:                       docImgDaily.setY(100 + (this.textures.get('doctor_stand').getSourceImage().height * docScaleDaily) / 2);
+3337:                       
+3336:                       docImgDaily.setY(100 + (this.textures.get('doctor_stand').getSourceImage().height * docScaleDaily) / 2);
+3337:                       
+3338:                       var heroImgDaily = this.add.image(300, 1080/2, 'hero_stand').setDepth(95);
+3339:                       var hScaleDaily = 750 / heroImgDaily.width;
+3395:                       var docScale = 600 / this.textures.get('doctor_stand').getSourceImage().width;
+3396:                       docImg.setScale(docScale);
+3397:                       docImg.setY(100 + (this.textures.get('doctor_stand').getSourceImage().height * docScale) / 2);
+3398:                       
+3397:                       docImg.setY(100 + (this.textures.get('doctor_stand').getSourceImage().height * docScale) / 2);
+3398:                       
+3399:                       var heroImgNew = this.add.image(300, 1080/2, 'hero_stand').setDepth(95);
+3400:                       var hScaleNew = 750 / heroImgNew.width;
+3526:             var docScale = 600 / this.textures.get('doctor_stand').getSourceImage().width;
+3527:             doctorImage.setScale(docScale);
+3528:             doctorImage.setY(100 + (this.textures.get('doctor_stand').getSourceImage().height * docScale) / 2);
+3529:             this.doctorImage = doctorImage;
+3527:             doctorImage.setScale(docScale);
+3528:             doctorImage.setY(100 + (this.textures.get('doctor_stand').getSourceImage().height * docScale) / 2);
+3529:             this.doctorImage = doctorImage;
+3530:             this.tweens.add({ targets: doctorImage, alpha: 1, duration: 300 });
+3528:             doctorImage.setY(100 + (this.textures.get('doctor_stand').getSourceImage().height * docScale) / 2);
+3529:             this.doctorImage = doctorImage;
+3530:             this.tweens.add({ targets: doctorImage, alpha: 1, duration: 300 });
+3531: 
+3539:                   var dScale = 600 / this.textures.get('doctor_stand').getSourceImage().width;
+3540:                   doctorImage.setScale(dScale);
+3541:                   doctorImage.setY(100 + (this.textures.get('doctor_stand').getSourceImage().height * dScale) / 2);
+3542:                 }
+3540:                   doctorImage.setScale(dScale);
+3541:                   doctorImage.setY(100 + (this.textures.get('doctor_stand').getSourceImage().height * dScale) / 2);
+3542:                 }
+3543:               }
+3541:                   doctorImage.setY(100 + (this.textures.get('doctor_stand').getSourceImage().height * dScale) / 2);
+3542:                 }
+3543:               }
+3544:               this.showDialogue('博士', text, res);

@@ -3,11 +3,11 @@
 // =============================================
 // グリッド構成:
 //   列 (col) 0=左, 1=中, 2=右  → X: [150, 300, 450]
-//   レーン (lane) 0=上, 1=中, 2=下 → Y: [300, 540, 780]
+//   レーン (lane) 0=上, 1=中, 2=下 → Y: [220, 460, 700]
 // =============================================
 window.MOT = window.MOT || {};
 
-const LANE_YS  = [300, 540, 780];
+const LANE_YS  = [220, 460, 700];
 const COL_XS   = [150, 300, 450];
 const MOVE_DUR = 140; // ms（スナップ速度）
 
@@ -15,6 +15,7 @@ const MOVE_DUR = 140; // ms（スナップ速度）
  * 指定グリッドセル (lane, col) へプレイヤーをスナップ移動する。
  */
 MOT.moveToCell = function (scene, player, lane, col) {
+  if (scene.dialogActive || (scene.dialogContainer && scene.dialogContainer.active) || (scene.physics && scene.physics.world && scene.physics.world.isPaused)) return;
   lane = Phaser.Math.Clamp(lane, 0, 2);
   col  = Phaser.Math.Clamp(col,  0, 2);
 
@@ -59,9 +60,7 @@ MOT.handleMovement = function (scene, player) {
   // 初期化（初回のみ）
   if (player.currentLane === undefined) {
     player.currentLane = 1;
-    player.currentCol  = 0; // 一番左の列からスタート
-    player.x = COL_XS[0];
-    player.y = LANE_YS[1];
+    player.currentCol  = 1; // 中央の列からスタート (X=300)
     player.setVelocity(0, 0);
   }
 
@@ -96,31 +95,68 @@ MOT.handleMovement = function (scene, player) {
 };
 
 /**
- * スワイプ操作のセットアップ（上下左右 4方向対応）。
+ * スワイプ操作・長押しバリア・ダブルタップ必殺技のセットアップ。
  */
 MOT.setupTouchControls = function (scene, player) {
   let startX = 0;
   let startY = 0;
   let isSwiping = false;
-  const threshold = 50; // スワイプ判定距離 (px)
+  const threshold = 35; // スワイプ判定距離 (px)
 
   scene.input.on('pointerdown', function (pointer) {
+    if (scene.dialogActive || (scene.dialogContainer && scene.dialogContainer.active) || (scene.physics && scene.physics.world && scene.physics.world.isPaused)) return;
     startX = pointer.x;
     startY = pointer.y;
     isSwiping = true;
+    scene.hasSwiped = false;
+    scene.ignoreCurrentTouch = false;
+
+    const now = scene.time.now;
+    // ダブルタップ判定（300ms以内）
+    if (now - (scene.lastTapTime || 0) < 300) {
+      if (scene.longPressTimer) {
+        scene.longPressTimer.remove();
+        scene.longPressTimer = null;
+      }
+      scene.ignoreCurrentTouch = true;
+      scene.lastTapTime = 0;
+      if (scene.onSpecialAttack) scene.onSpecialAttack();
+      return;
+    }
+    scene.lastTapTime = now;
+
+    // 長押し判定（300ms経過でバリア発動）
+    if (scene.longPressTimer) {
+      scene.longPressTimer.remove();
+    }
+    scene.longPressTimer = scene.time.delayedCall(200, () => {
+      if (pointer.isDown && !scene.hasSwiped && !scene.ignoreCurrentTouch && !scene.dialogActive) {
+        scene.ignoreCurrentTouch = true;
+        if (scene.onBarrierUse) scene.onBarrierUse();
+      }
+    });
   });
 
   scene.input.on('pointermove', function (pointer) {
-    if (!pointer.isDown || !isSwiping) return;
+    if (!pointer.isDown || !isSwiping || scene.ignoreCurrentTouch) return;
 
     const dx = pointer.x - startX;
     const dy = pointer.y - startY;
     const adx = Math.abs(dx);
     const ady = Math.abs(dy);
 
-    if (adx < threshold && ady < threshold) return; // まだ閾値未満
+    // 一定距離以上動いたら長押しをキャンセル（移動・スワイプ操作とみなす）
+    if (adx > 15 || ady > 15) {
+      if (scene.longPressTimer) {
+        scene.longPressTimer.remove();
+        scene.longPressTimer = null;
+      }
+    }
 
-    isSwiping = false; // スワイプを1回だけ消費
+    if (adx < threshold && ady < threshold) return; // 閾値未満
+
+    scene.hasSwiped = true;
+    scene.ignoreCurrentTouch = true;
 
     if (ady > adx) {
       // 上下スワイプ → レーン変更
@@ -137,9 +173,26 @@ MOT.setupTouchControls = function (scene, player) {
         MOT.moveToCell(scene, player, player.currentLane, player.currentCol + 1);
       }
     }
+    // 連続でスムーズにスライド移動できるよう、起点座標を更新
+    startX = pointer.x;
+    startY = pointer.y;
   });
 
-  scene.input.on('pointerup', function () {
+  const stopTouch = function () {
     isSwiping = false;
-  });
+    if (scene.longPressTimer) {
+      scene.longPressTimer.remove();
+      scene.longPressTimer = null;
+    }
+  };
+
+  scene.input.on('pointerup', stopTouch);
+  scene.input.on('pointerout', stopTouch);
+};
+
+/**
+ * スマホ／タッチ対応：十字キーやボタンは全廃し、画面を広く使えるよう空関数に変更
+ */
+MOT.createVirtualGamepad = function (scene, player) {
+  // 十字キーとアクションボタンUIを削除し、スワイプ・ダブルタップ・長押し操作へ完全移行
 };

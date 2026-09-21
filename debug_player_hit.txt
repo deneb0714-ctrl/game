@@ -1,0 +1,12 @@
+150:     this.physics.add.overlap(this.barrierHitbox, this.enemyBullets, (hitbox, bullet) => {
+152:         this.onPlayerHit(this.player, bullet);
+156:     this.physics.add.overlap(this.player, this.enemyBullets, this.onPlayerHit, null, this);
+158:     this.physics.add.overlap(this.playerBullets, this.inunekoGroup, this.onBossHit, null, this);
+159:     this.physics.add.overlap(this.playerBullets, this.enemyGroup, this.onBossHit, null, this);
+160:     this.physics.add.overlap(this.player, this.enemyGroup, this.onPlayerHit, null, this);
+161:     this.physics.add.overlap(this.player, this.itemGroup, MOT.collectItem.bind(null, this), null, this);
+897:                 this.onPlayerHit(this.player, b);
+980:           this.onPlayerHit(this.player, { destroy: () => {} });
+1513:       let collider = this.physics.add.overlap(this.player, beam, (p, b) => {
+1514:         this.onPlayerHit(p, { destroy: () => {} });
+1596:   onPlayerHit(player, obj) {

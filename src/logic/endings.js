@@ -4,45 +4,98 @@
 window.MOT = window.MOT || {};
 
 MOT.ENDINGS = {
-  TRUE_PACIFIST: {
-    key: 'TRUE_PACIFIST',
-    title: 'TRUE END',
-    subtitle: '— 自由 —',
-    description: 'こうして勇者は自由の身となった。\n身寄りをなくした勇者は魔王に拾われることとなった。',
+  END_ORPHAN: {
+    key: 'END_ORPHAN',
+    title: 'HAPPY END',
+    subtitle: '— Hello World —',
+    bgImageEnding: 'cg_helloworld',
     color: 0x4FD1FF,
     bgColor: '#050814'
   },
-  PUPPET_BAD: {
-    key: 'PUPPET_BAD',
+  bad_puppet: {
+    key: 'bad_puppet',
     title: 'BAD END',
     subtitle: '— 傀儡 —',
-    description: 'こうして魔王は打倒された。\n魔王とはいったい何だったのか。博士の目的は何だったのか。\nしかし、それはこれからのあなたには関係のないことだろう。\nなぜならあなたは博士の忠実な傀儡（ドール）なのだから＿＿＿。',
-    color: 0x666666,
-    bgColor: '#1a0000'
+    description: 'こうして魔王は打倒された。魔王とはいったい何だったのか。\n博士の目的は何だったのか。しかし、それはこれからのあなたには関係のないことだろう。\nなぜならあなたは博士の忠実な傀儡（ドール）なのだから＿＿＿。',
+    bgImage: 'cg_puppet',
+    color: 0xFF0000,
+    bgColor: '#110000'
   },
-  NORMAL_EVERYDAY: {
-    key: 'NORMAL_EVERYDAY',
+  normal_daily: {
+    key: 'normal_daily',
     title: 'NORMAL END',
-    subtitle: '— 日常 —',
-    description: 'こうして魔王は打倒された。\n勇者は博士の研究所に戻り、ほどほどに命令を聞きながら日々を過ごしている。\nなんの変哲もない日常。\n結局魔王とはいったい何だったのか。\n彼女は本当に倒さなければならなかったのか。\nその答えを知る機会はもう一生訪れない。',
+    subtitle: '日常',
+    description: [
+      'こうして魔王は打倒された。',
+      '主人公は博士の研究所に戻った。',
+      '結局魔王とはいったい何だったのか。彼女は本当に倒さなければならなかったのか。',
+      'その答えを知る機会はもう一生訪れない。'
+    ],
+    bgImage: 'cg_daily_1',
+    postDescription: [
+      { speaker: '博士', text: '「よく魔王を倒してくれた。\nこれで私の世界平和に一歩近づいたな。\nふふ、これからが楽しみだよ」' }
+    ],
+    bgImagePost: 'cg_daily_3',
     color: 0xE5E7EB,
     bgColor: '#0a0a14'
   },
-  NORMAL_USELESS: {
-    key: 'NORMAL_USELESS',
+  normal_useless: {
+    key: 'normal_useless',
     title: 'NORMAL END',
     subtitle: '— 役立たず —',
-    description: '勇者は魔王を倒せなかった。\nそれとも、倒さなかったのだろうか。勇者にはわからなかった。\n少なくとも、会話をした中で、魔王が完全に悪だとは思えなかったのだろう。\n魔王は悪い奴ではないのかもしれないと博士に伝えるため、研究室に戻った。',
+    description: '主人公は魔王を倒せなかった。それとも、倒さなかったのだろうか。\n主人公にはわからなかった。少なくとも、会話をした中で、魔王が完全に悪だとは思えなかったのだろう。\n魔王は悪い奴ではないのかもしれないと博士に伝えるため、研究室に戻った。',
+    postDescription: [
+      { speaker: '博士', text: '「報告などなくてもわかっている。\nお前はあいつらを殺しきることはできなかった役立たずだとな。」' },
+      { speaker: '博士', text: '「魔王は悪くないだと？\n世界平和のために奴はいらんだろう。\nそんな簡単な役目すらこなせないとはな。」' },
+      { speaker: '博士', text: '「仕方ない。新たな勇者を作るとでもするか。\nだから、お前にもう用はない。」' }
+    ],
+    bgImagePost: 'cg_useless',
     color: 0x9CA3AF,
     bgColor: '#05050a'
+  },
+  normal_orphan: {
+    key: 'normal_orphan',
+    title: 'HAPPY END',
+    subtitle: '— Hello World —',
+    description: '博士は、自分に向かって引き金を引いた。\n勇者が止めようとするも間に合わず、博士は満足したかの様に自害をした。',
+    postDescription: 'こうして主人公は自由の身となった。\n身寄りをなくした主人公は魔王に拾われることとなった。',
+    bgImageEnding: 'cg_helloworld',
+    color: 0x60A5FA,
+    bgColor: '#0a0f1a'
+  },
+  bad_shutdown: {
+    key: 'bad_shutdown',
+    title: 'BAD END',
+    subtitle: '— 強制シャットダウン —',
+    description: null,
+    color: 0xFF0000,
+    bgColor: '#110000'
+  },
+  hidden_freedom: {
+    key: 'hidden_freedom',
+    title: '隠しエンド',
+    subtitle: '— 自由の身 —',
+    description: null,
+    bgImageEnding: 'bg_lab',
+    color: 0xFFD700,
+    bgColor: '#1a1a00'
   },
   BAD_GAMEOVER: {
     key: 'BAD_GAMEOVER',
     title: 'GAME OVER',
     subtitle: '— 破壊された人形 —',
-    description: '勇者は力尽き、冷たい大地に倒れた。\n博士の命令は果たされることなく、\n人造人間は静かに機能を停止した。',
+    description: '「こんなところでやられるとはなさけない」\n\n勇者は力尽き、冷たい大地に倒れた。\n人造人間は静かに機能を停止した。',
     color: 0xFF4B6E,
     bgColor: '#140005'
+  },
+  normal_unresistable: {
+    key: 'normal_unresistable',
+    title: 'NORMAL END',
+    subtitle: '— 抗えない —',
+    description: '勇者の意思とは裏腹に、研究室に戻ることもできず見逃したはずの幹部たちを見つけ殺していく。\nどれだけ引き金を引かないよう抗ったとて、その手は言うことを聞かなかった。',
+    bgImage: 'cg_irresistible',
+    color: 0x9CA3AF,
+    bgColor: '#05050a'
   }
 };
 
@@ -50,9 +103,60 @@ MOT.decideEnding = function () {
   const f = MOT.flags;
   if (f.diedCount > 0) return MOT.ENDINGS.BAD_GAMEOVER;
   
-  // エンディングの呼び出しは、BossScene内の遷移ロジックで行うため、
-  // デフォルトのフォールバックとして現在の状態を返すようにしておく
-  if (f.brutality === 0) return MOT.ENDINGS.TRUE_PACIFIST;
-  if (f.showMercy === 0) return MOT.ENDINGS.PUPPET_BAD;
-  return MOT.ENDINGS.NORMAL_EVERYDAY;
+  const allAlive = (!f.killedBoss1 && !f.killedBoss2 && !f.killedTwins);
+  const allKilled = (f.killedBoss1 && f.killedBoss2 && f.killedTwins);
+  const someKilled = (!allAlive && !allKilled);
+
+  // 幹部を全員殺す -> 傀儡
+  if (allKilled) {
+    return MOT.ENDINGS.bad_puppet;
+  }
+
+  // 幹部を一部殺してる
+  if (someKilled) {
+    if (!f.killedDemonLord) {
+      // 魔王を生かす -> YES -> 役立たず
+      return MOT.ENDINGS.normal_useless;
+    } else {
+      // 魔王を生かす -> NO -> ドルポがたまってるか？
+      if (f.dollPoints >= 100) {
+        return MOT.ENDINGS.bad_shutdown;
+      } else {
+        return MOT.ENDINGS.normal_daily;
+      }
+    }
+  }
+
+  // 幹部が全員生きてる
+  if (allAlive) {
+    if (!f.killedDemonLord) {
+      // 魔王を生かす -> YES -> ドールポイントが100未満か？
+      if (f.dollPoints < 100) { // 100未満＝YES
+        if (f.killingIntent >= 200) {
+          // 殺意がたまっている(100以上)＝YES -> 自由の身エンド
+          return MOT.ENDINGS.hidden_freedom;
+        } else {
+          // 殺意がたまっている＝NO -> 身寄りのない勇者
+          return MOT.ENDINGS.END_ORPHAN;
+        }
+      } else {
+        // ドールポイントが100以上＝NO -> 身寄りのない勇者
+        return MOT.ENDINGS.END_ORPHAN;
+      }
+    } else {
+      // 魔王を生かす -> NO -> 抗えない
+      // TODO: "抗えない"エンディングは今normal_dailyなどの代わりに追加するか、別途新設する。
+      // 「抗えない」＝傀儡ではないがノーマルエンドの一つ。
+      return {
+        key: 'normal_unresistable',
+        title: 'NORMAL END',
+        subtitle: '— 抗えない —',
+        description: '勇者の意思とは裏腹に、見逃したはずの幹部たちを見つけ殺していく。\nどれだけ引き金を引かないよう抗ったとて、その手は言うことを聞かなかった。',
+        color: 0x9CA3AF,
+        bgColor: '#05050a'
+      };
+    }
+  }
+  
+  return MOT.ENDINGS.normal_daily; // Fallback
 };
