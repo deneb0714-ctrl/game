@@ -975,24 +975,54 @@ class GameScene extends Phaser.Scene {
     if (highlightConfig) {
       if (highlightConfig.darkOverlay) {
         var darkBg = this.add.graphics();
-        darkBg.fillStyle(0x000000, 0.7);
-        darkBg.fillRect(0, 0, 1920, 1080);
+        darkBg.fillStyle(0x000000, 0.75);
+
+        darkBg.beginPath();
+        darkBg.moveTo(0, 0);
+        darkBg.lineTo(1920, 0);
+        darkBg.lineTo(1920, 1080);
+        darkBg.lineTo(0, 1080);
+        darkBg.closePath();
+
+        if (highlightConfig.radius) {
+          darkBg.moveTo(highlightConfig.x + highlightConfig.radius, highlightConfig.y);
+          darkBg.arc(highlightConfig.x, highlightConfig.y, highlightConfig.radius, 0, Math.PI * 2, true);
+        } else if (highlightConfig.width && highlightConfig.height) {
+          let hx = highlightConfig.x - highlightConfig.width / 2;
+          let hy = highlightConfig.y - highlightConfig.height / 2;
+          let hw = highlightConfig.width;
+          let hh = highlightConfig.height;
+          darkBg.moveTo(hx, hy);
+          darkBg.lineTo(hx, hy + hh);
+          darkBg.lineTo(hx + hw, hy + hh);
+          darkBg.lineTo(hx + hw, hy);
+          darkBg.closePath();
+        }
+
+        darkBg.fillPath();
         this.dialogContainer.add(darkBg);
       }
 
       var highlight = this.add.graphics();
-      var hColor = highlightConfig.color || 0x39FF14;
-      highlight.fillStyle(hColor, 0.25);
-      highlight.lineStyle(4, hColor, 0.8);
+      var hColor = highlightConfig.color || 0xFF3333;
+      highlight.lineStyle(6, hColor, 0.95);
       
       if (highlightConfig.width && highlightConfig.height) {
-        highlight.fillRoundedRect(highlightConfig.x - highlightConfig.width/2, highlightConfig.y - highlightConfig.height/2, highlightConfig.width, highlightConfig.height, 8);
         highlight.strokeRoundedRect(highlightConfig.x - highlightConfig.width/2, highlightConfig.y - highlightConfig.height/2, highlightConfig.width, highlightConfig.height, 8);
       } else if (highlightConfig.radius) {
-        highlight.fillCircle(highlightConfig.x, highlightConfig.y, highlightConfig.radius);
         highlight.strokeCircle(highlightConfig.x, highlightConfig.y, highlightConfig.radius);
       }
-      this.tweens.add({ targets: highlight, alpha: 0.1, yoyo: true, repeat: -1, duration: 500 });
+
+      var highlightGlow = this.add.graphics();
+      highlightGlow.lineStyle(12, hColor, 0.4);
+      if (highlightConfig.width && highlightConfig.height) {
+        highlightGlow.strokeRoundedRect(highlightConfig.x - highlightConfig.width/2 - 3, highlightConfig.y - highlightConfig.height/2 - 3, highlightConfig.width + 6, highlightConfig.height + 6, 12);
+      } else if (highlightConfig.radius) {
+        highlightGlow.strokeCircle(highlightConfig.x, highlightConfig.y, highlightConfig.radius + 4);
+      }
+
+      this.tweens.add({ targets: [highlight, highlightGlow], alpha: 0.3, yoyo: true, repeat: -1, duration: 450 });
+      this.dialogContainer.add(highlightGlow);
       this.dialogContainer.add(highlight);
     }
 
