@@ -138,16 +138,10 @@ class TitleScene extends Phaser.Scene {
       if (this.heroGif) {
         this.heroGif.play('play_hero_title');
         this.heroGif.once('animationcomplete', function() {
-          this.cameras.main.fadeOut(500, 5, 8, 20);
-          this.time.delayedCall(500, function () {
-            this.scene.start('StoryScene', { bossIndex: 0 });
-          }, [], this);
+          this.showNameInputModal();
         }, this);
       } else {
-        this.cameras.main.fadeOut(500, 5, 8, 20);
-        this.time.delayedCall(500, function () {
-          this.scene.start('StoryScene', { bossIndex: 0 });
-        }, [], this);
+        this.showNameInputModal();
       }
     }.bind(this));
 
@@ -766,6 +760,109 @@ class TitleScene extends Phaser.Scene {
       if (MOT.Audio && MOT.Audio.playSelect) MOT.Audio.playSelect();
       this.cgContainer.destroy();
       this.cgContainer = null;
+    });
+  }
+
+  showNameInputModal() {
+    const w = this.cameras.main.width;
+    const h = this.cameras.main.height;
+
+    const modalGroup = [];
+    const bgOverlay = this.add.graphics();
+    bgOverlay.fillStyle(0x000000, 0.85);
+    bgOverlay.fillRect(0, 0, w, h);
+    bgOverlay.setDepth(200000);
+    modalGroup.push(bgOverlay);
+
+    const boxW = 860;
+    const boxH = 380;
+    const boxX = (w - boxW) / 2;
+    const boxY = (h - boxH) / 2;
+
+    const modalBox = this.add.graphics();
+    modalBox.fillStyle(0x0a0a1a, 0.95);
+    modalBox.fillRoundedRect(boxX, boxY, boxW, boxH, 16);
+    modalBox.lineStyle(3, 0x4FD1FF, 0.9);
+    modalBox.strokeRoundedRect(boxX, boxY, boxW, boxH, 16);
+    modalBox.setDepth(200001);
+    modalGroup.push(modalBox);
+
+    const titleText = this.add.text(w / 2, boxY + 55, '勇者に名前を付けてください', {
+      fontFamily: '"DotGothic16", sans-serif',
+      fontSize: '40px',
+      color: '#4FD1FF',
+      align: 'center'
+    }).setOrigin(0.5).setDepth(200002);
+    modalGroup.push(titleText);
+
+    const inputEl = document.createElement('input');
+    inputEl.type = 'text';
+    inputEl.value = (window.MOT && MOT.flags && MOT.flags.heroName) ? MOT.flags.heroName : 'メエリア';
+    inputEl.maxLength = 12;
+    inputEl.placeholder = 'メエリア';
+    inputEl.style.position = 'fixed';
+    inputEl.style.top = '50%';
+    inputEl.style.left = '50%';
+    inputEl.style.transform = 'translate(-50%, -35%)';
+    inputEl.style.width = '360px';
+    inputEl.style.height = '56px';
+    inputEl.style.fontSize = '32px';
+    inputEl.style.fontFamily = "'DotGothic16', sans-serif";
+    inputEl.style.textAlign = 'center';
+    inputEl.style.color = '#FFFFFF';
+    inputEl.style.background = '#0F172A';
+    inputEl.style.border = '2px solid #4FD1FF';
+    inputEl.style.borderRadius = '8px';
+    inputEl.style.boxShadow = '0 0 15px rgba(79, 209, 255, 0.4)';
+    inputEl.style.zIndex = '999999';
+    inputEl.style.outline = 'none';
+
+    document.body.appendChild(inputEl);
+    setTimeout(() => { try { inputEl.focus(); inputEl.select(); } catch(e){} }, 100);
+
+    const btnY = boxY + boxH - 65;
+    const confirmBtn = this.add.image(w / 2, btnY, 'ui_button_wide')
+      .setDisplaySize(280, 60)
+      .setInteractive({ useHandCursor: true })
+      .setDepth(200002);
+
+    const confirmTxt = this.add.text(w / 2, btnY, '【 決 定 】', {
+      fontFamily: '"DotGothic16", sans-serif',
+      fontSize: '32px',
+      color: '#00FF88'
+    }).setOrigin(0.5).setDepth(200003);
+
+    modalGroup.push(confirmBtn, confirmTxt);
+
+    const cleanup = () => {
+      if (inputEl && inputEl.parentNode) {
+        inputEl.parentNode.removeChild(inputEl);
+      }
+      modalGroup.forEach(el => { if (el && el.destroy) el.destroy(); });
+    };
+
+    const submit = () => {
+      let val = inputEl.value.trim();
+      if (!val) val = 'メエリア';
+      if (window.MOT && MOT.flags) {
+        MOT.flags.heroName = val;
+      }
+      if (MOT.Audio && MOT.Audio.playSelect) MOT.Audio.playSelect();
+      cleanup();
+
+      // 明転して物語を始める
+      this.cameras.main.fadeOut(500, 255, 255, 255);
+      this.time.delayedCall(500, () => {
+        this.scene.start('StoryScene', { bossIndex: 0 });
+      });
+    };
+
+    confirmBtn.on('pointerdown', submit);
+
+    inputEl.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        submit();
+      }
     });
   }
 }

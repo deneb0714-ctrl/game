@@ -4,6 +4,7 @@
 window.MOT = window.MOT || {};
 
 MOT.flags = {
+  heroName: 'メエリア',
   favor: {
     minion1: 0,
     boss1: 0,
@@ -29,6 +30,8 @@ MOT.flags = {
 };
 
 MOT.resetFlags = function () {
+  const currentHeroName = (MOT.flags && MOT.flags.heroName) ? MOT.flags.heroName : 'メエリア';
+  MOT.flags.heroName = currentHeroName;
   MOT.flags.favor = { minion1: 0, boss1: 0, boss2: 0, boss3: 0, wingL: 0, wingR: 0 };
   MOT.flags.obeyDoctor = 0;
   MOT.flags.showMercy = 0;
