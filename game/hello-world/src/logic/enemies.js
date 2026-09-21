@@ -69,10 +69,6 @@ MOT.fireLinear = function (scene, x, y, vx, vy, color, tex) {
       bullet.body.checkCollision.none = true;
     }
 
-    // Auto-destroy when off-screen
-    scene.time.delayedCall(5000, function () {
-      if (bullet.active) bullet.destroy();
-    });
     return bullet;
   }
   return null;
@@ -111,10 +107,6 @@ MOT.fireHoming = function (scene, x, y, speed, player, color, tex) {
       bullet.setRotation(angle);
       bullet.body.checkCollision.none = true;
     }
-    
-    scene.time.delayedCall(4000, function () {
-      if (bullet.active) bullet.destroy();
-    });
   }
 };
 
