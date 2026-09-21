@@ -1202,24 +1202,29 @@ class GameScene extends Phaser.Scene {
             e2.fireDisabled = true;
             this.tutEnemy2 = e2;
 
-            // 500ms後に敵攻撃の事前会話
-            this.time.delayedCall(500, () => {
-              this.physics.pause();
-              this.dialogActive = true;
-
-              this.showDeviceDialogue('「今度は敵が攻撃をしてきたぞ。前後左右に避けながら撃ち殺せ。」', () => {
-                this.dialogActive = false;
-                this.physics.resume();
-
-                // 敵2が攻撃弾1を発射（自機にヒットして1ダメージ）
-                let b1 = MOT.fireLinear(this, e2.x, e2.y, -700, 0);
-                if (b1) b1.shooter = e2;
-                this.tutBullet1 = b1;
-                this.tutorialPhase = 2.2;
-              });
+            // 600ms後に敵2が攻撃弾1を発射
+            this.time.delayedCall(600, () => {
+              let b1 = MOT.fireLinear(this, e2.x, e2.y, -400, 0);
+              if (b1) b1.shooter = e2;
+              this.tutBullet1 = b1;
+              this.tutorialPhase = 2.15;
             });
           });
         });
+      }
+    } else if (this.tutorialPhase === 2.15) {
+      // 攻撃弾1が画面中央付近（x <= 1100）に到達したら時が止まり、敵と攻撃弾以外を暗くして強調表示
+      if (this.tutBullet1 && this.tutBullet1.active && this.tutBullet1.x <= 1100) {
+        this.tutorialPhase = 2.2;
+        this.physics.pause();
+        this.dialogActive = true;
+
+        let attackHighlight = { x: 1150, y: 460, width: 450, height: 260, darkOverlay: true, color: 0xFF3333 };
+
+        this.showDeviceDialogue('「今度は敵が攻撃をしてきたぞ。上下左右に避けながら撃ち殺せ。」', () => {
+          this.dialogActive = false;
+          this.physics.resume();
+        }, attackHighlight);
       }
     } else if (this.tutorialPhase === 2.2) {
       // 弾1が自機にヒット（または自機位置到達）
