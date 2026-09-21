@@ -1186,46 +1186,72 @@ class GameScene extends Phaser.Scene {
             this.dialogActive = false;
             this.physics.resume();
             
+            // 1. 敵3体がやってくる
             let enemies = [];
+            const laneYs = [220, 460, 700];
             for (let i = 0; i < 3; i++) {
-              let e = this.spawnTutorialEnemy(i, 60);
-              e.x = 1400 + i * 90;
+              let e = this.enemyGroup.create(1920, laneYs[i], 'enemy_basic');
+              e.setVelocityX(-350);
+              e.hp = 1;
               enemies.push(e);
             }
 
-            // Slow motion effect
-            this.time.timeScale = 0.2;
-
-            this.time.delayedCall(400, () => {
-              this.time.timeScale = 1.0;
+            // 2. 敵が画面内（右側中央寄り）にやってきたら時が止まり、敵が攻撃を出す
+            this.time.delayedCall(1000, () => {
+              // 敵の移動速度を0にし、主人公側の時を止める（攻撃・移動ストップ）
+              enemies.forEach(e => { if (e.active) e.setVelocityX(0); });
               this.physics.pause();
-              this.dialogActive = true;
 
-              let shieldHighlight = { x: 360, y: 92, radius: 28, color: 0x00FF88 };
+              // 敵が攻撃を出す（敵弾発射）
+              let firedBullets = [];
+              enemies.forEach(e => {
+                if (e.active) {
+                  let b = MOT.fireLinear(this, e.x, e.y, -300, 0);
+                  if (b) {
+                    b.shooter = e;
+                    firedBullets.push(b);
+                  }
+                }
+              });
 
-              if (isMobile) {
-                this.showDeviceDialogue('「敵が攻撃をしてきたぞ。前後左右に避けながら撃ち殺せ。」', () => {
-                  this.showDeviceDialogue('「避けきれないときはシールドを張れ。」', () => {
-                    this.showDeviceDialogue('「画面を【長押し】でシールドを展開できる。タイミング良く敵の攻撃にシールドを張れた場合、反撃することもできるだろう。」', () => {
+              // 3. 敵と発射された敵攻撃部分以外を暗くして強調
+              this.time.delayedCall(120, () => {
+                this.physics.pause();
+                this.dialogActive = true;
+
+                let attackHighlight = { x: 1350, y: 460, width: 650, height: 600, darkOverlay: true, color: 0xFF3333 };
+                let shieldHighlight = { x: 360, y: 92, radius: 28, color: 0x00FF88 };
+
+                const onFinishShieldDialogue = () => {
+                  this.dialogActive = false;
+                  this.tutorialPhase = 3;
+                  // セリフ終了後に時を戻す（物理・自機操作・敵弾移動の再開）
+                  this.physics.resume();
+                  enemies.forEach(e => {
+                    if (e.active) e.setVelocityX(-60);
+                  });
+                };
+
+                if (isMobile) {
+                  this.showDeviceDialogue('「敵が攻撃をしてきたぞ。前後左右に避けながら撃ち殺せ。」', () => {
+                    this.showDeviceDialogue('「避けきれないときはシールドを張れ。」', () => {
+                      this.showDeviceDialogue('「画面を【長押し】でシールドを展開できる。タイミング良く敵の攻撃にシールドを張れた場合、反撃することもできるだろう。」', () => {
+                        this.showDeviceDialogue('「左上の緑の円がクールタイムだ。何度も張り直しできないから、上手く活用するんだ。」', () => {
+                          onFinishShieldDialogue();
+                        }, shieldHighlight);
+                      });
+                    });
+                  }, attackHighlight);
+                } else {
+                  this.showDeviceDialogue('「敵が攻撃をしてきたぞ。避けきれないときはシールドを張れ。」', () => {
+                    this.showDeviceDialogue('「【スペースキー】を押すことでシールドを展開できる。タイミング良く敵の攻撃にシールドを張れた場合、反撃することもできるだろう。」', () => {
                       this.showDeviceDialogue('「左上の緑の円がクールタイムだ。何度も張り直しできないから、上手く活用するんだ。」', () => {
-                        this.dialogActive = false;
-                        this.tutorialPhase = 3;
-                        this.physics.resume();
+                        onFinishShieldDialogue();
                       }, shieldHighlight);
                     });
-                  });
-                });
-              } else {
-                this.showDeviceDialogue('「敵が攻撃をしてきたぞ。避けきれないときはシールドを張れ。」', () => {
-                  this.showDeviceDialogue('「【スペースキー】を押すことでシールドを展開できる。タイミング良く敵の攻撃にシールドを張れた場合、反撃することもできるだろう。」', () => {
-                    this.showDeviceDialogue('「左上の緑の円がクールタイムだ。何度も張り直しできないから、上手く活用するんだ。」', () => {
-                      this.dialogActive = false;
-                      this.tutorialPhase = 3;
-                      this.physics.resume();
-                    }, shieldHighlight);
-                  });
-                });
-              }
+                  }, attackHighlight);
+                }
+              });
             });
           });
         });
