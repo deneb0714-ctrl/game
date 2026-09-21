@@ -735,7 +735,11 @@ class GameScene extends Phaser.Scene {
     }
 
     obj.destroy();
-    MOT.flags.playerHP--;
+    if (this.currentStage === 1) {
+      MOT.flags.playerHP = Math.max(1, MOT.flags.playerHP - 1);
+    } else {
+      MOT.flags.playerHP--;
+    }
     this.cameras.main.shake(150, 0.008);
 
     // Flash player red
@@ -754,7 +758,7 @@ class GameScene extends Phaser.Scene {
       }.bind(this)
     });
 
-    if (MOT.flags.playerHP <= 0) {
+    if (MOT.flags.playerHP <= 0 && this.currentStage !== 1) {
       MOT.flags.diedCount++;
       this.cameras.main.fadeOut(1000, 0, 0, 0);
       this.time.delayedCall(1000, function () {
