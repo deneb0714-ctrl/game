@@ -973,6 +973,7 @@ class GameScene extends Phaser.Scene {
   }
   showDeviceDialogue(text, onComplete, highlightConfig) {
     this.dialogActive = true;
+    this.updateHUD();
     this.input.setTopOnly(true);
     if (this.dialogContainer) {
       this.dialogContainer.destroy();
@@ -1404,9 +1405,13 @@ class GameScene extends Phaser.Scene {
         this.showDeviceDialogue('「最初は私が代わりに必殺技ゲージを貯めてやろう。」', () => {
           MOT.flags.energy = 100;
           MOT.flags.maxEnergy = true;
+          this.updateHUD();
           startSpecialPrompt();
         });
       } else {
+        MOT.flags.energy = 100;
+        MOT.flags.maxEnergy = true;
+        this.updateHUD();
         startSpecialPrompt();
       }
     } else if (this.tutorialPhase === 6) {
