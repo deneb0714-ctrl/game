@@ -1219,7 +1219,7 @@ class GameScene extends Phaser.Scene {
         this.physics.pause();
         this.dialogActive = true;
 
-        let attackHighlight = { x: 1150, y: 460, width: 450, height: 260, darkOverlay: true, color: 0xFF3333 };
+        let attackHighlight = { x: this.tutBullet1.x, y: 460, radius: 70, darkOverlay: true, color: 0xFF3333 };
 
         this.showDeviceDialogue('「今度は敵が攻撃をしてきたぞ。上下左右に避けながら撃ち殺せ。」', () => {
           this.dialogActive = false;
@@ -1259,31 +1259,51 @@ class GameScene extends Phaser.Scene {
         });
       }
     } else if (this.tutorialPhase === 2.4) {
-      // 弾2が自機の目の前（反撃可能な距離）に到達したら時が止まる
-      if (this.player && this.player.active && this.tutBullet2 && this.tutBullet2.active && this.tutBullet2.x <= this.player.x + 160) {
+      // 弾2が自機の目の前（x <= player.x + 140）に到達したら時が止まる
+      if (this.player && this.player.active && this.tutBullet2 && this.tutBullet2.active && this.tutBullet2.x <= this.player.x + 140) {
         this.tutorialPhase = 2.5;
         this.physics.pause();
         this.dialogActive = true;
 
         let promptMsg = isMobile ? '「今だ。【長押し】してみろ。」' : '「今だ。【スペースキー】を押してみろ。」';
-        let attackHighlight = { x: this.tutBullet2.x, y: this.tutBullet2.y, radius: 60, darkOverlay: true, color: 0xFF3333 };
+        let attackHighlight = { x: this.tutBullet2.x, y: this.tutBullet2.y, radius: 70, darkOverlay: true, color: 0xFF3333 };
 
         this.showDeviceDialogue(promptMsg, () => {
-          // セリフ終了後、反撃成功演出＆敵2撃破
-          if (this.tutBullet2 && this.tutBullet2.active) this.tutBullet2.destroy();
-          if (this.tutEnemy2 && this.tutEnemy2.active) {
-            this.tutEnemy2.isInvulnerable = false;
-            this.showExplosion(this.tutEnemy2.x, this.tutEnemy2.y);
-            this.tutEnemy2.destroy();
-          }
-
-          // シールド発動演出
+          // 1. シールド（バリア）を実際に自機に展開
           this.barrierActive = true;
           this.barrierTime = 0;
           this.barrierCooldown = 2000;
           this.barrierActivatedTime = this.time.now;
-          this.cameras.main.flash(200, 255, 215, 0);
+          if (this.barrierVisual) this.barrierVisual.destroy();
+          this.barrierVisual = this.add.circle(this.player.x, this.player.y, 60, 0x00FFaa, 0.4).setStrokeStyle(4, 0x00FFaa, 0.9).setDepth(9);
+          this.cameras.main.flash(200, 255, 255, 200);
 
+          // 2. 目の前の敵弾2を消去
+          if (this.tutBullet2 && this.tutBullet2.active) this.tutBullet2.destroy();
+
+          // 3. 自機から敵2に向かって黄金の反撃弾を3発同時発射！
+          for (let angleOffset of [-0.08, 0, 0.08]) {
+            const reflectBullet = this.playerBullets.create(this.player.x + 30, this.player.y, 'bullet_player');
+            if (reflectBullet) {
+              let speed = 1400;
+              reflectBullet.setVelocity(Math.cos(angleOffset) * speed, Math.sin(angleOffset) * speed);
+              reflectBullet.setScale(2.5);
+              reflectBullet.setTint(0xFFFF00);
+              reflectBullet.damage = 10;
+            }
+          }
+
+          // 4. 反撃弾が敵2に命中し、巨大な爆発とともに撃破される演出！
+          this.time.delayedCall(250, () => {
+            if (this.tutEnemy2 && this.tutEnemy2.active) {
+              this.tutEnemy2.isInvulnerable = false;
+              this.showExplosion(this.tutEnemy2.x, this.tutEnemy2.y);
+              this.tutEnemy2.destroy();
+            }
+            this.deactivateBarrier();
+          });
+
+          // 5. 反撃成功の会話＆クールタイム解説
           let shieldHighlight = { x: 360, y: 92, radius: 36, darkOverlay: true, color: 0x00FF88 };
           this.showDeviceDialogue('「よし、上手く反撃できたな。その調子だ。」', () => {
             this.showDeviceDialogue('「左上の緑の円がクールタイムだ。シールドは何度も張り直しできないから、使うタイミングに気を付けろ。」', () => {
