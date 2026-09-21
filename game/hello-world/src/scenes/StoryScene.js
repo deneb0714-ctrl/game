@@ -290,7 +290,7 @@ class StoryScene extends Phaser.Scene {
     }
 
     // Portrait highlighting and Device UI
-    if (data.speaker === '『博士』') {
+    if (data.speaker === '『博士』' || data.speaker === '博士') {
       this.heroImage.setAlpha(0);
       this.doctorImage.setAlpha(0);
       this.deviceCommFrame.setAlpha(1);
