@@ -848,11 +848,20 @@ class TitleScene extends Phaser.Scene {
         MOT.flags.heroName = val;
       }
       if (MOT.Audio && MOT.Audio.playSelect) MOT.Audio.playSelect();
-      cleanup();
 
-      // 明転して物語を始める
+      // 入力要素とモーダル枠のみを削除し、真っ黒な背景(bgOverlay)は残してタイトル画面を見せない
+      if (inputEl && inputEl.parentNode) {
+        inputEl.parentNode.removeChild(inputEl);
+      }
+      if (modalBox && modalBox.destroy) modalBox.destroy();
+      if (titleText && titleText.destroy) titleText.destroy();
+      if (confirmBtn && confirmBtn.destroy) confirmBtn.destroy();
+      if (confirmTxt && confirmTxt.destroy) confirmTxt.destroy();
+
+      // 明転（白フェードアウト）して物語へ移行
       this.cameras.main.fadeOut(500, 255, 255, 255);
       this.time.delayedCall(500, () => {
+        if (bgOverlay && bgOverlay.destroy) bgOverlay.destroy();
         this.scene.start('StoryScene', { bossIndex: 0 });
       });
     };
