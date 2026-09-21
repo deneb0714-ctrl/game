@@ -769,7 +769,7 @@ class TitleScene extends Phaser.Scene {
 
     const modalGroup = [];
     const bgOverlay = this.add.graphics();
-    bgOverlay.fillStyle(0x000000, 0.85);
+    bgOverlay.fillStyle(0x000000, 1.0);
     bgOverlay.fillRect(0, 0, w, h);
     bgOverlay.setDepth(200000);
     modalGroup.push(bgOverlay);
