@@ -975,31 +975,24 @@ class GameScene extends Phaser.Scene {
     if (highlightConfig) {
       if (highlightConfig.darkOverlay) {
         var darkBg = this.add.graphics();
-        darkBg.fillStyle(0x000000, 0.75);
+        darkBg.fillStyle(0x000000, 0.78);
 
-        darkBg.beginPath();
-        darkBg.moveTo(0, 0);
-        darkBg.lineTo(1920, 0);
-        darkBg.lineTo(1920, 1080);
-        darkBg.lineTo(0, 1080);
-        darkBg.closePath();
+        let hX = highlightConfig.x;
+        let hY = highlightConfig.y;
+        let halfW = highlightConfig.radius ? highlightConfig.radius : (highlightConfig.width / 2);
+        let halfH = highlightConfig.radius ? highlightConfig.radius : (highlightConfig.height / 2);
 
-        if (highlightConfig.radius) {
-          darkBg.moveTo(highlightConfig.x + highlightConfig.radius, highlightConfig.y);
-          darkBg.arc(highlightConfig.x, highlightConfig.y, highlightConfig.radius, 0, Math.PI * 2, true);
-        } else if (highlightConfig.width && highlightConfig.height) {
-          let hx = highlightConfig.x - highlightConfig.width / 2;
-          let hy = highlightConfig.y - highlightConfig.height / 2;
-          let hw = highlightConfig.width;
-          let hh = highlightConfig.height;
-          darkBg.moveTo(hx, hy);
-          darkBg.lineTo(hx, hy + hh);
-          darkBg.lineTo(hx + hw, hy + hh);
-          darkBg.lineTo(hx + hw, hy);
-          darkBg.closePath();
-        }
+        let x1 = Math.max(0, hX - halfW);
+        let x2 = Math.min(1920, hX + halfW);
+        let y1 = Math.max(0, hY - halfH);
+        let y2 = Math.min(1080, hY + halfH);
 
-        darkBg.fillPath();
+        // Draw 4 outer dark rectangles surrounding the spotlight area
+        if (y1 > 0) darkBg.fillRect(0, 0, 1920, y1);
+        if (y2 < 1080) darkBg.fillRect(0, y2, 1920, 1080 - y2);
+        if (x1 > 0 && y2 > y1) darkBg.fillRect(0, y1, x1, y2 - y1);
+        if (x2 < 1920 && y2 > y1) darkBg.fillRect(x2, y1, 1920 - x2, y2 - y1);
+
         this.dialogContainer.add(darkBg);
       }
 
