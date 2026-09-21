@@ -1020,7 +1020,7 @@ class GameScene extends Phaser.Scene {
     face.setY(boxY + 140 + (face.height * scaleRatio) * 0.35);
     this.dialogContainer.add(face);
 
-    var nameText = this.add.text(310, boxY + 10, '『博士』', {
+    var nameText = this.add.text(310, boxY + 10, '博士', {
       fontFamily: '"DotGothic16"', fontSize: '44px', color: '#4FD1FF'
     });
     this.dialogContainer.add(nameText);
