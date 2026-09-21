@@ -818,8 +818,11 @@ class GameScene extends Phaser.Scene {
       bullet.destroy();
       return;
     }
-    const dmg = bullet.damage || 1;
     bullet.destroy();
+    if (enemy.isInvulnerable) {
+      return;
+    }
+    const dmg = bullet.damage || 1;
     enemy.hp = (enemy.hp || 1) - dmg;
     enemy.setTint(0xffffff);
     this.time.delayedCall(50, function(){ if(enemy.active) enemy.clearTint(); });
@@ -831,7 +834,13 @@ class GameScene extends Phaser.Scene {
       }
       this.showExplosion(enemy.x, enemy.y);
       // Tutorial specific drop logic
-      if (enemy.tutorialDrop) {
+      if (enemy.stationaryDrop) {
+        let item = MOT.spawnEnergyItem(this, enemy.x, enemy.y, enemy.tutorialRed);
+        if (item) {
+          item.stationary = true;
+          item.setVelocityX(0);
+        }
+      } else if (enemy.tutorialDrop) {
         MOT.spawnEnergyItem(this, enemy.x, enemy.y, enemy.tutorialRed);
       } else {
         let dropRand = Phaser.Math.Between(0, 100);
@@ -1127,6 +1136,7 @@ class GameScene extends Phaser.Scene {
       delay: Phaser.Math.Between(1500, 2500),
       callback: () => {
         if (enemy.active) {
+          if (enemy.fireDisabled) return;
           let b = MOT.fireLinear(this, enemy.x, enemy.y, -300, 0);
           if (b) b.shooter = enemy;
         }
@@ -1153,6 +1163,7 @@ class GameScene extends Phaser.Scene {
           
           let e = this.spawnTutorialEnemy(1, 0);
           e.x = 1300;
+          e.fireDisabled = true;
           
           this.time.delayedCall(500, () => {
             this.physics.pause();
@@ -1179,83 +1190,113 @@ class GameScene extends Phaser.Scene {
             this.dialogActive = false;
             this.physics.resume();
             
-            // 1. 敵3体がやってくる
-            let enemies = [];
-            const laneYs = [220, 460, 700];
-            for (let i = 0; i < 3; i++) {
-              let e = this.enemyGroup.create(1920, laneYs[i], 'enemy_basic');
-              e.setVelocityX(-350);
-              e.hp = 1;
-              enemies.push(e);
-            }
+            // 敵2がやってくる（無敵＆自動射撃無効）
+            let e2 = this.spawnTutorialEnemy(1, 0);
+            e2.x = 1300;
+            e2.isInvulnerable = true;
+            e2.fireDisabled = true;
+            this.tutEnemy2 = e2;
 
-            // 2. 敵が画面内（右側中央寄り）にやってきたら時が止まり、敵が攻撃を出す
-            this.time.delayedCall(1000, () => {
-              // 敵の移動速度を0にし、主人公側の時を止める（攻撃・移動ストップ）
-              enemies.forEach(e => { if (e.active) e.setVelocityX(0); });
-              this.physics.pause();
-
-              // 敵が攻撃を出す（敵弾発射）
-              let firedBullets = [];
-              enemies.forEach(e => {
-                if (e.active) {
-                  let b = MOT.fireLinear(this, e.x, e.y, -300, 0);
-                  if (b) {
-                    b.shooter = e;
-                    firedBullets.push(b);
-                  }
-                }
-              });
-
-              // 3. 敵と発射された敵攻撃部分以外を暗くして強調
-              this.time.delayedCall(120, () => {
-                this.physics.pause();
-                this.dialogActive = true;
-
-                let attackHighlight = { x: 1350, y: 460, width: 650, height: 600, darkOverlay: true, color: 0xFF3333 };
-                let shieldHighlight = { x: 360, y: 92, radius: 28, color: 0x00FF88 };
-
-                const onFinishShieldDialogue = () => {
-                  this.dialogActive = false;
-                  this.tutorialPhase = 3;
-                  // セリフ終了後に時を戻す（物理・自機操作・敵弾移動の再開）
-                  this.physics.resume();
-                  enemies.forEach(e => {
-                    if (e.active) e.setVelocityX(-60);
-                  });
-                };
-
-                if (isMobile) {
-                  this.showDeviceDialogue('「敵が攻撃をしてきたぞ。前後左右に避けながら撃ち殺せ。」', () => {
-                    this.showDeviceDialogue('「避けきれないときはシールドを張れ。」', () => {
-                      this.showDeviceDialogue('「画面を【長押し】でシールドを展開できる。タイミング良く敵の攻撃にシールドを張れた場合、反撃することもできるだろう。」', () => {
-                        this.showDeviceDialogue('「左上の緑の円がクールタイムだ。何度も張り直しできないから、上手く活用するんだ。」', () => {
-                          onFinishShieldDialogue();
-                        }, shieldHighlight);
-                      });
-                    });
-                  }, attackHighlight);
-                } else {
-                  this.showDeviceDialogue('「敵が攻撃をしてきたぞ。避けきれないときはシールドを張れ。」', () => {
-                    this.showDeviceDialogue('「【スペースキー】を押すことでシールドを展開できる。タイミング良く敵の攻撃にシールドを張れた場合、反撃することもできるだろう。」', () => {
-                      this.showDeviceDialogue('「左上の緑の円がクールタイムだ。何度も張り直しできないから、上手く活用するんだ。」', () => {
-                        onFinishShieldDialogue();
-                      }, shieldHighlight);
-                    });
-                  }, attackHighlight);
-                }
-              });
+            // 800ms後に敵2が弾1を発射（強制ヒット＆1ダメージ）
+            this.time.delayedCall(800, () => {
+              let b1 = MOT.fireLinear(this, e2.x, e2.y, -700, 0);
+              if (b1) {
+                b1.shooter = e2;
+                b1.isTutorialForced = true;
+              }
+              this.tutBullet1 = b1;
             });
           });
         });
       }
+    } else if (this.tutorialPhase === 2.1) {
+      // 弾1が自機にヒットまたは到達した時
+      if (this.tutBullet1 && this.tutBullet1.active && this.tutBullet1.x <= this.player.x + 40) {
+        this.tutBullet1.destroy();
+        MOT.flags.playerHP = Math.max(1, MOT.flags.playerHP - 1);
+        this.cameras.main.shake(150, 0.008);
+        this.player.setTint(0xFF4B6E);
+        this.time.delayedCall(200, () => { if (this.player.active) this.player.clearTint(); });
+
+        this.tutorialPhase = 2.2;
+        this.physics.pause();
+        this.dialogActive = true;
+
+        let hpHighlight = { x: 120, y: 35, width: 220, height: 40, darkOverlay: true, color: 0xFF3366 };
+
+        const afterHitDialogue = () => {
+          this.dialogActive = false;
+          this.physics.resume();
+          
+          // 1000ms後に敵2が弾2を発射
+          this.time.delayedCall(1000, () => {
+            let b2 = MOT.fireLinear(this, this.tutEnemy2.x, this.tutEnemy2.y, -300, 0);
+            if (b2) b2.shooter = this.tutEnemy2;
+            this.tutBullet2 = b2;
+            this.tutorialPhase = 2.3;
+          });
+        };
+
+        if (isMobile) {
+          this.showDeviceDialogue('「今度は敵が攻撃をしてきたぞ。前後左右に避けながら撃ち殺せ。」', () => {
+            this.showDeviceDialogue('「避けきれないときはシールドを張れ。」', () => {
+              afterHitDialogue();
+            });
+          }, hpHighlight);
+        } else {
+          this.showDeviceDialogue('「今度は敵が攻撃をしてきたぞ。避けきれないときはシールドを張れ。」', () => {
+            afterHitDialogue();
+          }, hpHighlight);
+        }
+      }
+    } else if (this.tutorialPhase === 2.3) {
+      // 弾2が自機の手前に到達したら時が止まる
+      if (this.tutBullet2 && this.tutBullet2.active && this.tutBullet2.x <= this.player.x + 160) {
+        this.tutorialPhase = 2.4;
+        this.physics.pause();
+        this.dialogActive = true;
+
+        let attackMsg = isMobile
+          ? '「画面を【長押し】でシールドを展開できる。タイミング良く敵の攻撃にシールドを張れた場合、反撃することもできるだろう。」'
+          : '「【スペースキー】を押すことでシールドを展開できる。タイミング良く敵の攻撃にシールドを張れた場合、反撃することもできるだろう。」';
+
+        let attackHighlight = { x: this.tutBullet2.x, y: this.tutBullet2.y, radius: 60, darkOverlay: true, color: 0xFF3333 };
+
+        this.showDeviceDialogue(attackMsg, () => {
+          // セリフ終了後、シールドカウンター発動＆敵2撃破
+          if (this.tutBullet2 && this.tutBullet2.active) this.tutBullet2.destroy();
+          if (this.tutEnemy2 && this.tutEnemy2.active) {
+            this.tutEnemy2.isInvulnerable = false;
+            this.showExplosion(this.tutEnemy2.x, this.tutEnemy2.y);
+            this.tutEnemy2.destroy();
+          }
+
+          // シールド発動演出
+          this.barrierActive = true;
+          this.barrierTime = 0;
+          this.barrierCooldown = 2000;
+          this.barrierActivatedTime = this.time.now;
+          this.cameras.main.flash(200, 255, 215, 0);
+
+          let shieldHighlight = { x: 360, y: 92, radius: 36, darkOverlay: true, color: 0x00FF88 };
+          this.showDeviceDialogue('「左上の緑の円がクールタイムだ。何度も張り直しできないから、上手く活用するんだ。」', () => {
+            this.dialogActive = false;
+            this.tutorialPhase = 3;
+            this.physics.resume();
+          }, shieldHighlight);
+        }, attackHighlight);
+      }
     } else if (this.tutorialPhase === 3) {
       this.tutorialPhase = 3.1;
       
+      // HP回復アイテムをドロップ
+      let hItem = MOT.spawnHealthItem(this, 1200, 460);
+      if (hItem) hItem.setVelocityX(-150);
+
       for (let i = 0; i < 3; i++) {
         let e = this.spawnTutorialEnemy(i, 0);
-        e.x = 1300 + Phaser.Math.Between(0, 100);
-        e.tutorialDrop = true;
+        e.x = 1400 + Phaser.Math.Between(0, 80);
+        e.stationaryDrop = true;
         e.tutorialRed = (i === 1);
       }
       
@@ -1274,20 +1315,27 @@ class GameScene extends Phaser.Scene {
         this.physics.pause();
         this.dialogActive = true;
 
-        let diamondHighlight = { x: 960, y: 460, width: 600, height: 400, darkOverlay: true, color: 0xFF0055 };
+        let diamondHighlight = { x: 1400, y: 460, width: 600, height: 600, darkOverlay: true, color: 0xFF0055 };
         let gaugeHighlight = { x: 180, y: 92, width: 320, height: 40, darkOverlay: true, color: 0x4FD1FF };
 
         this.showDeviceDialogue('「よくやった。今、倒したときに青と赤のダイヤがドロップしただろう？」', () => {
           this.showDeviceDialogue('「このダイヤはお前の意志の力だ」', () => {
             this.showDeviceDialogue('「それを拾うことで左上にある必殺技ゲージを貯めることができる。」', () => {
               this.showDeviceDialogue('「赤いダイヤを拾うと必殺技を貯めるだけでなく、お前の攻撃力を上げることができる。」', () => {
+                // セリフ終了後にダイヤが動くようにする
+                this.itemGroup.getChildren().forEach(item => {
+                  if (item.stationary) {
+                    item.stationary = false;
+                    item.setVelocityX(-250);
+                  }
+                });
                 this.dialogActive = false;
                 this.tutorialPhase = 5;
                 this.physics.resume();
-              });
+              }, diamondHighlight);
             }, gaugeHighlight);
           }, diamondHighlight);
-        });
+        }, diamondHighlight);
       }
     } else if (this.tutorialPhase === 5) {
       this.tutorialPhase = 5.1;
@@ -1299,7 +1347,7 @@ class GameScene extends Phaser.Scene {
           ? '「ゲージが溜まったな。\n色が変わると必殺技を打つことができる。画面を【ダブルタップ】で打てる。試してみろ。」'
           : '「ゲージが溜まったな。\n色が変わると必殺技を打つことができる。【エンターキー】を押すことで打てる。試してみろ。」';
 
-        let gaugeHighlight = { x: 180, y: 92, width: 320, height: 40, color: 0xFF4B6E };
+        let gaugeHighlight = { x: 180, y: 92, width: 320, height: 40, darkOverlay: true, color: 0xFF4B6E };
         this.showDeviceDialogue(msg, () => {
           this.dialogActive = false;
           this.tutorialPhase = 6;
@@ -1382,7 +1430,7 @@ class GameScene extends Phaser.Scene {
               }
 
               let hpHighlight = { x: 120, y: 35, width: 220, height: 40, darkOverlay: true, color: 0xFF3366 };
-              this.showDeviceDialogue('「従った回数によって体力をあげてやる。」', () => {
+              this.showDeviceDialogue('「従った回数によって体力をあげてやるから指示に従えよ。」', () => {
                 this.showDeviceDialogue('「これで説明は終了だ。進んでいくといい。」', () => {
                   this.dialogActive = false;
                   this.physics.pause();
