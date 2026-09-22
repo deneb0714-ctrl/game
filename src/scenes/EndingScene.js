@@ -308,8 +308,12 @@ class EndingScene extends Phaser.Scene {
       this.cameras.main.fadeIn(1500, 0, 0, 0);
       
       this.time.delayedCall(3000, () => {
-        this.createReturnButton(w / 2, h * 0.86);
-        this.createContinueButton(w / 2, h * 0.94);
+        if (window.MOT && MOT.hasSaveData && MOT.hasSaveData()) {
+          this.createContinueButton(w / 2, h * 0.86);
+          this.createReturnButton(w / 2, h * 0.94);
+        } else {
+          this.createReturnButton(w / 2, h * 0.90);
+        }
       });
   }
 
@@ -371,7 +375,8 @@ class EndingScene extends Phaser.Scene {
       }
       this.cameras.main.fadeOut(800, 5, 8, 20);
       this.time.delayedCall(800, function () {
-        this.scene.start('BossScene', { startBossIndex: saveData ? saveData.bossIndex : 1, fromContinue: true });
+        const startIdx = (saveData && saveData.bossIndex !== undefined) ? saveData.bossIndex : 0;
+        this.scene.start('BossScene', { startBossIndex: startIdx, fromContinue: true });
       }, [], this);
     }, this);
   }

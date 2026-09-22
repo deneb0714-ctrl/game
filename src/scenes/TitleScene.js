@@ -154,18 +154,19 @@ class TitleScene extends Phaser.Scene {
           MOT.flags.playerHP = MOT.flags.playerMaxHP || 5;
           MOT.flags.useGlitchTitle = false;
         }
+        const startIdx = (saveData && saveData.bossIndex !== undefined) ? saveData.bossIndex : 0;
         if (this.heroGif) {
           this.heroGif.play('play_hero_title');
           this.heroGif.once('animationcomplete', function() {
             this.cameras.main.fadeOut(500, 5, 8, 20);
             this.time.delayedCall(500, function () {
-              this.scene.start('BossScene', { startBossIndex: saveData ? saveData.bossIndex : 1, fromContinue: true });
+              this.scene.start('BossScene', { startBossIndex: startIdx, fromContinue: true });
             }, [], this);
           }, this);
         } else {
           this.cameras.main.fadeOut(500, 5, 8, 20);
           this.time.delayedCall(500, function () {
-            this.scene.start('BossScene', { startBossIndex: saveData ? saveData.bossIndex : 1, fromContinue: true });
+            this.scene.start('BossScene', { startBossIndex: startIdx, fromContinue: true });
           }, [], this);
         }
       }.bind(this));

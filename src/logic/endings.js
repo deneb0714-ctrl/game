@@ -12,6 +12,14 @@ MOT.ENDINGS = {
     color: 0x4FD1FF,
     bgColor: '#050814'
   },
+  hello_world: {
+    key: 'hello_world',
+    title: 'HAPPY END',
+    subtitle: '— Hello World —',
+    bgImageEnding: 'cg_helloworld',
+    color: 0x4FD1FF,
+    bgColor: '#050814'
+  },
   bad_puppet: {
     key: 'bad_puppet',
     title: 'BAD END',
