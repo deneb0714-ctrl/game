@@ -1985,49 +1985,122 @@ class BossScene extends Phaser.Scene {
 
     const heroName = MOT.flags.heroName || '勇者';
 
-    (async () => {
-      // 1. GGS Terminal 1
-      await this.terminalEffect([
-        'mmƂ̃bbggggO 「...now loading...」',
-        'mmƂ̃bbggggO 「...完了」',
-        '',
-        'mmƂ̃````bbggggO 「エラーの確認...修復完了」'
-      ]);
+    const sayDoctorDefeat = (text) => new Promise(res => {
+      if (this.dimBg) this.tweens.add({ targets: this.dimBg, alpha: 0.6, duration: 300 });
+      if (this.doctorImage) this.tweens.add({ targets: this.doctorImage, alpha: 1, duration: 300 });
+      if (this.heroImage) this.tweens.add({ targets: this.heroImage, alpha: 0.4, duration: 300 });
+      this.showDialogue('博士', text, res);
+    });
+    const sayHeroDefeat = (text) => new Promise(res => {
+      if (this.dimBg) this.tweens.add({ targets: this.dimBg, alpha: 0.6, duration: 300 });
+      if (this.heroImage) this.tweens.add({ targets: this.heroImage, alpha: 1, duration: 300 });
+      if (this.doctorImage) this.tweens.add({ targets: this.doctorImage, alpha: 0.4, duration: 300 });
+      this.showDialogue(heroName, text, res);
+    });
+    const sayDemonDefeat = (text) => new Promise(res => {
+      if (this.dimBg) this.tweens.add({ targets: this.dimBg, alpha: 0.6, duration: 300 });
+      if (this.demonImage) this.tweens.add({ targets: this.demonImage, alpha: 1, duration: 300 });
+      if (this.heroImage) this.tweens.add({ targets: this.heroImage, alpha: 0.4, duration: 300 });
+      if (this.doctorImage) this.tweens.add({ targets: this.doctorImage, alpha: 0.4, duration: 300 });
+      this.showDialogue('魔王', text, res);
+    });
 
-      // 立ち絵・会話準備
+    (async () => {
+      // 敗北時会話
+      await sayHeroDefeat('「ぐっっっ……」');
+      await sayDoctorDefeat('「はははは。しょせん、お前は俺の創造物だ。俺を超えることなどできないのだよ。」');
+      await sayDemonDefeat('「それは違うぞ！」');
+      await sayDemonDefeat('「一人でなら敵わなくても、我らが協力したらどうじゃ？」');
+      await sayDoctorDefeat('「でもそちらは満身創痍みたいだが？」');
+      await sayDoctorDefeat('「お前らが完全な状態でも太刀打ちできないこの私に、そんな状態で勝てると本気で思っているのか？」');
+      await sayDemonDefeat('「っ……。」');
+
+      // 勇者以外背景も含めて少し暗くなる
       const w = 1920, h = 1080;
       if (!this.dimBg) {
-        this.dimBg = this.add.rectangle(w / 2, h / 2, w, h, 0x000000, 0.6).setAlpha(0).setDepth(89);
+        this.dimBg = this.add.rectangle(w / 2, h / 2, w, h, 0x000000).setAlpha(0).setDepth(89);
       }
-      this.tweens.add({ targets: this.dimBg, alpha: 0.6, duration: 300 });
+      this.tweens.add({ targets: this.dimBg, alpha: 0.85, duration: 500 });
+      if (this.heroImage) this.tweens.add({ targets: this.heroImage, alpha: 1, duration: 500 });
+      if (this.doctorImage) this.tweens.add({ targets: this.doctorImage, alpha: 0.2, duration: 500 });
+      if (this.demonImage) this.tweens.add({ targets: this.demonImage, alpha: 0.2, duration: 500 });
 
-      const sayKratos = (text) => new Promise(res => {
-        this.showDialogue('クラトス', text, res);
-      });
-      const sayTourelos = (text) => new Promise(res => {
-        this.showDialogue('トゥレロス', text, res);
-      });
-      const sayEnaria = (text) => new Promise(res => {
-        this.showDialogue('エナリア', text, res);
-      });
-      const sayEdio = (text) => new Promise(res => {
-        this.showDialogue('エディオ', text, res);
-      });
-      const sayDemon = (text) => new Promise(res => {
-        this.showDialogue('魔王', text, res);
-      });
-      const sayHero = (text) => new Promise(res => {
-        this.showDialogue(heroName, text, res);
+      // 心の叫び
+      await sayHeroDefeat('「（ああ、結局僕は人形なのか……。」');
+      await sayHeroDefeat('「でも、でも、そうだとしても、負けるわけにはいかないんだ……！！！）」');
+
+      // ノイズかかって暗転
+      this.cameras.main.shake(500, 0.03);
+      this.cameras.main.fadeOut(800, 0, 0, 0);
+      await new Promise(r => this.time.delayedCall(800, r));
+
+      // 1. GGS Terminal 1 (Spaceキー / クリックで進行)
+      this.cameras.main.fadeIn(300, 0, 0, 0);
+      await this.terminalEffect([
+        'mmƂ̃bbggggO 「...link established」',
+        'mmƂ̃bbggggO 「...signal stable: 1.00」',
+        '',
+        'mmƂ̃````bbggggO 「こんにちは。『GGS』よ。」',
+        '',
+        'mmƂ̃````bbggggO 「悪性因子、消失を確認。」',
+        '',
+        'mmƂ̃````bbggggO 「世界構造、再計測完了。観測値、許容範囲内。」',
+        '',
+        'mmƂ̃````bbggggO 「あなたは宿命を果たした。あなたの行動は祝福を授けるに値する。」',
+        'mmƂ̃````bbggggO 「あなたの望みを叶えよう。」',
+        'mmƂ̃````bbggggO 「個体情報、更新。」',
+        'mmƂ̃````bbggggO 「Designation："勇者" → "' + heroName + '"」',
+        'mmƂ̃````bbggggO 「登録情報、書き換え完了。」',
+        'mmƂ̃````bbggggO 「あなたは、もう人造人間ではない。」',
+        'mmƂ̃````bbggggO 「この世界に生きる、一人の人間──"' + heroName + '"として認証する。」',
+        'mmƂ̃````bbggggO 「ただの人間”' + heroName + '”として、自由に生きなさい。」',
+        '',
+        'mmƂ̃bbggggO 「...logging complete」',
+        'mmƂ̃bbggggO 「...connection closed」'
+      ]);
+
+      // 暗転終了後。勇者以外背景も暗くした状態に戻り覚醒
+      this.tweens.add({ targets: this.dimBg, alpha: 0.85, duration: 300 });
+      if (this.heroImage) this.tweens.add({ targets: this.heroImage, alpha: 1, duration: 300 });
+      if (this.doctorImage) this.tweens.add({ targets: this.doctorImage, alpha: 0.2, duration: 300 });
+      if (this.demonImage) this.tweens.add({ targets: this.demonImage, alpha: 0.2, duration: 300 });
+
+      const sayKratos = (text) => new Promise(res => { this.showDialogue('クラトス', text, res); });
+      const sayTourelos = (text) => new Promise(res => { this.showDialogue('トゥレロス', text, res); });
+      const sayEnaria = (text) => new Promise(res => { this.showDialogue('エナリア', text, res); });
+      const sayEdio = (text) => new Promise(res => { this.showDialogue('エディオ', text, res); });
+      const sayDemon = (text) => new Promise(res => { this.showDialogue('魔王', text, res); });
+      const sayDoctor = (text) => new Promise(res => {
+        if (this.doctorImage) this.tweens.add({ targets: this.doctorImage, alpha: 1, duration: 300 });
+        this.showDialogue('博士', text, res);
       });
 
-      // 2. 仲間たちの声（立ち絵付き）
-      await sayKratos('「おい！起きろ！！勇者！！！」');
-      await sayTourelos('「きみはここで終わるようなタマじゃないだろう！立ち上がれ！！！」');
-      await sayEnaria('「諦めちゃダメ！あなたなら……あなたなら絶対に勝てるわ！！」');
-      await sayEdio('「僕たちを助けてくれた時の力を、もう一度見せてくれ！！」');
-      await sayDemon('「ククッ……お前が倒れたら、わらわたちが困るのだ。さあ、立て！勇者よ！！」');
-      await sayHero('「……みんな……そうか……僕はひとりじゃないんだ……！」');
-      await sayHero('「博士……これが、僕の……僕たちの選択だ！！！」');
+      await sayHeroDefeat('「そうだ。僕は”' + heroName + '”だ。」');
+      await sayHeroDefeat('「僕は…まだ倒れるわけにはいかないんだ！！」');
+
+      // 背景の暗転が解除され仲間たちが加勢
+      this.tweens.add({ targets: this.dimBg, alpha: 0.6, duration: 500 });
+      if (this.doctorImage) this.tweens.add({ targets: this.doctorImage, alpha: 1, duration: 500 });
+      if (this.demonImage) this.tweens.add({ targets: this.demonImage, alpha: 1, duration: 500 });
+
+      await sayDoctor('「なんだ！？」');
+      await sayHeroDefeat('「僕は博士から与えられた”勇者”じゃない。”兵器”でもない。」');
+      await sayHeroDefeat('「僕は僕として選択をする。誰かに従ったりなんかしない！」');
+
+      await sayDoctor('「チッ、忌々しい。」');
+      await sayDoctor('「1100と1101に引き続き、揃いも揃って感情に目覚めおって！」');
+      await sayDoctor('「感情なんてお前らには必要ないものだというのに！」');
+
+      await sayEnaria('「忌々しいですって？自分で創った存在なのに随分な物言いね。」');
+      await sayEdio('「まぁ博士にとって僕らは都合のいい駒でしかなかったわけだし、仕方ないよ」');
+      await sayEdio('「責任持って、僕ら”博士の創造物”が片をつけてあげよう」');
+      await sayKratos('「格上と直接戦うのは久しぶりだ！楽しみだぜ」');
+      await sayTourelos('「いや、正面切って今は戦うのはやめとけよ。お前、まだ怪我治ってなくね？」');
+      await sayKratos('「そんなの関係ねぇ！俺は戦う！！」');
+      await sayTourelos('「……。」');
+      await sayDemon('「後方支援はわらわたちに任せろ！」');
+
+      await sayHeroDefeat('「今度こそ、決着をつけよう」');
 
       // 3. Phase 2 博士戦 (HP 1000, 勇者復活)
       this.isDoctorPhase1Unwinnable = false;
@@ -2183,14 +2256,40 @@ class BossScene extends Phaser.Scene {
             if (MOT.Audio && MOT.Audio.playShot) MOT.Audio.playShot();
             else if (MOT.Audio && MOT.Audio.playSelect) MOT.Audio.playSelect();
 
-            this.cameras.main.shake(500, 0.05);
+            // Detroit Become Human style choice shatter effect
+            this.cameras.main.shake(600, 0.05);
 
-            const redFlash = this.add.rectangle(w / 2, h / 2, w, h, 0xff0000, 0.4).setDepth(200010);
+            // Shatter Option 1 into glitch fragments
+            const opt1X = w / 2;
+            const opt1Y = startY;
+            for (let k = 0; k < 35; k++) {
+              const part = this.add.rectangle(
+                opt1X + Phaser.Math.Between(-150, 150),
+                opt1Y + Phaser.Math.Between(-30, 30),
+                Phaser.Math.Between(8, 25),
+                Phaser.Math.Between(8, 25),
+                k % 2 === 0 ? 0xff0055 : 0x00ffff
+              ).setDepth(200015).setScrollFactor(0);
+              
+              this.tweens.add({
+                targets: part,
+                x: part.x + Phaser.Math.Between(-350, 350),
+                y: part.y + Phaser.Math.Between(-250, 250),
+                angle: Phaser.Math.Between(-360, 360),
+                alpha: 0,
+                scale: 0,
+                duration: Phaser.Math.Between(500, 1000),
+                onComplete: () => part.destroy()
+              });
+            }
+
+            const redFlash = this.add.rectangle(w / 2, h / 2, w, h, 0xff0000, 0.5).setDepth(200010);
             this.tweens.add({ targets: redFlash, alpha: 0, duration: 400, onComplete: () => redFlash.destroy() });
 
             destroyUI();
 
-            await new Promise(r => this.showDialogue(MOT.flags.heroName || '勇者', '「……それでも僕は、殺したくない……！！」', r));
+            const heroName = MOT.flags.heroName || '勇者';
+            await new Promise(r => this.showDialogue(heroName, '「……それでも僕は、殺したくない……！！」', r));
             resolve(2);
           }
         };
@@ -2553,7 +2652,7 @@ class BossScene extends Phaser.Scene {
                 await this.askDemonLordShatterChoice(sayDoctor);
 
                 // 3. 魔王との会話と選択肢
-                await sayDemon('「……結局我々を殺さず、お前は何をしにきたんだ？わらわたちを滅ぼしに来たんだろう？」');
+                await sayDemon('「……結局我々を殺さず、お前は何をしにきたんだ？あの法螺吹きにけしかけられて、わらわたちを滅ぼしに来たんだろう？」');
 
                 await new Promise(res => {
                   this.showChoice([
@@ -2562,11 +2661,56 @@ class BossScene extends Phaser.Scene {
                   ]);
                 });
 
+                const heroName = MOT.flags.heroName || '勇者';
+
+                // 魔王の説明
+                await sayDemon('「そうか……英断だな…。」');
+                await sayDemon('「売られた喧嘩ならまだしも、わらわたちはお前に何もしておらんからの。」');
+                await sayDemon('「そしてここから話すのは、信じるも信じないもお前の自由だ。」');
+                await sayDemon('「お前は、あいつに”魔王が世界を滅ぼそうとしている”とでも言われたのだろう？だが、残念なことに、それはわらわたちを滅ぼすための方便にすぎぬ。」');
+                await sayDemon('「あいつはこの世界に人間以上の存在がいることが許せないのだ。わらわはやつに襲われていた魔族を保護し、あいつとながい間戦ってきた。」');
+                await sayDemon('「ながい、ながい戦いだった。……やつは気の毒な奴じゃ。だが、それはわらわたちを滅ぼす理由にはならない。」');
+
                 // 4. 博士乱入 (立ち絵: doctor_awaken_smile_weapon)
-                await sayDoctor('「そこまでだ、ヴェリタス。余計な口を滑らせるな」', 'doctor_awaken_smile_weapon');
-                await sayDoctor('「……やれやれ、お前は本当に出来の悪い『作品』だな。」', 'doctor_awaken_smile_weapon');
-                await sayDoctor('「まさか、プログラムの命令を無視して、自分の意思で暴走するとはな」', 'doctor_awaken_smile_weapon');
-                await sayDoctor('「お前も、あの役立たずどもと同じゴミ箱行きだ」', 'doctor_awaken_smile_weapon');
+                await sayDoctor('「…はははは。すべて話されてしまったみたいだな」', 'doctor_awaken_smile_weapon');
+                await sayHero('「！」');
+                await sayHero('「僕は……ずっとあなたに嘘をつかれていたんだね。」');
+                await sayDoctor('「嘘？違うな、そいつらを殺せば平和な世界が訪れる。」', 'doctor_awaken_smile_weapon');
+                await sayDoctor('「……私にとってな。」', 'doctor_awaken_smile_weapon');
+                await sayHero('「それでみんなを殺すだなんて、身勝手じゃないか。」');
+                await sayDoctor('「そうだな。しかしそれがどうした？自分の望む世界を目指すのは普通のことだろう？」', 'doctor_awaken_smile_weapon');
+                await sayDoctor('「それに、私だけじゃない。魔族に恐怖し、滅んでほしいと願う人間はごまんといる。そいつらにとっても、いい世界となるんだ。」', 'doctor_awaken_smile_weapon');
+                await sayDemon('「わらわたちはただ生きているだけだ！むやみに人を傷つけたことなど、一度もない！」');
+                
+                const sayInuneko = (text) => new Promise(res => { this.showDialogue('犬猫☆スター', text, res); });
+                await sayInuneko('「そうわん！魔王様は、お前とは違って優しいにゃん！！」');
+
+                await sayHero('「そうだよ。やっぱり僕はみんなを殺したくない。仲良くできるはずだよ。」');
+                await sayHero('「だって、みんな、魔王を殺しに来ているはずの僕を殺そうとしなかった。」');
+                await sayHero('「僕は知った。魔族は悪い奴じゃないって。」');
+                await sayHero('「だからもう、あなたに従ったりはしない。」');
+
+                await sayDoctor('「……面白い。ただ創られた存在であるはずのお前が、そんな感情を持つなんてな。」', 'doctor_awaken_smile_weapon');
+                await sayHero('「創られた…？」');
+                await sayDoctor('「そうだ。お前は、”勇者”でもなんでもない。ただの”兵器”だ。」', 'doctor_awaken_smile_weapon');
+                await sayHero('「兵器……？」');
+                await sayDoctor('「そうだ。」', 'doctor_awaken_smile_weapon');
+                await sayDoctor('「しかし、私が何度殺せと指示をし、選択権を奪ってもなお、お前は最後まで従わなかった。」', 'doctor_awaken_smile_weapon');
+                await sayDoctor('「……思えば、最初からおかしかった。お前を創るとき、感情や思考力といったものは組み込まなかったはず。だから、お前は自分を”勇者”と認識したら、何も聞かず、ただ黙って戦いに行くはずだった。」', 'doctor_awaken_smile_weapon');
+                await sayHero('「でも僕には感情が……」');
+                await sayDoctor('「本当にそう思っているのか？」', 'doctor_awaken_smile_weapon');
+                await sayHero('「……。」');
+                await sayDoctor('「お前も気が付いているのだろう？自分の中にいる、お前を操っている存在を。」', 'doctor_awaken_smile_weapon');
+                await sayHero('「……。」');
+                await sayDoctor('「その表情……認めたくないのか？結局、お前は誰かに指示を仰がないと生きていけないんだ。いい加減認めて楽になった方がいい。」', 'doctor_awaken_smile_weapon');
+                await sayDoctor('「まぁ、お前が誰かに操られていたとしてももう関係ない。」', 'doctor_awaken_smile_weapon');
+                await sayDoctor('「もうお前は必要ないからな。」', 'doctor_awaken_smile_weapon');
+
+                this.cameras.main.shake(400, 0.03);
+                await sayDemon('「なんだ？！」');
+                await sayInuneko('「にゃわわ！？」');
+                await sayDoctor('「これまで集めたデータ、幾度となく繰り返した実験、そしてお前のデータ。これにより私の準備はすべて整った！！」', 'doctor_awaken_smile_weapon');
+                await sayDoctor('「さぁ、最終決戦といこうじゃないか！」', 'doctor_awaken_smile_weapon');
 
                 if (this.boss1Bgm) this.boss1Bgm.stop();
                 if (this.boss2Bgm) this.boss2Bgm.stop();
@@ -2574,9 +2718,18 @@ class BossScene extends Phaser.Scene {
                 if (this.boss4Bgm) this.boss4Bgm.stop();
                 if (this.boss5Bgm) this.boss5Bgm.stop();
 
-                // イベント戦闘(博士 Phase 1 - 負けイベント)
+                // イベント戦闘(博士 Phase 1 - 負けイベント: 10秒後に自動死亡)
                 this.isDoctorPhase1Unwinnable = true;
                 this.bossQueue.push('doctor');
+                
+                // 10秒タイマーで絶対に死ぬ（ゲームオーバーにはしない）
+                this.time.delayedCall(10000, () => {
+                  if (this.isDoctorPhase1Unwinnable && !this.phase1DefeatTriggered) {
+                    MOT.flags.playerHP = 0;
+                    this.triggerDoctorPhase1Defeat();
+                  }
+                });
+
                 this.proceedToNextArea(boss, true);
                 return;
               } else {
@@ -2641,50 +2794,46 @@ class BossScene extends Phaser.Scene {
               this.showDialogue('博士', text, res);
             });
 
-            const sayKratos = (text) => new Promise(res => {
-              this.showDialogue('クラトス', text, res);
-            });
-            const sayTourelos = (text) => new Promise(res => {
-              this.showDialogue('トゥレロス', text, res);
-            });
-            const sayEnaria = (text) => new Promise(res => {
-              this.showDialogue('エナリア', text, res);
-            });
-            const sayEdio = (text) => new Promise(res => {
-              this.showDialogue('エディオ', text, res);
-            });
-            const sayDemon = (text) => new Promise(res => {
-              this.showDialogue('魔王', text, res);
-            });
-            const sayHero = (text) => new Promise(res => {
-              this.showDialogue(MOT.flags.heroName || '勇者', text, res);
-            });
+            const sayKratos = (text) => new Promise(res => { this.showDialogue('クラトス', text, res); });
+            const sayTourelos = (text) => new Promise(res => { this.showDialogue('トゥレロス', text, res); });
+            const sayEnaria = (text) => new Promise(res => { this.showDialogue('エナリア', text, res); });
+            const sayEdio = (text) => new Promise(res => { this.showDialogue('エディオ', text, res); });
+            const sayDemon = (text) => new Promise(res => { this.showDialogue('魔王', text, res); });
+            const sayInuneko = (text) => new Promise(res => { this.showDialogue('犬猫☆スター', text, res); });
+            
+            const heroName = MOT.flags.heroName || '勇者';
+            const sayHero = (text) => new Promise(res => { this.showDialogue(heroName, text, res); });
 
             (async () => {
-              await sayDoctor('「バカな……！人間が、この私を超えたというのか……！？」');
-              await sayDoctor('「私は……間違ってなど……いない……！世界を正すのは……この私だ……！！」');
-
-              // 博士消滅演出
-              this.cameras.main.shake(600, 0.04);
-              if (this.doctorImage) {
-                this.tweens.add({
-                  targets: this.doctorImage,
-                  scale: docScale * 1.5,
-                  alpha: 0,
-                  duration: 800,
-                  ease: 'Power2',
-                  onComplete: () => { if (this.doctorImage) this.doctorImage.destroy(); }
-                });
-              }
-              await new Promise(r => this.time.delayedCall(1000, r));
+              // 博士撃破直後会話
+              await sayDoctor('「驚いた...まさかお前達がここまでやるとはな」');
+              await sayHero('「…」');
+              await sayDoctor('「なにをしている？早くとどめを刺せ。同情などいらん。何の足しにもならないからな。」');
 
               // 最後の選択肢
-              await new Promise(res => {
+              let finalChoice = await new Promise(res => {
                 this.showChoice([
                   { text: '1. 殺さない', callback: () => { if(MOT.Audio.playSelect) MOT.Audio.playSelect(); res(1); } },
                   { text: '2. 殺せない', callback: () => { if(MOT.Audio.playSelect) MOT.Audio.playSelect(); res(2); } }
                 ]);
               });
+
+              if (finalChoice === 1) {
+                // 【1答えた場合】
+                await sayDoctor('「…なんだ、ここでも殺さないのか。わかっているのか？その女の言う通り、私はお前を騙していたんだ。」');
+                await sayDoctor('「お前は”勇者”なんかじゃない、俺の最高傑作のはずだったんだがな。」');
+                await sayHero('「あなたがやったことは許せない。だけど、ここであなたを殺したら僕はあなたと同じになってしまう。」');
+                await sayDoctor('「そうか……。」');
+                await sayDoctor('「ついぞ俺の実験が成功することはなかったか。もうこの身体も必要ないな。さらばだ011101。」');
+                await sayHero('「！」');
+              } else {
+                // 【2答えた場合】
+                await sayHero('「僕はあなたを殺せない...。あなたがやったことは許せないけど、それでもあなたは僕の...」');
+                await sayDoctor('「全く...本当にどうしようもない欠陥品だな。」');
+                await sayDoctor('「私は、自分の目的のためにしか生きられない。お前が何を思っていてもな。」');
+                await sayDoctor('「さらばだ、011101。もう、お前に用はない。好きに生きるんだな。」');
+                await sayHero('「！」');
+              }
 
               // 銃声SE + 画面赤フラッシュ
               if (MOT.Audio && MOT.Audio.playShot) MOT.Audio.playShot();
@@ -2694,15 +2843,70 @@ class BossScene extends Phaser.Scene {
               const redOverlay = this.add.rectangle(w / 2, h / 2, w, h, 0xff0000, 0.5).setDepth(200000);
               this.tweens.add({ targets: redOverlay, alpha: 0, duration: 300, onComplete: () => redOverlay.destroy() });
 
+              // 博士自害ナレーション
+              const sayNarration = (text) => new Promise(res => {
+                this.showDialogue('', text, res);
+              });
+              await sayNarration('博士は、自分に向かって引き金を引いた。');
+              await sayNarration(heroName + 'が止めようとするも間に合わず、博士は満足したかの様に自害をした。');
+
               // 仲間たちのエピローグ会話
-              await sayKratos('「……終わったな。これで、本当の自由だ」');
-              await sayTourelos('「ふぅ……ヒヤヒヤしたよ。仲間ならやってくれると思ってた」');
-              await sayEnaria('「ありがとう……！これで、誰も苦しまなくていいんだね」');
-              await sayEdio('「……僕たちの世界は、ここから始まるんだ」');
-              await sayDemon('「ククッ……見事だ、勇者よ。お前が掴み取った『未来』、とくと見せてもらうぞ」');
-              await sayHero('「……うん。みんなで、新しい世界を作ろう」');
+              if (finalChoice === 1) {
+                await sayHero('「止められなかった…」');
+                await sayHero('「……」');
+                await sayHero('「でも、これで全部終わったんだよね……」');
+                await sayDemon('「ああ。…それぞれに複雑な想いはあれど、ようやく永い戦いが終わった。」');
+                await sayInuneko('「みんな自由になるにゃん！！」');
+                await sayDemon('「さて、お前を操る存在はいなくなったがこれからどうするつもりなんだ？」');
+                await sayHero('「……」');
+                await sayKratos('「じゃあ再戦しようよ！！！勇者くん！」');
+                await sayEnaria('「あなた馬鹿じゃないの？みんなボロボロなのにこれ以上戦うって死ぬつもり？」');
+                await sayKratos('「そんなつもりはないよ！ただ負けっぱなしってのも気に食わないだろ？それに君強いし。戦ったら俺も強くなれる！」');
+                await sayTourelos('「はは、だからみんなに”脳筋”ってよばれるんだよ。自覚ないのかい？」');
+                await sayEdio('「まあ、僕たちと同じで博士に創られた存在だからね。強くて当然。」');
+                await sayEnaria('「そうね、兄さま。それにこの子もちゃんと判断できるようになったみたいだし、対立する理由もなくなったわ。」');
+                await sayKratos('「なんだ！じゃあもう仲間だな！」');
+                await sayHero('「いや、そんな単純には…」');
+                await sayDemon('「ふふ、みなこう言っとるし、お前もわらわたちのもとに来るか？」');
+                await sayHero('「……でも僕はあなたたちを殺そうとしたんだよ？」');
+                await sayDemon('「だが自分で選択をして、殺さなかった。」');
+                await sayDemon('「それに、わらわの部下たちはお前と同じで居場所がないものたちだ。誰も拒絶せぬよ。」');
+                await sayEdio('「僕は大賛成！だって僕らは兄弟だろう？」');
+                await sayHero('「本当にいいの？」');
+                await sayDemon('「良くなかったら誘わぬ！お前が嫌じゃないならさっさと来るんじゃ！」');
+                await sayInuneko('「れっつらごーだわん！！」');
+              } else {
+                await sayHero('「止められなかった…」');
+                await sayHero('「……」');
+                await sayHero('「でも、これで全部終わったんだよね……」');
+                await sayDemon('「ああ。…それぞれに複雑な想いはあれど、ようやくながい戦いが終わった。」');
+                await sayInuneko('「みんな自由になるにゃん！！」');
+                await sayDemon('「さて、お前を操る存在はいなくなったがこれからどうするつもりなんだ？」');
+                await sayHero('「……」');
+                await sayKratos('「じゃあ再戦しようよ！！！勇者くん！」');
+                await sayEnaria('「あなた馬鹿じゃないの？みんなボロボロなのにこれ以上戦うって死ぬつもり？」');
+                await sayKratos('「そんなつもりはないよ！ただ負けっぱなしってのも気に食わないだろ？それに君、強いし。戦ったら俺も強くなれる！」');
+                await sayTourelos('「はは、だからみんなに”脳筋”って呼ばれるんだよ。」');
+                await sayEdio('「まあ、僕たちと同じで博士に創られた存在だからね。強くて当然。」');
+                await sayEnaria('「そうね、兄さま。それにこの子もちゃんと判断できるようになったみたいだし、対立する理由もなくなったわ。」');
+                await sayKratos('「なんだ！じゃあもう仲間なのか！」');
+                await sayHero('「いや、そんな単純には…」');
+                await sayDemon('「ふふ、気にするな。みなこう言っとるし、わらわたちのもとに来るか？」');
+                await sayHero('「……でも僕はあなたたちを殺そうとしたんだよ？」');
+                await sayDemon('「だが自分で選択をして、殺さなかった。」');
+                await sayDemon('「それに、わらわの部下たちはお前と同じで居場所がないものたちだ。誰も拒絶せぬよ。」');
+                await sayEdio('「僕は大賛成！だって僕らは”兄弟”だろう？」');
+                await sayHero('「本当にいいの？」');
+                await sayDemon('「良くなかったら誘わぬ！お前が嫌じゃないならさっさと来るんじゃ！」');
+                await sayInuneko('「れっつらごーだわん！！」');
+              }
+
+              // （暗転）
+              this.cameras.main.fadeOut(800, 0, 0, 0);
+              await new Promise(r => this.time.delayedCall(800, r));
 
               // GGS Terminal 2 (Spaceキー / クリックで進行)
+              this.cameras.main.fadeIn(300, 0, 0, 0);
               await this.terminalEffect([
                 'mmƂ̃bbggggO 「...now loading...」',
                 'mmƂ̃bbggggO 「...完了」',
@@ -2716,7 +2920,7 @@ class BossScene extends Phaser.Scene {
                 '',
                 'mmƂ̃````bbggggO 「あなたのおかげで、バグはなくなって世界の崩壊は止められた。彼らたちの未来はこれからも続くの。」',
                 '',
-                'mmƂ̃````bbggggO 「創られた存在から、”メエリア”となったあの子が幸せな道を歩むのを応援してくれると嬉しいわ。」',
+                'mmƂ̃````bbggggO 「創られた存在から、”' + heroName + '”となったあの子が幸せな道を歩むのを応援してくれると嬉しいわ。」',
                 '',
                 'mmƂ̃````bbggggO 「といっても、接続が難しくて、これ以上は見せられないのだけれど。」',
                 '',
