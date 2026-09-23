@@ -982,10 +982,12 @@ class BossScene extends Phaser.Scene {
     this.lastDialogActive = isDialog;
 
     if (isDialog) {
+      this.hideBossHPBar();
       return;
     }
     
     if (this.cutsceneActive) {
+      this.hideBossHPBar();
       MOT.handleMovement(this, this.player);
       
       // バリアの更新（移動時に追従させるため）
@@ -2782,9 +2784,7 @@ class BossScene extends Phaser.Scene {
               this.currentBoss.setVisible(false);
               this.currentBoss.setActive(false);
             }
-            if (this.bossHpBg) this.bossHpBg.setVisible(false);
-            if (this.bossHpBar) this.bossHpBar.setVisible(false);
-            if (this.bossHPText) this.bossHPText.setVisible(false);
+            this.hideBossHPBar();
             if (this.laneGraphics) { this.laneGraphics.setVisible(false); }
 
             var w = 1920, h = 1080;
@@ -3264,6 +3264,14 @@ class BossScene extends Phaser.Scene {
     }, [], this);
   }
 
+  hideBossHPBar() {
+    if (this.bossHPBar) this.bossHPBar.clear();
+    if (this.bossHPText) { this.bossHPText.setText(''); this.bossHPText.setVisible(false); }
+    if (this.sisterHPText) { this.sisterHPText.setText(''); this.sisterHPText.setVisible(false); }
+    if (this.bossHpBg) this.bossHpBg.setVisible(false);
+    if (this.bossHpBar) { this.bossHpBar.clear(); this.bossHpBar.setVisible(false); }
+  }
+
   // 撃破後の共通進行処理
   clearConversationUI() {
     if (this.dimBg) { this.dimBg.destroy(); this.dimBg = null; }
@@ -3273,10 +3281,7 @@ class BossScene extends Phaser.Scene {
     if (this.doctorImage) { this.doctorImage.destroy(); this.doctorImage = null; }
     if (this.sisterImage) { this.sisterImage.destroy(); this.sisterImage = null; }
     if (this.brotherImage) { this.brotherImage.destroy(); this.brotherImage = null; }
-    if (this.bossHPText) { this.bossHPText.setText(''); this.bossHPText.setVisible(false); }
-    if (this.sisterHPText) { this.sisterHPText.setText(''); this.sisterHPText.setVisible(false); }
-    if (this.bossHpBg) { this.bossHpBg.setVisible(false); }
-    if (this.bossHpBar) { this.bossHpBar.clear(); this.bossHpBar.setVisible(false); }
+    this.hideBossHPBar();
   }
 
   proceedToNextArea(boss, isSpared = false) {
