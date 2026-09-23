@@ -1,2 +1,0 @@
-190:         texture: 'boss2_battle_anim', name: 'トゥレロス', hp: 120, scale: 0.3,
-4747:       tex = 'boss2_battle_anim';
