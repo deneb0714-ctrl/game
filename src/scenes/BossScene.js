@@ -1,4 +1,4 @@
-﻿// =============================================
+// =============================================
 // BossScene.js – ボス戦（幹部→両翼→魔王）
 // =============================================
 class BossScene extends Phaser.Scene {
@@ -2564,6 +2564,11 @@ class BossScene extends Phaser.Scene {
       this.heroImage.setY(100 + (this.heroImage.height * this.heroImage.scaleY) / 2);
       this.showDialogue(MOT.flags.heroName || '勇者', text, res);
     });
+            }
+          }
+        }
+        return;
+      }
 
      if (this.bossHP <= 0 && !this.bossDefeated) {
       this.bossDefeated = true; // Prevent multiple triggers
@@ -2665,7 +2670,6 @@ class BossScene extends Phaser.Scene {
 
                 // 魔王の説明
                 await sayDemon('「そうか……英断だな…。」');
-                await sayDemon('「売られた喧嘩ならまだしも、わらわたちはお前に何もしておらんからの。」');
                 await sayDemon('「そしてここから話すのは、信じるも信じないもお前の自由だ。」');
                 await sayDemon('「お前は、あいつに”魔王が世界を滅ぼそうとしている”とでも言われたのだろう？だが、残念なことに、それはわらわたちを滅ぼすための方便にすぎぬ。」');
                 await sayDemon('「あいつはこの世界に人間以上の存在がいることが許せないのだ。わらわはやつに襲われていた魔族を保護し、あいつとながい間戦ってきた。」');
