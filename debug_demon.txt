@@ -1,0 +1,380 @@
+11:     this.bossQueue = ['boss1', 'boss2', 'boss3_twins', 'demon_lord'];
+12:     this.currentBossIndex = 0;
+13:     let isSkipping = false;
+14:     if (data && data.bossIndex !== undefined) {
+15:       this.currentBossIndex = data.bossIndex;
+16:       isSkipping = true;
+17:     } else if (data && data.startBossIndex !== undefined) {
+18:       this.currentBossIndex = data.startBossIndex;
+19:       isSkipping = true;
+20:     }
+203:       demon_lord: {
+204:         texture: 'demon_stand_combat', name: '魔王 – ヴェリタス', hp: 300, scale: 0.5,
+205:         intro: '「…来たか、博士の人形よ。\nお前に真実を伝えなければならない。」',
+206:         defeat: '「聞いてくれ。博士こそが…この世界を壊そうとしている。\n俺は…それを止めたかっただけだ。」',
+207:         choices: []
+208:       },
+209:       doctor: {
+210:         texture: 'doctor_combat', name: '博士', hp: 450, scale: 2.5,
+211:         intro: '「さぁ、最終決戦といこうじゃないか！」',
+212:         defeat: '「驚いた...まさかお前がここまでやるとはな」',
+204:         texture: 'demon_stand_combat', name: '魔王 – ヴェリタス', hp: 300, scale: 0.5,
+205:         intro: '「…来たか、博士の人形よ。\nお前に真実を伝えなければならない。」',
+206:         defeat: '「聞いてくれ。博士こそが…この世界を壊そうとしている。\n俺は…それを止めたかっただけだ。」',
+207:         choices: []
+208:       },
+209:       doctor: {
+210:         texture: 'doctor_combat', name: '博士', hp: 450, scale: 2.5,
+211:         intro: '「さぁ、最終決戦といこうじゃないか！」',
+212:         defeat: '「驚いた...まさかお前がここまでやるとはな」',
+213:         choices: []
+239:     if (key === 'demon_lord') boss.play('demon_combat_anim');
+240:     if (key === 'boss2') boss.play('boss2_battle_play');
+241:     if (key === 'boss3_twins') boss.play('boss3_battle_play');
+242:     boss.setScale(cfg.scale);
+243:     boss.setDepth(8);
+244:     this.enemyGroup.add(boss);
+245:     this.currentBoss = boss;
+246:     boss.hp = cfg.hp;
+247:     boss.configKey = key;
+248:     boss.setVisible(false);
+294:     if (key === 'demon_lord') {
+295:       this.inunekoEnemy = this.add.sprite(boss.x - 60, boss.y - 100, 'inuneko_combat');
+296:       this.inunekoEnemy.setDisplaySize(90, 160);
+297:       this.inunekoEnemy.setDepth(9);
+298:       this.inunekoEnemy.setVisible(false);
+299:       // バリア状態フラグ
+300:             this.demonLordBarrierActive = false;
+301: 
+302:       if (!this.anims.exists('inuneko_anim')) {
+303:         this.anims.create({
+317:     else if (key === 'demon_lord') areaText = '「とうとう魔王城に着いたか。そこには魔王がいるはずだ。警戒を怠らないように」';
+318: 
+319:     // デバッグ用: 戦闘スキップして即死させる
+320:     if (this.debugSkipCombat && key === 'demon_lord') {
+321:       boss.setVisible(true);
+322:       boss.hp = 0;
+323:       this.time.delayedCall(100, () => {
+324:         this.onBossHit({ active: true, damage: 9999, destroy: function(){} }, boss);
+325:       });
+326:       return;
+320:     if (this.debugSkipCombat && key === 'demon_lord') {
+321:       boss.setVisible(true);
+322:       boss.hp = 0;
+323:       this.time.delayedCall(100, () => {
+324:         this.onBossHit({ active: true, damage: 9999, destroy: function(){} }, boss);
+325:       });
+326:       return;
+327:     }
+328: 
+329:     if (areaText !== '') {
+355:     if (key !== 'demon_lord' && key !== 'doctor') {
+356:       this.cutsceneActive = false;
+357:       this.dialogActive = false;
+358:       this.physics.resume();
+359:     } else {
+360:       this.dialogActive = true;
+361:       this.physics.pause();
+362:     }
+363:     
+364:     if (key === 'demon_lord' || key === 'doctor') {
+364:     if (key === 'demon_lord' || key === 'doctor') {
+365:        boss.setVisible(true); boss.body.enable = true;
+366:        this.cameras.main.shake(400, 0.015);
+367:         if (key === 'demon_lord' && this.inunekoEnemy) {
+368:          this.inunekoEnemy.setVisible(true);
+369:          // 会話中はボスの右隣に静止（上下小揺れのみ）
+370:          this.inunekoEnemy.x = 1920;
+371:          this.tweens.add({ targets: this.inunekoEnemy, x: 1350, duration: 1200, ease: 'Power2' });
+372:          this.tweens.add({ targets: this.inunekoEnemy, y: '-=20', duration: 1600, yoyo: true, repeat: -1, ease: 'Sine.easeInOut' });
+373:        }
+367:         if (key === 'demon_lord' && this.inunekoEnemy) {
+368:          this.inunekoEnemy.setVisible(true);
+369:          // 会話中はボスの右隣に静止（上下小揺れのみ）
+370:          this.inunekoEnemy.x = 1920;
+371:          this.tweens.add({ targets: this.inunekoEnemy, x: 1350, duration: 1200, ease: 'Power2' });
+372:          this.tweens.add({ targets: this.inunekoEnemy, y: '-=20', duration: 1600, yoyo: true, repeat: -1, ease: 'Sine.easeInOut' });
+373:        }
+374:        this.tweens.add({
+375:          targets: boss, x: 1400, duration: 1200, ease: 'Power2',
+376:          onComplete: () => {
+379:            if (key === 'demon_lord') {
+380:              this.playDemonLordIntro(() => {
+381:                this.cutsceneActive = false;
+382:                 this.cutsceneActive = false;
+383:                this.dialogActive = false;
+384:                this.physics.resume();
+385:                this.startBossLaneMovement();
+386:                this.boss4Bgm = this.sound.add('demon_lord_bgm', { loop: true, volume: 0.2 });
+387:                this.boss4Bgm.play();
+388:              });
+386:                this.boss4Bgm = this.sound.add('demon_lord_bgm', { loop: true, volume: 0.2 });
+387:                this.boss4Bgm.play();
+388:              });
+389:            } else {
+390:              // Doctor intro
+391:              var w = 1920, h = 1080;
+392:              var dimBg = this.add.rectangle(w/2, h/2, w, h, 0x000000, 0.6).setAlpha(0).setDepth(89);
+393:               this.heroImage = this.add.image(300, h / 2, 'hero_stand').setAlpha(0).setDepth(90);
+394:              var hScale = 750 / this.heroImage.width;
+395:              this.heroImage.setScale(hScale);
+462:     this.demonImage = this.add.image(1920 - 300, 1080 / 2, 'demon_lord_normal').setAlpha(0).setDepth(90);
+463:     var dScale = 1000 / this.demonImage.width;
+464:     this.demonImage.setScale(dScale);
+465:     this.demonImage.setY(100 + (this.demonImage.height * dScale) / 2 - 200);
+466: 
+467:     // 犬猫スター会話用立ち絵
+468:     this.inunekoImage = this.add.image(1920 - 120, 1080 / 2 - 250, 'inuneko_stand').setAlpha(0).setDepth(91);
+469:     var iScale = 300 / 691; // Fixed width from cropped image
+470:     this.inunekoImage.setScale(iScale);
+471:     this.inunekoImage.setY(350); // 顔の右側（高さを顔付近に調整）
+521:     const sayDemon = (text, tex = 'demon_lord_normal') => new Promise(res => {
+522:       this.tweens.add({ targets: dimBg, alpha: 0.6, duration: 300 });
+523:       this.tweens.add({ targets: this.heroImage, alpha: 0.4, duration: 300 });
+524:       if(this.demonImage) {
+525:         this.tweens.add({ targets: this.demonImage, alpha: 1, duration: 300 });
+526:         this.demonImage.setTexture(tex);
+527:         this.demonImage.setScale(1000 / this.demonImage.width);
+528:         this.demonImage.setY(100 + (this.demonImage.height * this.demonImage.scaleY) / 2 - 200);
+529:       }
+530:       if(this.inunekoImage) {
+761:     if (this.inunekoEnemy && this.currentBoss && this.currentBoss.configKey === 'demon_lord') {
+762:       this.startInunekoFight(this.currentBoss);
+763:     }
+764:   }
+765: 
+766:   startInunekoFight(boss) {
+767:     // 上下フワフワtweenを止めてから軌道移動へ
+768:     this.tweens.killTweensOf(this.inunekoEnemy);
+769: 
+770:     // ボスの周囲をランダムに飛び回る
+1044:       if (this.currentBoss.configKey === 'demon_lord') interval = this.bossHP < this.bossMaxHP * 0.5 ? 2500 : 3000; // 魔王の螺旋弾幕（2.4秒）と重ならないように大幅緩和
+1045:       
+1046:       if (this.bossAttackTimer >= interval) {
+1047:         this.bossAttackTimer = 0;
+1048:         this.bossAttack();
+1049:       }
+1050:     }
+1051:     
+1052:     // Sister attacks
+1053:     if (this.currentBoss && this.currentBoss.configKey === 'boss3_twins' && this.sisterBoss && this.sisterBoss.active && this.sisterBoss.visible && !this.dialogActive) {
+1345:     // demon_lord（魔王）の攻撃パターン
+1346:     if (this.currentBoss.configKey === 'demon_lord') {
+1347:       if (this.currentBoss.demonPatternIdx === undefined) {
+1348:         this.currentBoss.demonPatternIdx = 0;
+1349:       } else {
+1350:         this.currentBoss.demonPatternIdx = (this.currentBoss.demonPatternIdx + 1) % 2;
+1351:       }
+1352:       let pattern = this.currentBoss.demonPatternIdx;
+1353:       
+1354:       if (pattern === 0) {
+1346:     if (this.currentBoss.configKey === 'demon_lord') {
+1347:       if (this.currentBoss.demonPatternIdx === undefined) {
+1348:         this.currentBoss.demonPatternIdx = 0;
+1349:       } else {
+1350:         this.currentBoss.demonPatternIdx = (this.currentBoss.demonPatternIdx + 1) % 2;
+1351:       }
+1352:       let pattern = this.currentBoss.demonPatternIdx;
+1353:       
+1354:       if (pattern === 0) {
+1355:         // パターンA: 分裂する紫色の球
+2077:               if (key === 'demon_lord') {
+2078:                 this.boss4Bgm = this.sound.add('demon_lord_bgm', { loop: true, volume: 0.2 });
+2079:                 this.boss4Bgm.play();
+2080:               }
+2081:             })();
+2082:           }
+2083: } else {
+2084:           // 全体が倒されたら幕間終了
+2085:           this.intermissionKills = (this.intermissionKills || 0) + 1;
+2086:           if (this.intermissionKills >= this.intermissionTotal) {
+2078:                 this.boss4Bgm = this.sound.add('demon_lord_bgm', { loop: true, volume: 0.2 });
+2079:                 this.boss4Bgm.play();
+2080:               }
+2081:             })();
+2082:           }
+2083: } else {
+2084:           // 全体が倒されたら幕間終了
+2085:           this.intermissionKills = (this.intermissionKills || 0) + 1;
+2086:           if (this.intermissionKills >= this.intermissionTotal) {
+2087:             this.endIntermission();
+2384:           } else if (key === 'demon_lord') {
+2385:             var f = MOT.flags;
+2386:             
+2387:             var dimBg = this.add.rectangle(1920/2, 1080/2, 1920, 1080, 0x000000, 0.6).setAlpha(0).setDepth(89);
+2388:             this.dimBg = dimBg;
+2389:             
+2390:             this.demonImage = this.add.image(1920 - 300, 1080 / 2, 'demon_lord_dying').setAlpha(0).setDepth(90);
+2391:             var dScale = 1000 / this.demonImage.width;
+2392:             this.demonImage.setScale(dScale);
+2393:             this.demonImage.setY(100 + (this.demonImage.height * dScale) / 2 - 200);
+2390:             this.demonImage = this.add.image(1920 - 300, 1080 / 2, 'demon_lord_dying').setAlpha(0).setDepth(90);
+2391:             var dScale = 1000 / this.demonImage.width;
+2392:             this.demonImage.setScale(dScale);
+2393:             this.demonImage.setY(100 + (this.demonImage.height * dScale) / 2 - 200);
+2394: 
+2395:             // 撃退後の犬猫立ち絵（ハイライトなし）
+2396:             this.inunekoImage = this.add.image(1920 - 120, 1080 / 2 - 250, 'inuneko_dying').setAlpha(0).setDepth(91);
+2397:             var iScale = 300 / 691;
+2398:             this.inunekoImage.setScale(iScale);
+2399:             this.inunekoImage.setY(350);
+2414:             const sayDemon = (text) => new Promise(res => { this.tweens.add({ targets: dimBg, alpha: 0.6, duration: 300 }); this.tweens.add({targets: this.heroImage, alpha: 0.4, duration: 300}); this.tweens.add({ targets: this.demonImage, alpha: 1, duration: 300 }); if(this.inunekoImage) this.tweens.add({ targets: this.inunekoImage, alpha: 0.4, duration: 300 }); this.demonImage.setTexture('demon_lord_dying'); this.demonImage.setScale(1000 / this.demonImage.width); this.demonImage.setY(100 + (this.demonImage.height * this.demonImage.scaleY) / 2 - 200); this.showDialogue('魔王', text, res); });
+2415:     
+2416:             
+2417:             const askShatterChoice = (label1, label2, canShatter) => new Promise(res => {
+2418:               if (this.choiceContainer) this.choiceContainer.destroy();
+2419:               this.choiceContainer = this.add.container(0, 0).setDepth(200);
+2420:               var w = 1920, h = 1080;
+2421:               var bg = this.add.rectangle(w / 2, h / 2, w, h, 0x000000, 0.4).setInteractive();
+2422:               this.choiceContainer.add(bg);
+2423:               var title = this.add.text(w / 2, h / 2 - 120, '選択してください', { fontFamily: '"DotGothic16"', fontSize: '40px', color: '#ffffff' }).setOrigin(0.5);
+3079:                           trueDemonLordImg.src = 'assets/images/true_demon_lord.gif?v=' + window.GAME_VERSION;
+3080:                           trueDemonLordImg.style.position = 'absolute';
+3081:                           trueDemonLordImg.style.top = '0';
+3082:                           trueDemonLordImg.style.left = '0';
+3083:                           trueDemonLordImg.style.width = '100%';
+3084:                           trueDemonLordImg.style.height = '100%';
+3085:                           trueDemonLordImg.style.objectFit = 'cover';
+3086:                           trueDemonLordImg.style.zIndex = '-1';
+3087:                           trueDemonLordImg.style.pointerEvents = 'none';
+3088:                           document.getElementById('game-root').appendChild(trueDemonLordImg);
+3152:                           const localSayDemon = (text, tex='demon_lord_dying') => new Promise(res => { this.tweens.add({ targets: dimBg, alpha: 0.6, duration: 300 }); if(this.heroImage) this.tweens.add({targets: this.heroImage, alpha: 0.4, duration: 300}); if(this.inunekoImage) this.tweens.add({targets: this.inunekoImage, alpha: 1, duration: 300}); if(this.doctorImage) this.tweens.add({targets: this.doctorImage, alpha: 0, duration: 300}); if(this.demonImage) { this.tweens.add({targets: this.demonImage, alpha: 1, duration: 300}); this.demonImage.setTexture(tex); } this.showDialogue('魔王', text, res); });
+3153:                           const localSayInuneko = (text, tex='inuneko_stand') => new Promise(res => { this.tweens.add({ targets: dimBg, alpha: 0.6, duration: 300 }); if(this.heroImage) this.tweens.add({targets: this.heroImage, alpha: 0.4, duration: 300}); if(this.demonImage) this.tweens.add({targets: this.demonImage, alpha: 1, duration: 300}); if(this.doctorImage) this.tweens.add({targets: this.doctorImage, alpha: 0, duration: 300}); if(this.inunekoImage) { this.tweens.add({targets: this.inunekoImage, alpha: 1, duration: 300}); this.inunekoImage.setTexture(tex); } this.showDialogue('犬猫☆すたー', text, res); });
+3154: 
+3155:                           await localSayDemon('「……結局我々を殺さず、お前は何をしにきたんだ？あの法螺吹きにけしかけられて、わらわたちを滅ぼしに来たんだろう？」');
+3156:                           
+3157:                           await new Promise(res => {
+3158:                               this.showChoice([
+3159:                                   { text: '殺す必要がないと思った', callback: () => { MOT.Audio.playSelect(); res(1); } },
+3160:                                   { text: '博士を信じられない', callback: () => { MOT.Audio.playSelect(); res(2); } }
+3161:                               ]);
+3164:                           await localSayDemon('「そうか……英断だな…。」', 'demon_lord_normal');
+3165:                           await localSayDemon('「そしてここから話すのは、信じるも信じないもお前の自由だ。」');
+3166:                           await localSayDemon('「お前は、あいつに”魔王が世界を滅ぼそうとしている”とでも言われたのだろう？だが、残念なことに、それはわらわたちを滅ぼすための方便にすぎぬ。」');
+3167:                           await localSayDemon('「あいつはこの世界に人間以上の存在がいることが許せないのだ。わらわはやつに襲われていた魔族を保護し、あいつとながい間戦ってきた。」');
+3168:                           await localSayDemon('「ながい、ながい戦いだった。……やつは気の毒な奴じゃ。だが、それはわらわたちを滅ぼす理由にはならない。」');
+3169:                           
+3170:                           await localSayDoctor('「…はははは。すべて話されてしまったみたいだな」', 'doctor_awaken_smile');
+3171:                           await localSayHero('「！」');
+3172:                           await localSayHero('「僕は……ずっとあなたに嘘をつかれていたんだね。」');
+3173:                           await localSayDoctor('「嘘？違うな、そいつらを殺せば平和な世界が訪れる。」');
+3205:                           await localSayDemon('「なんだ？！」', 'demon_lord_shock');
+3206:                           await localSayInuneko('「にゃわわ！？」', 'inuneko_blink');
+3207:                           
+3208:                           await localSayDoctor('「さぁ、最終決戦といこうじゃないか！」', 'doctor_awaken_straight_weapon');
+3209: 
+3210:                           if (this.boss1Bgm) this.boss1Bgm.stop();
+3211:                           if (this.boss2Bgm) this.boss2Bgm.stop();
+3212:                           if (this.twinsBgm) this.twinsBgm.stop();
+3213:                           
+3214:                           this.bossQueue.push('doctor');
+3405:                       trueDemonLordImg.src = 'assets/images/true_demon_lord.gif?v=' + window.GAME_VERSION;
+3406:                       trueDemonLordImg.style.position = 'absolute';
+3407:                       trueDemonLordImg.style.top = '0';
+3408:                       trueDemonLordImg.style.left = '0';
+3409:                       trueDemonLordImg.style.width = '100%';
+3410:                       trueDemonLordImg.style.height = '100%';
+3411:                       trueDemonLordImg.style.objectFit = 'cover';
+3412:                       trueDemonLordImg.style.zIndex = '-1';
+3413:                       trueDemonLordImg.style.pointerEvents = 'none';
+3414:                       document.getElementById('game-root').appendChild(trueDemonLordImg);
+3620:                     if (!this.demonImage) this.demonImage = this.add.image(1920 - 300, 1080/2, 'demon_lord_normal').setDepth(90);
+3621:                     if (!this.inunekoImage) this.inunekoImage = this.add.image(1920 - 550, 1080/2, 'inuneko_stand').setDepth(90);
+3622:                     this.demonImage.setTexture('demon_lord_normal');
+3623:                     this.tweens.add({ targets: this.demonImage, alpha: 1, duration: 300 });
+3624:                     this.tweens.add({ targets: this.inunekoImage, alpha: 1, duration: 300 });
+3625:                     if (this.sisterImage) this.tweens.add({ targets: this.sisterImage, alpha: 0, duration: 300 });
+3626:                     if (this.brotherImage) this.tweens.add({ targets: this.brotherImage, alpha: 0, duration: 300 });
+3627:                     if (this.boss1Image) this.tweens.add({ targets: this.boss1Image, alpha: 0, duration: 300 });
+3628:                     if (this.boss2Image) this.tweens.add({ targets: this.boss2Image, alpha: 0, duration: 300 });
+3629:                     this.showDialogue('魔王', text, res);
+3622:                     this.demonImage.setTexture('demon_lord_normal');
+3623:                     this.tweens.add({ targets: this.demonImage, alpha: 1, duration: 300 });
+3624:                     this.tweens.add({ targets: this.inunekoImage, alpha: 1, duration: 300 });
+3625:                     if (this.sisterImage) this.tweens.add({ targets: this.sisterImage, alpha: 0, duration: 300 });
+3626:                     if (this.brotherImage) this.tweens.add({ targets: this.brotherImage, alpha: 0, duration: 300 });
+3627:                     if (this.boss1Image) this.tweens.add({ targets: this.boss1Image, alpha: 0, duration: 300 });
+3628:                     if (this.boss2Image) this.tweens.add({ targets: this.boss2Image, alpha: 0, duration: 300 });
+3629:                     this.showDialogue('魔王', text, res);
+3630:                 });
+3631:                 const localSayInuneko = (text) => new Promise(res => {
+3635:                     if (!this.demonImage) this.demonImage = this.add.image(1920 - 300, 1080/2, 'demon_lord_normal').setDepth(90);
+3636:                     if (!this.inunekoImage) this.inunekoImage = this.add.image(1920 - 550, 1080/2, 'inuneko_stand').setDepth(90);
+3637:                     this.inunekoImage.setTexture('inuneko_stand');
+3638:                     this.tweens.add({ targets: this.demonImage, alpha: 1, duration: 300 });
+3639:                     this.tweens.add({ targets: this.inunekoImage, alpha: 1, duration: 300 });
+3640:                     if (this.sisterImage) this.tweens.add({ targets: this.sisterImage, alpha: 0, duration: 300 });
+3641:                     if (this.brotherImage) this.tweens.add({ targets: this.brotherImage, alpha: 0, duration: 300 });
+3642:                     if (this.boss1Image) this.tweens.add({ targets: this.boss1Image, alpha: 0, duration: 300 });
+3643:                     if (this.boss2Image) this.tweens.add({ targets: this.boss2Image, alpha: 0, duration: 300 });
+3644:                     this.showDialogue('犬猫☆スター', text, res);
+3990:     // スキップ処理: wing_left, wing_right を飛ばして demon_lord (インデックス3) へ
+3991:     this.currentBossIndex = 3; 
+3992:     
+3993:     // ─── 自動セーブ処理 ───
+3994:     if (MOT.saveGame) MOT.saveGame(3);
+3995:     try {
+3996:       const saveNotify = this.add.text(1920 / 2, 80, '💾 進行状況を自動セーブしました', {
+3997:         fontFamily: "'DotGothic16', sans-serif",
+3998:         fontSize: '28px',
+3999:         color: '#00FF88',
+4168:       if (boss.configKey === 'demon_lord' && this.inunekoEnemy && this.inunekoEnemy.active) {
+4169:         this.tweens.add({
+4170:           targets: this.inunekoEnemy, x: 2200, duration: 1500, ease: 'Power2',
+4171:           onComplete: () => {
+4172:             if (this.inunekoEnemy) { this.inunekoEnemy.destroy(); this.inunekoEnemy = null; }
+4173:           }
+4174:         });
+4175:       }
+4176:       this.tweens.add({
+4177:         targets: boss, x: 2200, duration: 1500, ease: 'Power2',
+4184:       if (boss.configKey === 'demon_lord' && this.inunekoEnemy && this.inunekoEnemy.active) {
+4185:         this.showExplosion(this.inunekoEnemy.x, this.inunekoEnemy.y);
+4186:         this.inunekoEnemy.destroy();
+4187:         this.inunekoEnemy = null;
+4188:       }
+4189:       this.showExplosion(boss.x, boss.y);
+4190:       boss.destroy();
+4191:       resumeFn();
+4192:     }
+4193:   }
+4530:           if (currentTex === 'demon_lord_normal' || currentTex === 'demon_lord_blink' || currentTex === 'demon_lord_silent') {
+4531:             if (charIndex < text.length && (charIndex % 15 === 1 || charIndex % 15 === 2)) {
+4532:               this.demonImage.setTexture('demon_lord_blink');
+4533:             } else {
+4534:               this.demonImage.setTexture('demon_lord_normal');
+4535:             }
+4536:           }
+4537:         }
+4538: 
+4539:         if (charIndex >= text.length) {
+4532:               this.demonImage.setTexture('demon_lord_blink');
+4533:             } else {
+4534:               this.demonImage.setTexture('demon_lord_normal');
+4535:             }
+4536:           }
+4537:         }
+4538: 
+4539:         if (charIndex >= text.length) {
+4540:           typeTimer.destroy();
+4541:           contText.setAlpha(1);
+4534:               this.demonImage.setTexture('demon_lord_normal');
+4535:             }
+4536:           }
+4537:         }
+4538: 
+4539:         if (charIndex >= text.length) {
+4540:           typeTimer.destroy();
+4541:           contText.setAlpha(1);
+4542:           if (this.tweens) this.tweens.add({ targets: contText, alpha: 0.3, yoyo: true, repeat: -1, duration: 500 });
+4543:         }
+4732:       tex = 'demon_stand_combat';
+4733:       msg = 'ヴェリタス「人間よ、少しは休むがよい！」\n【効果：HP回復】';
+4734:       MOT.flags.playerHP = Math.min((MOT.flags.playerMaxHP || 5), MOT.flags.playerHP + 2);
+4735:     } else if (chosen === 'twins') {
+4736:       tex = 'boss3_sister'; // 妹立ち絵
+4737:       msg = 'エナリア「ふんっ、今回だけ特別に守ってあげるんだから！」\n【効果：無敵バリア展開】';
+4738:       this.barrierActive = true;
+4739:       this.barrierTime = 0;
+4740:       this.barrierCooldown = 0;
+4741:       if (!this.barrierVisual) {

@@ -1,0 +1,128 @@
+/* =============================================
+   逵溽炊縺ｮ繝槭Μ繧ｪ繝阪ャ繝・窶・Global Styles
+   ============================================= */
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html, body {
+  width: 100%;
+  height: 100%;
+  height: 100dvh; /* 蜍慕噪繝薙Η繝ｼ繝昴・繝磯ｫ假ｼ医い繝峨Ξ繧ｹ繝舌・繧・ｸ企Κ繧ｿ繝悶ｒ閠・・縺励◆豁｣遒ｺ縺ｪ鬮倥＆・・*/
+  overflow: hidden;
+  margin: 0;
+  padding: 0;
+  background: #050814;
+  color: #E5E7EB;
+  font-family: 'DotGothic16', system-ui, sans-serif;
+  -webkit-font-smoothing: none;
+  -moz-osx-font-smoothing: unset;
+  image-rendering: pixelated;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+#game-root { position: relative; z-index: 0;
+  width: 100%;
+  height: 100%;
+  width: 100dvw;
+  height: 100dvh; /* 荳企Κ繧ｿ繝悶ｄ繧｢繝峨Ξ繧ｹ繝舌・鬆伜沺繧帝勁螟悶＠縺溷ｮ滄圀縺ｮ陦ｨ遉ｺ鬆伜沺縺ｫ繝輔ぅ繝・ヨ */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+#game-root canvas {
+  image-rendering: pixelated;
+  image-rendering: -moz-crisp-edges;
+  image-rendering: crisp-edges;
+  -webkit-tap-highlight-color: transparent;
+  outline: none;
+}
+
+/* =============================================
+   繧ｹ繝槭・繝医ヵ繧ｩ繝ｳ繝ｻ繧ｿ繝悶Ξ繝・ヨ蜷代￠邵ｦ蜷代″繧｢繝ｩ繝ｼ繝・
+   ============================================= */
+#orientation-warning {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(5, 8, 20, 0.96);
+  z-index: 9999999;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  backdrop-filter: blur(8px);
+}
+
+.warning-box {
+  background: #1F2933;
+  border: 3px solid #4FD1FF;
+  box-shadow: 0 0 25px rgba(79, 209, 255, 0.4);
+  padding: 30px;
+  max-width: 480px;
+  text-align: center;
+  border-radius: 12px;
+}
+
+.warning-icon {
+  font-size: 56px;
+  margin-bottom: 16px;
+  animation: pulse 1.5s infinite ease-in-out;
+}
+
+.warning-title {
+  font-size: 24px;
+  color: #4FD1FF;
+  margin-bottom: 12px;
+  font-weight: bold;
+}
+
+.warning-text {
+  font-size: 16px;
+  color: #E5E7EB;
+  line-height: 1.6;
+  margin-bottom: 24px;
+}
+
+.warning-btn {
+  background: #050814;
+  color: #00FF88;
+  border: 2px solid #00FF88;
+  padding: 12px 24px;
+  font-family: inherit;
+  font-size: 16px;
+  cursor: pointer;
+  border-radius: 6px;
+  transition: all 0.2s;
+}
+
+.warning-btn:active, .warning-btn:hover {
+  background: #00FF88;
+  color: #050814;
+}
+
+@keyframes pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.1); }
+}
+
+@media screen and (max-aspect-ratio: 4/5) and (max-width: 900px) {
+  #orientation-warning {
+    display: flex;
+  }
+}
+
+/* PC遲峨〒縺ｯ繝｢繝舌う繝ｫ逕ｨUI繧帝國縺・*/
+@media screen and (min-width: 769px) {
+  .mobile-only {
+    display: none !important;
+  }
+}

@@ -1,0 +1,3 @@
+77:     this.player = this.physics.add.sprite(-100, 460, 'hero_combat_down_open');
+93:     this.player.body.setSize(14, 60);
+94:     this.player.body.setOffset(25, 25);

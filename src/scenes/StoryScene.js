@@ -1,0 +1,499 @@
+// =============================================
+// StoryScene.js – プロローグシーン
+// =============================================
+class StoryScene extends Phaser.Scene {
+  constructor() {
+    super({ key: 'StoryScene' });
+  }
+
+  create() {
+    const w = this.cameras.main.width;
+    const h = this.cameras.main.height;
+
+    // Initialize global flags
+    window.MOT = window.MOT || {};
+    MOT.flags = MOT.flags || {};
+    if (MOT.resetFlags) {
+      MOT.resetFlags();
+    }
+
+    // Dark background initially
+    this.cameras.main.setBackgroundColor('#000000');
+    // Lab background (invisible at first)
+    this.bg = this.add.image(w / 2, h / 2, 'bg_lab').setAlpha(0);
+    this.bg.setScale(Math.max(w / this.bg.width, h / this.bg.height));
+
+    // Dialogue Data
+    this.dialogue = [
+      { speaker: '？？？', text: 'おお、ようやく成功したぞ！目覚めたか！！勇者よ。', bg: 'lab' },
+      { speaker: '勇者', text: '……あなたは、誰ですか', bg: 'lab' },
+      { speaker: '博士', text: '私か？私はしがない博士だ。そして君をこの世界に呼び覚ました人間だ。', bg: 'lab' },
+      { speaker: '博士', text: '遥か昔、この世界は平和だった。しかし突如現れた魔王によって蹂躙され、今はもう平和とは程遠くなってしまった。', bg: 'lab' },
+      { speaker: '博士', text: '目覚めてすぐで悪いが、君にはまず、その魔王を倒してきてほしい。', bg: 'lab' },
+      { speaker: '勇者', text: '倒す……？', bg: 'lab' },
+      { speaker: '博士', text: '君にはそれだけの力がある。', bg: 'lab', choice: true }
+    ];
+
+    this.currentIndex = 0;
+    this.isWaitingForChoice = false;
+
+    // Portraits Layer
+    // Hero portrait (now on the left)
+    this.heroImage = this.add.image(300, h / 2, 'hero_stand').setAlpha(0);
+    
+    var hScale = 750 / this.heroImage.width;
+    this.heroImage.setScale(hScale);
+    this.heroImage.setY(100 + (this.heroImage.height * hScale) / 2);
+    
+    this.heroGroup = [this.heroImage];
+
+    // Doctor portrait (now on the right)
+    this.doctorImage = this.add.image(w - 300, h / 2, 'doctor_normal').setAlpha(0);
+    this.textures.get('doctor_normal').setFilter(Phaser.Textures.FilterMode.LINEAR);
+    
+    var imgW = this.textures.get('doctor_normal').getSourceImage().width;
+    var imgH = this.textures.get('doctor_normal').getSourceImage().height;
+    
+    var scale = 750 / imgW;
+    this.doctorImage.setScale(scale);
+    this.doctorImage.setY(100 + (imgH * scale) / 2);
+    
+    this.doctorGroup = [this.doctorImage];
+
+    // Device comm UI (Doctor's face in a small frame)
+    this.deviceCommGroup = this.add.group();
+    this.deviceCommFrame = this.add.rectangle(120, h - 320 - 40 + 160, 200, 200, 0x1F2933).setStrokeStyle(4, 0x4FD1FF).setAlpha(0).setDepth(150);
+    this.deviceCommFace = this.add.image(120, h - 320 - 40 + 160, 'doctor_face').setAlpha(0).setDepth(151);
+    
+    // Scale doctor_face to fit inside the 200x200 frame
+    let faceW = this.textures.get('doctor_face').getSourceImage().width;
+    let faceH = this.textures.get('doctor_face').getSourceImage().height;
+    let faceScale = Math.min(190 / faceW, 190 / faceH);
+    this.deviceCommFace.setScale(faceScale);
+    
+    this.deviceCommGroup.add(this.deviceCommFrame);
+    this.deviceCommGroup.add(this.deviceCommFace);
+
+    // UI Layer - Dialog Box
+    const boxH = 320;
+    const boxY = h - boxH - 40;
+    this.dialogBox = this.add.rectangle(w / 2, boxY + boxH / 2, w - 160, boxH, 0x000000, 0.85).setStrokeStyle(2, 0x4FD1FF);
+    
+    // Area Name
+    this.areaNameText = this.add.text(1920 - 30, 20, '曙光技研', { fontFamily: '"DotGothic16"', fontSize: '32px', color: '#FFFFFF', backgroundColor: 'rgba(0,0,0,0.5)', padding: { x: 10, y: 5 } }).setOrigin(1, 0).setDepth(100).setAlpha(0);
+    
+    // Name Tag
+    this.nameBox = this.add.graphics();
+    this.nameText = this.add.text(100, boxY+10, '', { fontFamily: '"DotGothic16"', fontSize: '44px', color: '#4FD1FF' }).setOrigin(0, 0);
+
+    // Message Text
+    this.messageText = this.add.text(100, boxY + 60, '', {
+      fontFamily: '"DotGothic16"',
+      fontSize: '48px',
+      color: '#E5E7EB',
+      wordWrap: { width: w - 220, useAdvancedWrap: true },
+      lineSpacing: 10
+    });
+
+    // Advance Guide text
+    this.contText = this.add.text(w - 100, boxY + boxH - 40, '▶ NEXT [TAP/SPACE]', {
+      fontFamily: '"Press Start 2P"',
+      fontSize: '20px',
+      color: '#9CA3AF'
+    }).setOrigin(1, 0).setAlpha(0);
+    this.tweens.add({ targets: this.contText, alpha: 0.3, yoyo: true, repeat: -1, duration: 500 });
+
+    // Advance on click
+    this.input.on('pointerdown', () => {
+      if (!this.isWaitingForChoice && !this.isEyeOpening) {
+        this.nextDialogue();
+      }
+    });
+
+    // Advance on key press (Spaceのみ)
+    this.input.keyboard.on('keydown', (event) => {
+      if (event.key === ' ' || event.code === 'Space') {
+        if (!this.isWaitingForChoice && !this.isEyeOpening) {
+          this.nextDialogue();
+        }
+      }
+    });
+
+    // Start Scene
+    this.showDialogue(this.currentIndex);
+  }
+
+  showDialogue(index) {
+    if (index >= this.dialogue.length) return;
+    const data = this.dialogue[index];
+
+    const startTypingAndUI = () => {
+      const rawSpeaker = data.speaker || '';
+      const isDeviceComm = rawSpeaker.includes('『');
+      const displayName = rawSpeaker.replace(/[『』]/g, '');
+
+      // Set Text
+      this.nameText.setText(displayName);
+      this.messageText.setText('');
+      
+      let boxW = Math.max(240, this.nameText.width + 60);
+      const boxY = this.cameras.main.height - 320 - 40;
+      this.nameBox.clear();
+      if (displayName) {
+        this.nameBox.fillStyle(0x1F2933);
+        this.nameBox.fillRect(80, boxY - 30, boxW + 40, 60);
+        this.nameBox.lineStyle(2, 0x4FD1FF);
+        this.nameBox.strokeRect(80, boxY - 30, boxW + 40, 60);
+        this.nameText.setX(100);
+        this.nameText.setY(boxY);
+        this.nameText.setOrigin(0, 0.5);
+      }
+
+      if (this.typeTimer) this.typeTimer.destroy();
+      let charIndex = 0;
+      let fullText = data.text;
+      this.typeTimer = this.time.addEvent({
+        delay: 40,
+        callback: () => {
+          charIndex++;
+          this.messageText.setText(fullText.substring(0, charIndex));
+          if (fullText[charIndex - 1] !== ' ' && window.MOT && MOT.Audio) {
+            MOT.Audio.playBleep(displayName);
+          }
+          if (charIndex >= fullText.length) {
+            if (this.typeTimer) {
+                this.typeTimer.destroy();
+                this.typeTimer = null;
+            }
+          }
+        },
+        callbackScope: this,
+        loop: true
+      });
+
+      // ガイドの表示制御
+      if (data.choice) {
+        this.contText.setText('▶ SELECT [TAP/ENTER]');
+        this.contText.setAlpha(1);
+      } else {
+        this.contText.setText('▶ NEXT [TAP/SPACE]');
+        this.contText.setAlpha(1);
+      }
+
+      // まばたき演出 (勇者のセリフが切り替わるときのみ)
+      const isHero = displayName.includes('勇者');
+      if (isHero && this.heroImage && this.heroImage.active) {
+        this.heroImage.setTexture('hero_stand_blink');
+        this.time.delayedCall(150, () => {
+          if (this.heroImage && this.heroImage.active) {
+            this.heroImage.setTexture('hero_stand');
+          }
+        });
+      }
+
+      // Portrait highlighting and Device UI
+      if (isDeviceComm) {
+        this.heroImage.setAlpha(0);
+        this.doctorImage.setAlpha(0);
+        this.deviceCommFrame.setAlpha(1);
+        this.deviceCommFace.setAlpha(1);
+      } else {
+        this.deviceCommFrame.setAlpha(0);
+        this.deviceCommFace.setAlpha(0);
+        if (this.bg.alpha > 0 || data.bg === 'lab') {
+          const isDoctor = displayName.includes('博士') || displayName === '？？？';
+          this.heroImage.setAlpha(isHero ? 1 : 0.4);
+          this.doctorImage.setAlpha(isDoctor ? 1 : 0.4);
+        }
+      }
+
+      // Handle Choice
+      if (data.choice) {
+        this.isWaitingForChoice = true;
+        this.time.delayedCall(500, () => {
+          this.showChoices();
+        });
+      }
+    };
+
+    // Background transition (まばたき風アイリスイン・アウト演出)
+    if (data.bg === 'lab' && this.bg.alpha === 0) {
+      this.bg.setAlpha(1);
+      this.heroImage.setAlpha(0.4);
+      this.doctorImage.setAlpha(1);
+      this.areaNameText.setAlpha(1);
+      
+      this.isEyeOpening = true;
+      console.log('【StoryScene】覚醒まばたき演出：1回モード再生');
+      const eyeMask = this.add.graphics().setDepth(300);
+      
+      // UIのDepth設定
+      this.dialogBox.setDepth(200);
+      this.nameBox.setDepth(200);
+      this.nameText.setDepth(201);
+      this.messageText.setDepth(201);
+      this.contText.setDepth(201);
+      this.areaNameText.setDepth(201);
+      
+      // 最初は横幅を保ちつつ、上下の瞼（ry）が閉じた状態からスタート
+      let eye = { rx: 550, ry: 0 };
+      const drawIris = () => {
+        eyeMask.clear();
+        const w = 1920, h = 1080;
+        const cx = w / 2, cy = h / 2; // 画面中央を中心に目をあける
+        if (eye.rx <= 0 || eye.ry <= 0) {
+          eyeMask.fillStyle(0x000000, 1);
+          eyeMask.fillRect(0, 0, w, h);
+          return;
+        }
+        if (eye.rx >= w * 1.5 && eye.ry >= h * 1.5) return;
+        
+        // 1. 外側を黒く塗りつぶす (水平ストリップ方式)
+        eyeMask.fillStyle(0x000000, 1);
+        const step = 6;
+        for (let y = 0; y < h; y += step) {
+          const my = y + step / 2;
+          const dy = Math.abs(my - cy);
+          if (dy >= eye.ry) {
+            eyeMask.fillRect(0, y, w, step + 1);
+          } else {
+            const dx = eye.rx * Math.sqrt(1 - (dy * dy) / (eye.ry * eye.ry));
+            if (cx - dx > 0) eyeMask.fillRect(0, y, cx - dx, step + 1);
+            if (cx + dx < w) eyeMask.fillRect(cx + dx, y, w - (cx + dx), step + 1);
+          }
+        }
+        
+        // 2. 境界をぼかすため、内側にグラデーション用の楕円リングを多層描画する
+        const layers = 18;
+        for (let i = 1; i <= layers; i++) {
+          const t = i / layers;
+          const alpha = 0.15 * Math.pow(1 - t, 1.5);
+          const rScale = 1.0 - t * 0.35;
+          const ringRx = eye.rx * rScale;
+          const ringRy = eye.ry * rScale;
+          if (ringRx <= 0 || ringRy <= 0) continue;
+          
+          const lineWidth = Math.max(8, (eye.rx * 0.35) / layers + 2);
+          eyeMask.lineStyle(lineWidth, 0x000000, alpha);
+          eyeMask.strokeEllipse(cx, cy, ringRx * 2, ringRy * 2);
+        }
+      };
+      
+      drawIris();
+      
+      // 1. 薄目を開ける
+      this.tweens.add({
+        targets: eye,
+        rx: 600,
+        ry: 160,
+        duration: 800,
+        ease: 'Sine.easeOut',
+        onUpdate: drawIris
+      });
+      
+      // 2. 瞬き（閉じる）
+      this.tweens.add({
+        targets: eye,
+        rx: 550,
+        ry: 0,
+        duration: 400,
+        delay: 1300,
+        ease: 'Sine.easeInOut',
+        onUpdate: drawIris
+      });
+      
+      // 3. 画面全体が完全に明るくなってから文字タイピング・UI表示を開始する
+      this.tweens.add({
+        targets: eye,
+        rx: 1800,
+        ry: 1100,
+        duration: 1200,
+        delay: 1950,
+        ease: 'Sine.easeOut',
+        onUpdate: drawIris,
+        onComplete: () => {
+          eyeMask.destroy();
+          this.isEyeOpening = false;
+          startTypingAndUI();
+        }
+      });
+    } else {
+      startTypingAndUI();
+    }
+  }
+
+  nextDialogue() {
+    if (this.typeTimer) {
+      this.typeTimer.destroy();
+      this.typeTimer = null;
+      const data = this.dialogue[this.currentIndex];
+      this.messageText.setText(data.text);
+      return;
+    }
+
+    this.currentIndex++;
+    if (this.currentIndex < this.dialogue.length) {
+      this.showDialogue(this.currentIndex);
+    }
+  }
+
+    showChoices() {
+    const w = this.cameras.main.width;
+    const h = this.cameras.main.height;
+
+    this.choice1 = this.createChoiceButton(w / 2, h / 2 - 120, '1「わかった、協力する」', () => {
+      this.handleChoice(1);
+    });
+    this.choice2 = this.createChoiceButton(w / 2, h / 2, '2「訳が分からない。いきなりそんなこと言われても困る」', () => {
+      this.handleChoice(2);
+    });
+    this.choice3 = this.createChoiceButton(w / 2, h / 2 + 120, '3「わかった。早く冒険に行かせて（チュートリアルスキップ）」', () => {
+      this.handleChoice(3);
+    });
+
+    this.choicesList = [this.choice1, this.choice2, this.choice3];
+    this.selectedChoiceIndex = 0;
+    this.updateChoiceSelection();
+
+    const self = this;
+    this.input.keyboard.on('keydown', function (event) {
+      if (!self.isWaitingForChoice) return;
+      if (event.code === 'KeyW' || event.code === 'ArrowUp') {
+        self.selectedChoiceIndex = (self.selectedChoiceIndex - 1 + self.choicesList.length) % self.choicesList.length;
+        self.updateChoiceSelection();
+      } else if (event.code === 'KeyS' || event.code === 'ArrowDown') {
+        self.selectedChoiceIndex = (self.selectedChoiceIndex + 1) % self.choicesList.length;
+        self.updateChoiceSelection();
+      } else if (event.code === 'Enter') {
+        self.input.keyboard.off('keydown');
+        if (window.MOT && MOT.Audio) MOT.Audio.playSelect();
+        self.destroyChoices();
+        self.choicesList[self.selectedChoiceIndex].callback();
+      }
+    });
+  }
+
+  updateChoiceSelection() {
+    const self = this;
+    this.choicesList.forEach(function (choice, idx) {
+      if (idx === self.selectedChoiceIndex) {
+        choice.btn.setFillStyle(0x3a3a5e);
+        choice.btn.setStrokeStyle(4, 0xffffff);
+        choice.txt.setColor('#ffffff');
+        choice.btn.setScale(1.08);
+        choice.txt.setScale(1.08);
+      } else {
+        choice.btn.setFillStyle(0x1F2933);
+        choice.btn.setStrokeStyle(2, 0x4FD1FF);
+        choice.txt.setColor('#4FD1FF');
+        choice.btn.setScale(1.0);
+        choice.txt.setScale(1.0);
+      }
+    });
+  }
+
+  destroyChoices() {
+    if (this.choice1) {
+      if (this.choice1.btn) this.choice1.btn.destroy();
+      if (this.choice1.txt) this.choice1.txt.destroy();
+    }
+    if (this.choice2) {
+      if (this.choice2.btn) this.choice2.btn.destroy();
+      if (this.choice2.txt) this.choice2.txt.destroy();
+    }
+    if (this.choice3) {
+      if (this.choice3.btn) this.choice3.btn.destroy();
+      if (this.choice3.txt) this.choice3.txt.destroy();
+    }
+  }
+
+  createChoiceButton(x, y, label, callback) {
+    const btn = this.add.rectangle(x, y, 1100, 90, 0x1F2933).setStrokeStyle(2, 0x4FD1FF).setInteractive({ useHandCursor: true });
+    const txt = this.add.text(x, y, label, { fontFamily: '"DotGothic16"', fontSize: '26px', color: '#4FD1FF' }).setOrigin(0.5);
+
+    const self = this;
+    btn.on('pointerover', () => {
+      if (self.choicesList) {
+        const foundIdx = self.choicesList.findIndex(c => c.btn === btn);
+        if (foundIdx !== -1) {
+          self.selectedChoiceIndex = foundIdx;
+          self.updateChoiceSelection();
+        }
+      }
+    });
+    btn.on('pointerdown', () => {
+      self.input.keyboard.off('keydown');
+      if (window.MOT && MOT.Audio) MOT.Audio.playSelect();
+      self.destroyChoices();
+      callback();
+    });
+
+    return { btn: btn, txt: txt, callback: callback };
+  }
+
+  handleChoice(choiceIndex) {
+    this.isWaitingForChoice = false; // Block further clicks just in case
+    // Prevent normal advancing
+    this.input.removeAllListeners('pointerdown');
+    if (this.contText) this.contText.setAlpha(0);
+
+    if (choiceIndex === 1) {
+      this.nameText.setText('博士');
+      this.messageText.setText('気のいい返事をもらえてうれしいよ。早速冒険に向かってもらうとしよう。');
+      
+      this.doctorImage.setAlpha(1);
+      this.heroImage.setAlpha(0.4);
+
+      this.time.delayedCall(3000, () => {
+        this.cameras.main.fadeOut(1000);
+        this.cameras.main.once('camerafadeoutcomplete', () => {
+          this.scene.start('GameScene', { stage: 1 });
+        });
+      });
+    } else if (choiceIndex === 3) {
+      this.nameText.setText('博士');
+      this.messageText.setText('そ、そうか。やる気は十分のようで嬉しいよ。');
+      
+      this.doctorImage.setAlpha(1);
+      this.heroImage.setAlpha(0.4);
+
+      this.time.delayedCall(3000, () => {
+        this.cameras.main.fadeOut(1000);
+        this.cameras.main.once('camerafadeoutcomplete', () => {
+          this.scene.start('GameScene', { stage: 2 });
+        });
+      });
+    } else {
+      this.nameText.setText('博士');
+      this.messageText.setText('そうか、それは残念だ。無理なら君にもう用はない。');
+
+      this.doctorImage.setAlpha(1);
+      if (this.textures.exists('doctor_open_eyes')) {
+        this.doctorImage.setTexture('doctor_open_eyes');
+      }
+      this.heroImage.setAlpha(0.4);
+
+      this.time.delayedCall(2000, () => {
+        // Fade out over 3 seconds
+        this.cameras.main.fadeOut(3000);
+        
+        // Ticks during fadeout
+        this.time.delayedCall(0, () => { if (window.MOT && MOT.Audio) MOT.Audio.playTick(); });
+        this.time.delayedCall(1000, () => { if (window.MOT && MOT.Audio) MOT.Audio.playTick(); });
+        this.time.delayedCall(2000, () => { if (window.MOT && MOT.Audio) MOT.Audio.playTick(); });
+
+        // Shutdown and transition
+        this.time.delayedCall(3000, () => {
+          if (window.MOT && MOT.Audio) MOT.Audio.playShutdown();
+          this.time.delayedCall(1500, () => {
+            MOT.flags = MOT.flags || {};
+            MOT.flags.useGlitchTitle = true;
+            this.scene.start('TitleScene');
+          });
+        });
+      });
+    }
+  }
+}
+
+window.StoryScene = StoryScene;

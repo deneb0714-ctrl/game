@@ -1,0 +1,29 @@
+395:               this.heroImage = this.add.image(300, h / 2, 'hero_stand').setAlpha(0).setDepth(90);
+397:              this.heroImage.setScale(hScale);
+459:     this.heroImage = this.add.image(300, 1080 / 2, 'hero_stand').setAlpha(0).setDepth(90);
+461:     this.heroImage.setScale(hScale);
+518:       this.heroImage.setScale(750 / this.heroImage.width);
+570:     this.heroImage = this.add.image(300, h / 2, 'hero_stand').setAlpha(0).setDepth(90);
+572:     this.heroImage.setScale(hScale);
+1797:             this.heroImage = this.add.image(300, h / 2, 'hero_stand').setAlpha(0).setDepth(90);
+1799:             this.heroImage.setScale(hScale);
+1981:       this.heroImage.setScale(750 / this.heroImage.width);
+2198:           this.heroImage = this.add.image(300, h / 2, 'hero_stand').setAlpha(0).setDepth(90);
+2200:           this.heroImage.setScale(hScale);
+2221:     const sayHero = (text) => new Promise(res => { this.tweens.add({ targets: dimBg, alpha: 0.6, duration: 300 }); this.tweens.add({targets: this.heroImage, alpha: 1, duration: 300});  if (text === '「……」' || text === '「……。」' || text === '「…」') {        this.heroImage.setTexture('hero_stand_silent');      } else {        this.heroImage.setTexture('hero_stand');      }     this.heroImage.setScale(750 / this.heroImage.width);     this.heroImage.setY(100 + (this.heroImage.height * this.heroImage.scaleY) / 2);      this.showDialogue(MOT.flags.heroName || '勇者', text, res); });
+2249:               this.heroImage.setScale(750 / this.heroImage.width);
+2321:               this.heroImage.setScale(750 / this.heroImage.width);
+2415:     const sayHero = (text) => new Promise(res => { this.tweens.add({ targets: dimBg, alpha: 0.6, duration: 300 }); this.tweens.add({targets: this.heroImage, alpha: 1, duration: 300}); this.tweens.add({ targets: this.demonImage, alpha: 0.4, duration: 300 }); if(this.inunekoImage) this.tweens.add({ targets: this.inunekoImage, alpha: 0.4, duration: 300 }); if (text === '「……」' || text === '「……。」' || text === '「…」') { this.heroImage.setTexture('hero_stand_silent'); } else if (text === '「……それでも僕は、殺したくない……！！」') { this.heroImage.setTexture('hero_cry'); } else { this.heroImage.setTexture('hero_stand'); } this.heroImage.setScale(750 / this.heroImage.width); this.heroImage.setY(100 + (this.heroImage.height * this.heroImage.scaleY) / 2); this.showDialogue(MOT.flags.heroName || '勇者', text, res); });
+2750:                       this.heroImage.setScale(750 / 1080);
+2753:                       this.heroImage = this.add.image(300, 1080 / 2, 'hero_stand').setAlpha(0).setDepth(90);
+2754:                       this.heroImage.setScale(750 / 1080);
+2924:                           this.heroImage.setScale(corruptedScale);
+3009:                           if (this.heroImage) { this.heroImage.destroy(); this.heroImage = null; }
+3018:                           this.heroImage = this.add.image(300, 1080 / 2, 'hero_stand_corrupted').setAlpha(0).setDepth(90);
+3022:                            this.heroImage.setScale(newHeroScale);
+3123:                               this.heroImage.setScale(750 / this.heroImage.width);
+3507:                 this.heroImage.setScale(hScale);
+3861:         this.heroImage = this.add.image(300, h / 2, 'hero_stand').setAlpha(0).setDepth(90);
+3863:         this.heroImage.setScale(hScale);
+3925:         const sayHero = (text) => new Promise(res => { this.tweens.add({ targets: dimBg, alpha: 0.6, duration: 300 }); this.tweens.add({targets: this.heroImage, alpha: 1, duration: 300}); if(this.sisterImage) this.tweens.add({targets: this.sisterImage, alpha: 0.4, duration: 300}); if(this.brotherImage) this.tweens.add({targets: this.brotherImage, alpha: 0.4, duration: 300}); if (text === '「……」' || text === '「……。」' || text === '「…」') { this.heroImage.setTexture('hero_stand_silent'); } else { this.heroImage.setTexture('hero_stand'); } this.heroImage.setScale(750 / this.heroImage.width); this.heroImage.setY(100 + (this.heroImage.height * this.heroImage.scaleY) / 2); this.showDialogue(MOT.flags.heroName || '勇者', text, res); });
+4074:     if (this.heroImage) { this.heroImage.destroy(); this.heroImage = null; }

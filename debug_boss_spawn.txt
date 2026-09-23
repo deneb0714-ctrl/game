@@ -1,0 +1,50 @@
+2272:                 this.proceedToNextArea(boss, false);
+2273:               } else {
+2274:                 MOT.flags.killedBoss1 = false;
+2275:                 // 「なんで殺さない？」のセリフのときだけ驚き顔
+2276:                 boss1DefImg.setTexture('boss1_dying');
+2277:                 await sayEnemyB1('「なんで殺さない…？お前はあいつの指示に従ってるんじゃないのか？」');
+2278:                 // 次のセリフから怒り顔に戻す
+2279:                 boss1DefImg.setTexture('boss1_hurt_angry');
+2280:                 await sayEnemyB1('「お前が魔王様に従うなら、協力する」');
+2281:                 await new Promise(r => this.tweens.add({ targets: boss, x: 2200, duration: 1500, ease: 'Power2', onComplete: r }));
+2282:                 boss1DefImg.destroy();
+2283:                 await sayDeviceB1('「君は一体何をしている？」');
+2284:                 await sayDeviceB1('「奴らを倒さないと、世界が救われないんだ。何がしたいのかさっぱりだが、次はちゃんと止めを刺せ。」');
+2285:                 await sayHeroB1('「……」');
+2286:                 this.proceedToNextArea(boss, true);
+2287:               }
+2288:             })();
+2289:           } else if (key === 'boss2') {
+2290:             var boss2DefImg = this.add.image(w - 300, h / 2, 'boss2_surprised_dying').setAlpha(0).setDepth(90);
+2291:             var b2dW = boss2DefImg.width || 576;
+2292:             var b2dH = boss2DefImg.height || 1024;
+2293:             var b2dScale = 750 / b2dW;
+2294:             if (this.textures.exists('boss2_surprised_dying')) {
+2295:               var t2 = this.textures.get('boss2_surprised_dying').getSourceImage();
+2296:               if (t2 && t2.width > 0) b2dScale = 750 / t2.width;
+2297:             }
+2298:             boss2DefImg.setScale(b2dScale);
+2299:             boss2DefImg.setY(100 + (b2dH * b2dScale) / 2);
+2300: 
+2301:             const sayEnemyB2 = (text, tex = 'boss2_normal_dying') => new Promise(res => {
+2302:               this.tweens.add({ targets: dimBg, alpha: 0.6, duration: 300 });
+2303:               this.tweens.add({ targets: boss2DefImg, alpha: 1, duration: 300 });
+2304:               this.tweens.add({ targets: this.heroImage, alpha: 0.4, duration: 300 });
+2305:               boss2DefImg.setTexture(tex);
+2306:               this.showDialogue('トゥレロス', text, res);
+2307:             });
+2308:             const sayHeroB2 = (text) => new Promise(res => {
+2309:               this.tweens.add({ targets: dimBg, alpha: 0.6, duration: 300 });
+2310:               this.tweens.add({ targets: this.heroImage, alpha: 1, duration: 300 });
+2311:               this.tweens.add({ targets: boss2DefImg, alpha: 0.4, duration: 300 });
+2312:               if (text === '「……」' || text === '「……。」' || text === '「…」') {
+2313:                 this.heroImage.setTexture('hero_stand_silent');
+2314:               } else {
+2315:                 this.heroImage.setTexture('hero_stand');
+2316:               }
+2317:               this.heroImage.setScale(750 / this.heroImage.width);
+2318:               this.heroImage.setY(100 + (this.heroImage.height * this.heroImage.scaleY) / 2);
+2319:               this.showDialogue(MOT.flags.heroName || '勇者', text, res);
+2320:             });
+2321:             const sayDeviceB2 = (text) => new Promise(res => {

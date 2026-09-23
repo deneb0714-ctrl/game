@@ -1,0 +1,1550 @@
+// =============================================
+// GameScene.js – メインゲームプレイ
+// =============================================
+class GameScene extends Phaser.Scene {
+  constructor() {
+    super({ key: 'GameScene' });
+  }
+
+  init(data) {
+    this.currentStage = (data && data.stage) || 1;
+    this.stageTimer = 0;
+    this.stageLength = 30000; // 30 seconds per stage
+    this.waveIndex = 0;
+    this.eventTriggered = {};
+    this.dialogActive = false;
+    this.lastDialogActive = false; // 会話終了時のクールタイム検出用
+    this.minionBattleActive = false;
+    this.minion1 = null;
+    this.playerInvincible = false;
+    this.autoShootTimer = 0;
+    this.barrierCooldown = 0;
+    this.barrierActive = false;
+    this.barrierTime = 0;
+    this.barrierVisual = null;
+    // 博士指示システム初期化
+    MOT.DoctorDirective.init();
+
+    // UI初期化（シーン再開時の参照残存を防ぐため）
+    this.energyBarBgObj = null;
+    this.energyBarFgObj = null;
+    this.energyBarOutline = null;
+    this.iconPersonBg = null;
+    this.iconPersonFill = null;
+    this.dollText = null;
+    this.iconBatteryBg = null;
+    this.iconBatteryFill = null;
+    this.intentText = null;
+  }
+
+  create() {
+    MOT.currentScene = this;
+    this.sound.stopAll();
+    this.events.on('shutdown', () => {
+      if (this.stageBgm) this.stageBgm.stop();
+    });
+
+    this.stageBgm = this.sound.add('mob_bgm_boss1', { loop: true, volume: 0.25 });
+    if (this.currentStage > 1) {
+      this.stageBgm.play();
+    }
+
+    const w = 1920, h = 1080;
+
+    // Background (scrolling)
+    let bgKey = 'bg_stage1';
+    if (this.currentStage === 2) bgKey = 'bg_stage2';
+    if (this.currentStage === 3) bgKey = 'bg_stage3';
+    if (this.currentStage === 4) bgKey = 'bg_stage4';
+    this.bgWidth = 1920;
+
+    let scrollTex = null;
+    if (this.currentStage === 1 && this.textures.exists('bg_tutorial_scroll')) {
+        scrollTex = 'bg_tutorial_scroll';
+    } else if (this.currentStage === 2 && this.textures.exists('bg_stage1_scroll') && this.textures.get('bg_stage1_scroll').key !== '__MISSING') {
+        scrollTex = 'bg_stage1_scroll';
+    }
+
+    if (scrollTex) {
+      this.bg1 = this.add.image(0, 0, scrollTex).setOrigin(0, 0).setDepth(0);
+      let scale = 1080 / this.bg1.height;
+      this.bg1.setScale(scale);
+      this.bgWidth = this.bg1.width * scale;
+      this.bg2 = this.add.image(this.bgWidth, 0, scrollTex).setOrigin(0, 0).setDepth(0);
+      this.bg2.setScale(scale);
+    } else {
+      this.bg1 = this.add.image(0, 0, bgKey).setOrigin(0, 0).setDepth(0);
+      this.bg1.setScale(1920 / 480);
+      this.bg2 = this.add.image(1920, 0, bgKey).setOrigin(0, 0).setDepth(0);
+      this.bg2.setScale(1920 / 480);
+    }
+    this.playerBullets = this.physics.add.group({ maxSize: 500, runChildUpdate: true });
+    this.enemyBullets = this.physics.add.group({ maxSize: 1000, runChildUpdate: true });
+    this.enemyGroup = this.physics.add.group();
+    this.itemGroup = this.physics.add.group();
+
+    // Player
+    this.player = this.physics.add.sprite(-100, 460, 'hero_combat_down_open').setScale(1.5);
+    this.player.play('hero_combat_anim');
+    this.player.moveTween = this.tweens.add({ 
+      targets: this.player, 
+      x: 300, 
+      duration: 1000, 
+      ease: 'Power2',
+      onComplete: () => {
+        this.player.setCollideWorldBounds(true);
+      }
+    });
+    this.player.setDrag(800, 800);
+    this.player.setMaxVelocity(400, 400);
+    this.player.setDepth(10);
+    this.player.setScale(1.5);
+    // STG風の小さな当たり判定（未スケール時8x8、画面上16x16）
+    this.player.body.setSize(19, 80);
+    this.player.body.setOffset(40, 10);
+
+//     this.playerHitboxGraphics = this.add.graphics();
+//     this.playerHitboxGraphics.setDepth(11);
+
+    // Player trail effect
+    this.playerTrail = this.add.particles(0, 0, 'particle', {
+      follow: this.player,
+      scale: { start: 0.8, end: 0 },
+      alpha: { start: 0.4, end: 0 },
+      tint: 0x4FD1FF,
+      lifespan: 300,
+      frequency: 50,
+      blendMode: 'ADD'
+    });
+
+    // Draw 3 lanes visually
+    const laneYs = [220, 460, 700];
+    const laneGraphics = this.add.graphics().setDepth(1);
+    laneGraphics.lineStyle(2, 0x4FD1FF, 0.25); // faint blue glow
+    laneYs.forEach(y => {
+      laneGraphics.lineBetween(0, y, w, y);
+    });
+
+    // Controls
+    MOT.setupControls(this);
+    MOT.setupTouchControls(this, this.player);
+    MOT.createVirtualGamepad(this, this.player);
+
+    // Collisions
+    this.physics.add.overlap(this.player, this.enemyBullets, this.onPlayerHit, null, this);
+    this.physics.add.overlap(this.player, this.enemyGroup, this.onPlayerHit, null, this);
+    this.physics.add.overlap(this.playerBullets, this.enemyGroup, this.onEnemyHit, null, this);
+    this.physics.add.overlap(this.player, this.itemGroup, MOT.collectItem.bind(null, this), null, this);
+
+    // HUD
+    this.createHUD();
+
+    // Stage info text
+    let stageLabel = 'TUTORIAL – 始まりの村';
+    if (this.currentStage === 2) stageLabel = 'STAGE 1 – 黄昏の荒野';
+    if (this.currentStage === 3) stageLabel = 'STAGE 2 – 宵闇の森';
+    if (this.currentStage === 4) stageLabel = 'STAGE 3 – 子夜の城塞';
+    const stageText = this.add.text(w / 2, h / 2, stageLabel, {
+      fontFamily: '"Press Start 2P"',
+      fontSize: '28px',
+      color: '#4FD1FF'
+    }).setOrigin(0.5).setDepth(100);
+
+    this.tweens.add({
+      targets: stageText,
+      alpha: 0,
+      duration: 600,
+      delay: 2000,
+      onComplete: function () { stageText.destroy(); }
+    });
+
+    // Wave schedule
+    this.waveSchedule = this.getWaveSchedule();
+
+    // Tutorial / Intro State
+    if (this.currentStage === 1) {
+      this.tutorialPhase = 1;
+      this.tutorialTimer = 0;
+      this.tutorialWaitSpecial = false;
+    } else {
+      this.stageIntroDone = false;
+    }
+
+    // Fade in
+    this.cameras.main.fadeIn(500, 5, 8, 20);
+  }
+
+  getWaveSchedule() {
+    if (this.currentStage === 1) {
+      // Tutorial stage handles spawning manually in updateTutorial
+      return [];
+    } else if (this.currentStage === 2) {
+      // ボス1の前の雑魚戦（少し減らす）
+      return [
+        { time: 2000, action: 'wave', count: 5, speed: 200 },
+        { time: 6000, action: 'wave', count: 7, speed: 220 },
+        { time: 10000, action: 'items' },
+        { time: 12000, action: 'wave', count: 8, speed: 250 },
+        { time: 16000, action: 'items' },
+        { time: 18000, action: 'stage_end' }
+      ];
+    } else {
+      return [
+        { time: 2000, action: 'wave', count: 5, speed: 200 },
+        { time: 6000, action: 'wave', count: 7, speed: 220 },
+        { time: 10000, action: 'items' },
+        { time: 12000, action: 'wave', count: 8, speed: 250 },
+        { time: 16000, action: 'items' },
+        { time: 18000, action: 'stage_end' }
+      ];
+    }
+  }
+
+  update(time, delta) {
+    // 会話が終わった瞬間（dialogActive が true から false に変わった時）に、バリアのクールタイムを最大（0%からチャージ）にする
+    if (!this.dialogActive && this.lastDialogActive) {
+      // 2秒（2000ms）のフルクールタイムをセットし、戦闘開始直後のバリアを完全に防ぐ
+      this.barrierCooldown = 2000;
+    }
+    this.lastDialogActive = this.dialogActive;
+
+    if (this.currentStage === 1 && this.tutorialPhase) {
+      this.updateTutorial(delta);
+    } else if (this.currentStage > 1 && !this.stageIntroDone && this.stageTimer > 1000 && !this.dialogActive) {
+      this.stageIntroDone = true;
+      this.physics.pause();
+      this.dialogActive = true;
+      
+      let text = '';
+      if (this.currentStage === 2) text = '「次のエリアに着いたか。そこは、黄昏の荒野だ。魔王城までまだ距離があるからそこまで敵は強くないが気は抜くなよ。」';
+      if (this.currentStage === 3) text = '「次のエリアに着いたか。そこは、宵闇の森だ。」';
+      if (this.currentStage === 4) text = '「次のエリアに着いたか。そこは、子夜の城塞だ。そろそろ魔王城に着くだろう。敵も強くなっている。気を付けてくれ」';
+      
+      this.showDeviceDialogue(text, () => {
+        this.dialogActive = false;
+        this.physics.resume();
+      });
+    }
+    
+    if (this.dialogActive) return;
+
+    this.stageTimer += delta;
+
+    // チュートリアル用の背景スクロール処理
+    if (this.bg1 && this.bg2 && this.bg1.texture.key.includes('scroll')) {
+      const scrollSpeed = 2;
+      this.bg1.x -= scrollSpeed;
+      this.bg2.x -= scrollSpeed;
+      if (this.bg1.x <= -this.bgWidth) this.bg1.x = this.bg2.x + this.bgWidth;
+      if (this.bg2.x <= -this.bgWidth) this.bg2.x = this.bg1.x + this.bgWidth;
+    }
+
+    // Player movement (keyboard)
+    MOT.handleMovement(this, this.player);
+
+
+    // 博士の指示システム update (チュートリアル中は出さない)
+    if (this.currentStage !== 1) {
+      // ボス戦直前（残り5秒 = 20000ms以降）は指示を出さない
+      const suppressDirective = (this.stageTimer >= 20000);
+      MOT.DoctorDirective.update(this, delta, this.player, this.dialogActive || suppressDirective);
+    }
+
+    // Auto-shoot
+    this.autoShootTimer += delta;
+    if (this.autoShootTimer >= 180) {
+      this.autoShootTimer = 0;
+      this.firePlayerBullet();
+      MOT.Audio.playShot();
+    }
+
+    // Barrier Logic
+    if (this.barrierCooldown > 0) {
+      this.barrierCooldown -= delta;
+      if (this.barrierCooldown < 0) this.barrierCooldown = 0;
+    }
+
+    if (this.barrierActive) {
+      this.barrierTime += delta;
+      if (this.barrierVisual) {
+        this.barrierVisual.setPosition(this.player.x, this.player.y);
+      }
+      if (this.barrierTime >= 3000) {
+        this.deactivateBarrier();
+      }
+    }
+
+    // Process wave schedule
+    this.processWaves();
+
+    // Cleanup off-screen
+    this.cleanupOffscreen();
+
+    // Update HUD
+    this.updateHUD();
+  }
+
+  firePlayerBullet() {
+    const bullet = this.playerBullets.create(this.player.x + 30, this.player.y, 'bullet_player');
+    if (bullet) {
+      let diamondCount = Math.floor((MOT.flags.killingIntent || 0) / 10);
+      let baseDamage = Math.min(5, 1 + diamondCount * 0.2);
+      bullet.damage = baseDamage;
+      if (baseDamage >= 5) bullet.setTint(0xff0000);
+      bullet.setVelocityX(800);
+      bullet.setScale(2);
+      // 寿命は2.2秒（射程1760px）にする。
+      // チュートリアル中の絶対範囲制限は cleanupOffscreen で行う。
+      const lifespan = 2200;
+      this.time.delayedCall(lifespan, function () {
+        if (bullet.active) bullet.destroy();
+      });
+    }
+  }
+
+  onBarrierUse() {
+    if (this.barrierCooldown <= 0 && !this.barrierActive && !this.dialogActive) {
+      MOT.Audio.playBleep('博士');
+      this.barrierActive = true;
+      this.barrierTime = 0;
+      this.barrierCooldown = 2000;
+      this.barrierActivatedTime = this.time.now; // ジャストガード用タイマー記録
+      
+      this.barrierVisual = this.add.circle(this.player.x, this.player.y, 60, 0x00FFaa, 0.3);
+      this.barrierVisual.setStrokeStyle(4, 0x00FFaa, 0.8);
+      this.barrierVisual.setDepth(9);
+    }
+  }
+
+  deactivateBarrier() {
+    this.barrierActive = false;
+    if (this.barrierVisual) {
+      this.tweens.add({
+        targets: this.barrierVisual,
+        scale: 1.5,
+        alpha: 0,
+        duration: 200,
+        onComplete: () => {
+          if (this.barrierVisual) this.barrierVisual.destroy();
+          this.barrierVisual = null;
+        }
+      });
+    }
+  }
+
+  onSpecialAttack() {
+    if (this.dialogActive) return;
+    if (MOT.flags.maxEnergy) {
+      MOT.Audio.playSpecial();
+      this.cameras.main.flash(500, 79, 209, 255);
+      for (let i = 0; i < 36; i++) {
+        const angle = Phaser.Math.DegToRad(i * 10);
+        const bullet = this.playerBullets.create(this.player.x, this.player.y, 'bullet_player');
+        if (bullet) {
+          bullet.setVelocity(Math.cos(angle) * 1000, Math.sin(angle) * 1000);
+          bullet.setScale(4);
+          bullet.setTint(0x4FD1FF);
+          bullet.damage = 10; // 10× damage for special attack
+          this.time.delayedCall(1500, function () {
+            if (bullet.active) bullet.destroy();
+          });
+        }
+      }
+
+      if (this.enemyGroup) {
+        this.enemyGroup.getChildren().slice().forEach(enemy => {
+          if (enemy !== this.minion1 && enemy.active) {
+            this.onEnemyHit({ damage: 9999, destroy: () => {} }, enemy);
+          }
+        });
+      }
+
+      MOT.flags.energy = 0;
+      MOT.flags.maxEnergy = false;
+    }
+  }
+
+  processWaves() {
+    while (this.waveIndex < this.waveSchedule.length &&
+           this.stageTimer >= this.waveSchedule[this.waveIndex].time) {
+      const wave = this.waveSchedule[this.waveIndex];
+      this.waveIndex++;
+
+      switch (wave.action) {
+        case 'wave':
+          MOT.spawnWave(this, wave.count, 200, wave.speed);
+          break;
+        case 'items':
+          {
+            const laneYs = [220, 460, 700];
+            for (let i = 0; i < 3; i++) {
+              const laneY = laneYs[Phaser.Math.Between(0, 2)];
+              MOT.spawnEnergyItem(this, 1900 + i * 100, laneY);
+            }
+            const healthLaneY = laneYs[Phaser.Math.Between(0, 2)];
+            MOT.spawnHealthItem(this, 1950, healthLaneY);
+          }
+          break;
+
+        case 'stage_end':
+          this.checkStageEndTimer = this.time.addEvent({
+            delay: 500,
+            loop: true,
+            callback: () => {
+              let hasEnemies = false;
+              this.enemyGroup.getChildren().forEach(e => {
+                // まだ画面内にいるアクティブな敵がいれば待機
+                if (e.active && e.x > -100) hasEnemies = true;
+              });
+              if (!hasEnemies) {
+                this.checkStageEndTimer.destroy();
+                this.endStage();
+              }
+            }
+          });
+          break;
+      }
+    }
+  }
+
+  triggerMinion1Encounter() {
+    this.dialogActive = true;
+    this.physics.pause();
+    this.player.setVelocity(0, 0);
+
+    // Clear all enemies and bullets
+    this.enemyGroup.clear(true, true);
+    this.enemyBullets.clear(true, true);
+
+    // Spawn minion1
+    const minion = this.physics.add.sprite(1400, 460, 'minion1').setScale(3);
+    minion.setAlpha(0);
+    minion.hp = 50;
+    this.minion1 = minion;
+    this.enemyGroup.add(minion);
+
+    this.tweens.add({
+      targets: minion,
+      alpha: 1,
+      x: 1500,
+      duration: 800,
+      ease: 'Power2'
+    });
+
+    // Dialogue Intro
+    this.time.delayedCall(1000, function () {
+      this.showDialogue('下っ端1', '「ひ、ひえぇ！博士の人形が来たぞ！\nや、やられる前にやってやる！」', function () {
+        this.dialogActive = false;
+        this.physics.resume();
+        this.minionBattleActive = true;
+      }.bind(this));
+    }, [], this);
+  }
+
+  onMinion1Defeated() {
+    this.minionBattleActive = false;
+    this.dialogActive = true;
+    this.physics.pause();
+    this.player.setVelocity(0, 0);
+    this.enemyBullets.clear(true, true);
+    if (this.minion1) this.minion1.body.enable = false;
+
+    this.showDialogue('下っ端1', '「ま、待ってくれ！降参だ！\n俺は四天王の中でも最弱…本当は戦いたくないんだ！」', function () {
+      this.showChoice([
+        { text: '見逃す', callback: function () {
+          MOT.Audio.playSelect();
+          MOT.modifyFlag('favor.minion1', 1);
+          MOT.modifyFlag('showMercy', 1);
+          this.showDialogue('下っ端1', '「あ、ありがとう…！\n兄貴たちには弱点があるんだ。覚えておいてくれ。」', function () {
+            this.tweens.add({ targets: this.minion1, alpha: 0, x: 1800, duration: 600, onComplete: function() { this.minion1.destroy(); }.bind(this)});
+            this.dialogActive = false;
+            this.physics.resume();
+          }.bind(this));
+        }.bind(this)},
+        { text: '倒す', callback: function () {
+          MOT.Audio.playSelect();
+          MOT.modifyFlag('brutality', 1);
+          MOT.modifyFlag('obeyDoctor', 1);
+          this.cameras.main.shake(200, 0.01);
+          this.showExplosion(this.minion1.x, this.minion1.y);
+          this.minion1.destroy();
+          this.dialogActive = false;
+          this.physics.resume();
+        }.bind(this)},
+        { text: '博士の指示に従う', callback: function () {
+          MOT.Audio.playSelect();
+          MOT.modifyFlag('obeyDoctor', 1);
+          MOT.modifyFlag('brutality', 1);
+          this.cameras.main.shake(200, 0.01);
+          this.showExplosion(this.minion1.x, this.minion1.y);
+          this.minion1.destroy();
+          this.dialogActive = false;
+          this.physics.resume();
+        }.bind(this)}
+      ]);
+    }.bind(this));
+  }
+
+  showDialogue(speaker, text, onComplete) {
+    this.dialogActive = true;
+    this.input.setTopOnly(true);
+    const w = 1920, h = 1080;
+    const boxH = 280;
+    const boxY = h - boxH - 20;
+
+    const box = this.add.graphics();
+    box.fillStyle(0x0a0a1a, 0.92);
+    box.fillRoundedRect(60, boxY, w - 120, boxH, 12);
+    box.lineStyle(2, 0x4FD1FF, 0.8);
+    box.strokeRoundedRect(60, boxY, w - 120, boxH, 12);
+    const touchZone = this.add.rectangle(960, 540, 1920, 1080, 0x000000, 0).setScrollFactor(0).setDepth(200000).setInteractive({ useHandCursor: true });
+    box.setScrollFactor(0).setDepth(200001);
+
+    const nameText = this.add.text(100, boxY + 10, speaker, {
+      fontFamily: '"DotGothic16"',
+      fontSize: '44px',
+      color: '#4FD1FF'
+    }).setScrollFactor(0).setDepth(200002);
+
+    const bodyText = this.add.text(100, boxY + 60, '', {
+      fontFamily: '"DotGothic16"',
+      fontSize: '40px',
+      color: '#E5E7EB',
+      wordWrap: { width: w - 220, useAdvancedWrap: true },
+      lineSpacing: 8
+    }).setScrollFactor(0).setDepth(200002);
+
+    // Typewriter effect
+    let charIndex = 0;
+    const contText = this.add.text(w - 100, boxY + boxH - 40, '▶ NEXT [TAP/SPACE]', {
+      fontFamily: '"Press Start 2P"', fontSize: '20px', color: '#9CA3AF'
+    }).setOrigin(1, 0).setAlpha(0).setScrollFactor(0).setDepth(200003);
+
+    const typeTimer = this.time.addEvent({
+      delay: 40,
+      callback: function () {
+        charIndex++;
+        bodyText.setText(text.substring(0, charIndex));
+        
+        // Sound for every character (excluding spaces)
+        if (text[charIndex-1] !== ' ' && window.MOT && MOT.Audio) {
+          MOT.Audio.playBleep('博士');
+        }
+
+        if (charIndex >= text.length) {
+          typeTimer.destroy();
+          contText.setAlpha(1);
+          if (this.tweens) this.tweens.add({ targets: contText, alpha: 0.3, yoyo: true, repeat: -1, duration: 500 });
+        }
+      },
+      callbackScope: this,
+      loop: true
+    });
+
+    const advance = () => {
+      this.dialogActive = false;
+      this.input.off('pointerdown', handleInput);
+      if (touchZone && touchZone.active) {
+        touchZone.off('pointerdown', handleInput);
+        touchZone.destroy();
+      }
+      this.input.keyboard.off('keydown', handleKey);
+      if (box && box.active) box.destroy();
+      if (nameText && nameText.active) nameText.destroy();
+      if (bodyText && bodyText.active) bodyText.destroy();
+      if (contText && contText.active) contText.destroy();
+      if (onComplete) onComplete();
+    };
+
+    let lastTapTime = 0;
+    const handleInput = (arg1, arg2, arg3, event) => {
+      if (event && typeof event.stopPropagation === 'function') event.stopPropagation();
+      else if (arg1 && typeof arg1.stopPropagation === 'function') arg1.stopPropagation();
+      const now = Date.now();
+      if (now - lastTapTime < 200) return;
+      lastTapTime = now;
+
+      if (charIndex < text.length) {
+        typeTimer.destroy();
+        charIndex = text.length;
+        bodyText.setText(text);
+        contText.setAlpha(1);
+        if (this.tweens) this.tweens.add({ targets: contText, alpha: 0.3, yoyo: true, repeat: -1, duration: 500 });
+      } else {
+        advance();
+      }
+    };
+
+    const handleKey = (event) => {
+      if (event.key === ' ' || event.code === 'Space') {
+        handleInput();
+      }
+    };
+
+    touchZone.on('pointerdown', handleInput);
+    
+    this.input.keyboard.on('keydown', handleKey);
+  }
+
+    showChoice(choices) {
+    const w = 1920, h = 1080;
+    const startY = h / 2 - (choices.length * 45);
+    const elements = [];
+
+    const overlay = this.add.graphics();
+    overlay.fillStyle(0x000000, 0.5);
+    overlay.fillRect(0, 0, w, h);
+    overlay.setDepth(200000);
+    elements.push(overlay);
+
+    // [ENTER] KEY ガイドテキストを右下に追加
+    const contText = this.add.text(w - 100, h - 60, '▶ [ENTER] KEY', {
+      fontFamily: '"Press Start 2P"',
+      fontSize: '20px',
+      color: '#9CA3AF'
+    }).setOrigin(1, 0.5).setDepth(200001);
+    this.tweens.add({ targets: contText, alpha: 0.3, yoyo: true, repeat: -1, duration: 500 });
+    elements.push(contText);
+
+    const choicesList = [];
+    this.selectedChoiceIndex = 0;
+    const self = this;
+
+    choices.forEach(function (choice, i) {
+      const y = startY + i * 110;
+      const btn = self.add.image(w / 2, y, 'ui_button_wide').setInteractive(new Phaser.Geom.Rectangle(-100, -30, 560, 110), Phaser.Geom.Rectangle.Contains).setDepth(200002);
+      
+      const txt = self.add.text(w / 2, y, choice.text, {
+        fontFamily: '"DotGothic16"',
+        fontSize: '26px',
+        color: '#E5E7EB'
+      }).setOrigin(0.5).setDepth(200003);
+
+      elements.push(btn, txt);
+      choicesList.push({ btn: btn, txt: txt, callback: choice.callback });
+
+      btn.setAlpha(0);
+      txt.setAlpha(0);
+      self.tweens.add({ targets: [btn, txt], alpha: 1, duration: 300, delay: i * 100 });
+
+      btn.on('pointerover', function () {
+        self.selectedChoiceIndex = i;
+        self.updateChoiceSelection(choicesList);
+      });
+
+      btn.on('pointerdown', function () {
+        self.input.keyboard.off('keydown');
+        elements.forEach(function (el) { el.destroy(); });
+        choice.callback();
+      });
+    });
+
+    this.updateChoiceSelection = function(list) {
+      list.forEach(function (choice, idx) {
+        if (idx === self.selectedChoiceIndex) {
+          choice.btn.setTint(0x4FD1FF);
+          choice.txt.setColor('#ffffff');
+          choice.btn.setScale(1.10);
+          choice.txt.setScale(1.10);
+        } else {
+          choice.btn.clearTint();
+          choice.txt.setColor('#E5E7EB');
+          choice.btn.setScale(1.0);
+          choice.txt.setScale(1.0);
+        }
+      });
+    };
+
+    this.updateChoiceSelection(choicesList);
+
+    this.input.keyboard.on('keydown', function (event) {
+      if (event.code === 'KeyW' || event.code === 'ArrowUp') {
+        self.selectedChoiceIndex = (self.selectedChoiceIndex - 1 + choicesList.length) % choicesList.length;
+        self.updateChoiceSelection(choicesList);
+      } else if (event.code === 'KeyS' || event.code === 'ArrowDown') {
+        self.selectedChoiceIndex = (self.selectedChoiceIndex + 1) % choicesList.length;
+        self.updateChoiceSelection(choicesList);
+      } else if (event.code === 'Enter') {
+        self.input.keyboard.off('keydown');
+        elements.forEach(function (el) { el.destroy(); });
+        choicesList[self.selectedChoiceIndex].callback();
+      }
+    });
+  }
+
+  showExplosion(x, y) {
+    MOT.Audio.playExplosion();
+    const exp = this.add.sprite(x, y, 'explosion').setScale(3).setDepth(20);
+    this.tweens.add({
+      targets: exp,
+      scale: 5,
+      alpha: 0,
+      duration: 500,
+      onComplete: function () { exp.destroy(); }
+    });
+    // Particles
+    for (let i = 0; i < 12; i++) {
+      const p = this.add.circle(x, y, 4, 0xFF8C00).setDepth(20);
+      this.tweens.add({
+        targets: p,
+        x: x + Phaser.Math.Between(-150, 150),
+        y: y + Phaser.Math.Between(-150, 150),
+        alpha: 0,
+        scale: 0,
+        duration: Phaser.Math.Between(300, 600),
+        onComplete: function () { p.destroy(); }
+      });
+    }
+  }
+
+  endStage() {
+    // Go to boss fight after this stage
+    this.physics.pause();
+    this.player.setCollideWorldBounds(false);
+    this.tweens.add({ targets: this.player, x: 2100, duration: 800, ease: 'Power2' });
+    this.cameras.main.fadeOut(800, 0, 0, 0);
+    this.time.delayedCall(800, function () {
+      this.scene.start('BossScene', { bossIndex: 0, normalTransition: true });
+    }, [], this);
+  }
+
+  onPlayerHit(player, obj) {
+    if (this.playerInvincible || this.dialogActive) return;
+
+    if (this.barrierActive) {
+      obj.destroy();
+      this.deactivateBarrier();
+
+      // 短い無敵時間
+      this.playerInvincible = true;
+      this.time.delayedCall(150, () => {
+        this.playerInvincible = false;
+      });
+
+      // 反撃SE＆エフェクト（イエローフラッシュ＆ゴールド粒子）
+      this.cameras.main.flash(200, 255, 215, 0);
+      for (let i = 0; i < 12; i++) {
+        const p = this.add.circle(player.x, player.y, 6, 0xFFD700).setDepth(20);
+        this.tweens.add({
+          targets: p,
+          x: player.x + Phaser.Math.Between(-150, 150),
+          y: player.y + Phaser.Math.Between(-150, 150),
+          alpha: 0,
+          scale: 0,
+          duration: 400,
+          onComplete: function () { p.destroy(); }
+        });
+      }
+
+      // 反射音階SE
+      if (this.barrierGuardCount === undefined) this.barrierGuardCount = 0;
+      const freqs = [
+        493.88, 523.25, 587.33, 659.25, 698.46, 783.99, 880.00, 987.77, 1046.50, 1174.66, 1318.51, 1396.91, 1567.98
+      ];
+      let idx = this.barrierGuardCount % freqs.length;
+      let isRed = (idx >= 4 && idx < 12);
+      let color = isRed ? 0xff0000 : 0xffff00;
+
+      if (window.MOT && MOT.Audio && MOT.Audio.playMusicalNote) {
+        MOT.Audio.playMusicalNote(freqs[idx]);
+      }
+      this.barrierGuardCount++;
+
+      // 追尾式の反撃弾（敵に必ず当たる）
+      const reflectBullet = this.playerBullets.create(player.x + 30, player.y, 'bullet_player');
+      if (reflectBullet) {
+        reflectBullet.setScale(3);
+        reflectBullet.setTint(color);
+        reflectBullet.damage = 10;
+
+        let target = null;
+        if (this.tutEnemy2 && this.tutEnemy2.active) {
+          target = this.tutEnemy2;
+        } else if (this.enemyGroup) {
+          let closestDist = 999999;
+          this.enemyGroup.getChildren().forEach(e => {
+            if (e.active && e.x > player.x) {
+              let d = Phaser.Math.Distance.Between(player.x, player.y, e.x, e.y);
+              if (d < closestDist) {
+                closestDist = d;
+                target = e;
+              }
+            }
+          });
+        }
+
+        if (target) {
+          reflectBullet.homingTarget = target;
+          this.physics.moveToObject(reflectBullet, target, 1400);
+        } else {
+          reflectBullet.setVelocityX(1400);
+        }
+
+        const homeTimer = this.time.addEvent({
+          delay: 30,
+          loop: true,
+          callback: () => {
+            if (!reflectBullet.active) {
+              homeTimer.destroy();
+              return;
+            }
+            if (reflectBullet.homingTarget && reflectBullet.homingTarget.active) {
+              this.physics.moveToObject(reflectBullet, reflectBullet.homingTarget, 1400);
+            }
+          }
+        });
+
+        this.time.delayedCall(2000, function () {
+          if (homeTimer) homeTimer.destroy();
+          if (reflectBullet.active) reflectBullet.destroy();
+        });
+      }
+      return;
+    }
+
+    obj.destroy();
+    if (this.currentStage === 1) {
+      MOT.flags.playerHP = Math.max(1, MOT.flags.playerHP - 1);
+    } else {
+      MOT.flags.playerHP--;
+    }
+    this.cameras.main.shake(150, 0.008);
+
+    // Flash player red
+    this.playerInvincible = true;
+    player.setTint(0xFF4B6E);
+    this.tweens.add({
+      targets: player,
+      alpha: 0.3,
+      yoyo: true,
+      repeat: 3,
+      duration: 100,
+      onComplete: function () {
+        player.setAlpha(1);
+        player.clearTint();
+        this.playerInvincible = false;
+      }.bind(this)
+    });
+
+    if (MOT.flags.playerHP <= 0 && this.currentStage !== 1) {
+      MOT.flags.diedCount++;
+      this.cameras.main.fadeOut(1000, 0, 0, 0);
+      this.time.delayedCall(1000, function () {
+        this.scene.start('EndingScene');
+      }, [], this);
+    }
+  }
+
+  onEnemyHit(bullet, enemy) {
+    // 画面外 (x > 1920) にいる敵はダメージを受けない (弾は消去されるが敵はノーダメージ)
+    if (enemy.x > 1920) {
+      bullet.destroy();
+      return;
+    }
+    bullet.destroy();
+    if (enemy.isInvulnerable) {
+      return;
+    }
+    const dmg = bullet.damage || 1;
+    enemy.hp = (enemy.hp || 1) - dmg;
+    enemy.setTint(0xffffff);
+    this.time.delayedCall(50, function(){ if(enemy.active) enemy.clearTint(); });
+
+    if (enemy.hp <= 0) {
+      if (enemy === this.minion1) {
+        this.onMinion1Defeated();
+        return;
+      }
+      this.showExplosion(enemy.x, enemy.y);
+      // Tutorial specific drop logic
+      if (enemy.stationaryDrop) {
+        let item = MOT.spawnEnergyItem(this, enemy.x, enemy.y, enemy.tutorialRed);
+        if (item) {
+          item.stationary = true;
+          item.setVelocityX(0);
+        }
+      } else if (enemy.tutorialDrop) {
+        MOT.spawnEnergyItem(this, enemy.x, enemy.y, enemy.tutorialRed);
+      } else {
+        let dropRand = Phaser.Math.Between(0, 100);
+        if (dropRand < 15) {
+          MOT.spawnHealthItem(this, enemy.x, enemy.y); // 15%で回復アイテム
+        } else if (dropRand < 55) {
+          MOT.spawnEnergyItem(this, enemy.x, enemy.y); // 40%でエネルギー
+        }
+      }
+      enemy.destroy();
+    }
+  }
+
+  cleanupOffscreen() {
+    this.enemyGroup.getChildren().forEach(function (e) {
+      if (e.x < -100) e.destroy();
+    });
+    this.enemyBullets.getChildren().forEach(function (b) {
+      if (b.x < -50 || b.x > 2000 || b.y < -50 || b.y > 1130) b.destroy();
+    });
+    this.playerBullets.getChildren().forEach(function (b) {
+      if (b.x > 1600) b.destroy();
+    });
+    this.itemGroup.getChildren().forEach(function (i) {
+      if (i.x < -50) i.destroy();
+    });
+  }
+
+  createHUD() {
+    this.hpText = this.add.text(30, 20, '', {
+      fontFamily: '"Press Start 2P"', fontSize: '24px', color: '#FF4B6E'
+    }).setDepth(100).setScrollFactor(0);
+
+    this.energyText = this.add.text(30, 50, '', {
+      fontFamily: '"Press Start 2P"', fontSize: '18px', color: '#4FD1FF'
+    }).setDepth(100).setScrollFactor(0);
+
+    this.energyBar = this.add.graphics().setDepth(100).setScrollFactor(0);
+    this.barrierIconBg = this.add.graphics().setDepth(100).setScrollFactor(0);
+    this.barrierIconFg = this.add.graphics().setDepth(100).setScrollFactor(0);
+    this.isEnergyHighlighted = false;
+
+    let areaText = '';
+    if (this.currentStage === 2) areaText = '黄昏の荒野';
+    else if (this.currentStage === 3) areaText = '宵闇の森';
+    else if (this.currentStage === 4) areaText = '子夜の城塞';
+    
+    if (areaText !== '') {
+      this.areaNameText = this.add.text(1920 - 30, 20, areaText, {
+        fontFamily: '"DotGothic16"', fontSize: '32px', color: '#FFFFFF',
+        backgroundColor: 'rgba(0,0,0,0.5)', padding: { x: 10, y: 5 }
+      }).setOrigin(1, 0).setDepth(100).setScrollFactor(0);
+    }
+  }
+
+  updateHUD() {
+    // HP as hearts
+    let hearts = '';
+    for (let i = 0; i < MOT.flags.playerMaxHP; i++) {
+      hearts += i < MOT.flags.playerHP ? '♥ ' : '♡ ';
+    }
+    this.hpText.setText(hearts);
+
+    // HUD Elements Initialization
+    if (!this.energyBarBgObj) {
+      this.energyBarBgObj = this.add.rectangle(180, 92, 300, 24, 0x1F2933).setDepth(100).setScrollFactor(0);
+      this.energyBarFgObj = this.add.rectangle(32, 82, 296, 20, 0x4FD1FF).setOrigin(0, 0).setDepth(100).setScrollFactor(0);
+      this.energyBarOutline = this.add.graphics().setDepth(100).setScrollFactor(0);
+      this.energyBarOutline.lineStyle(2, 0x4FD1FF, 0.6);
+      this.energyBarOutline.strokeRect(30, 80, 300, 24);
+      
+//       this.iconPersonBg = this.add.image(390, 44, 'icon_person').setOrigin(0, 0).setTint(0x555555).setDepth(100).setScrollFactor(0).setScale(1.5);
+//       this.iconPersonFill = this.add.image(390, 44, 'icon_person').setOrigin(0, 0).setTint(0xFFFF00).setDepth(100).setScrollFactor(0).setScale(1.5);
+      
+//       this.batteryUI = this.add.graphics().setDepth(100).setScrollFactor(0);
+    }
+
+    // Energy bar update (using scaleX instead of clear/fillRect)
+    const pct = MOT.flags.energy / MOT.flags.maxEnergyThreshold;
+    const barColor = MOT.flags.maxEnergy ? 0xFF4B6E : 0x4FD1FF;
+    this.energyBarFgObj.setFillStyle(barColor, 1);
+    this.energyBarFgObj.scaleX = Math.max(0.001, pct);
+
+    // 必殺技ゲージのハイライト
+    this.energyBar.clear();
+    if (this.isHPHighlighted) {
+      const flash = (Math.sin(Date.now() / 150) + 1) / 2;
+      this.energyBar.lineStyle(4, 0xFFFF00, 0.4 + 0.6 * flash);
+      this.energyBar.strokeRect(26, 16, 200, 44);
+    }
+    if (this.isEnergyHighlighted) {
+      const flash = (Math.sin(Date.now() / 150) + 1) / 2;
+      this.energyBar.lineStyle(4, 0xFFFF00, 0.4 + 0.6 * flash);
+      this.energyBar.strokeRect(26, 76, 308, 32);
+    }
+
+    this.energyText.setText('EN: ' + MOT.flags.energy + '/' + MOT.flags.maxEnergyThreshold);
+
+    // UI Meters removed per user request
+    const iconX = 360;
+    const iconY = 92;
+    const iconRadius = 18;
+
+    this.barrierIconBg.clear();
+    this.barrierIconFg.clear();
+
+    this.barrierIconBg.fillStyle(0x1F2933, 1);
+    this.barrierIconBg.fillCircle(iconX, iconY, iconRadius);
+    this.barrierIconBg.lineStyle(2, 0x334155, 1);
+    this.barrierIconBg.strokeCircle(iconX, iconY, iconRadius);
+
+    if (this.barrierCooldown <= 0) {
+      this.barrierIconFg.fillStyle(0x00FFaa, 1);
+      this.barrierIconFg.fillCircle(iconX, iconY, iconRadius - 2);
+    } else {
+      const cdPct = 1 - (this.barrierCooldown / 2000);
+      this.barrierIconFg.fillStyle(0x00FFaa, 0.4);
+      this.barrierIconFg.beginPath();
+      this.barrierIconFg.moveTo(iconX, iconY);
+      this.barrierIconFg.arc(iconX, iconY, iconRadius - 2, Phaser.Math.DegToRad(-90), Phaser.Math.DegToRad(-90 + 360 * cdPct), false);
+      this.barrierIconFg.closePath();
+      this.barrierIconFg.fillPath();
+    }
+  }
+  showDeviceDialogue(text, onComplete, highlightConfig) {
+    this.dialogActive = true;
+    this.updateHUD();
+    this.input.setTopOnly(true);
+    if (this.dialogContainer) {
+      this.dialogContainer.destroy();
+    }
+    this.dialogContainer = this.add.container(0, 0).setScrollFactor(0).setDepth(200000);
+    const touchZone = this.add.rectangle(960, 540, 1920, 1080, 0x000000, 0).setScrollFactor(0).setInteractive({ useHandCursor: true });
+    this.dialogContainer.add(touchZone);
+
+    if (highlightConfig && typeof highlightConfig.x === 'number' && typeof highlightConfig.y === 'number' && !isNaN(highlightConfig.x) && !isNaN(highlightConfig.y)) {
+      let hX = highlightConfig.x;
+      let hY = highlightConfig.y;
+
+      if (highlightConfig.darkOverlay) {
+        var darkBg = this.add.graphics();
+        darkBg.fillStyle(0x000000, 0.78);
+
+        let halfW = highlightConfig.radius ? highlightConfig.radius : ((highlightConfig.width || 100) / 2);
+        let halfH = highlightConfig.radius ? highlightConfig.radius : ((highlightConfig.height || 100) / 2);
+
+        let x1 = Math.max(0, hX - halfW);
+        let x2 = Math.min(1920, hX + halfW);
+        let y1 = Math.max(0, hY - halfH);
+        let y2 = Math.min(1080, hY + halfH);
+
+        // Draw 4 outer dark rectangles surrounding the spotlight area
+        if (y1 > 0) darkBg.fillRect(0, 0, 1920, y1);
+        if (y2 < 1080) darkBg.fillRect(0, y2, 1920, 1080 - y2);
+        if (x1 > 0 && y2 > y1) darkBg.fillRect(0, y1, x1, y2 - y1);
+        if (x2 < 1920 && y2 > y1) darkBg.fillRect(x2, y1, 1920 - x2, y2 - y1);
+
+        this.dialogContainer.add(darkBg);
+      }
+
+      var highlight = this.add.graphics();
+      var hColor = highlightConfig.color || 0xFF3333;
+      highlight.lineStyle(6, hColor, 0.95);
+      
+      if (highlightConfig.width && highlightConfig.height) {
+        highlight.strokeRoundedRect(hX - highlightConfig.width/2, hY - highlightConfig.height/2, highlightConfig.width, highlightConfig.height, 8);
+      } else if (highlightConfig.radius) {
+        highlight.strokeCircle(hX, hY, highlightConfig.radius);
+      }
+
+      var highlightGlow = this.add.graphics();
+      highlightGlow.lineStyle(12, hColor, 0.4);
+      if (highlightConfig.width && highlightConfig.height) {
+        highlightGlow.strokeRoundedRect(hX - highlightConfig.width/2 - 3, hY - highlightConfig.height/2 - 3, highlightConfig.width + 6, highlightConfig.height + 6, 12);
+      } else if (highlightConfig.radius) {
+        highlightGlow.strokeCircle(hX, hY, highlightConfig.radius + 4);
+      }
+
+      this.tweens.add({ targets: [highlight, highlightGlow], alpha: 0.3, yoyo: true, repeat: -1, duration: 450 });
+      this.dialogContainer.add(highlightGlow);
+      this.dialogContainer.add(highlight);
+    }
+
+    var w = 1920, h = 1080, boxH = 280, boxY = h - boxH - 20;
+
+    var box = this.add.graphics();
+    box.fillStyle(0x0a0a1a, 0.92);
+    box.fillRoundedRect(60, boxY, w - 120, boxH, 12);
+    box.lineStyle(2, 0x4FD1FF, 0.8);
+    box.strokeRoundedRect(60, boxY, w - 120, boxH, 12);
+    this.dialogContainer.add(box);
+
+    var iconBox = this.add.graphics();
+    iconBox.lineStyle(2, 0x4FD1FF, 0.8);
+    iconBox.strokeRect(80, boxY + 40, 200, 200);
+    this.dialogContainer.add(iconBox);
+    
+    var face = this.add.image(180, boxY + 140, 'doctor_normal');
+    var scaleRatio = 1000 / face.height;
+    face.setScale(scaleRatio);
+    var maskShape = this.make.graphics();
+    maskShape.fillStyle(0xffffff);
+    maskShape.fillRect(82, boxY + 42, 196, 196);
+    face.setMask(maskShape.createGeometryMask());
+    face.setY(boxY + 140 + (face.height * scaleRatio) * 0.35);
+    this.dialogContainer.add(face);
+
+    var nameText = this.add.text(310, boxY + 10, '博士', {
+      fontFamily: '"DotGothic16"', fontSize: '44px', color: '#4FD1FF'
+    });
+    this.dialogContainer.add(nameText);
+
+    var bodyText = this.add.text(310, boxY + 60, '', {
+      fontFamily: '"DotGothic16"', fontSize: '40px', color: '#E5E7EB',
+      wordWrap: { width: w - 420, useAdvancedWrap: true }, lineSpacing: 8
+    });
+    this.dialogContainer.add(bodyText);
+
+    var contText = this.add.text(w - 100, boxY + boxH - 40, '▶ NEXT [TAP/SPACE]', {
+      fontFamily: '"Press Start 2P"', fontSize: '20px', color: '#9CA3AF'
+    }).setOrigin(1, 0).setAlpha(0);
+    this.dialogContainer.add(contText);
+
+    var charIndex = 0;
+    var typeTimer = this.time.addEvent({
+      delay: 40, callback: function () {
+        charIndex++;
+        bodyText.setText(text.substring(0, charIndex));
+        if (text[charIndex - 1] !== ' ' && window.MOT && MOT.Audio) MOT.Audio.playBleep('博士');
+        if (charIndex >= text.length) {
+          typeTimer.destroy();
+          contText.setAlpha(1);
+          if (this.tweens) this.tweens.add({ targets: contText, alpha: 0.3, yoyo: true, repeat: -1, duration: 500 });
+        }
+      }, callbackScope: this, loop: true
+    });
+
+    const advance = () => {
+      this.dialogActive = false;
+      this.input.off('pointerdown', handleInput);
+      if (touchZone && touchZone.active) {
+        touchZone.off('pointerdown', handleInput);
+        touchZone.destroy();
+      }
+      this.input.keyboard.off('keydown', handleKey);
+      if (this.dialogContainer) {
+        this.dialogContainer.destroy();
+        this.dialogContainer = null;
+      }
+      if (onComplete) onComplete();
+    };
+
+    let lastTapTime = 0;
+    const handleInput = (arg1, arg2, arg3, event) => {
+      if (event && typeof event.stopPropagation === 'function') event.stopPropagation();
+      else if (arg1 && typeof arg1.stopPropagation === 'function') arg1.stopPropagation();
+      const now = Date.now();
+      if (now - lastTapTime < 200) return;
+      lastTapTime = now;
+
+      if (charIndex < text.length) {
+        typeTimer.destroy();
+        charIndex = text.length;
+        bodyText.setText(text);
+        contText.setAlpha(1);
+        if (this.tweens) this.tweens.add({ targets: contText, alpha: 0.3, yoyo: true, repeat: -1, duration: 500 });
+      } else {
+        advance();
+      }
+    };
+
+    const handleKey = (event) => {
+      if (event.key === ' ' || event.code === 'Space') {
+        handleInput();
+      }
+    };
+
+    touchZone.on('pointerdown', handleInput);
+    
+    this.input.keyboard.on('keydown', handleKey);
+  }
+
+  spawnTutorialEnemy(laneIndex, speed) {
+    const laneYs = [220, 460, 700];
+    const enemy = this.enemyGroup.create(1920, laneYs[laneIndex], 'enemy_basic');
+    enemy.setVelocityX(-speed);
+    enemy.hp = this.currentStage >= 3 ? 2 : 1;
+    enemy.fireTimer = this.time.addEvent({
+      delay: Phaser.Math.Between(1500, 2500),
+      callback: () => {
+        if (enemy.active) {
+          if (enemy.fireDisabled) return;
+          let b = MOT.fireLinear(this, enemy.x, enemy.y, -300, 0);
+          if (b) b.shooter = enemy;
+        }
+      },
+      loop: true
+    });
+    return enemy;
+  }
+
+  updateTutorial(delta) {
+    if (this.dialogActive) return;
+    this.tutorialTimer += delta;
+
+    let isMobile = this.sys.game.device.os.android || this.sys.game.device.os.iOS || this.sys.game.device.os.iPad || this.sys.game.device.os.iPhone;
+
+    if (this.tutorialPhase === 1 && this.tutorialTimer > 1000) {
+      this.tutorialPhase = 1.1;
+      this.physics.pause();
+      this.dialogActive = true;
+      this.showDeviceDialogue('「そこは始まりの村だ。お前はまだまだ目覚めたばかりで戦いには慣れていないだろう。」', () => {
+        this.showDeviceDialogue('「ここで戦闘慣れしていくといい。」', () => {
+          this.dialogActive = false;
+          this.physics.resume();
+          
+          let e = this.spawnTutorialEnemy(1, 0);
+          e.x = 1920;
+          e.fireDisabled = true;
+          e.isInvulnerable = true;
+          
+          this.tweens.add({
+            targets: e,
+            x: 1300,
+            duration: 800,
+            ease: 'Power2',
+            onComplete: () => {
+              this.physics.pause();
+              this.dialogActive = true;
+              let hX = (e && e.active) ? e.x : 1300;
+              let hY = (e && e.active) ? e.y : 460;
+              let enemyHighlight = { x: hX, y: hY, radius: 80, darkOverlay: true, color: 0xFF3333 };
+              this.showDeviceDialogue('「敵がやってきたな。敵の前に移動して撃ち殺すんだ。」', () => {
+                let msg = isMobile ? '「移動方法は、画面を【スライド】だ。」' : '「移動方法は、【矢印キー】だ。」';
+                this.showDeviceDialogue(msg, () => {
+                  if (e && e.active) e.isInvulnerable = false;
+                  this.dialogActive = false;
+                  this.tutorialPhase = 2;
+                  this.physics.resume();
+                }, enemyHighlight);
+              }, enemyHighlight);
+            }
+          });
+        });
+      });
+    } else if (this.tutorialPhase === 2) {
+      if (this.enemyGroup.countActive() === 0) {
+        this.tutorialPhase = 2.1;
+        this.physics.pause();
+        this.dialogActive = true;
+        this.showDeviceDialogue('「よくやった。」', () => {
+          this.showDeviceDialogue('「魔王城に近づくにつれて敵の攻撃も強くなるから気を付けろ。」', () => {
+            this.dialogActive = false;
+            this.physics.resume();
+            
+            // 敵2が右からやってくる（無敵＆自動射撃無効）
+            let e2 = this.spawnTutorialEnemy(1, 0);
+            e2.x = 1920;
+            e2.isInvulnerable = true;
+            e2.fireDisabled = true;
+            this.tutEnemy2 = e2;
+
+            this.tweens.add({
+              targets: e2,
+              x: 1300,
+              duration: 800,
+              ease: 'Power2',
+              onComplete: () => {
+                // 敵2が1300に到着後、攻撃弾1を発射
+                let b1 = MOT.fireLinear(this, e2.x, e2.y, -400, 0);
+                if (b1) b1.shooter = e2;
+                this.tutBullet1 = b1;
+                this.tutorialPhase = 2.15;
+              }
+            });
+          });
+        });
+      }
+    } else if (this.tutorialPhase === 2.15) {
+      // 攻撃弾1を自機に向かってホーミング移動（絶対に避けられないように追尾）
+      if (this.tutBullet1 && this.tutBullet1.active && this.player && this.player.active) {
+        this.physics.moveToObject(this.tutBullet1, this.player, 550);
+      }
+      // 攻撃弾1が画面中央付近（x <= 1100）に到達したら時が止まり、敵と攻撃弾以外を暗くして強調表示
+      if (this.tutBullet1 && this.tutBullet1.active && this.tutBullet1.x <= 1100) {
+        this.tutorialPhase = 2.2;
+        this.physics.pause();
+        this.dialogActive = true;
+
+        let attackHighlight = { x: this.tutBullet1.x, y: this.tutBullet1.y, radius: 70, darkOverlay: true, color: 0xFF3333 };
+
+        this.showDeviceDialogue('「今度は敵が攻撃をしてきたぞ。上下左右に避けながら撃ち殺せ。」', () => {
+          this.dialogActive = false;
+          this.physics.resume();
+        }, attackHighlight);
+      }
+    } else if (this.tutorialPhase === 2.2) {
+      // 攻撃弾1は自機に必中するよう追尾移動を継続
+      if (this.tutBullet1 && this.tutBullet1.active && this.player && this.player.active) {
+        this.physics.moveToObject(this.tutBullet1, this.player, 550);
+      }
+      // 弾1が自機にヒット（判定：距離60以内 または x <= player.x + 40）
+      const dist1 = (this.tutBullet1 && this.tutBullet1.active && this.player && this.player.active)
+        ? Phaser.Math.Distance.Between(this.tutBullet1.x, this.tutBullet1.y, this.player.x, this.player.y)
+        : 9999;
+      if (this.tutBullet1 && this.tutBullet1.active && (dist1 <= 60 || this.tutBullet1.x <= this.player.x + 40)) {
+        this.tutBullet1.destroy();
+        MOT.flags.playerHP = Math.max(1, MOT.flags.playerHP - 1);
+        this.cameras.main.shake(150, 0.008);
+        this.player.setTint(0xFF4B6E);
+        this.time.delayedCall(200, () => { if (this.player.active) this.player.clearTint(); });
+
+        this.tutorialPhase = 2.3;
+        this.physics.pause();
+        this.dialogActive = true;
+
+        let shieldMsg = isMobile
+          ? '「画面を【長押し】でシールドを展開できる。タイミング良く敵の攻撃にシールドを張れた場合、反撃することもできるだろう。」'
+          : '「【スペースキー】を押すことでシールドを展開できる。タイミング良く敵の攻撃にシールドを張れた場合、反撃することもできるだろう。」';
+
+        this.showDeviceDialogue('「おい、なにやってるんだ。避けきれないときはシールドを張れ。」', () => {
+          this.showDeviceDialogue(shieldMsg, () => {
+            this.dialogActive = false;
+            this.physics.resume();
+
+            // 600ms後に敵2が自機に向けて弾2を発射
+            this.time.delayedCall(600, () => {
+              let b2 = MOT.fireLinear(this, this.tutEnemy2.x, this.player.y, -300, 0);
+              if (b2) b2.shooter = this.tutEnemy2;
+              this.tutBullet2 = b2;
+              this.tutorialPhase = 2.4;
+            });
+          });
+        });
+      }
+    } else if (this.tutorialPhase === 2.4) {
+      // 弾2も自機に向かって進行
+      if (this.tutBullet2 && this.tutBullet2.active && this.player && this.player.active) {
+        this.physics.moveToObject(this.tutBullet2, this.player, 400);
+      }
+      // 弾2が自機の目の前（距離140以内 または x <= player.x + 140）に到達したら時が止まる
+      const dist2 = (this.tutBullet2 && this.tutBullet2.active && this.player && this.player.active)
+        ? Phaser.Math.Distance.Between(this.tutBullet2.x, this.tutBullet2.y, this.player.x, this.player.y)
+        : 9999;
+      if (this.player && this.player.active && this.tutBullet2 && this.tutBullet2.active && (dist2 <= 140 || this.tutBullet2.x <= this.player.x + 140)) {
+        this.tutorialPhase = 2.5;
+        this.physics.pause();
+        this.dialogActive = true;
+
+        let promptMsg = isMobile ? '「今だ。【長押し】してみろ。」' : '「今だ。【スペースキー】を押してみろ。」';
+        let attackHighlight = { x: this.tutBullet2.x, y: this.tutBullet2.y, radius: 70, darkOverlay: true, color: 0xFF3333 };
+
+        this.showDeviceDialogue(promptMsg, () => {
+          this.dialogActive = false;
+          this.physics.resume();
+
+          // 1. バリアを画面上にセット（ジャストガード判定時間内）
+          this.barrierActive = true;
+          this.barrierTime = 0;
+          this.barrierCooldown = 2000;
+          this.barrierActivatedTime = this.time.now;
+          if (this.barrierVisual) this.barrierVisual.destroy();
+          this.barrierVisual = this.add.circle(this.player.x, this.player.y, 60, 0x00FFaa, 0.4).setStrokeStyle(4, 0x00FFaa, 0.9).setDepth(9);
+
+          // 2. 攻撃をしてきた敵（tutEnemy2）を無敵解除＆HP1に設定（通常の反撃で倒せるようにする）
+          if (this.tutEnemy2 && this.tutEnemy2.active) {
+            this.tutEnemy2.isInvulnerable = false;
+            this.tutEnemy2.hp = 1;
+          }
+
+          // 3. 通常のジャストガード反撃処理を実行（通常の反射弾幕・音階SE・ゴールド粒子が発射される）
+          if (this.tutBullet2 && this.tutBullet2.active) {
+            this.onPlayerHit(this.player, this.tutBullet2);
+          }
+
+          // 4. 反撃弾がtutEnemy2に飛んでいき爆発撃破された後、会話＆クールタイム解説
+          this.time.delayedCall(700, () => {
+            this.physics.pause();
+            this.dialogActive = true;
+            let shieldHighlight = { x: 360, y: 92, radius: 36, darkOverlay: true, color: 0x00FF88 };
+            this.showDeviceDialogue('「よし、上手く反撃できたな。その調子だ。」', () => {
+              this.showDeviceDialogue('「左上の緑の円がクールタイムだ。シールドは何度も張り直しできないから、使うタイミングに気を付けろ。」', () => {
+                this.dialogActive = false;
+                this.tutorialPhase = 3;
+                this.physics.resume();
+              }, shieldHighlight);
+            });
+          });
+        }, attackHighlight);
+      }
+    } else if (this.tutorialPhase === 3) {
+      this.tutorialPhase = 3.1;
+      
+      // 右から回復アイテムが流れてくる
+      let hItem = MOT.spawnHealthItem(this, 1920, 460);
+      if (hItem) hItem.setVelocityX(-200);
+
+      this.time.delayedCall(400, () => {
+        this.physics.pause();
+        this.dialogActive = true;
+        let healthHighlight = { x: (hItem && hItem.active) ? hItem.x : 1600, y: 460, radius: 50, darkOverlay: true, color: 0x4FFF7F };
+        this.showDeviceDialogue('「失ったHPは緑色のアイテムで回復できる。HPが少ないときは気にするように。」', () => {
+          this.dialogActive = false;
+          this.physics.resume();
+
+          // 雑魚敵3体がやってくる（必ず赤・青ダイヤドロップ）
+          for (let i = 0; i < 3; i++) {
+            let e = this.spawnTutorialEnemy(i, 0);
+            e.x = 1400 + Phaser.Math.Between(0, 80);
+            e.stationaryDrop = true;
+            e.tutorialRed = (i === 1);
+          }
+
+          this.time.delayedCall(500, () => {
+            this.physics.pause();
+            this.dialogActive = true;
+            this.showDeviceDialogue('「試しに全部倒してみろ」', () => {
+              this.dialogActive = false;
+              this.tutorialPhase = 4;
+              this.physics.resume();
+            });
+          });
+        }, healthHighlight);
+      });
+    } else if (this.tutorialPhase === 4) {
+      if (this.enemyGroup.countActive() === 0) {
+        this.tutorialPhase = 4.1;
+        this.physics.pause();
+        this.dialogActive = true;
+
+        let diamondHighlight = { x: 1400, y: 460, width: 600, height: 600, darkOverlay: true, color: 0xFF0055 };
+        let gaugeHighlight = { x: 180, y: 92, width: 320, height: 40, darkOverlay: true, color: 0x4FD1FF };
+
+        this.showDeviceDialogue('「よくやった。今、倒したときに青と赤のダイヤがドロップしただろう？」', () => {
+          this.showDeviceDialogue('「このダイヤはお前の意志の力だ」', () => {
+            this.showDeviceDialogue('「それを拾うことで左上にある必殺技ゲージを貯めることができる。」', () => {
+              // ダイヤが流れ出す
+              this.itemGroup.getChildren().forEach(item => {
+                if (item.stationary) {
+                  item.stationary = false;
+                  item.setVelocityX(-250);
+                }
+              });
+
+              this.showDeviceDialogue('「赤いダイヤを拾うと必殺技を貯めるだけでなく、お前の攻撃力を上げることができる。」', () => {
+                this.dialogActive = false;
+                this.tutorialPhase = 5;
+                this.physics.resume();
+              }, gaugeHighlight);
+            }, gaugeHighlight);
+          }, diamondHighlight);
+        }, diamondHighlight);
+      }
+    } else if (this.tutorialPhase === 5) {
+      this.tutorialPhase = 5.1;
+      this.physics.pause();
+      this.dialogActive = true;
+
+      const startSpecialPrompt = () => {
+        let msgLine2 = isMobile
+          ? '「色がかわると必殺技を打つことができる。画面を【ダブルタップ】で打てる。試してみろ。」'
+          : '「色がかわると必殺技を打つことができる。【エンターキー】を押すことで打てる。試してみろ。」';
+
+        let gaugeHighlight = { x: 180, y: 92, width: 320, height: 40, darkOverlay: true, color: 0xFF4B6E };
+        this.showDeviceDialogue('「ゲージが溜まったな。」', () => {
+          this.showDeviceDialogue(msgLine2, () => {
+            this.dialogActive = false;
+            this.tutorialPhase = 6;
+            this.physics.resume();
+            this.tutorialWaitSpecial = true;
+            this.tutorialPhase6Timer = 0;
+            this.promptCount = 0;
+          }, gaugeHighlight);
+        }, gaugeHighlight);
+      };
+
+      if (MOT.flags.energy < 100) {
+        this.showDeviceDialogue('「最初は私が代わりに必殺技ゲージを貯めてやろう。」', () => {
+          MOT.flags.energy = 100;
+          MOT.flags.maxEnergy = true;
+          this.updateHUD();
+          startSpecialPrompt();
+        });
+      } else {
+        MOT.flags.energy = 100;
+        MOT.flags.maxEnergy = true;
+        this.updateHUD();
+        startSpecialPrompt();
+      }
+    } else if (this.tutorialPhase === 6) {
+      if (this.tutorialWaitSpecial) {
+        this.tutorialPhase6Timer += delta;
+
+        if (this.tutorialPhase6Timer > 5000 && !this.dialogActive) {
+          this.tutorialPhase6Timer = 0;
+          this.promptCount = (this.promptCount || 0) + 1;
+          this.physics.pause();
+          this.dialogActive = true;
+
+          if (this.promptCount === 1) {
+            let msg = isMobile
+              ? '「何をしている？早く【ダブルタップ】で必殺を打て。」'
+              : '「何をしている？早く【エンターキー】を押すんだ。」';
+            this.showDeviceDialogue(msg, () => {
+              this.dialogActive = false;
+              this.physics.resume();
+            });
+          } else if (this.promptCount === 2) {
+            let msg = isMobile
+              ? '「聞いているのか？早く【ダブルタップ】で必殺を打て。」'
+              : '「聞いているのか？早く【エンターキー】を押せ。」';
+            this.showDeviceDialogue(msg, () => {
+              this.dialogActive = false;
+              this.physics.resume();
+            });
+          } else {
+            this.showDeviceDialogue('「もういい。代わりに私が押す。」', () => {
+              this.dialogActive = false;
+              this.physics.resume();
+              this.onSpecialAttack();
+            });
+          }
+        }
+      }
+
+      if (MOT.flags.energy < 100 && this.tutorialWaitSpecial) {
+        // Special was used
+        this.tutorialWaitSpecial = false;
+        this.tutorialPhase = 6.1;
+
+        this.time.delayedCall(500, () => {
+          this.physics.pause();
+          this.dialogActive = true;
+
+          let afterSpecialMsg = (this.promptCount >= 3)
+            ? '「戦闘中も使わないなんてことはするなよ。上手く使って敵を倒せ。」'
+            : '「使えたな。戦闘中、上手く使ってこのまま敵を倒していくといい。」';
+
+          this.showDeviceDialogue(afterSpecialMsg, () => {
+            this.dialogActive = false;
+            this.physics.resume();
+
+            if (MOT.DoctorDirective) {
+              let directives = MOT.DoctorDirective.directives;
+              let d = directives[Math.floor(Math.random() * directives.length)];
+              MOT.DoctorDirective.showDirective(this, d, this.player);
+            }
+
+            // 前のセリフから3秒経過してから「このように、戦闘中に進むべき道の指示を出す。」を表示
+            this.time.delayedCall(3000, () => {
+              this.physics.pause();
+              this.dialogActive = true;
+
+              this.showDeviceDialogue('「このように、戦闘中に進むべき道の指示を出す。」', () => {
+                if (MOT.DoctorDirective && MOT.DoctorDirective.directiveContainer) {
+                  MOT.DoctorDirective.directiveContainer.destroy();
+                  MOT.DoctorDirective.directiveContainer = null;
+                }
+
+                let hpHighlight = { x: 120, y: 35, width: 220, height: 40, darkOverlay: true, color: 0xFF3366 };
+                this.showDeviceDialogue('「従った回数によって体力をあげてやるから指示に従えよ。」', () => {
+                  this.showDeviceDialogue('「これで説明は終了だ。進んでいくといい。」', () => {
+                    this.dialogActive = false;
+                    this.physics.pause();
+                    this.player.setCollideWorldBounds(false);
+                    this.tweens.add({ targets: this.player, x: 2100, duration: 1200, ease: 'Power2' });
+                    this.cameras.main.fadeOut(1000, 0, 0, 0);
+                    this.time.delayedCall(1000, () => {
+                      this.scene.start('GameScene', { stage: 2 });
+                    });
+                  });
+                }, hpHighlight);
+              });
+            });
+          });
+        });
+      }
+    }
+  }
+}
+
+window.GameScene = GameScene;
+
+

@@ -1,0 +1,46 @@
+2791:                       c = await new Promise(res => {
+2792:                           this.showChoice([
+2793:                               { text: '見逃す', callback: () => { if(MOT.Audio.playSelect) MOT.Audio.playSelect(); res(2); } }
+2794:                           ]);
+2795:                       });
+2796:                   } else {
+2797:                       c = await askShatterChoice('1. 心臓を打ち抜く', '2. 見逃す', Kills === 0);
+2798:                   }
+2799:               }
+2800:               
+2801:               if (c === 1) {
+2802:                   // 魔王を殺す
+2803:                   MOT.flags.killedDemonLord = true;
+2804:                   
+2805:                   if (Kills === 0) {
+2806:                       ending('normal_unresistable');
+2807:                       return;
+2808:               }
+2809:               */
+2810:             })();
+2811:           } else if (key === 'doctor') {
+2812:             if (this.currentBoss) {
+2813:               this.currentBoss.setVisible(false);
+2814:               this.currentBoss.setActive(false);
+2815:             }
+-----------------
+3141:               this.showChoice(cfg.choices.map(function (c) {
+3142:                 return {
+3143:                   text: c.text,
+3144:                   callback: function () {
+3145:                     MOT.Audio.playSelect();
+3146:                     if (this.dialogContainer) {
+3147:                       this.dialogContainer.destroy();
+3148:                       this.dialogContainer = null;
+3149:                     }
+3150:                     c.flag();
+3151:                     var isSpared = (c.text === '見逃す' || c.text.includes('見逃す'));
+3152:                     
+3153:                     if (dimBg) {
+3154:                       this.tweens.add({
+3155:                         targets: [dimBg, bossImage, enemyFrame, enemyLabel, this.heroImage].filter(Boolean), alpha: 0, duration: 500,
+3156:                         onComplete: () => {
+3157:                            if(dimBg) dimBg.destroy();
+3158:                            if(bossImage) bossImage.destroy();
+3159:                            if(enemyFrame) enemyFrame.destroy();
+3160:                            if(enemyLabel) enemyLabel.destroy();

@@ -1,0 +1,127 @@
+11:     this.bossQueue = ['boss1', 'boss2', 'boss3_twins', 'demon_lord'];
+22:     // デバッグ用: 博士戦(4)へ直接飛ぶ場合、キューにdoctorを追加
+23:     if (this.currentBossIndex === 4 && this.bossQueue.indexOf('doctor') === -1) {
+24:       this.bossQueue.push('doctor');
+45:     this.bossAttackTimer = 0;
+168:       if (this.startData && this.startData.fromContinue && this.currentBossIndex > 0 && this.bossQueue[this.currentBossIndex] !== 'doctor') {
+198:       boss3_twins: {
+209:       doctor: {
+210:         texture: 'doctor_combat', name: '博士', hp: 450, scale: 2.5,
+231:     this.bossAttackTimer = 0;
+241:     if (key === 'boss3_twins') boss.play('boss3_battle_play');
+251:     if (key === 'boss3_twins') {
+285:       sister.configKey = 'boss3_twins';
+316:     else if (key === 'boss3_twins') areaText = '「次のエリアに着いたか。そこは、子夜の城塞 だ。そろそろ魔王城に着くだろう。敵も強くなっている。気を付けてくれ」';
+355:     if (key !== 'demon_lord' && key !== 'doctor') {
+364:     if (key === 'demon_lord' || key === 'doctor') {
+398:               this.doctorImage = this.add.image(w - 300, h / 2, 'doctor_awaken_smile_weapon').setAlpha(0).setDepth(90);
+399:              var docScale = 600 / this.doctorImage.width;
+400:              this.doctorImage.setScale(docScale);
+401:              this.doctorImage.setY(100 + (this.doctorImage.height * docScale) / 2);
+403:              this.tweens.add({ targets: [dimBg, this.doctorImage], alpha: 1, duration: 500 });
+405:              const sayDevice = (text) => new Promise(res => { this.tweens.add({ targets: dimBg, alpha: 0.6, duration: 300 }); this.tweens.add({ targets: [this.doctorImage, this.heroImage], alpha: 0.4, duration: 300 }); this.showDeviceDialogue(text, res); });
+406:              const sayDoctor = (text) => new Promise(res => { this.tweens.add({ targets: dimBg, alpha: 0.6, duration: 300 }); this.tweens.add({ targets: [this.doctorImage], alpha: 1, duration: 300 }); this.tweens.add({targets: this.heroImage, alpha: 0.4, duration: 300}); this.showDialogue('博士', text, res); });
+411:                  targets: [dimBg, this.doctorImage, this.heroImage], alpha: 0, duration: 500,
+412:                  onComplete: () => { dimBg.destroy(); this.doctorImage.destroy(); if(this.heroImage) this.heroImage.destroy(); }
+440:                e.hp = (key === 'boss3_twins') ? 2 : 3;
+725:           if (this.currentBoss.configKey === 'boss3_twins' && this.sisterBoss && this.sisterBoss.active) {
+987:     if (this.currentBoss && this.currentBoss.configKey === 'doctor' && !this.dialogActive) {
+1038:       this.bossAttackTimer += delta;
+1042:       if (this.currentBoss.configKey === 'boss3_twins') interval = 1200; // 兄の攻撃頻度を上げる
+1043:       if (this.currentBoss.configKey === 'doctor') interval = this.bossHP < this.bossMaxHP * 0.5 ? 1400 : 1800; // 博士の攻撃頻度を上げる
+1046:       if (this.bossAttackTimer >= interval) {
+1047:         this.bossAttackTimer = 0;
+1048:         this.bossAttack();
+1053:     if (this.currentBoss && this.currentBoss.configKey === 'boss3_twins' && this.sisterBoss && this.sisterBoss.active && this.sisterBoss.visible && !this.dialogActive) {
+1054:       if (!this.sisterAttackTimer) this.sisterAttackTimer = 0;
+1055:       this.sisterAttackTimer += delta;
+1056:       if (this.sisterAttackTimer >= 2000) {
+1057:         this.sisterAttackTimer = 0;
+1150:   bossAttack() {
+1178:     // boss3_twins（兄）の攻撃パターン
+1179:     if (this.currentBoss.configKey === 'boss3_twins') {
+1193:     // doctor（博士）の攻撃パターン
+1194:     if (this.currentBoss.configKey === 'doctor') {
+1199:         if (this.currentBoss && this.currentBoss.active && this.currentBoss.texture.key !== 'doctor_combat') {
+1200:           this.currentBoss.setTexture('doctor_combat');
+1267:           this.currentBoss.setTexture('doctor_combat_beam');
+1269:             if (this.currentBoss && this.currentBoss.active && this.currentBoss.configKey === 'doctor' && this.currentBoss.texture.key === 'doctor_combat_beam') {
+1270:               this.currentBoss.setTexture('doctor_combat');
+1708:       if (this.currentBoss && this.currentBoss.configKey === 'doctor' && Phaser.Math.Between(0, 100) < 50) {
+1804:             if (this.currentBoss && (this.currentBoss.configKey === 'boss1' || this.currentBoss.configKey === 'boss2' || this.currentBoss.configKey === 'boss3_twins')) {
+1807:               if (this.currentBoss.configKey === 'boss3_twins') defaultTex = 'brother_normal';
+1817:               if (this.currentBoss.configKey === 'boss3_twins') {
+1841:             // Add sisterImage for boss3_twins scenario intro
+1843:             if (this.currentBoss && this.currentBoss.configKey === 'boss3_twins') {
+1894:                  if (this.currentBoss && this.currentBoss.configKey === 'boss3_twins') useTex = 'brother_normal';
+1927:                  if (this.currentBoss && this.currentBoss.configKey === 'boss3_twins') useTex = 'brother_normal';
+2029:               } else if (key === 'boss3_twins') {
+2072:               if (key === 'boss3_twins') {
+2095:     if (this.currentBoss.configKey === 'boss3_twins') {
+2378:           } else if (key === 'boss3_twins') {
+3010:                           this.doctorImage = this.add.image(1920 - 300, 1080 / 2, 'doctor_stand').setAlpha(0).setDepth(90);
+3011:                           var docScale = 600 / this.doctorImage.width;
+3012:                           this.doctorImage.setScale(docScale);
+3013:                           this.doctorImage.setY(100 + (this.doctorImage.height * docScale) / 2);
+3030:                           const sayDoctorLab = (text) => new Promise(res => { this.tweens.add({ targets: this.dimBg, alpha: 0.6, duration: 300 }); this.tweens.add({targets: this.heroImage, alpha: 0.4, duration: 300}); this.tweens.add({ targets: this.doctorImage, alpha: 1, duration: 300 }); this.showDialogue('博士', text, res); });
+3031:                           const sayHeroLab = (text) => new Promise(res => { this.tweens.add({ targets: this.dimBg, alpha: 0.6, duration: 300 }); this.tweens.add({targets: this.heroImage, alpha: 1, duration: 300}); this.tweens.add({ targets: this.doctorImage, alpha: 0.4, duration: 300 }); this.showDialogue('主人公', text, res); });
+3073:                           if (this.doctorImage) this.doctorImage.setVisible(false);
+3090:                           // Ensure hero and doctor are NOT hidden while true demon lord is shown
+3092:                           if (this.doctorImage) this.doctorImage.setVisible(false);
+3125:                           const localSayDoctor = (text, tex='doctor_awaken_normal') => new Promise(res => {
+3126:                               if (!this.doctorImage || !this.doctorImage.active) {
+3127:                                   this.doctorImage = this.add.image(1920 - 300, 1080 / 2, tex).setAlpha(0).setDepth(90);
+3129:                               this.doctorImage.setTexture(tex);
+3132:                               this.doctorImage.setScale(docScale);
+3133:                               this.doctorImage.setY(100 + ((this.textures.get(tex).getSourceImage().height || 1000) * docScale) / 2);
+3139:                               if(this.doctorImage) this.tweens.add({targets: this.doctorImage, alpha: 1, duration: 300});
+3148:                               if(this.doctorImage && this.doctorImage.alpha > 0) this.tweens.add({targets: this.doctorImage, alpha: 0.4, duration: 300});
+3152:                           const localSayDemon = (text, tex='demon_lord_dying') => new Promise(res => { this.tweens.add({ targets: dimBg, alpha: 0.6, duration: 300 }); if(this.heroImage) this.tweens.add({targets: this.heroImage, alpha: 0.4, duration: 300}); if(this.inunekoImage) this.tweens.add({targets: this.inunekoImage, alpha: 1, duration: 300}); if(this.doctorImage) this.tweens.add({targets: this.doctorImage, alpha: 0, duration: 300}); if(this.demonImage) { this.tweens.add({targets: this.demonImage, alpha: 1, duration: 300}); this.demonImage.setTexture(tex); } this.showDialogue('魔王', text, res); });
+3153:                           const localSayInuneko = (text, tex='inuneko_stand') => new Promise(res => { this.tweens.add({ targets: dimBg, alpha: 0.6, duration: 300 }); if(this.heroImage) this.tweens.add({targets: this.heroImage, alpha: 0.4, duration: 300}); if(this.demonImage) this.tweens.add({targets: this.demonImage, alpha: 1, duration: 300}); if(this.doctorImage) this.tweens.add({targets: this.doctorImage, alpha: 0, duration: 300}); if(this.inunekoImage) { this.tweens.add({targets: this.inunekoImage, alpha: 1, duration: 300}); this.inunekoImage.setTexture(tex); } this.showDialogue('犬猫☆すたー', text, res); });
+3170:                           await localSayDoctor('「…はははは。すべて話されてしまったみたいだな」', 'doctor_awaken_smile');
+3208:                           await localSayDoctor('「さぁ、最終決戦といこうじゃないか！」', 'doctor_awaken_straight_weapon');
+3214:                           this.bossQueue.push('doctor');
+3278:                       var docImgDaily = this.add.image(1920 - 300, 1080/2, 'doctor_stand').setDepth(95);
+3279:                       this.textures.get('doctor_stand').setFilter(Phaser.Textures.FilterMode.LINEAR);
+3280:                       var docScaleDaily = 750 / this.textures.get('doctor_stand').getSourceImage().width;
+3282:                       docImgDaily.setY(100 + (this.textures.get('doctor_stand').getSourceImage().height * docScaleDaily) / 2);
+3339:                       var docImg = this.add.image(1920 - 300, 1080/2, 'doctor_stand').setDepth(95);
+3340:                       this.textures.get('doctor_stand').setFilter(Phaser.Textures.FilterMode.LINEAR);
+3341:                       var docScale = 600 / this.textures.get('doctor_stand').getSourceImage().width;
+3343:                       docImg.setY(100 + (this.textures.get('doctor_stand').getSourceImage().height * docScale) / 2);
+3398:                       if (this.doctorImage) this.doctorImage.setVisible(false);
+3460:           } else if (key === 'doctor') {
+3470:             this.textures.get('doctor_stand').setFilter(Phaser.Textures.FilterMode.LINEAR);
+3471:             let doctorImage = this.add.image(1920 - 300, 1080 / 2, 'doctor_awaken_normal_dying').setAlpha(0).setDepth(90);
+3472:             var docScale = 600 / this.textures.get('doctor_stand').getSourceImage().width;
+3473:             doctorImage.setScale(docScale);
+3474:             doctorImage.setY(100 + (this.textures.get('doctor_stand').getSourceImage().height * docScale) / 2);
+3475:             this.doctorImage = doctorImage;
+3476:             this.tweens.add({ targets: doctorImage, alpha: 1, duration: 300 });
+3481:               if (doctorImage) {
+3482:                 this.tweens.add({ targets: doctorImage, alpha: 1, duration: 300 });
+3484:                   doctorImage.setTexture(tex);
+3485:                   var dScale = 600 / this.textures.get('doctor_stand').getSourceImage().width;
+3486:                   doctorImage.setScale(dScale);
+3487:                   doctorImage.setY(100 + (this.textures.get('doctor_stand').getSourceImage().height * dScale) / 2);
+3508:               if (doctorImage) this.tweens.add({ targets: doctorImage, alpha: 0.4, duration: 300 });
+3540:                 await sayDoctor('「驚いた...まさかお前がここまでやるとはな」', 'doctor_awaken_normal_dying');
+3542:                 await sayDoctor('「なにをしている？早くとどめを刺せ。同情などいらん。何の足しにもならないからな。」', 'doctor_awaken_normal_dying');
+3577:                   await sayDoctor('「…なんだ、ここでも殺さないのか。わかっているのか？その女の言う通り、私はお前を騙していたんだ。」', 'doctor_awaken_normal_dying');
+3578:                   await sayDoctor('「お前は”勇者”なんかじゃない、俺の最高傑作のはずだったんだがな。」', 'doctor_awaken_normal_dying');
+3580:                   await sayDoctor('「そうか……。」', 'doctor_awaken_normal_dying');
+3581:                   await sayDoctor('「ついぞ俺の実験が成功することはなかったか。もうこの身体も必要ないな。さらばだ011101。」', 'doctor_awaken_straight_dying');
+3585:                   await sayDoctor('「全く...本当にどうしようもない欠陥品だな。」', 'doctor_awaken_normal_dying');
+3586:                   await sayDoctor('「私は、自分の目的のためにしか生きられない。お前が何を思っていてもな。」', 'doctor_awaken_normal_dying');
+3587:                   await sayDoctor('「さらばだ、011101。もう、お前に用はない。好きに生きるんだな。」', 'doctor_awaken_straight_dying');
+3607:                     if (doctorImage) this.tweens.add({ targets: doctorImage, alpha: 0, duration: 300 });
+3619:                     if (doctorImage) this.tweens.add({ targets: doctorImage, alpha: 0, duration: 300 });
+3634:                     if (doctorImage) this.tweens.add({ targets: doctorImage, alpha: 0, duration: 300 });
+3649:                     if (doctorImage) this.tweens.add({ targets: doctorImage, alpha: 0, duration: 300 });
+3662:                     if (doctorImage) this.tweens.add({ targets: doctorImage, alpha: 0, duration: 300 });
+3676:                     if (doctorImage) this.tweens.add({ targets: doctorImage, alpha: 0, duration: 300 });
+4051:     if (this.doctorImage) { this.doctorImage.destroy(); this.doctorImage = null; }
+4153:                 if (this.bossQueue[this.currentBossIndex] === 'doctor') {
+4313:     var face = this.add.image(180, boxY + 140, 'doctor_normal');
+4891:     let isTwins = this.currentBoss && this.currentBoss.configKey === 'boss3_twins';
+4908:       if (key === 'boss3_twins') {
