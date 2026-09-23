@@ -1,5 +1,5 @@
 /* =============================================
-   真理のマリオネット – Global Styles
+   真理のマリオネッチE EGlobal Styles
    ============================================= */
 
 * {
@@ -11,7 +11,10 @@
 html, body {
   width: 100%;
   height: 100%;
+  height: 100dvh; /* 動的ビューポ�Eト高（アドレスバ�EめE��部タブを老E�Eした正確な高さ�E�E*/
   overflow: hidden;
+  margin: 0;
+  padding: 0;
   background: #050814;
   color: #E5E7EB;
   font-family: 'DotGothic16', system-ui, sans-serif;
@@ -23,9 +26,11 @@ html, body {
   -webkit-user-select: none;
 }
 
-#game-root {
-  width: 100vw;
-  height: 100vh;
+#game-root { position: relative; z-index: 0;
+  width: 100%;
+  height: 100%;
+  width: 100dvw;
+  height: 100dvh; /* 上部タブやアドレスバ�E領域を除外した実際の表示領域にフィチE�� */
   display: flex;
   align-items: center;
   justify-content: center;
@@ -35,4 +40,89 @@ html, body {
   image-rendering: pixelated;
   image-rendering: -moz-crisp-edges;
   image-rendering: crisp-edges;
+  -webkit-tap-highlight-color: transparent;
+  outline: none;
+}
+
+/* =============================================
+   スマ�Eトフォン・タブレチE��向け縦向きアラーチE
+   ============================================= */
+#orientation-warning {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(5, 8, 20, 0.96);
+  z-index: 9999999;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  backdrop-filter: blur(8px);
+}
+
+.warning-box {
+  background: #1F2933;
+  border: 3px solid #4FD1FF;
+  box-shadow: 0 0 25px rgba(79, 209, 255, 0.4);
+  padding: 30px;
+  max-width: 480px;
+  text-align: center;
+  border-radius: 12px;
+}
+
+.warning-icon {
+  font-size: 56px;
+  margin-bottom: 16px;
+  animation: pulse 1.5s infinite ease-in-out;
+}
+
+.warning-title {
+  font-size: 24px;
+  color: #4FD1FF;
+  margin-bottom: 12px;
+  font-weight: bold;
+}
+
+.warning-text {
+  font-size: 16px;
+  color: #E5E7EB;
+  line-height: 1.6;
+  margin-bottom: 24px;
+}
+
+.warning-btn {
+  background: #050814;
+  color: #00FF88;
+  border: 2px solid #00FF88;
+  padding: 12px 24px;
+  font-family: inherit;
+  font-size: 16px;
+  cursor: pointer;
+  border-radius: 6px;
+  transition: all 0.2s;
+}
+
+.warning-btn:active, .warning-btn:hover {
+  background: #00FF88;
+  color: #050814;
+}
+
+@keyframes pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.1); }
+}
+
+@media screen and (max-aspect-ratio: 4/5) and (max-width: 900px) {
+  #orientation-warning {
+    display: flex;
+  }
+}
+
+/* PC等ではモバイル用UIを隠ぁE*/
+@media screen and (min-width: 769px) {
+  .mobile-only {
+    display: none !important;
+  }
 }

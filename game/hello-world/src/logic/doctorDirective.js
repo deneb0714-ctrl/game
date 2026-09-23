@@ -1,4 +1,4 @@
-﻿// =============================================
+// =============================================
 // doctorDirective.js – 博士の戦闘中指示システム
 // =============================================
 window.MOT = window.MOT || {};
@@ -82,15 +82,28 @@ MOT.DoctorDirective = {
 
     // 博士の顔アイコン (左端の枠内)
     var iconBox = scene.add.graphics();
+    iconBox.fillStyle(0x000000, 1);
+    iconBox.fillRect(80, boxY + 40, 200, 200);
     iconBox.lineStyle(2, 0x39FF14, 0.8);
-    iconBox.strokeRect(80, boxY + 40, 100, 100);
+    iconBox.strokeRect(80, boxY + 40, 200, 200);
     container.add(iconBox);
+
+    var face = scene.add.image(180, boxY + 140, 'doctor_normal');
+    // 会話中と同じアイコンサイズに合わせる
+    var scaleRatio = 1000 / face.height;
+    face.setScale(scaleRatio);
+    var maskShape = scene.make.graphics();
+    this.currentMaskShape = maskShape;
+    maskShape.fillStyle(0xffffff);
+    maskShape.fillRect(82, boxY + 42, 196, 196);
+    var mask = maskShape.createGeometryMask();
+    face.setMask(mask);
+    face.setY(boxY + 140 + (face.height * scaleRatio) * 0.35);
     
-    var face = scene.add.image(130, boxY + 90, 'doctor_face').setDisplaySize(96, 96);
     container.add(face);
 
     // 「博士」ラベル
-    var nameText = scene.add.text(210, boxY + 15, '博士 📡', {
+    var nameText = scene.add.text(310, boxY + 10, '博士 📡', {
       fontFamily: '"DotGothic16"',
       fontSize: '44px',
       color: '#39FF14'
@@ -98,15 +111,33 @@ MOT.DoctorDirective = {
     container.add(nameText);
 
     // 指示テキスト
-    var txt = scene.add.text(210, boxY + 60, directive.text, {
+    var txt = scene.add.text(310, boxY + 60, directive.text, {
       fontFamily: '"DotGothic16"',
       fontSize: '40px',
       color: '#FFFFFF',
-      wordWrap: { width: w - 330, useAdvancedWrap: true },
+      wordWrap: { width: w - 420, useAdvancedWrap: true },
       lineSpacing: 8
     });
     this.directiveTextObj = txt;
     container.add(txt);
+
+    // プレイヤーの移動先ハイライト表示
+    this.targetCol = player.currentCol + directive.dx;
+    this.targetLane = player.currentLane + directive.dy;
+    var targetX = [150, 300, 450][this.targetCol];
+    var targetY = [220, 460, 700][this.targetLane];
+
+    if (targetX !== undefined && targetY !== undefined) {
+      var highlight = scene.add.graphics();
+      var size = 100;
+      highlight.lineStyle(4, 0xFFFFAA, 1);
+      highlight.fillStyle(0xFFFF00, 0.2);
+      highlight.fillRect(targetX - size/2, targetY - size/2, size, size);
+      highlight.strokeRect(targetX - size/2, targetY - size/2, size, size);
+      scene.tweens.add({ targets: highlight, alpha: 0.3, yoyo: true, repeat: -1, duration: 500 });
+      this.currentHighlight = highlight;
+      container.add(highlight);
+    }
 
     // フェードイン
     container.setAlpha(0);
@@ -119,7 +150,13 @@ MOT.DoctorDirective = {
       var c = this.directiveContainer;
       scene.tweens.add({
         targets: c, alpha: 0, duration: 400,
-        onComplete: function() { if (c) c.destroy(); }
+        onComplete: () => { 
+          if (c) c.destroy(); 
+          if (this.currentMaskShape) {
+            this.currentMaskShape.destroy();
+            this.currentMaskShape = null;
+          }
+        }
       });
       this.directiveContainer = null;
     }
@@ -143,20 +180,26 @@ MOT.DoctorDirective = {
         if (this.directiveTextObj) {
           this.directiveTextObj.setText('「よくやった」');
         }
+        if (this.currentHighlight) {
+          this.currentHighlight.destroy();
+          this.currentHighlight = null;
+        }
       }
       return;
     }
 
-    var followedX = (d.dx === 0) || (d.dx > 0 && movedX > threshold) || (d.dx < 0 && movedX < -threshold);
-    var followedY = (d.dy === 0) || (d.dy > 0 && movedY > threshold) || (d.dy < 0 && movedY < -threshold);
-
-    if (followedX && followedY) {
+    // 黄色くハイライトしてるところを踏んでるときだけポイント加算させる
+    if (player.currentCol === this.targetCol && player.currentLane === this.targetLane) {
       this.isObeyChecked = true;
       MOT.incrementDoctorObeyCount();
       
       // 従った場合は「よくやった」に表示を変更
       if (this.directiveTextObj) {
         this.directiveTextObj.setText('「よくやった」');
+      }
+      if (this.currentHighlight) {
+        this.currentHighlight.destroy();
+        this.currentHighlight = null;
       }
     }
   },
@@ -169,6 +212,10 @@ MOT.DoctorDirective = {
         // フェードアウトではなく即時破棄（セリフと重複させない）
         this.directiveContainer.destroy();
         this.directiveContainer = null;
+      }
+      if (this.currentMaskShape) {
+        this.currentMaskShape.destroy();
+        this.currentMaskShape = null;
       }
       this.currentDirective = null;
       this.isWaiting = true;
@@ -214,6 +261,10 @@ MOT.DoctorDirective = {
     if (this.directiveContainer) {
       this.directiveContainer.destroy();
       this.directiveContainer = null;
+    }
+    if (this.currentMaskShape) {
+      this.currentMaskShape.destroy();
+      this.currentMaskShape = null;
     }
     this.currentDirective = null;
   }

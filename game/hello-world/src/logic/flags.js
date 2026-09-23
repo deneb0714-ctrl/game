@@ -4,6 +4,7 @@
 window.MOT = window.MOT || {};
 
 MOT.flags = {
+  heroName: 'メエリア',
   favor: {
     minion1: 0,
     boss1: 0,
@@ -22,11 +23,15 @@ MOT.flags = {
   diedCount: 0,
   energy: 0,
   maxEnergyThreshold: 100,
-  playerHP: 5,
-  playerMaxHP: 5
+  playerHP: 3,
+  playerMaxHP: 3,
+  dollPoints: 0,
+  killingIntent: 0
 };
 
 MOT.resetFlags = function () {
+  const currentHeroName = (MOT.flags && MOT.flags.heroName) ? MOT.flags.heroName : 'メエリア';
+  MOT.flags.heroName = currentHeroName;
   MOT.flags.favor = { minion1: 0, boss1: 0, boss2: 0, boss3: 0, wingL: 0, wingR: 0 };
   MOT.flags.obeyDoctor = 0;
   MOT.flags.showMercy = 0;
@@ -34,11 +39,21 @@ MOT.resetFlags = function () {
   MOT.flags.murderousOrbCount = 0;
   MOT.flags.doctorObeyCount = 0;
   MOT.flags.heardDemonLord = false;
+  MOT.flags.useGlitchTitle = false;
+  MOT.flags.finalEnding = null;
   MOT.flags.maxEnergy = false;
   MOT.flags.diedCount = 0;
   MOT.flags.energy = 0;
-  MOT.flags.playerHP = 5;
-  MOT.flags.playerMaxHP = 5;
+  MOT.flags.playerHP = 3;
+  MOT.flags.playerMaxHP = 3;
+  MOT.flags.dollPoints = 0;
+  MOT.flags.killingIntent = 0;
+
+  // New Boss Kill Flags
+  MOT.flags.killedBoss1 = false;
+  MOT.flags.killedBoss2 = false;
+  MOT.flags.killedTwins = false;
+  MOT.flags.killedDemonLord = false;
 };
 
 MOT.modifyFlag = function (key, value) {
@@ -70,7 +85,96 @@ MOT.incrementMurderousOrb = function () {
 };
 
 // 博士の指示に従った回数をインクリメントする関数
+MOT.showPopup = function(text) {
+  let scene = MOT.currentScene;
+  if (!scene) return;
+  const saveNotify = scene.add.text(1920 / 2, 120, text, {
+    fontFamily: "'DotGothic16', sans-serif",
+    fontSize: "28px",
+    color: "#00FF88",
+    backgroundColor: "#111111",
+    padding: { x: 16, y: 8 }
+  }).setOrigin(0.5).setDepth(200000).setAlpha(0).setScrollFactor(0);
+  scene.tweens.add({ targets: saveNotify, alpha: 1, duration: 400, yoyo: true, hold: 1500 });
+};
+
 MOT.incrementDoctorObeyCount = function () {
   MOT.flags.doctorObeyCount++;
+  MOT.flags.dollPoints = Math.min(100, MOT.flags.dollPoints + 5);
+    let oldMax = MOT.flags.playerMaxHP;
+    MOT.flags.playerMaxHP = 3 + Math.floor(MOT.flags.dollPoints / 25);
+    if (MOT.flags.playerMaxHP > oldMax) {
+      MOT.flags.playerHP += (MOT.flags.playerMaxHP - oldMax);
+      if (MOT.showPopup) {
+      if (MOT.flags.playerMaxHP >= 7) {
+        MOT.showPopup("最大HPが7で最大になりました。");
+      } else {
+        MOT.showPopup("最大HPが" + oldMax + "から" + MOT.flags.playerMaxHP + "になりました。");
+      }
+    }
+    }
   console.log('[MOT] doctorObeyCount:', MOT.flags.doctorObeyCount);
 };
+
+// =============================================
+// セーブ／ロード機能（自動セーブ＆CONTINUE対応）
+// =============================================
+MOT.saveGame = function(nextBossIndex) {
+  try {
+    const saveData = {
+      version: 1,
+      timestamp: Date.now(),
+      bossIndex: nextBossIndex,
+      flags: JSON.parse(JSON.stringify(MOT.flags))
+    };
+    localStorage.setItem('MOT_SAVE_DATA', JSON.stringify(saveData));
+    console.log('[MOT] Auto-saved progress for bossIndex:', nextBossIndex);
+  } catch(e) {
+    console.error('[MOT] Failed to save game:', e);
+  }
+};
+
+MOT.loadGame = function() {
+  try {
+    const dataStr = localStorage.getItem('MOT_SAVE_DATA');
+    if (!dataStr) return null;
+    return JSON.parse(dataStr);
+  } catch(e) {
+    console.error('[MOT] Failed to load save data:', e);
+    return null;
+  }
+};
+
+MOT.hasSaveData = function() {
+  const data = MOT.loadGame();
+  return data && data.bossIndex !== undefined && data.bossIndex >= 0;
+};
+
+MOT.clearSaveData = function() {
+  try {
+    localStorage.removeItem('MOT_SAVE_DATA');
+    console.log('[MOT] Save data cleared.');
+  } catch(e) {
+    console.error('[MOT] Failed to clear save data:', e);
+  }
+};
+
+MOT.saveEnding = function(endingKey) {
+  try {
+    let unlocked = JSON.parse(localStorage.getItem('MOT_UNLOCKED_ENDINGS') || '[]');
+    if (!unlocked.includes(endingKey)) {
+      unlocked.push(endingKey);
+      localStorage.setItem('MOT_UNLOCKED_ENDINGS', JSON.stringify(unlocked));
+    }
+  } catch(e) {}
+};
+
+MOT.hasUnlockedEnding = function(endingKey) {
+  try {
+    let unlocked = JSON.parse(localStorage.getItem('MOT_UNLOCKED_ENDINGS') || '[]');
+    return unlocked.includes(endingKey);
+  } catch(e) {
+    return false;
+  }
+};
+
