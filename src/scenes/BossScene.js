@@ -2654,7 +2654,20 @@ class BossScene extends Phaser.Scene {
                 await sayHero('「……魔王は……殺さなきゃ……エラーを消去……」');
 
                 // 2. 10回選択干渉システム
-                await this.askDemonLordShatterChoice(sayDoctor);
+                let shatterResult = await this.askDemonLordShatterChoice(sayDoctor);
+
+                if (shatterResult === 1) {
+                  MOT.flags.killedDemonLord = true;
+                  if (MOT.Audio && MOT.Audio.playSelect) MOT.Audio.playSelect();
+                  this.cameras.main.shake(500, 0.05);
+                  if (this.demonImage) {
+                    this.tweens.add({ targets: this.demonImage, scale: 2, alpha: 0, duration: 500, ease: 'Power2' });
+                  }
+                  await new Promise(r => this.time.delayedCall(1000, r));
+                  MOT.flags.finalEnding = 'normal_daily';
+                  this.scene.start('EndingScene');
+                  return;
+                }
 
                 // 3. 魔王との会話と選択肢
                 await sayDemon('「……結局我々を殺さず、お前は何をしにきたんだ？あの法螺吹きにけしかけられて、わらわたちを滅ぼしに来たんだろう？」');
@@ -3260,6 +3273,10 @@ class BossScene extends Phaser.Scene {
     if (this.doctorImage) { this.doctorImage.destroy(); this.doctorImage = null; }
     if (this.sisterImage) { this.sisterImage.destroy(); this.sisterImage = null; }
     if (this.brotherImage) { this.brotherImage.destroy(); this.brotherImage = null; }
+    if (this.bossHPText) { this.bossHPText.setText(''); this.bossHPText.setVisible(false); }
+    if (this.sisterHPText) { this.sisterHPText.setText(''); this.sisterHPText.setVisible(false); }
+    if (this.bossHpBg) { this.bossHpBg.setVisible(false); }
+    if (this.bossHpBar) { this.bossHpBar.clear(); this.bossHpBar.setVisible(false); }
   }
 
   proceedToNextArea(boss, isSpared = false) {
