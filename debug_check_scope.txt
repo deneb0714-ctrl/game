@@ -1,0 +1,40 @@
+3151:                               this.showDialogue(MOT.flags.heroName || '勇者', text, res);
+3152:                           });
+3153: 
+3154:                           const localSayDemon = (text, tex='demon_lord_dying') => new Promise(res => { this.tweens.add({ targets: dimBg, alpha: 0.6, duration: 300 }); if(this.heroImage) this.tweens.add({targets: this.heroImage, alpha: 0.4, duration: 300}); if(this.inunekoImage) this.tweens.add({targets: this.inunekoImage, alpha: 1, duration: 300}); if(this.doctorImage) this.tweens.add({targets: this.doctorImage, alpha: 0, duration: 300}); if(this.demonImage) { this.tweens.add({targets: this.demonImage, alpha: 1, duration: 300}); this.demonImage.setTexture(tex); } this.showDialogue('魔王', text, res); });
+3155:                           const localSayInuneko = (text, tex='inuneko_stand') => new Promise(res => { this.tweens.add({ targets: dimBg, alpha: 0.6, duration: 300 }); if(this.heroImage) this.tweens.add({targets: this.heroImage, alpha: 0.4, duration: 300}); if(this.demonImage) this.tweens.add({targets: this.demonImage, alpha: 1, duration: 300}); if(this.doctorImage) this.tweens.add({targets: this.doctorImage, alpha: 0, duration: 300}); if(this.inunekoImage) { this.tweens.add({targets: this.inunekoImage, alpha: 1, duration: 300}); this.inunekoImage.setTexture(tex); } this.showDialogue('犬猫☆すたー', text, res); });
+3156: 
+3157:                           await localSayDemon('「……結局我々を殺さず、お前は何をしにきたんだ？あの法螺吹きにけしかけられて、わらわたちを滅ぼしに来たんだろう？」');
+3158:                           
+3159:                           await new Promise(res => {
+3160:                               this.showChoice([
+3161:                                   { text: '殺す必要がないと思った', callback: () => { MOT.Audio.playSelect(); res(1); } },
+3162:                                   { text: '博士を信じられない', callback: () => { MOT.Audio.playSelect(); res(2); } }
+3163:                               ]);
+3164:                           });
+3165: 
+3166:                           await localSayDemon('「そうか……英断だな…。」', 'demon_lord_normal');
+3167:                           await localSayDemon('「そしてここから話すのは、信じるも信じないもお前の自由だ。」');
+3168:                           await localSayDemon('「お前は、あいつに”魔王が世界を滅ぼそうとしている”とでも言われたのだろう？だが、残念なことに、それはわらわたちを滅ぼすための方便にすぎぬ。」');
+3169:                           await localSayDemon('「あいつはこの世界に人間以上の存在がいることが許せないのだ。わらわはやつに襲われていた魔族を保護し、あいつとながい間戦ってきた。」');
+3170:                           await localSayDemon('「ながい、ながい戦いだった。……やつは気の毒な奴じゃ。だが、それはわらわたちを滅ぼす理由にはならない。」');
+3171:                           
+3172:                           await localSayDoctor('「…はははは。すべて話されてしまったみたいだな」', 'doctor_awaken_smile');
+3173:                           await localSayHero('「！」');
+3174:                           await localSayHero('「僕は……ずっとあなたに嘘をつかれていたんだね。」');
+3175:                           await localSayDoctor('「嘘？違うな、そいつらを殺せば平和な世界が訪れる。」');
+3176:                           await localSayDoctor('「私にとってな。」');
+3177:                           await localSayHero('「それでみんなを殺すだなんて、身勝手じゃないか。」');
+3178:                           await localSayDoctor('「そうだな。しかしそれがどうした？自分の望む世界を目指すのは普通のことだろう？」');
+3179:                           await localSayDoctor('「それに、私だけじゃない。魔族に恐怖し、滅んでほしいと願う人間はごまんといる。そいつらにとっても、いい世界となるんだ。」');
+3180:                           
+3181:                           await localSayDemon('「わらわたちはただ生きているだけだ！むやみに人を傷つけたことなど、一度もない！」');
+3182:                           await localSayInuneko('「そうわん！魔王様は、お前とは違って優しいにゃん！！」');
+3183:                           
+3184:                           await localSayHero('「僕はみんなを殺したくないと思った。」');
+3185:                           await localSayHero('「だって、みんな、魔王を殺しに来ているはずの僕も殺そうとしなかった。」');
+3186:                           await localSayHero('「僕は知った。魔族は悪い奴じゃないって。みんなを殺そうとしているあなたこそ、この世界の悪だ！！！」');
+3187:                           await localSayHero('「だからもう、あなたに従ったりはしない。」');
+3188:                           
+3189:                           await localSayDoctor('「……面白い。ただ創られた存在であるはずのお前が、そんな感情を持つなんてな。」');
+3190:                           await localSayHero('「創られた…？」');

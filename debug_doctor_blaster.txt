@@ -1,0 +1,40 @@
+1276:         
+1277:         for (let i = 0; i < numBlasters; i++) {
+1278:           this.time.delayedCall(i * 300, () => {
+1279:             if (!this.currentBoss || !this.currentBoss.active) return;
+1280:             
+1281:             // 出現位置を画面の右・上・下のいずれかの端にランダム配置
+1282:             let edge = Phaser.Math.Between(0, 2);
+1283:             let spawnX, spawnY;
+1284:             if (edge === 0) { // 右端
+1285:               spawnX = Phaser.Math.Between(1550, 1700);
+1286:               spawnY = Phaser.Math.Between(100, 980);
+1287:             } else if (edge === 1) { // 上端（右寄り）
+1288:               spawnX = Phaser.Math.Between(1000, 1700);
+1289:               spawnY = Phaser.Math.Between(100, 200);
+1290:             } else { // 下端（右寄り）
+1291:               spawnX = Phaser.Math.Between(1000, 1700);
+1292:               spawnY = Phaser.Math.Between(880, 980);
+1293:             }
+1294:             
+1295:             // プレイヤーを狙う角度
+1296:             let targetAngle = Phaser.Math.Angle.Between(spawnX, spawnY, this.player.x, this.player.y);
+1297:             
+1298:             // 発射前の警告線（ビジュアルのみ）
+1299:             let beamLength = 2500;
+1300:             let warnRect = this.add.rectangle(spawnX, spawnY, beamLength, 150, 0xff0000, 0.4).setDepth(8);
+1301:             warnRect.setOrigin(0, 0.5);
+1302:             warnRect.setRotation(targetAngle);
+1303:             
+1304:             // 顔が拡大していた時間(400ms)だけ待機したのち警告をフェードアウトして発射
+1305:             this.tweens.add({
+1306:               targets: warnRect, alpha: 0, duration: 600, delay: 400, onComplete: () => {
+1307:                 if (warnRect) warnRect.destroy();
+1308:                 if (!this.currentBoss || !this.currentBoss.active) return;
+1309:                 
+1310:                 // 極太レーザー発射 (ビジュアル)
+1311:                 MOT.Audio.playShot();
+1312:                 let beamThickness = 150;
+1313:                 let beam = this.add.rectangle(spawnX, spawnY, beamLength, beamThickness, silver, 1).setDepth(9);
+1314:                 beam.setOrigin(0, 0.5);
+1315:                 beam.setRotation(targetAngle);

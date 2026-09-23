@@ -1,0 +1,96 @@
+2815:                       const localSayDemon = (text) => new Promise(res => { this.tweens.add({ targets: dimBg, alpha: 0.6, duration: 300 }); if(this.heroImage) this.tweens.add({targets: this.heroImage, alpha: 0.4, duration: 300}); if(this.inunekoImage) this.tweens.add({targets: this.inunekoImage, alpha: 0.4, duration: 300}); if(this.demonImage) this.tweens.add({targets: this.demonImage, alpha: 1, duration: 300}); this.showDialogue('魔王', text, res); });
+2816:                       const localSayHero = (text) => new Promise(res => { this.tweens.add({ targets: dimBg, alpha: 0.6, duration: 300 }); if(this.heroImage) this.tweens.add({targets: this.heroImage, alpha: 1, duration: 300}); if(this.inunekoImage) this.tweens.add({targets: this.inunekoImage, alpha: 0.4, duration: 300}); if(this.demonImage) this.tweens.add({targets: this.demonImage, alpha: 0.4, duration: 300}); this.showDialogue(MOT.flags.heroName || '勇者', text, res); });
+2817:                       const localSayDevice = (text) => new Promise(res => { this.tweens.add({ targets: dimBg, alpha: 0.6, duration: 300 }); if(this.heroImage) this.tweens.add({targets: this.heroImage, alpha: 0.4, duration: 300}); if(this.inunekoImage) this.tweens.add({targets: this.inunekoImage, alpha: 0.4, duration: 300}); if(this.demonImage) this.tweens.add({targets: this.demonImage, alpha: 0.4, duration: 300}); this.showDeviceDialogue(text, res); });
+2818: 
+2819:                       await localSayDemon('「わがしもべたちは、わらわに従っていただけだ。おぬしもむやみに殺したいわけではないのだろう？」');
+2820:                       await localSayInuneko('「まおうさま……だめだわん……まおうさまがいなくなったら……」');
+2821:                       await localSayDemon('「だから今ここで契約を結べ。われはこのまま何もしない。だからしもべを殺すな」');
+2822:                       await localSayHero('「…わかった。」');
+2823:                       await localSayDevice('「おい、勝手に決めるな。お前の使命を忘れたのか。魔王を倒した後、残りのやつらも倒しに行くぞ。」');
+2824:                       await localSayDemon('「ふざけるな！！！わらわたちが何をした！もしも世界に悪が存在するのなら、それは！」');
+2825:                       
+2826:                       // 画面が乱れる（目に優しい暗めの横線フリッカーと微弱な揺れ）
+2816:                       const localSayHero = (text) => new Promise(res => { this.tweens.add({ targets: dimBg, alpha: 0.6, duration: 300 }); if(this.heroImage) this.tweens.add({targets: this.heroImage, alpha: 1, duration: 300}); if(this.inunekoImage) this.tweens.add({targets: this.inunekoImage, alpha: 0.4, duration: 300}); if(this.demonImage) this.tweens.add({targets: this.demonImage, alpha: 0.4, duration: 300}); this.showDialogue(MOT.flags.heroName || '勇者', text, res); });
+2817:                       const localSayDevice = (text) => new Promise(res => { this.tweens.add({ targets: dimBg, alpha: 0.6, duration: 300 }); if(this.heroImage) this.tweens.add({targets: this.heroImage, alpha: 0.4, duration: 300}); if(this.inunekoImage) this.tweens.add({targets: this.inunekoImage, alpha: 0.4, duration: 300}); if(this.demonImage) this.tweens.add({targets: this.demonImage, alpha: 0.4, duration: 300}); this.showDeviceDialogue(text, res); });
+2818: 
+2819:                       await localSayDemon('「わがしもべたちは、わらわに従っていただけだ。おぬしもむやみに殺したいわけではないのだろう？」');
+2820:                       await localSayInuneko('「まおうさま……だめだわん……まおうさまがいなくなったら……」');
+2821:                       await localSayDemon('「だから今ここで契約を結べ。われはこのまま何もしない。だからしもべを殺すな」');
+2822:                       await localSayHero('「…わかった。」');
+2823:                       await localSayDevice('「おい、勝手に決めるな。お前の使命を忘れたのか。魔王を倒した後、残りのやつらも倒しに行くぞ。」');
+2824:                       await localSayDemon('「ふざけるな！！！わらわたちが何をした！もしも世界に悪が存在するのなら、それは！」');
+2825:                       
+2826:                       // 画面が乱れる（目に優しい暗めの横線フリッカーと微弱な揺れ）
+2827:                       this.cameras.main.shake(1000, 0.015);
+2895:                           const localSayDemon = (text) => new Promise(res => { this.tweens.add({ targets: this.dimBg, alpha: 0.6, duration: 300 }); if(this.heroImage) this.tweens.add({targets: this.heroImage, alpha: 0.4, duration: 300}); if(this.inunekoImage) this.tweens.add({targets: this.inunekoImage, alpha: 0.4, duration: 300}); if(this.demonImage) this.tweens.add({targets: this.demonImage, alpha: 1, duration: 300}); this.showDialogue('魔王', text, res); });
+2896:                           const sayHero = (text) => new Promise(res => { this.tweens.add({ targets: this.dimBg, alpha: 0.6, duration: 300 }); if(this.demonImage) this.tweens.add({targets: this.demonImage, alpha: 0.4, duration: 300}); if(this.inunekoImage) this.tweens.add({targets: this.inunekoImage, alpha: 0.4, duration: 300}); if(this.heroImage) this.tweens.add({targets: this.heroImage, alpha: 1, duration: 300}); this.showDialogue(MOT.flags.heroName || '勇者', text, res); });
+2897: 
+2898:                           await localSayDevice('「よくやった。早く止めを刺すんだ。そして、見逃した幹部も殺しに行け。」');
+2899:                           await sayHero('「…」');
+2900:                           await localSayDemon('「殺すならわらわだけで十分であろう！？わらわを殺せば組織は終わる！お前の目的だって達成される！！！」');
+2901:                           
+2902:                           if (!this.inunekoImage || !this.inunekoImage.active) {
+2903:                               this.inunekoImage = this.add.image(1920 - 120, 1080 / 2 - 250, 'inuneko_stand').setAlpha(0).setDepth(91);
+2904:                               this.inunekoImage.setScale(300 / 691);
+2905:                               this.inunekoImage.setY(350);
+2906:                               this.tweens.add({targets: this.inunekoImage, alpha: 0.4, duration: 300});
+3123:                           const localSayDoctor = (text, tex='doctor_awaken_normal') => new Promise(res => {
+3124:                               if (!this.doctorImage || !this.doctorImage.active) {
+3125:                                   this.doctorImage = this.add.image(1920 / 2, 1080 / 2, tex).setAlpha(0).setDepth(95);
+3126:                               }
+3127:                               this.doctorImage.setTexture(tex);
+3128:                               this.textures.get(tex).setFilter(Phaser.Textures.FilterMode.LINEAR);
+3129:                               var docScale = 600 / (this.textures.get(tex).getSourceImage().width || 750);
+3130:                               this.doctorImage.setScale(docScale);
+3131:                               this.doctorImage.setY(100 + ((this.textures.get(tex).getSourceImage().height || 1000) * docScale) / 2);
+3132:                               
+3133:                               this.tweens.add({ targets: dimBg, alpha: 0.6, duration: 300 });
+3134:                               if(this.heroImage) this.tweens.add({targets: this.heroImage, alpha: 0.4, duration: 300});
+3141:                           const localSayHero = (text) => new Promise(res => {
+3142:                               this.tweens.add({ targets: dimBg, alpha: 0.6, duration: 300 });
+3143:                               if(this.heroImage) this.tweens.add({targets: this.heroImage, alpha: 1, duration: 300});
+3144:                               if(this.demonImage) this.tweens.add({targets: this.demonImage, alpha: 0, duration: 300});
+3145:                               if(this.inunekoImage) this.tweens.add({targets: this.inunekoImage, alpha: 0, duration: 300});
+3146:                               if(this.doctorImage) this.tweens.add({targets: this.doctorImage, alpha: 0.4, duration: 300});
+3147:                               this.showDialogue(MOT.flags.heroName || '勇者', text, res);
+3148:                           });
+3149: 
+3150:                           const localSayDemon = (text, tex='demon_lord_dying') => new Promise(res => { this.tweens.add({ targets: dimBg, alpha: 0.6, duration: 300 }); if(this.heroImage) this.tweens.add({targets: this.heroImage, alpha: 0.4, duration: 300}); if(this.inunekoImage) this.tweens.add({targets: this.inunekoImage, alpha: 0.4, duration: 300}); if(this.demonImage) { this.tweens.add({targets: this.demonImage, alpha: 1, duration: 300}); this.demonImage.setTexture(tex); } this.showDialogue('魔王', text, res); });
+3151:                           const localSayInuneko = (text, tex='inuneko_stand') => new Promise(res => { this.tweens.add({ targets: dimBg, alpha: 0.6, duration: 300 }); if(this.heroImage) this.tweens.add({targets: this.heroImage, alpha: 0.4, duration: 300}); if(this.demonImage) this.tweens.add({targets: this.demonImage, alpha: 0.4, duration: 300}); if(this.inunekoImage) { this.tweens.add({targets: this.inunekoImage, alpha: 1, duration: 300}); this.inunekoImage.setTexture(tex); } this.showDialogue('犬猫☆すたー', text, res); });
+3152: 
+3150:                           const localSayDemon = (text, tex='demon_lord_dying') => new Promise(res => { this.tweens.add({ targets: dimBg, alpha: 0.6, duration: 300 }); if(this.heroImage) this.tweens.add({targets: this.heroImage, alpha: 0.4, duration: 300}); if(this.inunekoImage) this.tweens.add({targets: this.inunekoImage, alpha: 0.4, duration: 300}); if(this.demonImage) { this.tweens.add({targets: this.demonImage, alpha: 1, duration: 300}); this.demonImage.setTexture(tex); } this.showDialogue('魔王', text, res); });
+3151:                           const localSayInuneko = (text, tex='inuneko_stand') => new Promise(res => { this.tweens.add({ targets: dimBg, alpha: 0.6, duration: 300 }); if(this.heroImage) this.tweens.add({targets: this.heroImage, alpha: 0.4, duration: 300}); if(this.demonImage) this.tweens.add({targets: this.demonImage, alpha: 0.4, duration: 300}); if(this.inunekoImage) { this.tweens.add({targets: this.inunekoImage, alpha: 1, duration: 300}); this.inunekoImage.setTexture(tex); } this.showDialogue('犬猫☆すたー', text, res); });
+3152: 
+3153:                           await localSayDemon('「……結局我々を殺さず、お前は何をしにきたんだ？あの法螺吹きにけしかけられて、わらわたちを滅ぼしに来たんだろう？」');
+3154:                           
+3155:                           await new Promise(res => {
+3156:                               this.showChoice([
+3157:                                   { text: '殺す必要がないと思った', callback: () => { MOT.Audio.playSelect(); res(1); } },
+3158:                                   { text: '博士を信じられない', callback: () => { MOT.Audio.playSelect(); res(2); } }
+3159:                               ]);
+3160:                           });
+3161: 
+3597:                 const localSayHero = (text) => new Promise(res => {
+3598:                     this.tweens.add({ targets: dimBg, alpha: 0.6, duration: 300 });
+3599:                     if (this.heroImage) {
+3600:                       this.tweens.add({ targets: this.heroImage, alpha: 1, duration: 300 });
+3601:                       this.heroImage.setTexture('hero_stand');
+3602:                     }
+3603:                     if (doctorImage) this.tweens.add({ targets: doctorImage, alpha: 0, duration: 300 });
+3604:                     if (this.demonImage) this.tweens.add({ targets: this.demonImage, alpha: 0.4, duration: 300 });
+3605:                     if (this.sisterImage) this.tweens.add({ targets: this.sisterImage, alpha: 0.4, duration: 300 });
+3606:                     if (this.brotherImage) this.tweens.add({ targets: this.brotherImage, alpha: 0.4, duration: 300 });
+3607:                     if (this.inunekoImage) this.tweens.add({ targets: this.inunekoImage, alpha: 0.4, duration: 300 });
+3608:                     this.showDialogue(MOT.flags.heroName, text, res);
+3610:                 const localSayDemon = (text) => new Promise(res => {
+3611:                     this.tweens.add({ targets: dimBg, alpha: 0.6, duration: 300 });
+3612:                     if (this.heroImage) this.tweens.add({ targets: this.heroImage, alpha: 0.4, duration: 300 });
+3613:                     if (doctorImage) this.tweens.add({ targets: doctorImage, alpha: 0, duration: 300 });
+3614:                     if (!this.demonImage) {
+3615:                         this.demonImage = this.add.image(1920 - 300, 1080/2, 'demon_lord_normal').setDepth(90);
+3616:                         var docScale = 600 / (this.textures.get('demon_lord_normal').getSourceImage().width || 750);
+3617:                         this.demonImage.setScale(docScale);
+3618:                         this.demonImage.setY(100 + ((this.textures.get('demon_lord_normal').getSourceImage().height || 1000) * docScale) / 2);
+3619:                     }
+3620:                     this.demonImage.setTexture('demon_lord_normal');
+3621:                     this.tweens.add({ targets: this.demonImage, alpha: 1, duration: 300 });

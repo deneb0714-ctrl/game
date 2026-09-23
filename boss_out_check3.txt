@@ -1,0 +1,50 @@
+3181:                           await localSayHero('「創られた…？」');
+3182:                           await localSayDoctor('「そうだ。お前は、勇者でもなんでもない。ただの兵器だ。」');
+3183:                           await localSayDoctor('「しかし、私が何度殺せと指示をし、選択権を奪ってもなお、お前は最後まで従わなかった。」');
+3184:                           await localSayDoctor('「……思えば、最初からおかしかった。前を創るとき、感情や思考力といったものは組み込んでいなかった。だから、お前は自分を”勇者”と認識したら、何も聞かず、ただ黙って戦いに行くはずだった。」');
+3185:                           await localSayDoctor('「だが、勇者と呼びかけた私に対し、誰だと聞いた。起動に時間がかかっているだけかと思ったが、その時には既に組み換えられていたんだな。」');
+3186:                           
+3187:                           await localSayHero('「違う！僕の考えは、創られたものじゃない！」');
+3188:                           await localSayDoctor('「本当にそう思っているのか？」');
+3189:                           await localSayHero('「……。」');
+3190:                           await localSayDoctor('「お前も気が付いているのだろう？自分の中にいる存在を。」');
+3191:                           await localSayHero('「……それでも僕は、これが僕自身の選択だって信じたい。」');
+3192:                           await localSayHero('「この感情は、もう一つの存在に教わったんだ。」');
+3193:                           
+3194:                           await localSayDoctor('「もっとも、お前が誰に操られていようが、そして何を選ぼうとも、もう関係ない。これまで集めたデータ、幾度となく繰り返した実験、そしてお前のデータ。これにより私の準備はすべて整った！！」');
+3195:                           
+3196:                           this.cameras.main.shake(1000, 0.02);
+3197:                           
+3198:                           await localSayDemon('「なんだ？！」', 'demon_lord_shock');
+3199:                           await localSayInuneko('「にゃわわ！？」', 'inuneko_blink');
+3200:                           
+3201:                           await localSayDoctor('「さぁ、最終決戦といこうじゃないか！」', 'doctor_awaken_straight_weapon');
+3202: 
+3203:                           if (this.boss1Bgm) this.boss1Bgm.stop();
+3204:                           if (this.boss2Bgm) this.boss2Bgm.stop();
+3205:                           if (this.twinsBgm) this.twinsBgm.stop();
+3206:                           
+3207:                           this.bossQueue.push('doctor');
+3208:                           this.proceedToNextArea(boss, true);
+3209:                           return;
+3210:                       } else {
+3211:                       await sayDemon('「わらわを見逃して何が望みだ？しもべたちを殺しているんだ。和平を求めて居るわけではないのであろう？」');
+3212:                       await sayDemon('「わらわは、しもべを殺された恨みを忘れることはできん。何が目的であれ、お前を許すことはできないだろう。」');
+3213:                       ending('normal_useless');
+3214:                   }
+3215:                   }
+3216:               /*
+3217:                   let c = await askShatterChoice('1. 心臓を打ち抜く', '2. 見逃す', true);
+3218:                   
+3219:                   if (c === 2) {
+3220:                       MOT.flags.killedDemonLord = false;
+3221:                       await sayHero('「…魔王は悪いやつじゃなかった。僕は殺さない。」');
+3222:                       ending('normal_useless');
+3223:                       return;
+3224:                   }
+3225: 
+3226:                   MOT.flags.killedDemonLord = true;
+3227:                   await sayDemon('「ぐっ…すまないわがしもべたち…ここまでのようだ」');
+3228:                   await sayHero('「…」');
+3229:                   MOT.Audio.playSelect();
+3230:                   

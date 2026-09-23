@@ -1,0 +1,40 @@
+3121:                           if (this.heroImage) {
+3122:                               this.heroImage.setTexture('hero_stand');
+3123:                               this.heroImage.setScale(750 / this.heroImage.width);
+3124:                               this.heroImage.setY(100 + (this.heroImage.height * this.heroImage.scaleY) / 2);
+3125:                           }
+3126:                           
+3127:                           const localSayDoctor = (text, tex='doctor_awaken_normal') => new Promise(res => {
+3128:                               if (!this.doctorImage || !this.doctorImage.active) {
+3129:                                   this.doctorImage = this.add.image(1920 / 2, 1080 / 2, tex).setAlpha(0).setDepth(95);
+3130:                               }
+3131:                               this.doctorImage.setTexture(tex);
+3132:                               this.textures.get(tex).setFilter(Phaser.Textures.FilterMode.LINEAR);
+3133:                               var docScale = 600 / (this.textures.get(tex).getSourceImage().width || 750);
+3134:                               this.doctorImage.setScale(docScale);
+3135:                               this.doctorImage.setY(100 + ((this.textures.get(tex).getSourceImage().height || 1000) * docScale) / 2);
+3136:                               
+3137:                               this.tweens.add({ targets: dimBg, alpha: 0.6, duration: 300 });
+3138:                               if(this.heroImage) this.tweens.add({targets: this.heroImage, alpha: 0.4, duration: 300});
+3139:                               if(this.demonImage) this.tweens.add({targets: this.demonImage, alpha: 0, duration: 300});
+3140:                               if(this.inunekoImage) this.tweens.add({targets: this.inunekoImage, alpha: 0, duration: 300});
+3141:                               if(this.doctorImage) this.tweens.add({targets: this.doctorImage, alpha: 1, duration: 300});
+3142:                               this.showDialogue('博士', text, res);
+3143:                           });
+3144:                           
+3145:                           const localSayHero = (text) => new Promise(res => {
+3146:                               this.tweens.add({ targets: dimBg, alpha: 0.6, duration: 300 });
+3147:                               if(this.heroImage) this.tweens.add({targets: this.heroImage, alpha: 1, duration: 300});
+3148:                               if(this.demonImage) this.tweens.add({targets: this.demonImage, alpha: 0, duration: 300});
+3149:                               if(this.inunekoImage) this.tweens.add({targets: this.inunekoImage, alpha: 0, duration: 300});
+3150:                               if(this.doctorImage) this.tweens.add({targets: this.doctorImage, alpha: 0.4, duration: 300});
+3151:                               this.showDialogue(MOT.flags.heroName || '勇者', text, res);
+3152:                           });
+3153: 
+3154:                           const localSayDemon = (text, tex='demon_lord_dying') => new Promise(res => { this.tweens.add({ targets: dimBg, alpha: 0.6, duration: 300 }); if(this.heroImage) this.tweens.add({targets: this.heroImage, alpha: 0.4, duration: 300}); if(this.inunekoImage) this.tweens.add({targets: this.inunekoImage, alpha: 0.4, duration: 300}); if(this.demonImage) { this.tweens.add({targets: this.demonImage, alpha: 1, duration: 300}); this.demonImage.setTexture(tex); } this.showDialogue('魔王', text, res); });
+3155:                           const localSayInuneko = (text, tex='inuneko_stand') => new Promise(res => { this.tweens.add({ targets: dimBg, alpha: 0.6, duration: 300 }); if(this.heroImage) this.tweens.add({targets: this.heroImage, alpha: 0.4, duration: 300}); if(this.demonImage) this.tweens.add({targets: this.demonImage, alpha: 0.4, duration: 300}); if(this.inunekoImage) { this.tweens.add({targets: this.inunekoImage, alpha: 1, duration: 300}); this.inunekoImage.setTexture(tex); } this.showDialogue('犬猫☆すたー', text, res); });
+3156: 
+3157:                           await localSayDemon('「……結局我々を殺さず、お前は何をしにきたんだ？あの法螺吹きにけしかけられて、わらわたちを滅ぼしに来たんだろう？」');
+3158:                           
+3159:                           await new Promise(res => {
+3160:                               this.showChoice([

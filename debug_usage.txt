@@ -1,0 +1,60 @@
+2751:                       this.heroImage.setY(100 + (1920 * (750 / 1080)) / 2);
+2752:                   }
+2753:                   
+2754:                   await sayDevice('「よくやった。早く止めを刺すんだ。そして、見逃した幹部も殺しに行け。」');
+2755:                   await sayHero('「…」');
+2756:                   c = await new Promise(resolve => {
+2757:                       if (this.choiceContainer) this.choiceContainer.destroy();
+2758:                       this.choiceContainer = this.add.container(0, 0).setDepth(200);
+2759:                       var w = 1920, h = 1080;
+2760:                       var bg = this.add.rectangle(w/2, h/2, w, h, 0x000000, 0.4).setInteractive();
+2761:                       this.choiceContainer.add(bg);
+2762:                       var y1 = h/2 - 20, y2 = h/2 + 80;
+2763:                       
+2764:                       var box1 = this.add.rectangle(w/2, y1, 500, 80, 0x333333, 0.8).setStrokeStyle(2, 0x555555);
+2765:                       var txt1 = this.add.text(w/2, y1, '1. 心臓を打ち抜く', { fontFamily: '"DotGothic16"', fontSize: '32px', color: '#777777' }).setOrigin(0.5);
+2766:                       var box2 = this.add.rectangle(w/2, y2, 500, 80, 0x1F2933, 0.8).setStrokeStyle(2, 0x4FD1FF);
+2767:                       var txt2 = this.add.text(w/2, y2, '2. 見逃す', { fontFamily: '"DotGothic16"', fontSize: '32px', color: '#ffffff' }).setOrigin(0.5);
+2768:                       
+2769:                       var cursor = this.add.text(w/2 - 280, y2, '▶', { fontFamily: '"DotGothic16"', fontSize: '32px', color: '#39FF14' }).setOrigin(0.5);
+2770:                       this.choiceContainer.add([box1, txt1, box2, txt2, cursor]);
+2771:                       
+2772:                       var currentIndex = 2;
+2773:                       const kh = (e) => {
+2774:                           if (e.key === 'ArrowUp' || e.key === 'w') {
+2775:                               if (MOT.Audio.playBleep) MOT.Audio.playBleep();
+2776:                           } else if (e.key === 'Enter' || e.key === ' ') {
+2777:                               this.input.keyboard.off('keydown', kh);
+2778:                               this.choiceContainer.destroy();
+2779:                               if (MOT.Audio.playSelect) MOT.Audio.playSelect();
+2780:                               resolve(2);
+2781:                           }
+2782:                       };
+2783:                       this.input.keyboard.on('keydown', kh);
+2784:                   });
+2785:               } else {
+2786:                   await sayDevice('「よくやった。さぁ早くとどめを！」');
+2787:                   await sayDemon('「ぐっ…ここまでか…」');
+2788:                   
+2789:                   let isFreedomRoute = (Kills === 0 && MOT.flags.dollPoints < 100 && MOT.flags.killingIntent >= 100);
+2790:                   if (isFreedomRoute) {
+2791:                       c = await new Promise(res => {
+2792:                           this.showChoice([
+2793:                               { text: '見逃す', callback: () => { if(MOT.Audio.playSelect) MOT.Audio.playSelect(); res(2); } }
+2794:                           ]);
+2795:                       });
+2796:                   } else {
+2797:                       c = await askShatterChoice('1. 心臓を打ち抜く', '2. 見逃す', Kills === 0);
+2798:                   }
+2799:               }
+2800:               
+2801:               if (c === 1) {
+2802:                   // 魔王を殺す
+2803:                   MOT.flags.killedDemonLord = true;
+2804:                   
+2805:                   if (Kills === 0) {
+2806:                       if (!this.inunekoImage || !this.inunekoImage.active) {
+2807:                           this.inunekoImage = this.add.image(1920 - 120, 1080 / 2 - 250, 'inuneko_stand').setAlpha(0).setDepth(91);
+2808:                           this.inunekoImage.setScale(300 / 691);
+2809:                           this.inunekoImage.setY(350);
+2810:                       }

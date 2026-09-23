@@ -1,0 +1,22 @@
+431:              var dummy = this.enemyGroup.create(-1000, -1000, 'enemy_basic');
+432:              dummy.isScenarioMinion = true;
+433:              this.onBossHit({ active: true, damage: 9999, silent: true, destroy: () => {} }, dummy);
+434:            });
+435:          } else {
+436:            this.minionsToKill = 3;
+437:            var laneYs = [220, 460, 700];
+438:            for(let i = 0; i < 3; i++) {
+439:              this.time.delayedCall(1000 + i * 800, () => {
+440:                var e = this.enemyGroup.create(1920 + 50, laneYs[Phaser.Math.Between(0, 2)], 'enemy_basic');
+---
+440:                var e = this.enemyGroup.create(1920 + 50, laneYs[Phaser.Math.Between(0, 2)], 'enemy_basic');
+441:                e.setVelocityX(-200);
+442:                e.hp = (key === 'boss3_twins') ? 2 : 3;
+443:                e.isScenarioMinion = true;
+444:                this.tweens.add({
+445:                  targets: e, y: e.y + Phaser.Math.Between(-40, 40),
+446:                  yoyo: true, repeat: -1, duration: 900, ease: 'Sine.easeInOut'
+447:                });
+448:                e.fireTimer = this.time.addEvent({
+449:                  delay: 1500, callback: () => { if (e.active) { let b = MOT.fireLinear(this, e.x, e.y, -300, 0); if(b) b.shooter = e; } }, loop: true, callbackScope: this
+---

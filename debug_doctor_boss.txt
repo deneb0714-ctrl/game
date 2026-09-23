@@ -1,0 +1,14 @@
+23:     if (this.currentBossIndex === 4 && this.bossQueue.indexOf('doctor') === -1) {
+24:       this.bossQueue.push('doctor');
+168:       if (this.startData && this.startData.fromContinue && this.currentBossIndex > 0 && this.bossQueue[this.currentBossIndex] !== 'doctor') {
+989:     if (this.currentBoss && this.currentBoss.configKey === 'doctor' && !this.dialogActive) {
+1045:       if (this.currentBoss.configKey === 'doctor') interval = this.bossHP < this.bossMaxHP * 0.5 ? 1400 : 1800; // 博士の攻撃頻度を上げる
+1196:     if (this.currentBoss.configKey === 'doctor') {
+1201:         if (this.currentBoss && this.currentBoss.active && this.currentBoss.texture.key !== 'doctor_combat') {
+1202:           this.currentBoss.setTexture('doctor_combat');
+1269:           this.currentBoss.setTexture('doctor_combat_beam');
+1271:             if (this.currentBoss && this.currentBoss.active && this.currentBoss.configKey === 'doctor' && this.currentBoss.texture.key === 'doctor_combat_beam') {
+1272:               this.currentBoss.setTexture('doctor_combat');
+1706:       if (this.currentBoss && this.currentBoss.configKey === 'doctor' && Phaser.Math.Between(0, 100) < 50) {
+3212:                           this.bossQueue.push('doctor');
+4175:                 if (this.bossQueue[this.currentBossIndex] === 'doctor') {

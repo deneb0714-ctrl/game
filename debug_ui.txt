@@ -1,0 +1,410 @@
+56:     this.energyBarBgObj = null;
+57:     this.energyBarFgObj = null;
+58:     this.energyBarOutline = null;
+59:     this.iconPersonBg = null;
+60:     this.iconPersonFill = null;
+61:     this.dollText = null;
+62:     this.iconBatteryBg = null;
+63:     this.iconBatteryFill = null;
+64:     this.intentText = null;
+65:     this.events.on('shutdown', () => {
+57:     this.energyBarFgObj = null;
+58:     this.energyBarOutline = null;
+59:     this.iconPersonBg = null;
+60:     this.iconPersonFill = null;
+61:     this.dollText = null;
+62:     this.iconBatteryBg = null;
+63:     this.iconBatteryFill = null;
+64:     this.intentText = null;
+65:     this.events.on('shutdown', () => {
+66:       if (this.boss1Bgm) this.boss1Bgm.stop();
+58:     this.energyBarOutline = null;
+59:     this.iconPersonBg = null;
+60:     this.iconPersonFill = null;
+61:     this.dollText = null;
+62:     this.iconBatteryBg = null;
+63:     this.iconBatteryFill = null;
+64:     this.intentText = null;
+65:     this.events.on('shutdown', () => {
+66:       if (this.boss1Bgm) this.boss1Bgm.stop();
+67:       if (this.boss2Bgm) this.boss2Bgm.stop();
+163:     this.createHUD();
+164:     this.cameras.main.fadeIn(800, 5, 8, 20);
+165: 
+166:     // Start first boss or intermission when resuming from continue
+167:     if (!(this.startData && this.startData.jumpToEndingSetup)) {
+168:       if (this.startData && this.startData.fromContinue && this.currentBossIndex > 0 && this.bossQueue[this.currentBossIndex] !== 'doctor') {
+169:         this.time.delayedCall(1000, function () { this.startIntermission(); }, [], this);
+170:       } else {
+171:         this.time.delayedCall(1000, function () { this.startBoss(); }, [], this);
+172:       }
+868:         if (this.batteryUI) this.batteryUI.clear();
+869:         if (this.energyBarOutline) this.energyBarOutline.clear();
+870:         if (MOT.DoctorDirective && MOT.DoctorDirective.directiveContainer) {
+871:             MOT.DoctorDirective.hideDirective(this);
+872:         }
+873:         return;
+874:     }
+875:     // レーザー全体でのカスタム当たり判定
+876:     if (this.player && this.player.active && this.player.alpha > 0 && !this.player.isInvincible) {
+877:       if (this.enemyBullets) {
+869:         if (this.energyBarOutline) this.energyBarOutline.clear();
+870:         if (MOT.DoctorDirective && MOT.DoctorDirective.directiveContainer) {
+871:             MOT.DoctorDirective.hideDirective(this);
+872:         }
+873:         return;
+874:     }
+875:     // レーザー全体でのカスタム当たり判定
+876:     if (this.player && this.player.active && this.player.alpha > 0 && !this.player.isInvincible) {
+877:       if (this.enemyBullets) {
+878:         this.enemyBullets.getChildren().forEach(b => {
+1086:     this.updateHUD();
+1087:   }
+1088: 
+1089:   onBarrierUse() {
+1090:     if (this.barrierCooldown <= 0 && !this.barrierActive && !this.dialogActive) {
+1091:       MOT.Audio.playBleep();
+1092:       this.barrierActive = true;
+1093:       this.barrierTime = 0;
+1094:       this.barrierCooldown = 2000;
+1095:       this.barrierActivatedTime = this.time.now; // ジャストガード用タイマー記録
+2957:                           if (this.energyBar) this.energyBar.setVisible(false);
+2958:                           if (this.energyBarBgObj) this.energyBarBgObj.setVisible(false);
+2959:                           if (this.energyBarFgObj) this.energyBarFgObj.setVisible(false);
+2960:                           if (this.energyBarOutline) this.energyBarOutline.setVisible(false);
+2961:                           if (this.barrierIconBg) this.barrierIconBg.setVisible(false);
+2962:                           if (this.barrierIconFg) this.barrierIconFg.setVisible(false);
+2963:                           if (this.bossHPText) this.bossHPText.setVisible(false);
+2964:                           if (this.areaNameText) this.areaNameText.setVisible(false);
+2965:                           if (this.iconPersonBg) this.iconPersonBg.setVisible(false);
+2966:                           if (this.iconPersonFill) this.iconPersonFill.setVisible(false);
+2958:                           if (this.energyBarBgObj) this.energyBarBgObj.setVisible(false);
+2959:                           if (this.energyBarFgObj) this.energyBarFgObj.setVisible(false);
+2960:                           if (this.energyBarOutline) this.energyBarOutline.setVisible(false);
+2961:                           if (this.barrierIconBg) this.barrierIconBg.setVisible(false);
+2962:                           if (this.barrierIconFg) this.barrierIconFg.setVisible(false);
+2963:                           if (this.bossHPText) this.bossHPText.setVisible(false);
+2964:                           if (this.areaNameText) this.areaNameText.setVisible(false);
+2965:                           if (this.iconPersonBg) this.iconPersonBg.setVisible(false);
+2966:                           if (this.iconPersonFill) this.iconPersonFill.setVisible(false);
+2967:                           if (this.dollText) this.dollText.setVisible(false);
+2959:                           if (this.energyBarFgObj) this.energyBarFgObj.setVisible(false);
+2960:                           if (this.energyBarOutline) this.energyBarOutline.setVisible(false);
+2961:                           if (this.barrierIconBg) this.barrierIconBg.setVisible(false);
+2962:                           if (this.barrierIconFg) this.barrierIconFg.setVisible(false);
+2963:                           if (this.bossHPText) this.bossHPText.setVisible(false);
+2964:                           if (this.areaNameText) this.areaNameText.setVisible(false);
+2965:                           if (this.iconPersonBg) this.iconPersonBg.setVisible(false);
+2966:                           if (this.iconPersonFill) this.iconPersonFill.setVisible(false);
+2967:                           if (this.dollText) this.dollText.setVisible(false);
+2968:                           if (this.iconBatteryBg) this.iconBatteryBg.setVisible(false);
+2960:                           if (this.energyBarOutline) this.energyBarOutline.setVisible(false);
+2961:                           if (this.barrierIconBg) this.barrierIconBg.setVisible(false);
+2962:                           if (this.barrierIconFg) this.barrierIconFg.setVisible(false);
+2963:                           if (this.bossHPText) this.bossHPText.setVisible(false);
+2964:                           if (this.areaNameText) this.areaNameText.setVisible(false);
+2965:                           if (this.iconPersonBg) this.iconPersonBg.setVisible(false);
+2966:                           if (this.iconPersonFill) this.iconPersonFill.setVisible(false);
+2967:                           if (this.dollText) this.dollText.setVisible(false);
+2968:                           if (this.iconBatteryBg) this.iconBatteryBg.setVisible(false);
+2969:                           if (this.iconBatteryFill) this.iconBatteryFill.setVisible(false);
+2983:                           if (this.energyBar) { this.energyBar.setVisible(false); this.energyBar.clear(); }
+2984:                           if (this.energyBarOutline) { this.energyBarOutline.setVisible(false); this.energyBarOutline.clear(); }
+2985:                           if (this.batteryUI) { this.batteryUI.setVisible(false); this.batteryUI.clear(); }
+2986:                           if (this.uiBg) { this.uiBg.setVisible(false); }
+2987:                           if (this.uiText) { this.uiText.setVisible(false); }
+2988:                           if (this.hpText) { this.hpText.setVisible(false); }
+2989:                           if (this.energyText) { this.energyText.setVisible(false); }
+2990:                           if (this.inunekoBoss) { this.inunekoBoss.setVisible(false); this.inunekoBoss.setActive(false); }
+2991:                           if (this.demonBoss) { this.demonBoss.setVisible(false); this.demonBoss.setActive(false); }
+2992:                           if (this.inunekoEnemy) { this.inunekoEnemy.setVisible(false); this.inunekoEnemy.setActive(false); }
+2984:                           if (this.energyBarOutline) { this.energyBarOutline.setVisible(false); this.energyBarOutline.clear(); }
+2985:                           if (this.batteryUI) { this.batteryUI.setVisible(false); this.batteryUI.clear(); }
+2986:                           if (this.uiBg) { this.uiBg.setVisible(false); }
+2987:                           if (this.uiText) { this.uiText.setVisible(false); }
+2988:                           if (this.hpText) { this.hpText.setVisible(false); }
+2989:                           if (this.energyText) { this.energyText.setVisible(false); }
+2990:                           if (this.inunekoBoss) { this.inunekoBoss.setVisible(false); this.inunekoBoss.setActive(false); }
+2991:                           if (this.demonBoss) { this.demonBoss.setVisible(false); this.demonBoss.setActive(false); }
+2992:                           if (this.inunekoEnemy) { this.inunekoEnemy.setVisible(false); this.inunekoEnemy.setActive(false); }
+2993: 
+2985:                           if (this.batteryUI) { this.batteryUI.setVisible(false); this.batteryUI.clear(); }
+2986:                           if (this.uiBg) { this.uiBg.setVisible(false); }
+2987:                           if (this.uiText) { this.uiText.setVisible(false); }
+2988:                           if (this.hpText) { this.hpText.setVisible(false); }
+2989:                           if (this.energyText) { this.energyText.setVisible(false); }
+2990:                           if (this.inunekoBoss) { this.inunekoBoss.setVisible(false); this.inunekoBoss.setActive(false); }
+2991:                           if (this.demonBoss) { this.demonBoss.setVisible(false); this.demonBoss.setActive(false); }
+2992:                           if (this.inunekoEnemy) { this.inunekoEnemy.setVisible(false); this.inunekoEnemy.setActive(false); }
+2993: 
+2994:                           
+3257:                       if (this.energyBar) this.energyBar.setVisible(false);
+3258:                       if (this.barrierIconBg) this.barrierIconBg.setVisible(false);
+3259:                       if (this.barrierIconFg) this.barrierIconFg.setVisible(false);
+3260:                       if (this.bossHPText) this.bossHPText.setVisible(false);
+3261:                       if (this.areaNameText) this.areaNameText.setVisible(false);
+3262:                       if (this.iconPersonBg) this.iconPersonBg.setVisible(false);
+3263:                       if (this.iconPersonFill) this.iconPersonFill.setVisible(false);
+3264:                       if (this.dollText) this.dollText.setVisible(false);
+3265:                       if (this.iconBatteryBg) this.iconBatteryBg.setVisible(false);
+3266:                       if (this.iconBatteryFill) this.iconBatteryFill.setVisible(false);
+3318:                       if (this.energyBar) this.energyBar.setVisible(false);
+3319:                       if (this.barrierIconBg) this.barrierIconBg.setVisible(false);
+3320:                       if (this.barrierIconFg) this.barrierIconFg.setVisible(false);
+3321:                       if (this.bossHPText) this.bossHPText.setVisible(false);
+3322:                       if (this.areaNameText) this.areaNameText.setVisible(false);
+3323:                       if (this.iconPersonBg) this.iconPersonBg.setVisible(false);
+3324:                       if (this.iconPersonFill) this.iconPersonFill.setVisible(false);
+3325:                       if (this.dollText) this.dollText.setVisible(false);
+3326:                       if (this.iconBatteryBg) this.iconBatteryBg.setVisible(false);
+3327:                       if (this.iconBatteryFill) this.iconBatteryFill.setVisible(false);
+4697:   createHUD() {
+4698:     this.hpText = this.add.text(30, 20, '', { fontFamily: '"Press Start 2P"', fontSize: '24px', color: '#FF4B6E' }).setDepth(100);
+4699:     this.energyText = this.add.text(30, 50, '', { fontFamily: '"Press Start 2P"', fontSize: '18px', color: '#4FD1FF' }).setDepth(100);
+4700:     this.energyBar = this.add.graphics().setDepth(100);
+4701:     this.barrierIconBg = this.add.graphics().setDepth(100);
+4702:     this.barrierIconFg = this.add.graphics().setDepth(100);
+4703:     this.bossHPText = this.add.text(960, 20, '', { fontFamily: '"Press Start 2P"', fontSize: '14px', color: '#FF2E2E' }).setOrigin(0.5, 0).setDepth(100);
+4704:     this.bossHPBar = this.add.graphics().setDepth(100);
+4705: 
+4706:     this.areaNameText = this.add.text(1920 - 30, 20, '', { fontFamily: '"DotGothic16"', fontSize: '32px', color: '#FFFFFF', backgroundColor: 'rgba(0,0,0,0.5)', padding: { x: 10, y: 5 } }).setOrigin(1, 0).setDepth(100);
+4700:     this.energyBar = this.add.graphics().setDepth(100);
+4701:     this.barrierIconBg = this.add.graphics().setDepth(100);
+4702:     this.barrierIconFg = this.add.graphics().setDepth(100);
+4703:     this.bossHPText = this.add.text(960, 20, '', { fontFamily: '"Press Start 2P"', fontSize: '14px', color: '#FF2E2E' }).setOrigin(0.5, 0).setDepth(100);
+4704:     this.bossHPBar = this.add.graphics().setDepth(100);
+4705: 
+4706:     this.areaNameText = this.add.text(1920 - 30, 20, '', { fontFamily: '"DotGothic16"', fontSize: '32px', color: '#FFFFFF', backgroundColor: 'rgba(0,0,0,0.5)', padding: { x: 10, y: 5 } }).setOrigin(1, 0).setDepth(100);
+4707: 
+4708:   }
+4709: 
+4783:   updateHUD() {
+4784:     let areaText = '';
+4785:     if (this.currentBossIndex === 0) areaText = '黄昏の荒野';
+4786:     else if (this.currentBossIndex === 1) areaText = '宵闇の森';
+4787:     else if (this.currentBossIndex === 2) areaText = '子夜の城塞';
+4788:     else if (this.currentBossIndex >= 3) areaText = '魔王城';
+4789:     if (this.areaNameText) this.areaNameText.setText(areaText);
+4790: 
+4791:     var hearts = '';
+4792:     for (var i = 0; i < MOT.flags.playerMaxHP; i++) hearts += i < MOT.flags.playerHP ? '♥ ' : '♡ ';
+4798:     if (!this.energyBarBgObj) {
+4799:       this.energyBarBgObj = this.add.rectangle(180, 92, 300, 24, 0x1F2933).setDepth(100).setScrollFactor(0);
+4800:       this.energyBarFgObj = this.add.rectangle(32, 82, 296, 20, 0x4FD1FF).setOrigin(0, 0).setDepth(100).setScrollFactor(0);
+4801:       this.energyBarOutline = this.add.graphics().setDepth(100).setScrollFactor(0);
+4802:       this.energyBarOutline.lineStyle(2, 0x4FD1FF, 0.6);
+4803:       this.energyBarOutline.strokeRect(30, 80, 300, 24);
+4804:       
+4805:       this.iconPersonBg = this.add.image(390, 44, 'icon_person').setOrigin(0, 0).setTint(0x555555).setDepth(100).setScrollFactor(0).setScale(1.5);
+4806:       this.iconPersonFill = this.add.image(390, 44, 'icon_person').setOrigin(0, 0).setTint(0xFFFF00).setDepth(100).setScrollFactor(0).setScale(1.5);
+4807:       
+4799:       this.energyBarBgObj = this.add.rectangle(180, 92, 300, 24, 0x1F2933).setDepth(100).setScrollFactor(0);
+4800:       this.energyBarFgObj = this.add.rectangle(32, 82, 296, 20, 0x4FD1FF).setOrigin(0, 0).setDepth(100).setScrollFactor(0);
+4801:       this.energyBarOutline = this.add.graphics().setDepth(100).setScrollFactor(0);
+4802:       this.energyBarOutline.lineStyle(2, 0x4FD1FF, 0.6);
+4803:       this.energyBarOutline.strokeRect(30, 80, 300, 24);
+4804:       
+4805:       this.iconPersonBg = this.add.image(390, 44, 'icon_person').setOrigin(0, 0).setTint(0x555555).setDepth(100).setScrollFactor(0).setScale(1.5);
+4806:       this.iconPersonFill = this.add.image(390, 44, 'icon_person').setOrigin(0, 0).setTint(0xFFFF00).setDepth(100).setScrollFactor(0).setScale(1.5);
+4807:       
+4808:       this.batteryUI = this.add.graphics().setDepth(100).setScrollFactor(0);
+4800:       this.energyBarFgObj = this.add.rectangle(32, 82, 296, 20, 0x4FD1FF).setOrigin(0, 0).setDepth(100).setScrollFactor(0);
+4801:       this.energyBarOutline = this.add.graphics().setDepth(100).setScrollFactor(0);
+4802:       this.energyBarOutline.lineStyle(2, 0x4FD1FF, 0.6);
+4803:       this.energyBarOutline.strokeRect(30, 80, 300, 24);
+4804:       
+4805:       this.iconPersonBg = this.add.image(390, 44, 'icon_person').setOrigin(0, 0).setTint(0x555555).setDepth(100).setScrollFactor(0).setScale(1.5);
+4806:       this.iconPersonFill = this.add.image(390, 44, 'icon_person').setOrigin(0, 0).setTint(0xFFFF00).setDepth(100).setScrollFactor(0).setScale(1.5);
+4807:       
+4808:       this.batteryUI = this.add.graphics().setDepth(100).setScrollFactor(0);
+4809:     }
+4801:       this.energyBarOutline = this.add.graphics().setDepth(100).setScrollFactor(0);
+4802:       this.energyBarOutline.lineStyle(2, 0x4FD1FF, 0.6);
+4803:       this.energyBarOutline.strokeRect(30, 80, 300, 24);
+4804:       
+4805:       this.iconPersonBg = this.add.image(390, 44, 'icon_person').setOrigin(0, 0).setTint(0x555555).setDepth(100).setScrollFactor(0).setScale(1.5);
+4806:       this.iconPersonFill = this.add.image(390, 44, 'icon_person').setOrigin(0, 0).setTint(0xFFFF00).setDepth(100).setScrollFactor(0).setScale(1.5);
+4807:       
+4808:       this.batteryUI = this.add.graphics().setDepth(100).setScrollFactor(0);
+4809:     }
+4810: 
+4802:       this.energyBarOutline.lineStyle(2, 0x4FD1FF, 0.6);
+4803:       this.energyBarOutline.strokeRect(30, 80, 300, 24);
+4804:       
+4805:       this.iconPersonBg = this.add.image(390, 44, 'icon_person').setOrigin(0, 0).setTint(0x555555).setDepth(100).setScrollFactor(0).setScale(1.5);
+4806:       this.iconPersonFill = this.add.image(390, 44, 'icon_person').setOrigin(0, 0).setTint(0xFFFF00).setDepth(100).setScrollFactor(0).setScale(1.5);
+4807:       
+4808:       this.batteryUI = this.add.graphics().setDepth(100).setScrollFactor(0);
+4809:     }
+4810: 
+4811:     // Energy bar update (using scaleX instead of clear/fillRect)
+4803:       this.energyBarOutline.strokeRect(30, 80, 300, 24);
+4804:       
+4805:       this.iconPersonBg = this.add.image(390, 44, 'icon_person').setOrigin(0, 0).setTint(0x555555).setDepth(100).setScrollFactor(0).setScale(1.5);
+4806:       this.iconPersonFill = this.add.image(390, 44, 'icon_person').setOrigin(0, 0).setTint(0xFFFF00).setDepth(100).setScrollFactor(0).setScale(1.5);
+4807:       
+4808:       this.batteryUI = this.add.graphics().setDepth(100).setScrollFactor(0);
+4809:     }
+4810: 
+4811:     // Energy bar update (using scaleX instead of clear/fillRect)
+4812:     const barColor = MOT.flags.maxEnergy ? 0xFF4B6E : 0x4FD1FF;
+4808:       this.batteryUI = this.add.graphics().setDepth(100).setScrollFactor(0);
+4809:     }
+4810: 
+4811:     // Energy bar update (using scaleX instead of clear/fillRect)
+4812:     const barColor = MOT.flags.maxEnergy ? 0xFF4B6E : 0x4FD1FF;
+4813:     this.energyBarFgObj.setFillStyle(barColor, 1);
+4814:     this.energyBarFgObj.scaleX = Math.max(0.001, pct);
+4815: 
+4816:     // 必殺技ゲージのハイライト
+4817:     this.energyBarOutline.clear();
+4813:     this.energyBarFgObj.setFillStyle(barColor, 1);
+4814:     this.energyBarFgObj.scaleX = Math.max(0.001, pct);
+4815: 
+4816:     // 必殺技ゲージのハイライト
+4817:     this.energyBarOutline.clear();
+4818:     if (this.isEnergyHighlighted) {
+4819:       const flash = (Math.sin(Date.now() / 150) + 1) / 2;
+4820:       this.energyBarOutline.lineStyle(4, 0xFFFF00, 0.4 + 0.6 * flash);
+4821:       this.energyBarOutline.strokeRect(26, 76, 308, 32);
+4822:     } else {
+4814:     this.energyBarFgObj.scaleX = Math.max(0.001, pct);
+4815: 
+4816:     // 必殺技ゲージのハイライト
+4817:     this.energyBarOutline.clear();
+4818:     if (this.isEnergyHighlighted) {
+4819:       const flash = (Math.sin(Date.now() / 150) + 1) / 2;
+4820:       this.energyBarOutline.lineStyle(4, 0xFFFF00, 0.4 + 0.6 * flash);
+4821:       this.energyBarOutline.strokeRect(26, 76, 308, 32);
+4822:     } else {
+4823:       this.energyBarOutline.lineStyle(2, 0x4FD1FF, 0.6);
+4817:     this.energyBarOutline.clear();
+4818:     if (this.isEnergyHighlighted) {
+4819:       const flash = (Math.sin(Date.now() / 150) + 1) / 2;
+4820:       this.energyBarOutline.lineStyle(4, 0xFFFF00, 0.4 + 0.6 * flash);
+4821:       this.energyBarOutline.strokeRect(26, 76, 308, 32);
+4822:     } else {
+4823:       this.energyBarOutline.lineStyle(2, 0x4FD1FF, 0.6);
+4824:       this.energyBarOutline.strokeRect(30, 80, 300, 24);
+4825:     }
+4826: 
+4820:       this.energyBarOutline.lineStyle(4, 0xFFFF00, 0.4 + 0.6 * flash);
+4821:       this.energyBarOutline.strokeRect(26, 76, 308, 32);
+4822:     } else {
+4823:       this.energyBarOutline.lineStyle(2, 0x4FD1FF, 0.6);
+4824:       this.energyBarOutline.strokeRect(30, 80, 300, 24);
+4825:     }
+4826: 
+4827:     this.energyText.setText('EN: ' + MOT.flags.energy + '/' + MOT.flags.maxEnergyThreshold);
+4828: 
+4829:     // Doll Points update
+4821:       this.energyBarOutline.strokeRect(26, 76, 308, 32);
+4822:     } else {
+4823:       this.energyBarOutline.lineStyle(2, 0x4FD1FF, 0.6);
+4824:       this.energyBarOutline.strokeRect(30, 80, 300, 24);
+4825:     }
+4826: 
+4827:     this.energyText.setText('EN: ' + MOT.flags.energy + '/' + MOT.flags.maxEnergyThreshold);
+4828: 
+4829:     // Doll Points update
+4830:     const dollValue = MOT.flags.dollPoints || 0;
+4823:       this.energyBarOutline.lineStyle(2, 0x4FD1FF, 0.6);
+4824:       this.energyBarOutline.strokeRect(30, 80, 300, 24);
+4825:     }
+4826: 
+4827:     this.energyText.setText('EN: ' + MOT.flags.energy + '/' + MOT.flags.maxEnergyThreshold);
+4828: 
+4829:     // Doll Points update
+4830:     const dollValue = MOT.flags.dollPoints || 0;
+4831:     const dollPct = Phaser.Math.Clamp(dollValue / 100, 0, 1);
+4832:     if (dollPct <= 0) {
+4824:       this.energyBarOutline.strokeRect(30, 80, 300, 24);
+4825:     }
+4826: 
+4827:     this.energyText.setText('EN: ' + MOT.flags.energy + '/' + MOT.flags.maxEnergyThreshold);
+4828: 
+4829:     // Doll Points update
+4830:     const dollValue = MOT.flags.dollPoints || 0;
+4831:     const dollPct = Phaser.Math.Clamp(dollValue / 100, 0, 1);
+4832:     if (dollPct <= 0) {
+4833:       this.iconPersonFill.setVisible(false);
+4843:     if (this.batteryUI) {
+4844:       this.batteryUI.clear();
+4845:       // 電池のキャップ部分
+4846:       this.batteryUI.fillStyle(0x555555, 1);
+4847:       this.batteryUI.fillRect(450 + 12, 44, 24, 6);
+4848:       // 電池の枠線
+4849:       this.batteryUI.lineStyle(3, 0x555555, 1);
+4850:       this.batteryUI.strokeRect(450 + 3, 44 + 6, 42, 87);
+4851:       
+4852:       // 赤い中身（殺意ゲージ）
+4844:       this.batteryUI.clear();
+4845:       // 電池のキャップ部分
+4846:       this.batteryUI.fillStyle(0x555555, 1);
+4847:       this.batteryUI.fillRect(450 + 12, 44, 24, 6);
+4848:       // 電池の枠線
+4849:       this.batteryUI.lineStyle(3, 0x555555, 1);
+4850:       this.batteryUI.strokeRect(450 + 3, 44 + 6, 42, 87);
+4851:       
+4852:       // 赤い中身（殺意ゲージ）
+4853:       if (intentPct > 0) {
+4846:       this.batteryUI.fillStyle(0x555555, 1);
+4847:       this.batteryUI.fillRect(450 + 12, 44, 24, 6);
+4848:       // 電池の枠線
+4849:       this.batteryUI.lineStyle(3, 0x555555, 1);
+4850:       this.batteryUI.strokeRect(450 + 3, 44 + 6, 42, 87);
+4851:       
+4852:       // 赤い中身（殺意ゲージ）
+4853:       if (intentPct > 0) {
+4854:         this.batteryUI.fillStyle(0xFF0000, 1);
+4855:         const fillMaxHeight = 81;
+4847:       this.batteryUI.fillRect(450 + 12, 44, 24, 6);
+4848:       // 電池の枠線
+4849:       this.batteryUI.lineStyle(3, 0x555555, 1);
+4850:       this.batteryUI.strokeRect(450 + 3, 44 + 6, 42, 87);
+4851:       
+4852:       // 赤い中身（殺意ゲージ）
+4853:       if (intentPct > 0) {
+4854:         this.batteryUI.fillStyle(0xFF0000, 1);
+4855:         const fillMaxHeight = 81;
+4856:         const fillH = fillMaxHeight * intentPct;
+4849:       this.batteryUI.lineStyle(3, 0x555555, 1);
+4850:       this.batteryUI.strokeRect(450 + 3, 44 + 6, 42, 87);
+4851:       
+4852:       // 赤い中身（殺意ゲージ）
+4853:       if (intentPct > 0) {
+4854:         this.batteryUI.fillStyle(0xFF0000, 1);
+4855:         const fillMaxHeight = 81;
+4856:         const fillH = fillMaxHeight * intentPct;
+4857:         const fillY = (44 + 6 + 84) - fillH;
+4858:         this.batteryUI.fillRect(450 + 6, fillY, 36, fillH);
+4850:       this.batteryUI.strokeRect(450 + 3, 44 + 6, 42, 87);
+4851:       
+4852:       // 赤い中身（殺意ゲージ）
+4853:       if (intentPct > 0) {
+4854:         this.batteryUI.fillStyle(0xFF0000, 1);
+4855:         const fillMaxHeight = 81;
+4856:         const fillH = fillMaxHeight * intentPct;
+4857:         const fillY = (44 + 6 + 84) - fillH;
+4858:         this.batteryUI.fillRect(450 + 6, fillY, 36, fillH);
+4859:       }
+4854:         this.batteryUI.fillStyle(0xFF0000, 1);
+4855:         const fillMaxHeight = 81;
+4856:         const fillH = fillMaxHeight * intentPct;
+4857:         const fillY = (44 + 6 + 84) - fillH;
+4858:         this.batteryUI.fillRect(450 + 6, fillY, 36, fillH);
+4859:       }
+4860:     }
+4861: 
+4862:     const iconX = 360;
+4863:     const iconY = 92;
+4858:         this.batteryUI.fillRect(450 + 6, fillY, 36, fillH);
+4859:       }
+4860:     }
+4861: 
+4862:     const iconX = 360;
+4863:     const iconY = 92;
+4864:     const iconRadius = 18;
+4865: 
+4866:     this.barrierIconBg.clear();
+4867:     this.barrierIconFg.clear();
