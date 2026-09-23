@@ -4144,17 +4144,21 @@ class BossScene extends Phaser.Scene {
     }
 
     // Boss HP
-    this.bossHPBar.clear();
+    if (this.bossHPBar) this.bossHPBar.clear();
     let isTwins = this.currentBoss && this.currentBoss.configKey === 'boss3_twins';
     let showBossUI = false;
-    if (isTwins) {
-      if ((this.currentBoss && this.currentBoss.visible !== false && this.currentBoss.active) ||
-          (this.sisterBoss && this.sisterBoss.visible !== false && this.sisterBoss.active)) {
-        showBossUI = true;
-      }
-    } else {
-      if (this.currentBoss && this.currentBoss.visible !== false && this.currentBoss.active) {
-        showBossUI = true;
+
+    // ボス撃破済み・会話中・カットシーン中・幕間中・HP0以下時はボスHPゲージを表示しない
+    if (!this.bossDefeated && !this.cutsceneActive && !this.dialogActive && !this.intermissionActive) {
+      if (isTwins) {
+        if ((this.currentBoss && this.currentBoss.active && this.currentBoss.visible !== false && this.currentBoss.alpha > 0 && this.currentBoss.hp > 0) ||
+            (this.sisterBoss && this.sisterBoss.active && this.sisterBoss.visible !== false && this.sisterBoss.alpha > 0 && this.sisterBoss.hp > 0)) {
+          showBossUI = true;
+        }
+      } else {
+        if (this.currentBoss && this.currentBoss.active && this.currentBoss.visible !== false && this.currentBoss.alpha > 0 && this.bossHP > 0) {
+          showBossUI = true;
+        }
       }
     }
 
@@ -4187,6 +4191,7 @@ class BossScene extends Phaser.Scene {
       } else {
         if (this.sisterHPText) this.sisterHPText.setVisible(false);
         this.bossHPText.setText(cfg.name);
+        this.bossHPText.setVisible(true);
         var bpct = Math.max(0, this.bossHP) / this.bossMaxHP;
         this.bossHPBar.fillStyle(0x1F2933, 1); this.bossHPBar.fillRect(560, 50, 800, 20);
         if (bpct > 0) {
@@ -4195,8 +4200,15 @@ class BossScene extends Phaser.Scene {
         this.bossHPBar.lineStyle(1, 0xFF2E2E, 0.6); this.bossHPBar.strokeRect(560, 50, 800, 20);
       }
     } else {
-      this.bossHPText.setText('');
-      if (this.sisterHPText) this.sisterHPText.setVisible(false);
+      if (this.bossHPText) {
+        this.bossHPText.setText('');
+        this.bossHPText.setVisible(false);
+      }
+      if (this.sisterHPText) {
+        this.sisterHPText.setText('');
+        this.sisterHPText.setVisible(false);
+      }
+      if (this.bossHPBar) this.bossHPBar.clear();
     }
   }
 }
