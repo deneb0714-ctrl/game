@@ -191,42 +191,133 @@ class TitleScene extends Phaser.Scene {
       color: '#ffffff'
     }).setOrigin(1, 1).setDepth(10);
 
-    // Ending shortcuts (各エンディングへのショートカットキー)
-    const endingShortcuts = {
-      'Digit1': 'hello_world',
-      'Numpad1': 'hello_world',
-      'Digit2': 'normal_daily',
-      'Numpad2': 'normal_daily',
-      'Digit3': 'normal_useless',
-      'Numpad3': 'normal_useless',
-      'Digit4': 'normal_unresistable',
-      'Numpad4': 'normal_unresistable',
-      'Digit5': 'bad_puppet',
-      'Numpad5': 'bad_puppet',
-      'Digit6': 'bad_shutdown',
-      'Numpad6': 'bad_shutdown',
-      'Digit7': 'hidden_freedom',
-      'Numpad7': 'hidden_freedom',
-      'Digit8': 'BAD_GAMEOVER',
-      'Numpad8': 'BAD_GAMEOVER',
-      'Digit0': 'BAD_GAMEOVER',
-      'Numpad0': 'BAD_GAMEOVER'
+    // Ending branching shortcuts (各エンディング分岐直前の戦闘から開始)
+    const branchConfigs = {
+      'Digit1': {
+        name: 'HAPPY END分岐前 (魔王戦・全幹部生存)',
+        action: () => {
+          MOT.resetFlags();
+          MOT.flags.killedBoss1 = false;
+          MOT.flags.killedBoss2 = false;
+          MOT.flags.killedTwins = false;
+          MOT.flags.showMercy = 3;
+          MOT.flags.obeyDoctor = 0;
+          MOT.flags.playerHP = 5;
+          return { startBossIndex: 3, initialBossHP: 60 };
+        },
+        directKey: 'hello_world'
+      },
+      'Digit2': {
+        name: 'NORMAL END (日常) 分岐前 (魔王戦・幹部撃破)',
+        action: () => {
+          MOT.resetFlags();
+          MOT.flags.killedBoss1 = true;
+          MOT.flags.killedBoss2 = false;
+          MOT.flags.killedTwins = false;
+          MOT.flags.brutality = 1;
+          MOT.flags.playerHP = 5;
+          return { startBossIndex: 3, initialBossHP: 60 };
+        },
+        directKey: 'normal_daily'
+      },
+      'Digit3': {
+        name: 'NORMAL END (役立たず) 分岐前 (魔王戦・幹部撃破)',
+        action: () => {
+          MOT.resetFlags();
+          MOT.flags.killedBoss1 = true;
+          MOT.flags.killedBoss2 = false;
+          MOT.flags.killedTwins = false;
+          MOT.flags.playerHP = 5;
+          return { startBossIndex: 3, initialBossHP: 60 };
+        },
+        directKey: 'normal_useless'
+      },
+      'Digit4': {
+        name: 'NORMAL END (抗えない) 分岐前 (魔王戦・選択肢で殺す)',
+        action: () => {
+          MOT.resetFlags();
+          MOT.flags.killedBoss1 = false;
+          MOT.flags.killedBoss2 = false;
+          MOT.flags.killedTwins = false;
+          MOT.flags.playerHP = 5;
+          return { startBossIndex: 3, initialBossHP: 60 };
+        },
+        directKey: 'normal_unresistable'
+      },
+      'Digit5': {
+        name: 'BAD END (傀儡) 分岐前 (魔王戦・全幹部殺害)',
+        action: () => {
+          MOT.resetFlags();
+          MOT.flags.killedBoss1 = true;
+          MOT.flags.killedBoss2 = true;
+          MOT.flags.killedTwins = true;
+          MOT.flags.brutality = 3;
+          MOT.flags.obeyDoctor = 3;
+          MOT.flags.playerHP = 5;
+          return { startBossIndex: 3, initialBossHP: 60 };
+        },
+        directKey: 'bad_puppet'
+      },
+      'Digit6': {
+        name: '博士戦 (ハッピーエンド決戦)',
+        action: () => {
+          MOT.resetFlags();
+          MOT.flags.killedBoss1 = false;
+          MOT.flags.killedBoss2 = false;
+          MOT.flags.killedTwins = false;
+          MOT.flags.playerHP = 5;
+          return { startBossIndex: 4, initialBossHP: 120 };
+        },
+        directKey: 'bad_shutdown'
+      },
+      'Digit7': {
+        name: '第1分岐点 (クラトス戦)',
+        action: () => {
+          MOT.resetFlags();
+          MOT.flags.playerHP = 5;
+          return { startBossIndex: 0, initialBossHP: 60 };
+        },
+        directKey: 'hidden_freedom'
+      },
+      'Digit8': {
+        name: 'GAME OVER 直前 (HP1戦闘)',
+        action: () => {
+          MOT.resetFlags();
+          MOT.flags.playerHP = 1;
+          return { startBossIndex: 3, initialBossHP: 60 };
+        },
+        directKey: 'BAD_GAMEOVER'
+      }
     };
+
+    // テンキー対応
+    for (let i = 1; i <= 8; i++) {
+      branchConfigs['Numpad' + i] = branchConfigs['Digit' + i];
+    }
 
     let shortcutFired = false;
     const onTitleKeyDown = (event) => {
-      const endKey = endingShortcuts[event.code];
-      if (endKey && !shortcutFired) {
+      const config = branchConfigs[event.code];
+      if (config && !shortcutFired) {
         shortcutFired = true;
         if (MOT.Audio && MOT.Audio.playSelect) MOT.Audio.playSelect();
-        if (!window.MOT) window.MOT = {};
-        if (!MOT.flags) MOT.flags = {};
-        MOT.flags.finalEnding = endKey;
         this.input.keyboard.off('keydown', onTitleKeyDown);
-        this.cameras.main.fadeOut(500, 0, 0, 0);
-        this.time.delayedCall(500, () => {
-          this.scene.start('EndingScene', { endingKey: endKey });
-        });
+
+        if (event.shiftKey) {
+          // Shift押下時は直接エンディング画面へ
+          MOT.flags.finalEnding = config.directKey;
+          this.cameras.main.fadeOut(500, 0, 0, 0);
+          this.time.delayedCall(500, () => {
+            this.scene.start('EndingScene', { endingKey: config.directKey });
+          });
+        } else {
+          // 通常は分岐直前の戦闘から開始
+          const sceneData = config.action();
+          this.cameras.main.fadeOut(500, 5, 8, 20);
+          this.time.delayedCall(500, () => {
+            this.scene.start('BossScene', sceneData);
+          });
+        }
       }
     };
     this.input.keyboard.on('keydown', onTitleKeyDown);
@@ -236,16 +327,16 @@ class TitleScene extends Phaser.Scene {
 
     // 画面左下にエンディングショートカット案内を表示
     const guideLines = [
-      '【ENDING SHORTCUTS (1-8キー)】',
-      '1: HAPPY END (Hello World)  |  2: 日常  |  3: 役立たず  |  4: 抗えない',
-      '5: 傀儡  |  6: シャットダウン  |  7: 自由の身  |  8: GAME OVER'
+      '【分岐直前ショートカット (1〜8キーで戦闘から開始 / Shift+数字で直行)】',
+      '1: HAPPY END分岐(魔王戦・全生存)  |  2: 日常(魔王戦・殺す)  |  3: 役立たず(魔王戦・見逃す)',
+      '4: 抗えない(魔王戦・殺害)  |  5: 傀儡(魔王戦・全殺害)  |  6: 博士戦  |  7: クラトス戦  |  8: GAME OVER直前'
     ];
     this.add.text(20, h - 20, guideLines.join('\n'), {
       fontFamily: '"DotGothic16", sans-serif',
-      fontSize: '13px',
+      fontSize: '12px',
       color: '#4FD1FF',
       lineSpacing: 4
-    }).setOrigin(0, 1).setDepth(10).setAlpha(0.75);
+    }).setOrigin(0, 1).setDepth(10).setAlpha(0.85);
 
   }
 

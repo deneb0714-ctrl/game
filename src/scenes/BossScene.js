@@ -253,7 +253,11 @@ class BossScene extends Phaser.Scene {
     var key = this.bossQueue[this.currentBossIndex];
     var cfg = this.getBossConfig(key);
     this.bossMaxHP = cfg.hp;
-    this.bossHP = cfg.hp;
+    if (this.startData && this.startData.initialBossHP !== undefined) {
+      this.bossHP = this.startData.initialBossHP;
+    } else {
+      this.bossHP = cfg.hp;
+    }
     this.bossPhase = 0;
     this.bossAttackTimer = 0;
     this.twinsReviving = false;
