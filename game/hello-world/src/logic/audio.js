@@ -256,7 +256,58 @@ MOT.Audio = (function () {
         }, i * 80);
       });
     },
-    // ジャストガード時の音階再生（シドレミファソラシ）
+    // ジャストガード時の音階再生（シドレミファソラシ）    // 心臓の音（重低音ドックン…ドックン…）
+    startHeartbeat: function () {
+      this.stopHeartbeat();
+      resume();
+      let isPlaying = true;
+      const beat = () => {
+        if (!isPlaying) return;
+        resume();
+        const now = ctx.currentTime;
+        // 第1音 (lub): 重低音ドッ (60Hz -> 30Hz)
+        const osc1 = ctx.createOscillator();
+        const gain1 = ctx.createGain();
+        osc1.type = 'sine';
+        osc1.frequency.setValueAtTime(65, now);
+        osc1.frequency.exponentialRampToValueAtTime(30, now + 0.13);
+        gain1.gain.setValueAtTime(0.45, now);
+        gain1.gain.exponentialRampToValueAtTime(0.001, now + 0.13);
+        osc1.connect(gain1);
+        gain1.connect(ctx.destination);
+        osc1.start(now);
+        osc1.stop(now + 0.14);
+
+        // 第2音 (dub): クン (75Hz -> 35Hz)
+        const osc2 = ctx.createOscillator();
+        const gain2 = ctx.createGain();
+        osc2.type = 'sine';
+        osc2.frequency.setValueAtTime(80, now + 0.16);
+        osc2.frequency.exponentialRampToValueAtTime(35, now + 0.28);
+        gain2.gain.setValueAtTime(0.38, now + 0.16);
+        gain2.gain.exponentialRampToValueAtTime(0.001, now + 0.28);
+        osc2.connect(gain2);
+        gain2.connect(ctx.destination);
+        osc2.start(now + 0.16);
+        osc2.stop(now + 0.29);
+      };
+
+      beat();
+      const intervalId = setInterval(beat, 1100);
+      this._heartbeatData = {
+        stop: () => {
+          isPlaying = false;
+          clearInterval(intervalId);
+        }
+      };
+    },
+    stopHeartbeat: function () {
+      if (this._heartbeatData) {
+        this._heartbeatData.stop();
+        this._heartbeatData = null;
+      }
+    },
+
     playJustGuardNote: function (index) {
       resume();
       // B4, C5, D5, E5, F5, G5, A5, B5

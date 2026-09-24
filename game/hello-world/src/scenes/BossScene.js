@@ -1000,7 +1000,7 @@ class BossScene extends Phaser.Scene {
     }
     this.lastDialogActive = isDialog;
 
-    if (isDialog) {
+    if (isDialog || this.cutsceneActive) {
       this.hideBossHPBar();
       this.updateHUD();
       return;
@@ -2212,62 +2212,78 @@ class BossScene extends Phaser.Scene {
         '観測者のログ: ...connection closed'
       ]);
 
-      // 暗転終了後。勇者以外背景も暗くした状態に戻り覚醒
-      safeTween(this.dimBg, 0.85);
+      // 暗転終了後。勇者以外背景も含め暗くして心臓の音を鳴らす（勇者の覚醒）
+      const sayHeroAwakening = (text) => new Promise(res => {
+        safeTween(this.dimBg, 0.88);
+        safeTween(this.heroImage, 1);
+        safeTween(this.doctorImage, 0);
+        safeTween(this.demonImage, 0);
+        this.showDialogue(heroName, text, res);
+      });
+
+      safeTween(this.dimBg, 0.88);
       safeTween(this.heroImage, 1);
       safeTween(this.doctorImage, 0);
-      safeTween(this.demonImage, 0.2);
+      safeTween(this.demonImage, 0);
+
+      // BGMに心臓の音を開始
+      if (MOT.Audio && MOT.Audio.startHeartbeat) MOT.Audio.startHeartbeat();
+
+      await sayHeroAwakening('「そうだ。僕は”' + heroName + '”だ。」');
+      await sayHeroAwakening('「僕は…まだ倒れるわけにはいかないんだ！！」');
+
+      // 心臓の音を停止
+      if (MOT.Audio && MOT.Audio.stopHeartbeat) MOT.Audio.stopHeartbeat();
 
       const sayKratos = (text) => new Promise(res => {
         safeTween(this.dimBg, 0.6);
         safeTween(this.heroImage, 0.4);
-        safeTween(this.doctorImage, 0.4);
-        safeTween(this.demonImage, 0.4);
+        safeTween(this.doctorImage, 0);
+        safeTween(this.demonImage, 0);
         this.showDialogue('クラトス', text, res);
       });
       const sayTourelos = (text) => new Promise(res => {
         safeTween(this.dimBg, 0.6);
         safeTween(this.heroImage, 0.4);
-        safeTween(this.doctorImage, 0.4);
-        safeTween(this.demonImage, 0.4);
+        safeTween(this.doctorImage, 0);
+        safeTween(this.demonImage, 0);
         this.showDialogue('トゥレロス', text, res);
       });
       const sayEnaria = (text) => new Promise(res => {
         safeTween(this.dimBg, 0.6);
         safeTween(this.heroImage, 0.4);
-        safeTween(this.doctorImage, 0.4);
-        safeTween(this.demonImage, 0.4);
+        safeTween(this.doctorImage, 0);
+        safeTween(this.demonImage, 0);
         this.showDialogue('エナリア', text, res);
       });
       const sayEdio = (text) => new Promise(res => {
         safeTween(this.dimBg, 0.6);
         safeTween(this.heroImage, 0.4);
-        safeTween(this.doctorImage, 0.4);
-        safeTween(this.demonImage, 0.4);
+        safeTween(this.doctorImage, 0);
+        safeTween(this.demonImage, 0);
         this.showDialogue('エディオ', text, res);
       });
       const sayDemon = (text) => new Promise(res => {
+        lastRightSpeaker = 'demon';
         safeTween(this.dimBg, 0.6);
         safeTween(this.demonImage, 1);
         safeTween(this.heroImage, 0.4);
-        safeTween(this.doctorImage, 0.4);
+        safeTween(this.doctorImage, 0);
         this.showDialogue('魔王', text, res);
       });
       const sayDoctor = (text) => new Promise(res => {
+        lastRightSpeaker = 'doctor';
         safeTween(this.dimBg, 0.6);
         safeTween(this.doctorImage, 1);
         safeTween(this.heroImage, 0.4);
-        safeTween(this.demonImage, 0.4);
+        safeTween(this.demonImage, 0);
         this.showDialogue('博士', text, res);
       });
-
-      await sayHeroDefeat('「そうだ。僕は”' + heroName + '”だ。」');
-      await sayHeroDefeat('「僕は…まだ倒れるわけにはいかないんだ！！」');
 
       // 背景の暗転が解除され仲間たちが加勢
       safeTween(this.dimBg, 0.6);
       safeTween(this.doctorImage, 1);
-      safeTween(this.demonImage, 1);
+      safeTween(this.demonImage, 0);
 
       await sayDoctor('「なんだ！？」');
       await sayHeroDefeat('「僕は博士から与えられた”勇者”じゃない。”兵器”でもない。」');
