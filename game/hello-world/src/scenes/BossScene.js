@@ -3269,7 +3269,10 @@ class BossScene extends Phaser.Scene {
             this.heroImage.setScale(hScale);
             this.heroImage.setY(100 + (this.heroImage.height * hScale) / 2);
 
+            let lastRightSpeaker = 'doctor';
+
             const sayDemon = (text, tex = 'demon_lord_normal') => new Promise(res => {
+              lastRightSpeaker = 'demon';
               this.tweens.add({ targets: dimBg, alpha: 0.6, duration: 300 });
               if (this.heroImage) this.tweens.add({ targets: this.heroImage, alpha: 0.4, duration: 300 });
               if (this.doctorImage) this.tweens.add({ targets: this.doctorImage, alpha: 0, duration: 300 });
@@ -3284,12 +3287,21 @@ class BossScene extends Phaser.Scene {
             const sayHero = (text) => new Promise(res => {
               this.tweens.add({ targets: dimBg, alpha: 0.6, duration: 300 });
               if (this.heroImage) this.tweens.add({ targets: this.heroImage, alpha: 1, duration: 300 });
-              if (this.demonImage) this.tweens.add({ targets: this.demonImage, alpha: 0.4, duration: 300 });
-              if (this.doctorImage) this.tweens.add({ targets: this.doctorImage, alpha: 0.4, duration: 300 });
+              if (lastRightSpeaker === 'demon') {
+                if (this.demonImage) this.tweens.add({ targets: this.demonImage, alpha: 0.4, duration: 300 });
+                if (this.doctorImage) this.tweens.add({ targets: this.doctorImage, alpha: 0, duration: 300 });
+              } else if (lastRightSpeaker === 'doctor') {
+                if (this.doctorImage) this.tweens.add({ targets: this.doctorImage, alpha: 0.4, duration: 300 });
+                if (this.demonImage) this.tweens.add({ targets: this.demonImage, alpha: 0, duration: 300 });
+              } else {
+                if (this.demonImage) this.tweens.add({ targets: this.demonImage, alpha: 0, duration: 300 });
+                if (this.doctorImage) this.tweens.add({ targets: this.doctorImage, alpha: 0, duration: 300 });
+              }
               this.showDialogue(MOT.flags.heroName || '勇者', text, res);
             });
 
             const sayDoctor = (text, tex = 'doctor_stand') => new Promise(res => {
+              lastRightSpeaker = 'doctor';
               this.tweens.add({ targets: dimBg, alpha: 0.6, duration: 300 });
               if (this.heroImage) this.tweens.add({ targets: this.heroImage, alpha: 0.4, duration: 300 });
               if (this.demonImage) this.tweens.add({ targets: this.demonImage, alpha: 0, duration: 300 });
@@ -3371,7 +3383,18 @@ class BossScene extends Phaser.Scene {
                 await sayDoctor('「それに、私だけじゃない。魔族に恐怖し、滅んでほしいと願う人間はごまんといる。そいつらにとっても、いい世界となるんだ。」', 'doctor_stand');
                 await sayDemon('「わらわたちはただ生きているだけだ！むやみに人を傷つけたことなど、一度もない！」');
                 
-                const sayInuneko = (text) => new Promise(res => { this.showDialogue('犬猫☆スター', text, res); });
+                const sayInuneko = (text) => new Promise(res => {
+                  this.tweens.add({ targets: dimBg, alpha: 0.6, duration: 300 });
+                  if (this.heroImage) this.tweens.add({ targets: this.heroImage, alpha: 0.4, duration: 300 });
+                  if (lastRightSpeaker === 'demon') {
+                    if (this.demonImage) this.tweens.add({ targets: this.demonImage, alpha: 0.4, duration: 300 });
+                    if (this.doctorImage) this.tweens.add({ targets: this.doctorImage, alpha: 0, duration: 300 });
+                  } else if (lastRightSpeaker === 'doctor') {
+                    if (this.doctorImage) this.tweens.add({ targets: this.doctorImage, alpha: 0.4, duration: 300 });
+                    if (this.demonImage) this.tweens.add({ targets: this.demonImage, alpha: 0, duration: 300 });
+                  }
+                  this.showDialogue('犬猫☆スター', text, res);
+                });
                 await sayInuneko('「そうわん！魔王様は、お前とは違って優しいにゃん！！」');
 
                 await sayHero('「そうだよ。やっぱり僕はみんなを殺したくない。仲良くできるはずだよ。」');
