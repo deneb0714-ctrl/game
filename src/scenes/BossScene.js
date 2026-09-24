@@ -2280,10 +2280,11 @@ class BossScene extends Phaser.Scene {
         this.showDialogue('博士', text, res);
       });
 
-      // 背景の暗転が解除され仲間たちが加勢
+      // 背景の暗転が解除され、通常の会話パートに戻る（BGMは無音のまま）
       safeTween(this.dimBg, 0.6);
+      safeTween(this.heroImage, 0.4);
       safeTween(this.doctorImage, 1);
-      safeTween(this.demonImage, 0);
+      safeTween(this.demonImage, 0); // 魔王は非表示（博士だけを右側に表示）
 
       await sayDoctor('「なんだ！？」');
       await sayHeroDefeat('「僕は博士から与えられた”勇者”じゃない。”兵器”でもない。」');
