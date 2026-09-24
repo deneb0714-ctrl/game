@@ -488,8 +488,8 @@ class BossScene extends Phaser.Scene {
                  this.phase1DefeatTriggered = false;
                  this.time.delayedCall(12000, () => {
                    if (this.isDoctorPhase1Unwinnable && !this.phase1DefeatTriggered) {
-                     this.triggerDoctorPhase1Defeat();
-                   }
+                      this.fireDoctorUnavoidableAttack();
+                    }
                  });
                }
              })();
@@ -1944,6 +1944,10 @@ class BossScene extends Phaser.Scene {
       obj.destroy();
     }
     let dmg = obj.damage || 1;
+    if (this.isDoctorPhase1Unwinnable) {
+      // 博士Phase 1の理不尽な攻撃：1発で致命傷（HP0）
+      dmg = Math.max(dmg, MOT.flags.playerHP || 1);
+    }
     MOT.flags.playerHP -= dmg;
     this.cameras.main.shake(150, 0.008);
     this.playerInvincible = true;
@@ -1994,12 +1998,36 @@ class BossScene extends Phaser.Scene {
     }
   }
 
+  fireDoctorUnavoidableAttack() {
+    if (this.phase1DefeatTriggered) return;
+    // 博士の理不尽な全画面攻撃
+    this.cameras.main.shake(700, 0.04);
+    MOT.Audio.playExplosion();
+    const flash = this.add.rectangle(1920 / 2, 1080 / 2, 1920, 1080, 0xffffff, 0.9).setDepth(200000);
+    this.tweens.add({ targets: flash, alpha: 0, duration: 800, onComplete: () => flash.destroy() });
+
+    // 全レーンにシルバーの極大レーザーを走らせる
+    [220, 460, 700].forEach(laneY => {
+      const beam = this.add.rectangle(1920 / 2, laneY, 1920, 160, 0xE0E0E0, 0.85).setDepth(15);
+      this.tweens.add({ targets: beam, scaleY: 2, alpha: 0, duration: 600, onComplete: () => beam.destroy() });
+    });
+
+    // プレイヤー被弾ダウン演出 & HP0
+    MOT.flags.playerHP = 0;
+    this.player.setTint(0xFF4B6E);
+    this.cameras.main.flash(300, 255, 50, 50);
+
+    this.time.delayedCall(700, () => {
+      this.triggerDoctorPhase1Defeat();
+    });
+  }
+
   triggerDoctorPhase1Defeat() {
     if (this.phase1DefeatTriggered) return;
     this.phase1DefeatTriggered = true;
     this.physics.pause();
     this.playerInvincible = true;
-    MOT.flags.playerHP = 1;
+    MOT.flags.playerHP = 0; // ハート表示をゼロにする
     if (this.enemyBullets) this.enemyBullets.clear(true, true);
     if (this.playerBullets) this.playerBullets.clear(true, true);
 
@@ -2015,7 +2043,7 @@ class BossScene extends Phaser.Scene {
     // 暗転背景
     this.dimBg = this.add.rectangle(w / 2, h / 2, w, h, 0x000000, 0.6).setAlpha(0).setDepth(89);
 
-    // 立ち絵を新規生成
+    // 立ち絵を新規生成（※魔王は最初非表示 alpha: 0）
     this.heroImage = this.add.image(300, h / 2, 'hero_stand').setAlpha(0).setDepth(90);
     const hScale = 750 / (this.heroImage.width || 750);
     this.heroImage.setScale(hScale);
@@ -2039,21 +2067,24 @@ class BossScene extends Phaser.Scene {
       }
     };
 
+    let demonAppeared = false;
+
     const sayDoctorDefeat = (text) => new Promise(res => {
       safeTween(this.dimBg, 0.6);
       safeTween(this.doctorImage, 1);
       safeTween(this.heroImage, 0.4);
-      safeTween(this.demonImage, 0.4);
+      if (demonAppeared) safeTween(this.demonImage, 0.4);
       this.showDialogue('博士', text, res);
     });
     const sayHeroDefeat = (text) => new Promise(res => {
       safeTween(this.dimBg, 0.6);
       safeTween(this.heroImage, 1);
       safeTween(this.doctorImage, 0.4);
-      safeTween(this.demonImage, 0.4);
+      if (demonAppeared) safeTween(this.demonImage, 0.4);
       this.showDialogue(heroName, text, res);
     });
     const sayDemonDefeat = (text) => new Promise(res => {
+      demonAppeared = true;
       safeTween(this.dimBg, 0.6);
       safeTween(this.demonImage, 1);
       safeTween(this.heroImage, 0.4);
