@@ -911,6 +911,8 @@ class BossScene extends Phaser.Scene {
 
 
   update(time, delta) {
+    if (MOT.updateSpecialAura) MOT.updateSpecialAura(this);
+
     if (this.scrollBg1 && this.scrollBg1.visible && this.intermissionActive) {
       const scrollSpeed = 2;
       this.scrollBg1.x -= scrollSpeed;
@@ -2224,12 +2226,12 @@ class BossScene extends Phaser.Scene {
 
         const updateSelection = () => {
           choicesList.forEach((c, idx) => {
-            if (idx === selectedIdx) {
+            if (idx === 0) {
               c.btn.setTint(0x4FD1FF);
               c.txt.setColor('#FFFFFF');
             } else {
-              c.btn.clearTint();
-              c.txt.setColor('#9CA3AF');
+              c.btn.setTint(0x555555);
+              c.txt.setColor('#666666');
             }
           });
         };
@@ -2244,7 +2246,7 @@ class BossScene extends Phaser.Scene {
         const trySelectOption2 = async () => {
           if (isBusy) return;
           attemptCount++;
-          if (attemptCount < 10) {
+          if (attemptCount < 5) {
             isBusy = true;
             if (MOT.Audio && MOT.Audio.playBleep) MOT.Audio.playBleep('');
             destroyUI();
@@ -2311,11 +2313,7 @@ class BossScene extends Phaser.Scene {
           if (e.key === 'ArrowDown' || e.key === 's' || e.key === 'S' || e.key === 'ArrowUp' || e.key === 'w' || e.key === 'W') {
             trySelectOption2();
           } else if (e.key === 'Enter' || e.key === ' ') {
-            if (selectedIdx === 0) {
-              selectOption1();
-            } else {
-              trySelectOption2();
-            }
+            selectOption1();
           }
         };
 
@@ -2751,9 +2749,11 @@ class BossScene extends Phaser.Scene {
             const sayDemon = (text, tex = 'demon_lord_normal') => new Promise(res => {
               this.tweens.add({ targets: dimBg, alpha: 0.6, duration: 300 });
               if (this.heroImage) this.tweens.add({ targets: this.heroImage, alpha: 0.4, duration: 300 });
+              if (this.doctorImage) this.tweens.add({ targets: this.doctorImage, alpha: 0, duration: 300 });
               if (this.demonImage) {
                 this.tweens.add({ targets: this.demonImage, alpha: 1, duration: 300 });
                 this.demonImage.setTexture(tex);
+                this.demonImage.setDepth(90);
               }
               this.showDialogue('魔王', text, res);
             });
@@ -2762,21 +2762,24 @@ class BossScene extends Phaser.Scene {
               this.tweens.add({ targets: dimBg, alpha: 0.6, duration: 300 });
               if (this.heroImage) this.tweens.add({ targets: this.heroImage, alpha: 1, duration: 300 });
               if (this.demonImage) this.tweens.add({ targets: this.demonImage, alpha: 0.4, duration: 300 });
+              if (this.doctorImage) this.tweens.add({ targets: this.doctorImage, alpha: 0.4, duration: 300 });
               this.showDialogue(MOT.flags.heroName || '勇者', text, res);
             });
 
             const sayDoctor = (text, tex = 'doctor_awaken_normal') => new Promise(res => {
               this.tweens.add({ targets: dimBg, alpha: 0.6, duration: 300 });
               if (this.heroImage) this.tweens.add({ targets: this.heroImage, alpha: 0.4, duration: 300 });
-              if (this.demonImage) this.tweens.add({ targets: this.demonImage, alpha: 0.4, duration: 300 });
+              if (this.demonImage) this.tweens.add({ targets: this.demonImage, alpha: 0, duration: 300 });
               if (!this.doctorImage) {
-                this.doctorImage = this.add.image(w - 300, h / 2, tex).setDepth(90);
+                this.doctorImage = this.add.image(w - 300, h / 2, tex).setDepth(91);
                 var docScale = 900 / (this.textures.get('doctor_stand').getSourceImage().width || 750);
                 this.doctorImage.setScale(docScale);
                 this.doctorImage.setY(100 + ((this.textures.get('doctor_stand').getSourceImage().height || 1000) * docScale) / 2);
+              } else {
+                this.doctorImage.setTexture(tex);
+                this.doctorImage.setDepth(91);
               }
               this.tweens.add({ targets: this.doctorImage, alpha: 1, duration: 300 });
-              this.doctorImage.setTexture(tex);
               this.showDialogue('博士', text, res);
             });
 
@@ -2791,8 +2794,10 @@ class BossScene extends Phaser.Scene {
                 let shatterResult = await this.askDemonLordShatterChoice(sayDoctor);
 
                 if (shatterResult === 1) {
+                  await sayHero('「……魔王は……殺さなきゃ……エラーは消去しないと……」');
                   MOT.flags.killedDemonLord = true;
-                  if (MOT.Audio && MOT.Audio.playSelect) MOT.Audio.playSelect();
+                  if (MOT.Audio && MOT.Audio.playShot) MOT.Audio.playShot();
+                  else if (MOT.Audio && MOT.Audio.playSelect) MOT.Audio.playSelect();
                   this.cameras.main.shake(500, 0.05);
                   if (this.demonImage) {
                     this.tweens.add({ targets: this.demonImage, scale: 2, alpha: 0, duration: 500, ease: 'Power2' });
@@ -3083,63 +3088,181 @@ class BossScene extends Phaser.Scene {
               this.scene.start('EndingScene');
             })();
           } else {
-            // 通常の敗北後
-            let bossKey = this.currentBoss ? this.currentBoss.configKey : key;
-            var w = 1920, h = 1080;
-            var dimBg = null, bossImage = null, enemyFrame = null, enemyLabel = null;
-            if (bossKey === 'boss1') {
-              dimBg = this.add.rectangle(w/2, h/2, w, h, 0x000000, 0.6).setAlpha(0).setDepth(89);
-              bossImage = this.add.image(w - 300, h / 2, 'boss1_hurt_angry').setAlpha(0).setDepth(90);
-              var bw = bossImage.width || 576;
-              var bh = bossImage.height || 1024;
-              var b1Scale = 750 / bw;
-              bossImage.setScale(b1Scale);
-              bossImage.setY(100 + (bh * b1Scale) / 2);
-              this.tweens.add({ targets: dimBg, alpha: 1, duration: 300 });
-              this.tweens.add({ targets: bossImage, alpha: 1, duration: 300 });
-              if (this.heroImage) this.tweens.add({ targets: this.heroImage, alpha: 0.4, duration: 300 });
-            } else if (bossKey === 'boss2') {
-              dimBg = this.add.rectangle(w/2, h/2, w, h, 0x000000, 0.6).setAlpha(0).setDepth(89);
-              enemyFrame = this.add.rectangle(w - 300, h / 2, 400, 600, 0x1F2933).setAlpha(0).setDepth(90).setStrokeStyle(4, 0xffffff);
-              enemyLabel = this.add.text(w - 300, h / 2, cfg.name, { fontFamily: '"DotGothic16"', fontSize: '40px', color: '#ffffff' }).setOrigin(0.5).setAlpha(0).setDepth(90);
-              this.tweens.add({ targets: [dimBg, enemyFrame, enemyLabel], alpha: 1, duration: 300 });
-            }
+            // 通常の敗北後（クラトス・トゥレロス）
+            (async () => {
+              var bossKey = this.currentBoss ? this.currentBoss.configKey : key;
+              var w = 1920, h = 1080;
 
-            this.showDialogue(cfg.name, cfg.defeat, function () {
-              this.showChoice(cfg.choices.map(function (c) {
-                return {
-                  text: c.text,
-                  callback: function () {
-                    MOT.Audio.playSelect();
-                    if (this.dialogContainer) {
-                      this.dialogContainer.destroy();
-                      this.dialogContainer = null;
+              var dimBg = this.add.rectangle(w / 2, h / 2, w, h, 0x000000, 0.6).setAlpha(0).setDepth(89);
+              this.dimBg = dimBg;
+
+              this.heroImage = this.add.image(300, h / 2, 'hero_stand').setAlpha(0).setDepth(90);
+              var hScale = 750 / (this.heroImage.width || 1080);
+              this.heroImage.setScale(hScale);
+              this.heroImage.setY(100 + (this.heroImage.height * hScale) / 2);
+
+              const sayHero = (text) => new Promise(res => {
+                this.tweens.add({ targets: dimBg, alpha: 0.6, duration: 300 });
+                if (this.heroImage) this.tweens.add({ targets: this.heroImage, alpha: 1, duration: 300 });
+                if (this.bossImage) this.tweens.add({ targets: this.bossImage, alpha: 0.4, duration: 300 });
+                this.showDialogue(MOT.flags.heroName || '勇者', text, res);
+              });
+
+              const sayDevice = (text) => new Promise(res => {
+                this.tweens.add({ targets: dimBg, alpha: 0.6, duration: 300 });
+                if (this.heroImage) this.tweens.add({ targets: this.heroImage, alpha: 0.4, duration: 300 });
+                if (this.bossImage) this.tweens.add({ targets: this.bossImage, alpha: 0.4, duration: 300 });
+                this.showDeviceDialogue(text, res);
+              });
+
+              const askChoice = (label1, label2) => new Promise(res => {
+                this.showChoice([
+                  { text: label1, callback: () => { if (MOT.Audio && MOT.Audio.playSelect) MOT.Audio.playSelect(); res(1); } },
+                  { text: label2, callback: () => { if (MOT.Audio && MOT.Audio.playSelect) MOT.Audio.playSelect(); res(2); } }
+                ]);
+              });
+
+              if (bossKey === 'boss1') {
+                this.bossImage = this.add.image(w - 300, h / 2, 'boss1_hurt_angry').setAlpha(0).setDepth(90);
+                var bw = this.bossImage.width || 576;
+                var bh = this.bossImage.height || 1024;
+                var b1Scale = 750 / bw;
+                this.bossImage.setScale(b1Scale);
+                this.bossImage.setY(100 + (bh * b1Scale) / 2);
+
+                const sayKratos = (text, tex = 'boss1_hurt_angry') => new Promise(res => {
+                  this.tweens.add({ targets: dimBg, alpha: 0.6, duration: 300 });
+                  if (this.heroImage) this.tweens.add({ targets: this.heroImage, alpha: 0.4, duration: 300 });
+                  if (this.bossImage) {
+                    this.tweens.add({ targets: this.bossImage, alpha: 1, duration: 300 });
+                    this.bossImage.setTexture(tex);
+                  }
+                  this.showDialogue('クラトス', text, res);
+                });
+
+                await sayDevice('「よくやった。このまま止めを刺すんだ。魔物も人間と変わらず心臓を打ち抜けば死ぬ。」');
+                let c = await askChoice('1. 心臓を打ち抜く', '2. 見逃す');
+
+                if (c === 1) {
+                  MOT.flags.killedBoss1 = true;
+                  MOT.modifyFlag('brutality', 1);
+                  MOT.modifyFlag('obeyDoctor', 1);
+                  await sayKratos('「くそっ…！俺もここまでか…」');
+
+                  if (MOT.Audio && MOT.Audio.playShot) MOT.Audio.playShot();
+                  this.cameras.main.shake(400, 0.03);
+                  if (this.bossImage) {
+                    this.tweens.add({ targets: this.bossImage, alpha: 0, duration: 500 });
+                  }
+                  await sayDevice('「よくやった。まずは一歩平和に近づいたな。そのまま進んでいくといい」');
+                  
+                  if (dimBg) dimBg.destroy();
+                  if (this.bossImage) this.bossImage.destroy();
+                  if (this.heroImage) this.heroImage.destroy();
+                  if (this.boss1Bgm) this.boss1Bgm.stop();
+                  this.proceedToNextArea(boss, false);
+                } else {
+                  MOT.flags.killedBoss1 = false;
+                  MOT.modifyFlag('showMercy', 1);
+                  MOT.modifyFlag('favor.boss1', 1);
+                  await sayKratos('「なんで殺さない…？お前はあいつの指示に従ってるんじゃないのか？」');
+                  await sayKratos('「お前が魔王様に従うなら、協力する」');
+                  if (this.bossImage) {
+                    this.tweens.add({ targets: this.bossImage, alpha: 0, duration: 500 });
+                  }
+                  await sayDevice('「君は一体何をしている？」');
+                  await sayDevice('「奴らを倒さないと、世界が救われないんだ。何がしたいのかさっぱりだが、次はちゃんと止めを刺せ。」');
+                  await sayHero('「……」');
+                  
+                  if (dimBg) dimBg.destroy();
+                  if (this.bossImage) this.bossImage.destroy();
+                  if (this.heroImage) this.heroImage.destroy();
+                  if (this.boss1Bgm) this.boss1Bgm.stop();
+                  this.proceedToNextArea(boss, true);
+                }
+
+              } else if (bossKey === 'boss2') {
+                this.bossImage = this.add.image(w - 300, h / 2, 'boss2_hurt').setAlpha(0).setDepth(90);
+                var bw2 = this.bossImage.width || 576;
+                var bh2 = this.bossImage.height || 1024;
+                var b2Scale = 750 / bw2;
+                this.bossImage.setScale(b2Scale);
+                this.bossImage.setY(100 + (bh2 * b2Scale) / 2);
+
+                const sayTourelos = (text, tex = 'boss2_hurt') => new Promise(res => {
+                  this.tweens.add({ targets: dimBg, alpha: 0.6, duration: 300 });
+                  if (this.heroImage) this.tweens.add({ targets: this.heroImage, alpha: 0.4, duration: 300 });
+                  if (this.bossImage) {
+                    this.tweens.add({ targets: this.bossImage, alpha: 1, duration: 300 });
+                    this.bossImage.setTexture(tex);
+                  }
+                  this.showDialogue('トゥレロス', text, res);
+                });
+
+                if (MOT.flags.killedBoss1) {
+                  await sayDevice('「先ほどと同じように、止めを刺すんだ。こいつを倒せば幹部は残り半分になる。」');
+                } else {
+                  await sayDevice('「今回はわかっているな？世界のために、逃がさないで止めを刺せ。」');
+                }
+
+                let c = await askChoice('1. 心臓を打ち抜く', '2. 見逃す');
+
+                if (c === 1) {
+                  MOT.flags.killedBoss2 = true;
+                  MOT.modifyFlag('brutality', 1);
+                  MOT.modifyFlag('favor.boss2', -1);
+                  if (MOT.flags.killedBoss1) {
+                    await sayTourelos('「はは…あいつと同じで負けるのはむかつくけど、戦いは楽しかったしまあいいかな」');
+                    if (MOT.Audio && MOT.Audio.playShot) MOT.Audio.playShot();
+                    this.cameras.main.shake(400, 0.03);
+                    if (this.bossImage) {
+                      this.tweens.add({ targets: this.bossImage, alpha: 0, duration: 500 });
                     }
-                    c.flag();
-                    var isSpared = (c.text === '見逃す' || c.text.includes('見逃す'));
-                    
-                    if (dimBg) {
-                      this.tweens.add({
-                        targets: [dimBg, bossImage, enemyFrame, enemyLabel, this.heroImage].filter(Boolean), alpha: 0, duration: 500,
-                        onComplete: () => {
-                           if(dimBg) dimBg.destroy();
-                           if(bossImage) bossImage.destroy();
-                           if(enemyFrame) enemyFrame.destroy();
-                           if(enemyLabel) enemyLabel.destroy();
-                           if(this.boss1Bgm) this.boss1Bgm.stop();
-                           if(this.boss2Bgm) this.boss2Bgm.stop();
-                           if(this.twinsBgm) this.twinsBgm.stop();
-                           this.proceedToNextArea(boss, isSpared);
-                        }
-                      });
-                    } else {
-                      this.proceedToNextArea(boss, isSpared);
+                    await sayDevice('「よくやった。また一歩平和に近づいたな。幹部は残り二人だ。気を抜かずそのまま進んでいくといい」');
+                  } else {
+                    await sayTourelos('「はは…負けたのはむかつくけど、戦いは楽しかったしまあいいかな」');
+                    if (MOT.Audio && MOT.Audio.playShot) MOT.Audio.playShot();
+                    this.cameras.main.shake(400, 0.03);
+                    if (this.bossImage) {
+                      this.tweens.add({ targets: this.bossImage, alpha: 0, duration: 500 });
                     }
-                  }.bind(this)
-                };
-              }.bind(this)));
-            }.bind(this), true);
-          }
+                    await sayDevice('「それでいい。そのまま進んで残りの幹部も魔王も倒すんだ」');
+                  }
+                  
+                  if (dimBg) dimBg.destroy();
+                  if (this.bossImage) this.bossImage.destroy();
+                  if (this.heroImage) this.heroImage.destroy();
+                  if (this.boss2Bgm) this.boss2Bgm.stop();
+                  this.proceedToNextArea(boss, false);
+                } else {
+                  MOT.flags.killedBoss2 = false;
+                  MOT.modifyFlag('showMercy', 1);
+                  MOT.modifyFlag('favor.boss2', 1);
+                  if (MOT.flags.killedBoss1) {
+                    await sayTourelos('「なんで殺さない？あの脳筋野郎にしたように僕も殺せばいい。それとも、僕には殺す価値すらもないって言いたいの？ま、事実負けちゃったからどうこう言う資格なんてないんだけど……ね。」');
+                    if (this.bossImage) {
+                      this.tweens.add({ targets: this.bossImage, alpha: 0, duration: 500 });
+                    }
+                    await sayDevice('「おい、何をしている？なぜ止めを刺さなかった。」');
+                    await sayHero('「……」');
+                  } else {
+                    await sayTourelos('「はは、君はやっぱり殺さないんだ。舐めてるの？とはいえ、僕も今は限界だから引こうかな。次は負けないから！」');
+                    if (this.bossImage) {
+                      this.tweens.add({ targets: this.bossImage, alpha: 0, duration: 500 });
+                    }
+                    await sayDevice('「またか。お前は何がしたい？この世界を終わらせたいのか？」');
+                    await sayDevice('「それとも、役立たずとして処分されたいのか？」');
+                    await sayHero('「……。」');
+                  }
+                  
+                  if (dimBg) dimBg.destroy();
+                  if (this.bossImage) this.bossImage.destroy();
+                  if (this.heroImage) this.heroImage.destroy();
+                  if (this.boss2Bgm) this.boss2Bgm.stop();
+                  this.proceedToNextArea(boss, true);
+                }
+              }
+            })();
         }
       });
     }
@@ -4256,15 +4379,17 @@ class BossScene extends Phaser.Scene {
     }
 
     // Energy bar update (using scaleX instead of clear/fillRect)
-    const barColor = MOT.flags.maxEnergy ? 0xFF4B6E : 0x4FD1FF;
+    const isSpecialReady = (MOT.flags.energy >= MOT.flags.maxEnergyThreshold);
+    const barColor = isSpecialReady ? 0xFF4B6E : 0x4FD1FF;
     this.energyBarFgObj.setFillStyle(barColor, 1);
     this.energyBarFgObj.scaleX = Math.max(0.001, pct);
 
     // 必殺技ゲージのハイライト
     this.energyBarOutline.clear();
-    if (this.isEnergyHighlighted) {
+    if (this.isEnergyHighlighted || isSpecialReady) {
       const flash = (Math.sin(Date.now() / 150) + 1) / 2;
-      this.energyBarOutline.lineStyle(4, 0xFFFF00, 0.4 + 0.6 * flash);
+      const strokeColor = isSpecialReady ? 0xFF2255 : 0xFFFF00;
+      this.energyBarOutline.lineStyle(4, strokeColor, 0.5 + 0.5 * flash);
       this.energyBarOutline.strokeRect(26, 76, 308, 32);
     } else {
       this.energyBarOutline.lineStyle(2, 0x4FD1FF, 0.6);
