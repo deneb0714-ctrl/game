@@ -2047,10 +2047,24 @@ class BossScene extends Phaser.Scene {
   triggerDoctorPhase1Defeat() {
     if (this.phase1DefeatTriggered) return;
     this.phase1DefeatTriggered = true;
+    this.cutsceneActive = true;
+    this.dialogActive = true;
     this.physics.pause();
     this.playerInvincible = true;
     MOT.flags.playerHP = 0; // ハート表示をゼロにする
     this.updateHUD();
+
+    // 戦闘処理・ボスの攻撃・移動・弾を完全に停止して非表示
+    this.bossAttackTimer = 0;
+    if (this.bossLaneTimer) {
+      this.bossLaneTimer.destroy();
+      this.bossLaneTimer = null;
+    }
+    if (this.currentBoss) {
+      this.tweens.killTweensOf(this.currentBoss);
+      this.currentBoss.setVisible(false);
+      this.currentBoss.setActive(false);
+    }
     if (this.enemyBullets) this.enemyBullets.clear(true, true);
     if (this.playerBullets) this.playerBullets.clear(true, true);
 
@@ -2283,21 +2297,34 @@ class BossScene extends Phaser.Scene {
       // 3. Phase 2 博士戦 (HP 1000, 勇者復活)
       this.isDoctorPhase1Unwinnable = false;
       MOT.flags.playerHP = MOT.flags.playerMaxHP || 5;
+      this.updateHUD();
       this.heroAttackSpeedBoost = true;
       this.heroFirepowerBoost = true;
       this.inunekoBoostActive = true;
       if (this.currentBoss) {
+        this.currentBoss.setVisible(true);
+        this.currentBoss.setActive(true);
         this.currentBoss.hp = 1000;
         this.bossMaxHP = 1000;
         this.bossHP = 1000;
       }
+      this.cutsceneActive = false;
+      this.dialogActive = false;
       this.playerInvincible = false;
       this.physics.resume();
+      this.startBossLaneMovement();
+      if (this.boss5Bgm) {
+        this.boss5Bgm.stop();
+        this.boss5Bgm = this.sound.add('doctor_bgm', { loop: true, volume: 0.25 });
+        this.boss5Bgm.play();
+      }
     })();
   }
 
   terminalEffect(lines) {
     return new Promise(resolve => {
+      this.cutsceneActive = true;
+      this.dialogActive = true;
       const w = 1920, h = 1080;
       
       // 背景 (CRTモニター風の深い黒緑)
