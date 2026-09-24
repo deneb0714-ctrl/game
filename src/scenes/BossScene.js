@@ -3131,22 +3131,16 @@ class BossScene extends Phaser.Scene {
 
       boss.body.enable = false;
       this.cameras.main.shake(300, 0.02);
-      this.tweens.add({
-        targets: boss,
-        alpha: 0,
-        scale: boss.scale * 1.5,
-        duration: 800,
-        ease: 'Power2',
-        onComplete: () => {
-          boss.setVisible(false);
-          this.dialogActive = true;
-          this.physics.pause();
-          this.player.setVelocity(0, 0);
 
-          var key = boss.configKey || this.bossQueue[this.currentBossIndex];
-          var cfg = this.getBossConfig(key);
+      var key = boss.configKey || this.bossQueue[this.currentBossIndex];
+      var cfg = this.getBossConfig(key);
 
-          if (key === 'demon_lord') {
+      const handleDefeatedDialogue = () => {
+        this.dialogActive = true;
+        this.physics.pause();
+        this.player.setVelocity(0, 0);
+
+        if (key === 'demon_lord') {
             MOT.flags.demonLordFinished = true;
             this.demonLordFinished = true;
             this.dialogActive = true;
@@ -3231,6 +3225,12 @@ class BossScene extends Phaser.Scene {
                   if (MOT.Audio && MOT.Audio.playShot) MOT.Audio.playShot();
                   else if (MOT.Audio && MOT.Audio.playSelect) MOT.Audio.playSelect();
                   this.cameras.main.shake(500, 0.05);
+                  if (boss && boss.active) {
+                    this.tweens.add({ targets: boss, scale: boss.scale * 1.5, alpha: 0, duration: 600, ease: 'Power2', onComplete: () => { if (boss.destroy) boss.destroy(); } });
+                  }
+                  if (this.inunekoEnemy && this.inunekoEnemy.active) {
+                    this.tweens.add({ targets: this.inunekoEnemy, scale: 1.5, alpha: 0, duration: 600, ease: 'Power2', onComplete: () => { if (this.inunekoEnemy.destroy) this.inunekoEnemy.destroy(); } });
+                  }
                   if (this.demonImage) {
                     this.tweens.add({ targets: this.demonImage, scale: 2, alpha: 0, duration: 500, ease: 'Power2' });
                   }
@@ -3328,6 +3328,12 @@ class BossScene extends Phaser.Scene {
                   MOT.flags.killedDemonLord = true;
                   if (MOT.Audio && MOT.Audio.playSelect) MOT.Audio.playSelect();
                   this.cameras.main.shake(500, 0.05);
+                  if (boss && boss.active) {
+                    this.tweens.add({ targets: boss, scale: boss.scale * 1.5, alpha: 0, duration: 600, ease: 'Power2', onComplete: () => { if (boss.destroy) boss.destroy(); } });
+                  }
+                  if (this.inunekoEnemy && this.inunekoEnemy.active) {
+                    this.tweens.add({ targets: this.inunekoEnemy, scale: 1.5, alpha: 0, duration: 600, ease: 'Power2', onComplete: () => { if (this.inunekoEnemy.destroy) this.inunekoEnemy.destroy(); } });
+                  }
                   if (this.demonImage) {
                     this.tweens.add({ targets: this.demonImage, scale: 2, alpha: 0, duration: 500, ease: 'Power2' });
                   }
@@ -3689,9 +3695,45 @@ class BossScene extends Phaser.Scene {
                 }
               }
             })();
-          }
         }
-      });
+      };
+
+      if (key === 'demon_lord') {
+        // とどめを刺す前なので魔王のドットは消さずに玉座の前へ移動・表示維持
+        boss.setVisible(true);
+        boss.setAlpha(1);
+        if (this.anims.exists('demon_combat_anim')) {
+          boss.play('demon_combat_anim');
+        } else {
+          boss.setTexture('demon_combat_down_open');
+        }
+        if (this.inunekoEnemy && this.inunekoEnemy.active) {
+          this.tweens.killTweensOf(this.inunekoEnemy);
+          this.tweens.add({ targets: this.inunekoEnemy, x: 1300, y: 500, duration: 600, ease: 'Power2' });
+        }
+        this.tweens.add({
+          targets: boss,
+          x: 1400,
+          y: 560,
+          duration: 600,
+          ease: 'Power2',
+          onComplete: () => {
+            handleDefeatedDialogue();
+          }
+        });
+      } else {
+        this.tweens.add({
+          targets: boss,
+          alpha: 0,
+          scale: boss.scale * 1.5,
+          duration: 800,
+          ease: 'Power2',
+          onComplete: () => {
+            boss.setVisible(false);
+            handleDefeatedDialogue();
+          }
+        });
+      }
     }
   }
 
