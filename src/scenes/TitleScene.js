@@ -191,7 +191,61 @@ class TitleScene extends Phaser.Scene {
       color: '#ffffff'
     }).setOrigin(1, 1).setDepth(10);
 
-    // Debug shortcuts
+    // Ending shortcuts (各エンディングへのショートカットキー)
+    const endingShortcuts = {
+      'Digit1': 'hello_world',
+      'Numpad1': 'hello_world',
+      'Digit2': 'normal_daily',
+      'Numpad2': 'normal_daily',
+      'Digit3': 'normal_useless',
+      'Numpad3': 'normal_useless',
+      'Digit4': 'normal_unresistable',
+      'Numpad4': 'normal_unresistable',
+      'Digit5': 'bad_puppet',
+      'Numpad5': 'bad_puppet',
+      'Digit6': 'bad_shutdown',
+      'Numpad6': 'bad_shutdown',
+      'Digit7': 'hidden_freedom',
+      'Numpad7': 'hidden_freedom',
+      'Digit8': 'BAD_GAMEOVER',
+      'Numpad8': 'BAD_GAMEOVER',
+      'Digit0': 'BAD_GAMEOVER',
+      'Numpad0': 'BAD_GAMEOVER'
+    };
+
+    let shortcutFired = false;
+    const onTitleKeyDown = (event) => {
+      const endKey = endingShortcuts[event.code];
+      if (endKey && !shortcutFired) {
+        shortcutFired = true;
+        if (MOT.Audio && MOT.Audio.playSelect) MOT.Audio.playSelect();
+        if (!window.MOT) window.MOT = {};
+        if (!MOT.flags) MOT.flags = {};
+        MOT.flags.finalEnding = endKey;
+        this.input.keyboard.off('keydown', onTitleKeyDown);
+        this.cameras.main.fadeOut(500, 0, 0, 0);
+        this.time.delayedCall(500, () => {
+          this.scene.start('EndingScene', { endingKey: endKey });
+        });
+      }
+    };
+    this.input.keyboard.on('keydown', onTitleKeyDown);
+    this.events.once('shutdown', () => {
+      this.input.keyboard.off('keydown', onTitleKeyDown);
+    });
+
+    // 画面左下にエンディングショートカット案内を表示
+    const guideLines = [
+      '【ENDING SHORTCUTS (1-8キー)】',
+      '1: HAPPY END (Hello World)  |  2: 日常  |  3: 役立たず  |  4: 抗えない',
+      '5: 傀儡  |  6: シャットダウン  |  7: 自由の身  |  8: GAME OVER'
+    ];
+    this.add.text(20, h - 20, guideLines.join('\n'), {
+      fontFamily: '"DotGothic16", sans-serif',
+      fontSize: '13px',
+      color: '#4FD1FF',
+      lineSpacing: 4
+    }).setOrigin(0, 1).setDepth(10).setAlpha(0.75);
 
   }
 

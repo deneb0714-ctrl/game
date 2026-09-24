@@ -6,6 +6,14 @@ class EndingScene extends Phaser.Scene {
     super({ key: 'EndingScene' });
   }
 
+  init(data) {
+    if (data && data.endingKey) {
+      if (!window.MOT) window.MOT = {};
+      if (!MOT.flags) MOT.flags = {};
+      MOT.flags.finalEnding = data.endingKey;
+    }
+  }
+
   create() {
     this.sound.stopAll();
     var w = 1920, h = 1080;
