@@ -3192,19 +3192,23 @@ class BossScene extends Phaser.Scene {
               this.showDialogue(MOT.flags.heroName || '勇者', text, res);
             });
 
-            const sayDoctor = (text, tex = 'doctor_awaken_normal') => new Promise(res => {
+            const sayDoctor = (text, tex = 'doctor_stand') => new Promise(res => {
               this.tweens.add({ targets: dimBg, alpha: 0.6, duration: 300 });
               if (this.heroImage) this.tweens.add({ targets: this.heroImage, alpha: 0.4, duration: 300 });
               if (this.demonImage) this.tweens.add({ targets: this.demonImage, alpha: 0, duration: 300 });
               if (!this.doctorImage) {
                 this.doctorImage = this.add.image(w - 300, h / 2, tex).setDepth(91);
-                var docScale = 900 / (this.textures.get('doctor_stand').getSourceImage().width || 750);
-                this.doctorImage.setScale(docScale);
-                this.doctorImage.setY(100 + ((this.textures.get('doctor_stand').getSourceImage().height || 1000) * docScale) / 2);
               } else {
                 this.doctorImage.setTexture(tex);
                 this.doctorImage.setDepth(91);
               }
+              const srcImg = this.textures.get(tex).getSourceImage();
+              const imgW = (srcImg && srcImg.width) || 750;
+              const imgH = (srcImg && srcImg.height) || 1000;
+              const docScale = 900 / imgW;
+              this.doctorImage.setScale(docScale);
+              this.doctorImage.setY(100 + (imgH * docScale) / 2);
+
               this.tweens.add({ targets: this.doctorImage, alpha: 1, duration: 300 });
               this.showDialogue('博士', text, res);
             });
@@ -3259,15 +3263,15 @@ class BossScene extends Phaser.Scene {
                 await sayDemon('「あいつはこの世界に人間以上の存在がいることが許せないのだ。わらわはやつに襲われていた魔族を保護し、あいつとながい間戦ってきた。」');
                 await sayDemon('「ながい、ながい戦いだった。……やつは気の毒な奴じゃ。だが、それはわらわたちを滅ぼす理由にはならない。」');
 
-                // 4. 博士乱入 (立ち絵: doctor_awaken_smile_weapon)
-                await sayDoctor('「…はははは。すべて話されてしまったみたいだな」', 'doctor_awaken_smile_weapon');
+                // 4. 博士乱入 (画面揺れ演出前は覚醒前: doctor_stand)
+                await sayDoctor('「…はははは。すべて話されてしまったみたいだな」', 'doctor_stand');
                 await sayHero('「！」');
                 await sayHero('「僕は……ずっとあなたに嘘をつかれていたんだね。」');
-                await sayDoctor('「嘘？違うな、そいつらを殺せば平和な世界が訪れる。」', 'doctor_awaken_smile_weapon');
-                await sayDoctor('「……私にとってな。」', 'doctor_awaken_smile_weapon');
+                await sayDoctor('「嘘？違うな、そいつらを殺せば平和な世界が訪れる。」', 'doctor_stand');
+                await sayDoctor('「……私にとってな。」', 'doctor_stand');
                 await sayHero('「それでみんなを殺すだなんて、身勝手じゃないか。」');
-                await sayDoctor('「そうだな。しかしそれがどうした？自分の望む世界を目指すのは普通のことだろう？」', 'doctor_awaken_smile_weapon');
-                await sayDoctor('「それに、私だけじゃない。魔族に恐怖し、滅んでほしいと願う人間はごまんといる。そいつらにとっても、いい世界となるんだ。」', 'doctor_awaken_smile_weapon');
+                await sayDoctor('「そうだな。しかしそれがどうした？自分の望む世界を目指すのは普通のことだろう？」', 'doctor_stand');
+                await sayDoctor('「それに、私だけじゃない。魔族に恐怖し、滅んでほしいと願う人間はごまんといる。そいつらにとっても、いい世界となるんだ。」', 'doctor_stand');
                 await sayDemon('「わらわたちはただ生きているだけだ！むやみに人を傷つけたことなど、一度もない！」');
                 
                 const sayInuneko = (text) => new Promise(res => { this.showDialogue('犬猫☆スター', text, res); });
@@ -3278,21 +3282,21 @@ class BossScene extends Phaser.Scene {
                 await sayHero('「僕は知った。魔族は悪い奴じゃないって。」');
                 await sayHero('「だからもう、あなたに従ったりはしない。」');
 
-                await sayDoctor('「……面白い。ただ創られた存在であるはずのお前が、そんな感情を持つなんてな。」', 'doctor_awaken_smile_weapon');
+                await sayDoctor('「……面白い。ただ創られた存在であるはずのお前が、そんな感情を持つなんてな。」', 'doctor_stand');
                 await sayHero('「創られた…？」');
-                await sayDoctor('「そうだ。お前は、”勇者”でもなんでもない。ただの”兵器”だ。」', 'doctor_awaken_smile_weapon');
+                await sayDoctor('「そうだ。お前は、”勇者”でもなんでもない。ただの”兵器”だ。」', 'doctor_stand');
                 await sayHero('「兵器……？」');
-                await sayDoctor('「そうだ。」', 'doctor_awaken_smile_weapon');
-                await sayDoctor('「しかし、私が何度殺せと指示をし、選択権を奪ってもなお、お前は最後まで従わなかった。」', 'doctor_awaken_smile_weapon');
-                await sayDoctor('「……思えば、最初からおかしかった。お前を創るとき、感情や思考力といったものは組み込まなかったはず。だから、お前は自分を”勇者”と認識したら、何も聞かず、ただ黙って戦いに行くはずだった。」', 'doctor_awaken_smile_weapon');
+                await sayDoctor('「そうだ。」', 'doctor_stand');
+                await sayDoctor('「しかし、私が何度殺せと指示をし、選択権を奪ってもなお、お前は最後まで従わなかった。」', 'doctor_stand');
+                await sayDoctor('「……思えば、最初からおかしかった。お前を創るとき、感情や思考力といったものは組み込まなかったはず。だから、お前は自分を”勇者”と認識したら、何も聞かず、ただ黙って戦いに行くはずだった。」', 'doctor_stand');
                 await sayHero('「でも僕には感情が……」');
-                await sayDoctor('「本当にそう思っているのか？」', 'doctor_awaken_smile_weapon');
+                await sayDoctor('「本当にそう思っているのか？」', 'doctor_stand');
                 await sayHero('「……。」');
-                await sayDoctor('「お前も気が付いているのだろう？自分の中にいる、お前を操っている存在を。」', 'doctor_awaken_smile_weapon');
+                await sayDoctor('「お前も気が付いているのだろう？自分の中にいる、お前を操っている存在を。」', 'doctor_stand');
                 await sayHero('「……。」');
-                await sayDoctor('「その表情……認めたくないのか？結局、お前は誰かに指示を仰がないと生きていけないんだ。いい加減認めて楽になった方がいい。」', 'doctor_awaken_smile_weapon');
-                await sayDoctor('「まぁ、お前が誰かに操られていたとしてももう関係ない。」', 'doctor_awaken_smile_weapon');
-                await sayDoctor('「もうお前は必要ないからな。」', 'doctor_awaken_smile_weapon');
+                await sayDoctor('「その表情……認めたくないのか？結局、お前は誰かに指示を仰がないと生きていけないんだ。いい加減認めて楽になった方がいい。」', 'doctor_stand');
+                await sayDoctor('「まぁ、お前が誰かに操られていたとしてももう関係ない。」', 'doctor_stand');
+                await sayDoctor('「もうお前は必要ないからな。」', 'doctor_stand');
 
                 this.cameras.main.shake(400, 0.03);
                 await sayDemon('「なんだ？！」');
