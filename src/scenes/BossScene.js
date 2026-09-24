@@ -472,8 +472,9 @@ class BossScene extends Phaser.Scene {
              const sayDoctor = (text) => new Promise(res => { this.tweens.add({ targets: dimBg, alpha: 0.6, duration: 300 }); this.tweens.add({ targets: [this.doctorImage], alpha: 1, duration: 300 }); this.tweens.add({targets: this.heroImage, alpha: 0.4, duration: 300}); this.showDialogue('博士', text, res); });
              
              (async () => {
-               await sayDoctor('「さぁ、最終決戦といこうじゃないか！」');
-               this.tweens.add({
+                await sayDoctor('「これまで集めたデータ、幾度となく繰り返した実験、そしてお前のデータ。これにより私の準備はすべて整った！！」');
+                await sayDoctor('「さぁ、最終決戦といこうじゃないか！」');
+                this.tweens.add({
                  targets: [dimBg, this.doctorImage, this.heroImage], alpha: 0, duration: 500,
                  onComplete: () => { if (dimBg) dimBg.destroy(); if (this.doctorImage) this.doctorImage.destroy(); if (this.heroImage) this.heroImage.destroy(); this.doctorImage = null; this.heroImage = null; }
                });
@@ -3535,10 +3536,13 @@ class BossScene extends Phaser.Scene {
                 this.cameras.main.fadeOut(800, 0, 0, 0);
                 await new Promise(r => this.time.delayedCall(850, r));
 
-                // 立ち絵等の片付け
+                // 立ち絵・ダイアログの完全片付け
+                this.clearConversationUI();
                 if (this.demonImage) { this.demonImage.destroy(); this.demonImage = null; }
                 if (this.inunekoImage) { this.inunekoImage.destroy(); this.inunekoImage = null; }
-                if (dimBg) dimBg.setAlpha(0);
+                if (this.heroImage) { this.heroImage.destroy(); this.heroImage = null; }
+                if (this.doctorImage) { this.doctorImage.destroy(); this.doctorImage = null; }
+                if (dimBg) { dimBg.destroy(); dimBg = null; }
 
                 // BGM停止
                 if (this.boss1Bgm) this.boss1Bgm.stop();
@@ -3565,16 +3569,6 @@ class BossScene extends Phaser.Scene {
                 this.cameras.main.fadeIn(600, 0, 0, 0);
                 await new Promise(r => this.time.delayedCall(600, r));
 
-                // 7. 博士本人が姿を現す！（覚醒立ち絵）
-                await sayDoctor('「これまで集めたデータ、幾度となく繰り返した実験、そしてお前のデータ。これにより私の準備はすべて整った！！」', 'doctor_awaken_smile_weapon');
-                await sayDoctor('「さぁ、最終決戦といこうじゃないか！」', 'doctor_awaken_smile_weapon');
-
-                // 会話UIの片付け
-                this.clearConversationUI();
-                if (this.doctorImage) { this.doctorImage.destroy(); this.doctorImage = null; }
-                if (this.heroImage) { this.heroImage.destroy(); this.heroImage = null; }
-                if (dimBg) { dimBg.destroy(); dimBg = null; }
-
                 // イベント戦闘(博士 Phase 1 - 負けイベント: 10秒後に自動死亡)
                 this.isDoctorPhase1Unwinnable = true;
                 this.currentBossIndex = this.bossQueue.indexOf('doctor');
@@ -3585,7 +3579,7 @@ class BossScene extends Phaser.Scene {
                 this.dialogActive = false;
                 this.player.setCollideWorldBounds(true);
                 this.physics.resume();
-                this.time.delayedCall(500, () => { this.startBoss(); });
+                this.startBoss();
                 return;
               } else {
                 // 1~3 bosses killed -> normal choice
@@ -4817,7 +4811,7 @@ class BossScene extends Phaser.Scene {
       delay: 40, callback: function () {
         charIndex++;
         bodyText.setText(text.substring(0, charIndex));
-        if (text[charIndex - 1] !== ' ') MOT.Audio.playBleep(speaker);
+        if (text[charIndex - 1] !== ' ' && window.MOT && MOT.Audio && MOT.Audio.playBleep) MOT.Audio.playBleep(speaker);
         
         // まばたき演出（話し始めのみ一瞬）
         const isHero = speaker && speaker.includes('勇者');
