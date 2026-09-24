@@ -308,13 +308,147 @@ class EndingScene extends Phaser.Scene {
       this.cameras.main.fadeIn(1500, 0, 0, 0);
       
       this.time.delayedCall(3000, () => {
-        if (window.MOT && MOT.hasSaveData && MOT.hasSaveData()) {
-          this.createContinueButton(w / 2, h * 0.86);
-          this.createReturnButton(w / 2, h * 0.94);
+        const hasSave = window.MOT && MOT.hasSaveData && MOT.hasSaveData();
+        const menuOptions = [];
+
+        if (hasSave) {
+          menuOptions.push({
+            label: 'CONTINUE',
+            y: h * 0.86,
+            action: () => {
+              if (MOT.Audio && MOT.Audio.playSelect) MOT.Audio.playSelect();
+              const saveData = MOT.loadGame();
+              if (saveData && saveData.flags) {
+                MOT.flags = JSON.parse(JSON.stringify(saveData.flags));
+                MOT.flags.diedCount = 0;
+                MOT.flags.playerHP = MOT.flags.playerMaxHP || 5;
+                MOT.flags.useGlitchTitle = false;
+              }
+              this.cameras.main.fadeOut(800, 5, 8, 20);
+              this.time.delayedCall(800, function () {
+                const startIdx = (saveData && saveData.bossIndex !== undefined) ? saveData.bossIndex : 0;
+                this.scene.start('BossScene', { startBossIndex: startIdx, fromContinue: true });
+              }, [], this);
+            }
+          });
+          menuOptions.push({
+            label: 'TITLE に戻る',
+            y: h * 0.94,
+            action: () => {
+              if (MOT.Audio && MOT.Audio.playSelect) MOT.Audio.playSelect();
+              this.cameras.main.fadeOut(800, 0, 0, 0);
+              this.time.delayedCall(800, function () {
+                this.scene.start('TitleScene');
+              }, [], this);
+            }
+          });
         } else {
-          this.createReturnButton(w / 2, h * 0.90);
+          menuOptions.push({
+            label: 'TITLE に戻る',
+            y: h * 0.90,
+            action: () => {
+              if (MOT.Audio && MOT.Audio.playSelect) MOT.Audio.playSelect();
+              this.cameras.main.fadeOut(800, 0, 0, 0);
+              this.time.delayedCall(800, function () {
+                this.scene.start('TitleScene');
+              }, [], this);
+            }
+          });
+        }
+
+        this.setupGameOverMenu(w, h, menuOptions);
+      });
+  }
+
+  setupGameOverMenu(w, h, menuOptions) {
+    this.gameOverMenuIndex = 0;
+    this.gameOverMenuButtons = [];
+    this.gameOverMenuActionTaken = false;
+
+    // 操作ガイドテキスト
+    const guideText = this.add.text(w / 2, h * 0.985, '▶ ↑↓ / W S : 選択  |  [ENTER] : 決定', {
+      fontFamily: '"DotGothic16", sans-serif',
+      fontSize: '18px',
+      color: '#9CA3AF'
+    }).setOrigin(0.5, 1).setAlpha(0).setDepth(11);
+    this.tweens.add({ targets: guideText, alpha: 0.8, duration: 600 });
+    this.tweens.add({ targets: guideText, alpha: 0.35, yoyo: true, repeat: -1, duration: 800, delay: 600 });
+
+    const self = this;
+    menuOptions.forEach((opt, idx) => {
+      const btn = this.add.image(w / 2, opt.y, 'ui_button').setInteractive({ useHandCursor: true }).setAlpha(0).setDepth(10);
+      const txt = this.add.text(w / 2, opt.y, opt.label, {
+        fontFamily: '"DotGothic16"',
+        fontSize: '24px',
+        color: '#4FD1FF'
+      }).setOrigin(0.5).setAlpha(0).setDepth(11);
+
+      this.tweens.add({ targets: [btn, txt], alpha: 1, duration: 800 });
+
+      const item = { btn, txt, action: opt.action };
+      this.gameOverMenuButtons.push(item);
+
+      btn.on('pointerover', function () {
+        if (self.gameOverMenuActionTaken) return;
+        self.gameOverMenuIndex = idx;
+        self.updateGameOverMenuSelection();
+      });
+
+      btn.on('pointerdown', function () {
+        if (self.gameOverMenuActionTaken) return;
+        self.gameOverMenuActionTaken = true;
+        if (self._onGameOverKeyDown) {
+          self.input.keyboard.off('keydown', self._onGameOverKeyDown);
+        }
+        opt.action();
+      });
+    });
+
+    this.updateGameOverMenuSelection = function() {
+      self.gameOverMenuButtons.forEach((item, idx) => {
+        if (idx === self.gameOverMenuIndex) {
+          self.tweens.add({ targets: [item.btn, item.txt], scale: 1.10, duration: 120 });
+          item.btn.setTint(0x4FD1FF);
+          item.txt.setColor('#ffffff');
+        } else {
+          self.tweens.add({ targets: [item.btn, item.txt], scale: 1.0, duration: 120 });
+          item.btn.clearTint();
+          item.txt.setColor('#4FD1FF');
         }
       });
+    };
+
+    this.updateGameOverMenuSelection();
+
+    this._onGameOverKeyDown = (event) => {
+      if (self.gameOverMenuActionTaken) return;
+      if (event.code === 'KeyW' || event.code === 'ArrowUp') {
+        if (MOT.Audio && MOT.Audio.playSelect) MOT.Audio.playSelect();
+        self.gameOverMenuIndex = (self.gameOverMenuIndex - 1 + self.gameOverMenuButtons.length) % self.gameOverMenuButtons.length;
+        self.updateGameOverMenuSelection();
+      } else if (event.code === 'KeyS' || event.code === 'ArrowDown') {
+        if (MOT.Audio && MOT.Audio.playSelect) MOT.Audio.playSelect();
+        self.gameOverMenuIndex = (self.gameOverMenuIndex + 1) % self.gameOverMenuButtons.length;
+        self.updateGameOverMenuSelection();
+      } else if (event.code === 'Enter' || event.code === 'Space') {
+        self.gameOverMenuActionTaken = true;
+        if (self._onGameOverKeyDown) {
+          self.input.keyboard.off('keydown', self._onGameOverKeyDown);
+        }
+        const selected = self.gameOverMenuButtons[self.gameOverMenuIndex];
+        if (selected && selected.action) {
+          selected.action();
+        }
+      }
+    };
+
+    this.input.keyboard.on('keydown', this._onGameOverKeyDown);
+
+    this.events.once('shutdown', () => {
+      if (self._onGameOverKeyDown) {
+        self.input.keyboard.off('keydown', self._onGameOverKeyDown);
+      }
+    });
   }
 
   createReturnButton(x, y) {
@@ -327,22 +461,40 @@ class EndingScene extends Phaser.Scene {
 
     this.tweens.add({ targets: [btn, txt], alpha: 1, duration: 800 });
 
-    btn.on('pointerover', function () {
-      this.tweens.add({ targets: [btn, txt], scale: 1.08, duration: 150 });
-      txt.setColor('#ffffff');
-    }, this);
-    btn.on('pointerout', function () {
-      this.tweens.add({ targets: [btn, txt], scale: 1.0, duration: 150 });
-      txt.setColor('#4FD1FF');
-    }, this);
-    btn.on('pointerdown', function () {
+    let actionTriggered = false;
+    const doReturn = () => {
+      if (actionTriggered) return;
+      actionTriggered = true;
+      if (onKeyDown) this.input.keyboard.off('keydown', onKeyDown);
+      if (MOT.Audio && MOT.Audio.playSelect) MOT.Audio.playSelect();
       this.cameras.main.fadeOut(800, 0, 0, 0);
       this.time.delayedCall(800, function () {
         this.scene.start('TitleScene');
       }, [], this);
-    }, this);
-  }
+    };
 
+    const onKeyDown = (event) => {
+      if (event.code === 'Enter' || event.code === 'Space') {
+        doReturn();
+      }
+    };
+    this.input.keyboard.on('keydown', onKeyDown);
+    this.events.once('shutdown', () => {
+      this.input.keyboard.off('keydown', onKeyDown);
+    });
+
+    btn.on('pointerover', function () {
+      this.tweens.add({ targets: [btn, txt], scale: 1.08, duration: 150 });
+      btn.setTint(0x4FD1FF);
+      txt.setColor('#ffffff');
+    }, this);
+    btn.on('pointerout', function () {
+      this.tweens.add({ targets: [btn, txt], scale: 1.0, duration: 150 });
+      btn.clearTint();
+      txt.setColor('#4FD1FF');
+    }, this);
+    btn.on('pointerdown', doReturn, this);
+  }
 
   createContinueButton(x, y) {
     if (!window.MOT || !MOT.loadGame || !MOT.hasSaveData()) return;
