@@ -447,23 +447,23 @@ class BossScene extends Phaser.Scene {
       this.physics.pause();
     }
     
-    if (key === 'demon_lord') {
-       boss.setVisible(true); boss.body.enable = true;
+    if (key === 'demon_lord' || key === 'doctor') {
        this.cameras.main.shake(400, 0.015);
-       if (this.inunekoEnemy) {
-         this.inunekoEnemy.setVisible(true);
-         // 会話中はボスの右隣に静止（上下小揺れのみ）
-         this.inunekoEnemy.x = 1920;
-         this.tweens.add({ targets: this.inunekoEnemy, x: 1350, duration: 1200, ease: 'Power2' });
-         this.tweens.add({ targets: this.inunekoEnemy, y: '-=20', duration: 1600, yoyo: true, repeat: -1, ease: 'Sine.easeInOut' });
+       if (key === 'demon_lord') {
+         boss.setVisible(true); boss.body.enable = true;
+         if (this.inunekoEnemy) {
+           this.inunekoEnemy.setVisible(true);
+           // 会話中はボスの右隣に静止（上下小揺れのみ）
+           this.inunekoEnemy.x = 1920;
+           this.tweens.add({ targets: this.inunekoEnemy, x: 1350, duration: 1200, ease: 'Power2' });
+           this.tweens.add({ targets: this.inunekoEnemy, y: '-=20', duration: 1600, yoyo: true, repeat: -1, ease: 'Sine.easeInOut' });
+         }
+       } else {
+         boss.setVisible(false);
+         boss.body.enable = false;
        }
-    } else if (key === 'doctor') {
-       boss.setVisible(false);
-       boss.body.enable = false;
-       this.cameras.main.shake(400, 0.015);
-    }
-    this.tweens.add({
-      targets: boss, x: 1400, duration: 1200, ease: 'Power2',
+       this.tweens.add({
+         targets: boss, x: 1400, duration: 1200, ease: 'Power2',
       onComplete: () => {
         this.tweens.add({ targets: boss, y: boss.y - 30, yoyo: true, repeat: -1, duration: 1000, ease: 'Sine.easeInOut' });
         
