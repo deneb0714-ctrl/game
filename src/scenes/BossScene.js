@@ -3263,6 +3263,7 @@ class BossScene extends Phaser.Scene {
                 }
               }
             })();
+          }
         }
       });
     }
