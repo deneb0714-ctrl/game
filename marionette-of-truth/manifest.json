@@ -1,6 +1,6 @@
 {
-  "name": "真理のマリオネット – Marionette of Truth",
-  "short_name": "マリオネット",
+  "name": "Hello World",
+  "short_name": "Hello World",
   "description": "ドット絵2D回避シューティング。マルチエンディング分岐型アクションゲーム。",
   "start_url": "/index.html",
   "display": "standalone",
