@@ -47,6 +47,12 @@ MOT.spawnEnergyItem = function (scene, x, y, forceRed = false) {
  * Spawn a health restore item.
  */
 MOT.spawnHealthItem = function (scene, x, y) {
+  // 回復チュートリアル(tutorialPhase >= 3)が来るまでは回復アイテムのドロップを禁止
+  if (scene && scene.currentStage === 1) {
+    if (!scene.tutorialPhase || scene.tutorialPhase < 3) {
+      return null;
+    }
+  }
 
   const lanes = [220, 460, 700];
   let closestY = lanes[0];

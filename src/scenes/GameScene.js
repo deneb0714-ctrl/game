@@ -277,8 +277,8 @@ class GameScene extends Phaser.Scene {
     // Process wave schedule
     this.processWaves();
 
-    // Cleanup off-screen
-    this.cleanupOffscreen();
+    // Special Aura Effect
+    if (MOT.updateSpecialAura) MOT.updateSpecialAura(this);
 
     // Update HUD
     this.updateHUD();
@@ -943,7 +943,8 @@ class GameScene extends Phaser.Scene {
 
     // Energy bar update (using scaleX instead of clear/fillRect)
     const pct = MOT.flags.energy / MOT.flags.maxEnergyThreshold;
-    const barColor = MOT.flags.maxEnergy ? 0xFF4B6E : 0x4FD1FF;
+    const isSpecialReady = (MOT.flags.energy >= MOT.flags.maxEnergyThreshold);
+    const barColor = isSpecialReady ? 0xFF4B6E : 0x4FD1FF;
     this.energyBarFgObj.setFillStyle(barColor, 1);
     this.energyBarFgObj.scaleX = Math.max(0.001, pct);
 
@@ -954,9 +955,10 @@ class GameScene extends Phaser.Scene {
       this.energyBar.lineStyle(4, 0xFFFF00, 0.4 + 0.6 * flash);
       this.energyBar.strokeRect(26, 16, 200, 44);
     }
-    if (this.isEnergyHighlighted) {
+    if (this.isEnergyHighlighted || isSpecialReady) {
       const flash = (Math.sin(Date.now() / 150) + 1) / 2;
-      this.energyBar.lineStyle(4, 0xFFFF00, 0.4 + 0.6 * flash);
+      const strokeColor = isSpecialReady ? 0xFF2255 : 0xFFFF00;
+      this.energyBar.lineStyle(4, strokeColor, 0.5 + 0.5 * flash);
       this.energyBar.strokeRect(26, 76, 308, 32);
     }
 
