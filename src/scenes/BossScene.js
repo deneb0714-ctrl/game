@@ -2131,15 +2131,36 @@ class BossScene extends Phaser.Scene {
       await sayDoctorDefeat('「お前らが完全な状態でも太刀打ちできないこの私に、そんな状態で勝てると本気で思っているのか？」');
       await sayDemonDefeat('「っ……。」');
 
-      // 勇者以外背景も含めて少し暗くなる
-      safeTween(this.dimBg, 0.85);
+      // 勇者の独白用：勇者以外背景も含め暗くする（博士・魔王は完全非表示、dimBgを0.88に深くする）
+      const sayHeroSoliloquy = (text) => new Promise(res => {
+        safeTween(this.dimBg, 0.88);
+        safeTween(this.heroImage, 1);
+        safeTween(this.doctorImage, 0);
+        safeTween(this.demonImage, 0);
+        this.showDialogue(heroName, text, res);
+      });
+
+      safeTween(this.dimBg, 0.88);
       safeTween(this.heroImage, 1);
       safeTween(this.doctorImage, 0);
-      safeTween(this.demonImage, 0.2);
+      safeTween(this.demonImage, 0);
 
       // 心の叫び
-      await sayHeroDefeat('「（ああ、結局僕は人形なのか……。」');
-      await sayHeroDefeat('「でも、でも、そうだとしても、負けるわけにはいかないんだ……！！！）」');
+      await sayHeroSoliloquy('「（ああ、結局僕は人形なのか……。」');
+
+      // 「負けるわけにはいかないんだ」のセリフのところでBGMをフェードアウト
+      [this.boss5Bgm, this.boss4Bgm, this.twinsBgm, this.boss2Bgm, this.boss1Bgm].forEach(bgm => {
+        if (bgm && bgm.isPlaying) {
+          this.tweens.add({
+            targets: bgm,
+            volume: 0,
+            duration: 2000,
+            onComplete: () => { if (bgm) bgm.stop(); }
+          });
+        }
+      });
+
+      await sayHeroSoliloquy('「でも、でも、そうだとしても、負けるわけにはいかないんだ……！！！）」');
 
       // ノイズかかって暗転
       this.cameras.main.shake(500, 0.03);
