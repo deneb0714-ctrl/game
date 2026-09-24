@@ -2235,56 +2235,51 @@ class BossScene extends Phaser.Scene {
       // 心臓の音を停止
       if (MOT.Audio && MOT.Audio.stopHeartbeat) MOT.Audio.stopHeartbeat();
 
-      const sayKratos = (text) => new Promise(res => {
+      // 右側の会話相手立ち絵（博士、エナリア、エディオ、クラトス、トゥレロス、魔王）を切り替える共通システム
+      const setRightSpeaker = (speakerName, texKey, scaleTargetW = 750, yOffset = 0) => {
+        if (!this.rightSpeakerImage) {
+          this.rightSpeakerImage = this.add.image(w - 300, h / 2, texKey).setDepth(90).setAlpha(0);
+        } else {
+          this.rightSpeakerImage.setTexture(texKey);
+          this.rightSpeakerImage.setVisible(true);
+        }
+        const srcImg = this.textures.get(texKey).getSourceImage();
+        const imgW = (srcImg && srcImg.width) || scaleTargetW;
+        const imgH = (srcImg && srcImg.height) || 1000;
+        const scale = scaleTargetW / imgW;
+        this.rightSpeakerImage.setScale(scale);
+        this.rightSpeakerImage.setY(100 + (imgH * scale) / 2 + yOffset);
+      };
+
+      const sayRight = (speaker, texKey, text, targetW = 750, yOff = 0) => new Promise(res => {
+        setRightSpeaker(speaker, texKey, targetW, yOff);
         safeTween(this.dimBg, 0.6);
+        safeTween(this.rightSpeakerImage, 1);
         safeTween(this.heroImage, 0.4);
-        safeTween(this.doctorImage, 0);
-        safeTween(this.demonImage, 0);
-        this.showDialogue('クラトス', text, res);
-      });
-      const sayTourelos = (text) => new Promise(res => {
-        safeTween(this.dimBg, 0.6);
-        safeTween(this.heroImage, 0.4);
-        safeTween(this.doctorImage, 0);
-        safeTween(this.demonImage, 0);
-        this.showDialogue('トゥレロス', text, res);
-      });
-      const sayEnaria = (text) => new Promise(res => {
-        safeTween(this.dimBg, 0.6);
-        safeTween(this.heroImage, 0.4);
-        safeTween(this.doctorImage, 0);
-        safeTween(this.demonImage, 0);
-        this.showDialogue('エナリア', text, res);
-      });
-      const sayEdio = (text) => new Promise(res => {
-        safeTween(this.dimBg, 0.6);
-        safeTween(this.heroImage, 0.4);
-        safeTween(this.doctorImage, 0);
-        safeTween(this.demonImage, 0);
-        this.showDialogue('エディオ', text, res);
-      });
-      const sayDemon = (text) => new Promise(res => {
-        lastRightSpeaker = 'demon';
-        safeTween(this.dimBg, 0.6);
-        safeTween(this.demonImage, 1);
-        safeTween(this.heroImage, 0.4);
-        safeTween(this.doctorImage, 0);
-        this.showDialogue('魔王', text, res);
-      });
-      const sayDoctor = (text) => new Promise(res => {
-        lastRightSpeaker = 'doctor';
-        safeTween(this.dimBg, 0.6);
-        safeTween(this.doctorImage, 1);
-        safeTween(this.heroImage, 0.4);
-        safeTween(this.demonImage, 0);
-        this.showDialogue('博士', text, res);
+        if (this.doctorImage) this.doctorImage.setAlpha(0);
+        if (this.demonImage) this.demonImage.setAlpha(0);
+        this.showDialogue(speaker, text, res);
       });
 
-      // 背景の暗転が解除され、通常の会話パートに戻る（BGMは無音のまま）
-      safeTween(this.dimBg, 0.6);
-      safeTween(this.heroImage, 0.4);
-      safeTween(this.doctorImage, 1);
-      safeTween(this.demonImage, 0); // 魔王は非表示（博士だけを右側に表示）
+      const sayHeroDefeat = (text) => new Promise(res => {
+        safeTween(this.dimBg, 0.6);
+        safeTween(this.heroImage, 1);
+        if (this.rightSpeakerImage) safeTween(this.rightSpeakerImage, 0.4);
+        if (this.doctorImage) this.doctorImage.setAlpha(0);
+        if (this.demonImage) this.demonImage.setAlpha(0);
+        this.showDialogue(heroName, text, res);
+      });
+
+      const sayDoctor = (text) => sayRight('博士', 'doctor_awaken_smile_weapon', text, 900, 0);
+      const sayEnaria = (text) => sayRight('エナリア', 'sister_normal', text, 650, 40);
+      const sayEdio = (text) => sayRight('エディオ', 'brother_normal', text, 700, 20);
+      const sayKratos = (text) => sayRight('クラトス', 'boss1_normal', text, 800, 0);
+      const sayTourelos = (text) => sayRight('トゥレロス', 'boss2_normal', text, 750, 20);
+      const sayDemon = (text) => sayRight('魔王', 'demon_lord_normal', text, 850, -50);
+
+      // 通常会話パートへ移行（古い立ち絵は非表示）
+      if (this.doctorImage) this.doctorImage.setAlpha(0);
+      if (this.demonImage) this.demonImage.setAlpha(0);
 
       await sayDoctor('「なんだ！？」');
       await sayHeroDefeat('「僕は博士から与えられた”勇者”じゃない。”兵器”でもない。」');
@@ -2310,6 +2305,7 @@ class BossScene extends Phaser.Scene {
       if (this.heroImage && this.heroImage.destroy) { this.heroImage.destroy(); this.heroImage = null; }
       if (this.doctorImage && this.doctorImage.destroy) { this.doctorImage.destroy(); this.doctorImage = null; }
       if (this.demonImage && this.demonImage.destroy) { this.demonImage.destroy(); this.demonImage = null; }
+      if (this.rightSpeakerImage && this.rightSpeakerImage.destroy) { this.rightSpeakerImage.destroy(); this.rightSpeakerImage = null; }
 
       // 3. Phase 2 博士戦 (HP 1000, 勇者復活)
       this.isDoctorPhase1Unwinnable = false;
