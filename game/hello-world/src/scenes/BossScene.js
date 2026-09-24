@@ -22,6 +22,7 @@ class BossScene extends Phaser.Scene {
     // デバッグ用: 博士戦(4)へ直接飛ぶ場合、キューにdoctorを追加
     if (this.currentBossIndex === 4 && this.bossQueue.indexOf('doctor') === -1) {
       this.bossQueue.push('doctor');
+      this.isDoctorPhase1Unwinnable = true;
     }
 
     if (isSkipping || (data && data.jumpToEndingSetup)) {
@@ -2111,6 +2112,7 @@ class BossScene extends Phaser.Scene {
     if (this.heroImage && this.heroImage.destroy) { this.heroImage.destroy(); this.heroImage = null; }
     if (this.doctorImage && this.doctorImage.destroy) { this.doctorImage.destroy(); this.doctorImage = null; }
     if (this.demonImage && this.demonImage.destroy) { this.demonImage.destroy(); this.demonImage = null; }
+    if (this.rightSpeakerImage && this.rightSpeakerImage.destroy) { this.rightSpeakerImage.destroy(); this.rightSpeakerImage = null; }
 
     // 暗転背景
     this.dimBg = this.add.rectangle(w / 2, h / 2, w, h, 0x000000, 0.6).setAlpha(0).setDepth(89);
@@ -2126,10 +2128,10 @@ class BossScene extends Phaser.Scene {
     this.doctorImage.setScale(docScale);
     this.doctorImage.setY(100 + ((this.doctorImage.height || 1000) * docScale) / 2);
 
-    // 魔王も右側（w - 300）に配置（博士と切り替え表示）
     this.demonImage = this.add.image(w - 300, h / 2, 'demon_lord_normal').setAlpha(0).setDepth(90);
-    this.demonImage.setScale(1000 / (this.demonImage.width || 750));
-    this.demonImage.setY(100 + (this.demonImage.height * this.demonImage.scaleY) / 2 - 200);
+    const demScale = 850 / (this.demonImage.width || 750);
+    this.demonImage.setScale(demScale);
+    this.demonImage.setY(100 + ((this.demonImage.height || 1000) * demScale) / 2 - 50);
 
     this.tweens.add({ targets: this.dimBg, alpha: 0.6, duration: 300 });
 
@@ -2145,19 +2147,24 @@ class BossScene extends Phaser.Scene {
       lastRightSpeaker = 'doctor';
       safeTween(this.dimBg, 0.6);
       safeTween(this.doctorImage, 1);
-      safeTween(this.demonImage, 0); // 魔王は消す
+      safeTween(this.demonImage, 0);
+      if (this.rightSpeakerImage) safeTween(this.rightSpeakerImage, 0);
       safeTween(this.heroImage, 0.4);
       this.showDialogue('博士', text, res);
     });
+
     const sayDemonDefeat = (text) => new Promise(res => {
       lastRightSpeaker = 'demon';
       safeTween(this.dimBg, 0.6);
       safeTween(this.demonImage, 1);
-      safeTween(this.doctorImage, 0); // 博士は消す
+      safeTween(this.doctorImage, 0);
+      if (this.rightSpeakerImage) safeTween(this.rightSpeakerImage, 0);
       safeTween(this.heroImage, 0.4);
       this.showDialogue('魔王', text, res);
     });
-    const sayHeroDefeat = (text) => new Promise(res => {
+
+    // 敗北時の主人公（名前を取り戻す前なので話者名「勇者」）
+    const sayHeroPhase1 = (text) => new Promise(res => {
       safeTween(this.dimBg, 0.6);
       safeTween(this.heroImage, 1);
       if (lastRightSpeaker === 'doctor') {
@@ -2167,13 +2174,14 @@ class BossScene extends Phaser.Scene {
         safeTween(this.demonImage, 0.4);
         safeTween(this.doctorImage, 0);
       }
-      this.showDialogue(heroName, text, res);
+      if (this.rightSpeakerImage) safeTween(this.rightSpeakerImage, 0);
+      this.showDialogue('勇者', text, res);
     });
 
     (async () => {
       try {
-        // 敗北時会話
-        await sayHeroDefeat('「ぐっっっ……」');
+        // 1. 敗北時会話
+        await sayHeroPhase1('「ぐっっっ……」');
         await sayDoctorDefeat('「はははは。しょせん、お前は俺の創造物だ。俺を超えることなどできないのだよ。」');
         await sayDemonDefeat('「それは違うぞ！」');
         await sayDemonDefeat('「一人でなら敵わなくても、我らが協力したらどうじゃ？」');
@@ -2181,13 +2189,14 @@ class BossScene extends Phaser.Scene {
         await sayDoctorDefeat('「お前らが完全な状態でも太刀打ちできないこの私に、そんな状態で勝てると本気で思っているのか？」');
         await sayDemonDefeat('「っ……。」');
 
-        // 勇者の独白用：勇者以外背景も含め暗くする（博士・魔王は完全非表示、dimBgを0.88に深くする）
+        // 2. 勇者の独白：勇者以外背景も含め暗くする（dimBg 0.88）
         const sayHeroSoliloquy = (text) => new Promise(res => {
           safeTween(this.dimBg, 0.88);
           safeTween(this.heroImage, 1);
           safeTween(this.doctorImage, 0);
           safeTween(this.demonImage, 0);
-          this.showDialogue(heroName, text, res);
+          if (this.rightSpeakerImage) safeTween(this.rightSpeakerImage, 0);
+          this.showDialogue('勇者', text, res);
         });
 
         safeTween(this.dimBg, 0.88);
@@ -2199,20 +2208,26 @@ class BossScene extends Phaser.Scene {
         await sayHeroSoliloquy('「（ああ、結局僕は人形なのか……。」');
 
         // 「負けるわけにはいかないんだ」のセリフのところでBGMをフェードアウト
-        [this.boss5Bgm, this.boss4Bgm, this.twinsBgm, this.boss2Bgm, this.boss1Bgm].forEach(bgm => {
-          if (bgm && bgm.isPlaying) {
-            this.tweens.add({
-              targets: bgm,
-              volume: 0,
-              duration: 2000,
-              onComplete: () => { if (bgm) bgm.stop(); }
-            });
-          }
+        const activeBgms = [this.boss5Bgm, this.boss4Bgm, this.twinsBgm, this.boss2Bgm, this.boss1Bgm, this.bgm].filter(b => b && b.isPlaying);
+        activeBgms.forEach(bgm => {
+          this.tweens.addCounter({
+            from: bgm.volume || 0.2,
+            to: 0,
+            duration: 1500,
+            onUpdate: (tw) => {
+              if (bgm && bgm.isPlaying) {
+                try { bgm.setVolume(tw.getValue()); } catch (e) {}
+              }
+            },
+            onComplete: () => {
+              try { bgm.stop(); } catch (e) {}
+            }
+          });
         });
 
         await sayHeroSoliloquy('「でも、でも、そうだとしても、負けるわけにはいかないんだ……！！！）」');
 
-        // ノイズかかって暗転
+        // 3. ノイズかかって暗転
         this.cameras.main.shake(500, 0.03);
         this.cameras.main.fadeOut(800, 0, 0, 0);
         await new Promise(r => this.time.delayedCall(800, r));
@@ -2222,39 +2237,41 @@ class BossScene extends Phaser.Scene {
         if (this.heroImage && this.heroImage.active) this.heroImage.setAlpha(0);
         if (this.doctorImage && this.doctorImage.active) this.doctorImage.setAlpha(0);
         if (this.demonImage && this.demonImage.active) this.demonImage.setAlpha(0);
+        if (this.rightSpeakerImage && this.rightSpeakerImage.active) this.rightSpeakerImage.setAlpha(0);
 
-        // 1. GGS Terminal 1 (Spaceキー / クリックで進行)
+        // 4. GGS Terminal (Spaceキー / クリックで進行)
         this.cameras.main.fadeIn(300, 0, 0, 0);
         await this.terminalEffect([
-          '観測者のログ: ...link established',
-          '観測者のログ: ...signal stable: 1.00',
+          '...link established',
+          '...signal stable: 1.00',
           '',
-          '観測者のログ: こんにちは。『GGS』よ。',
+          'こんにちは。『GGS』よ。',
           '',
-          '観測者のログ: 悪性因子、消失を確認。',
+          '悪性因子、消失を確認。',
           '',
-          '観測者のログ: 世界構造、再計測完了。観測値、許容範囲内。',
+          '世界構造、再計測完了。観測値、許容範囲内。',
           '',
-          '観測者のログ: あなたは宿命を果たした。あなたの行動は祝福を授けるに値する。',
-          '観測者のログ: あなたの望みを叶えよう。',
-          '観測者のログ: 個体情報、更新。',
-          '観測者のログ: Designation："勇者" → "' + heroName + '"',
-          '観測者のログ: 登録情報、書き換え完了。',
-          '観測者のログ: あなたは、もう人造人間ではない。',
-          '観測者のログ: この世界に生きる、一人の人間──"' + heroName + '"として認証する。',
-          '観測者のログ: ただの人間”' + heroName + '”として、自由に生きなさい。',
+          'あなたは宿命を果たした。あなたの行動は祝福を授けるに値する。',
+          'あなたの望みを叶えよう。',
+          '個体情報、更新。',
+          'Designation："勇者" → "' + heroName + '"',
+          '登録情報、書き換え完了。',
+          'あなたは、もう人造人間ではない。',
+          'この世界に生きる、一人の人間──"' + heroName + '"として認証する。',
+          'ただの人間”' + heroName + '”として、自由に生きなさい。',
           '',
-          '観測者のログ: ...logging complete',
-          '観測者のログ: ...connection closed'
+          '...logging complete',
+          '...connection closed'
         ]);
 
-        // 暗転終了後。勇者以外背景も含め暗くして心臓の音を鳴らす（勇者の覚醒）
-        const sayHeroAwakening = (text) => new Promise(res => {
+        // 5. 暗転終了後。勇者以外背景も含め暗くして心臓の音を鳴らす（勇者の覚醒）
+        const sayHeroAwakening = (speakerName, text) => new Promise(res => {
           safeTween(this.dimBg, 0.88);
           safeTween(this.heroImage, 1);
           safeTween(this.doctorImage, 0);
           safeTween(this.demonImage, 0);
-          this.showDialogue(heroName, text, res);
+          if (this.rightSpeakerImage) safeTween(this.rightSpeakerImage, 0);
+          this.showDialogue(speakerName, text, res);
         });
 
         safeTween(this.dimBg, 0.88);
@@ -2265,23 +2282,28 @@ class BossScene extends Phaser.Scene {
         // BGMに心臓の音を開始
         if (MOT.Audio && MOT.Audio.startHeartbeat) MOT.Audio.startHeartbeat();
 
-        await sayHeroAwakening('「そうだ。僕は”' + heroName + '”だ。」');
-        await sayHeroAwakening('「僕は…まだ倒れるわけにはいかないんだ！！」');
+        // 話者名最初は「？？？」、次は「heroName」
+        await sayHeroAwakening('？？？', '「そうだ。僕は”' + heroName + '”だ。」');
+        await sayHeroAwakening(heroName, '「僕は…まだ倒れるわけにはいかないんだ！！」');
 
-        // 心臓の音を停止
+        // 心臓の音を停止（BGMなしの静寂）
         if (MOT.Audio && MOT.Audio.stopHeartbeat) MOT.Audio.stopHeartbeat();
 
-        // 右側の会話相手立ち絵（博士、エナリア、エディオ、クラトス、トゥレロス、魔王）を切り替える共通システム
+        // 6. 通常会話パートへ移行（右側の会話相手立ち絵を切り替え）
         const setRightSpeaker = (speakerName, texKey, scaleTargetW = 750, yOffset = 0) => {
-          if (!this.rightSpeakerImage) {
+          if (!this.textures.exists(texKey)) {
+            console.warn('Texture not found:', texKey);
+            return;
+          }
+          if (!this.rightSpeakerImage || !this.rightSpeakerImage.active) {
             this.rightSpeakerImage = this.add.image(w - 300, h / 2, texKey).setDepth(90).setAlpha(0);
           } else {
             this.rightSpeakerImage.setTexture(texKey);
             this.rightSpeakerImage.setVisible(true);
           }
-          const srcImg = this.textures.get(texKey).getSourceImage();
-          const imgW = (srcImg && srcImg.width) || scaleTargetW;
-          const imgH = (srcImg && srcImg.height) || 1000;
+          const frame = this.textures.getFrame(texKey);
+          const imgW = (frame && frame.width) || 750;
+          const imgH = (frame && frame.height) || 1000;
           const scale = scaleTargetW / imgW;
           this.rightSpeakerImage.setScale(scale);
           this.rightSpeakerImage.setY(100 + (imgH * scale) / 2 + yOffset);
@@ -2297,7 +2319,7 @@ class BossScene extends Phaser.Scene {
           this.showDialogue(speaker, text, res);
         });
 
-        const sayHeroDefeat = (text) => new Promise(res => {
+        const sayHeroNormal = (text) => new Promise(res => {
           safeTween(this.dimBg, 0.6);
           safeTween(this.heroImage, 1);
           if (this.rightSpeakerImage) safeTween(this.rightSpeakerImage, 0.4);
@@ -2313,13 +2335,13 @@ class BossScene extends Phaser.Scene {
         const sayTourelos = (text) => sayRight('トゥレロス', 'boss2_normal', text, 750, 20);
         const sayDemon = (text) => sayRight('魔王', 'demon_lord_normal', text, 850, -50);
 
-        // 通常会話パートへ移行（古い立ち絵は非表示）
+        // 会話パート開始
         if (this.doctorImage) this.doctorImage.setAlpha(0);
         if (this.demonImage) this.demonImage.setAlpha(0);
 
         await sayDoctor('「なんだ！？」');
-        await sayHeroDefeat('「僕は博士から与えられた”勇者”じゃない。”兵器”でもない。」');
-        await sayHeroDefeat('「僕は僕として選択をする。誰かに従ったりなんかしない！」');
+        await sayHeroNormal('「僕は博士から与えられた”勇者”じゃない。”兵器”でもない。」');
+        await sayHeroNormal('「僕は僕として選択をする。誰かに従ったりなんかしない！」');
 
         await sayDoctor('「チッ、忌々しい。」');
         await sayDoctor('「1100と1101に引き続き、揃いも揃って感情に目覚めおって！」');
@@ -2332,9 +2354,10 @@ class BossScene extends Phaser.Scene {
         await sayTourelos('「いや、正面切って今は戦うのはやめとけよ。お前、まだ怪我治ってなくね？」');
         await sayKratos('「そんなの関係ねぇ！俺は戦う！！」');
         await sayTourelos('「……。」');
-        await sayDemon('「ふふ、後方支援は我らにまかせろ！」');
+        await sayDemon('「後方支援はわらわたちに任せろ！」');
 
-        await sayHeroDefeat('「今度こそ、決着をつけよう」');
+        // 勇者の「今度こそ、決着をつけよう」
+        await sayHeroNormal('「今度こそ、決着をつけよう」');
 
         // 立ち絵と暗転背景をスムーズにフェードアウト
         const fadeTargets = [this.dimBg, this.heroImage, this.doctorImage, this.demonImage, this.rightSpeakerImage].filter(t => t && t.active);
@@ -2375,7 +2398,7 @@ class BossScene extends Phaser.Scene {
         this.rightSpeakerImage = null;
       }
 
-      // 3. Phase 2 博士戦 (HP 1000, 勇者復活)
+      // 7. Phase 2 博士戦準備 (HP 1000, 勇者復活)
       this.isDoctorPhase1Unwinnable = false;
       this.phase1DefeatTriggered = false;
       MOT.flags.playerHP = MOT.flags.playerMaxHP || 5;
@@ -2407,12 +2430,12 @@ class BossScene extends Phaser.Scene {
       this.bossMaxHP = 1000;
       this.bossHP = 1000;
 
-      // 急にはじまるのではなく、数秒（1.5秒間）対峙の静寂・タメを設ける
+      // 急にはじまるのではなく、数秒（2秒間）対峙の静寂・タメを設ける
       await new Promise(r => {
         let done = false;
         const cb = () => { if (!done) { done = true; r(); } };
-        this.time.delayedCall(1500, cb);
-        setTimeout(cb, 1600);
+        this.time.delayedCall(2000, cb);
+        setTimeout(cb, 2100);
       });
 
       // 博士戦のBGMを確実に再生
