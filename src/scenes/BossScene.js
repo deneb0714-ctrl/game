@@ -2077,10 +2077,10 @@ class BossScene extends Phaser.Scene {
     this.doctorImage.setScale(docScale);
     this.doctorImage.setY(100 + ((this.doctorImage.height || 1000) * docScale) / 2);
 
-    this.demonImage = this.add.image(w / 2 + 100, h / 2, 'demon_lord_normal').setAlpha(0).setDepth(90);
-    const dScale = 800 / (this.demonImage.width || 600);
-    this.demonImage.setScale(dScale);
-    this.demonImage.setY(150 + ((this.demonImage.height || 800) * dScale) / 2);
+    // 魔王も右側（w - 300）に配置（博士と切り替え表示）
+    this.demonImage = this.add.image(w - 300, h / 2, 'demon_lord_normal').setAlpha(0).setDepth(90);
+    this.demonImage.setScale(1000 / (this.demonImage.width || 750));
+    this.demonImage.setY(100 + (this.demonImage.height * this.demonImage.scaleY) / 2 - 200);
 
     this.tweens.add({ targets: this.dimBg, alpha: 0.6, duration: 300 });
 
@@ -2090,29 +2090,35 @@ class BossScene extends Phaser.Scene {
       }
     };
 
-    let demonAppeared = false;
+    let lastRightSpeaker = 'doctor';
 
     const sayDoctorDefeat = (text) => new Promise(res => {
+      lastRightSpeaker = 'doctor';
       safeTween(this.dimBg, 0.6);
       safeTween(this.doctorImage, 1);
+      safeTween(this.demonImage, 0); // 魔王は消す
       safeTween(this.heroImage, 0.4);
-      if (demonAppeared) safeTween(this.demonImage, 0.4);
       this.showDialogue('博士', text, res);
+    });
+    const sayDemonDefeat = (text) => new Promise(res => {
+      lastRightSpeaker = 'demon';
+      safeTween(this.dimBg, 0.6);
+      safeTween(this.demonImage, 1);
+      safeTween(this.doctorImage, 0); // 博士は消す
+      safeTween(this.heroImage, 0.4);
+      this.showDialogue('魔王', text, res);
     });
     const sayHeroDefeat = (text) => new Promise(res => {
       safeTween(this.dimBg, 0.6);
       safeTween(this.heroImage, 1);
-      safeTween(this.doctorImage, 0.4);
-      if (demonAppeared) safeTween(this.demonImage, 0.4);
+      if (lastRightSpeaker === 'doctor') {
+        safeTween(this.doctorImage, 0.4);
+        safeTween(this.demonImage, 0);
+      } else {
+        safeTween(this.demonImage, 0.4);
+        safeTween(this.doctorImage, 0);
+      }
       this.showDialogue(heroName, text, res);
-    });
-    const sayDemonDefeat = (text) => new Promise(res => {
-      demonAppeared = true;
-      safeTween(this.dimBg, 0.6);
-      safeTween(this.demonImage, 1);
-      safeTween(this.heroImage, 0.4);
-      safeTween(this.doctorImage, 0.4);
-      this.showDialogue('魔王', text, res);
     });
 
     (async () => {
@@ -2128,7 +2134,7 @@ class BossScene extends Phaser.Scene {
       // 勇者以外背景も含めて少し暗くなる
       safeTween(this.dimBg, 0.85);
       safeTween(this.heroImage, 1);
-      safeTween(this.doctorImage, 0.2);
+      safeTween(this.doctorImage, 0);
       safeTween(this.demonImage, 0.2);
 
       // 心の叫び
@@ -2174,7 +2180,7 @@ class BossScene extends Phaser.Scene {
       // 暗転終了後。勇者以外背景も暗くした状態に戻り覚醒
       safeTween(this.dimBg, 0.85);
       safeTween(this.heroImage, 1);
-      safeTween(this.doctorImage, 0.2);
+      safeTween(this.doctorImage, 0);
       safeTween(this.demonImage, 0.2);
 
       const sayKratos = (text) => new Promise(res => {
