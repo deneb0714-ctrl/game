@@ -106,6 +106,36 @@ MOT.Audio = (function () {
     playTick: function () {
       playTone(1500, 'square', 0.02, 0.03);
     },
+    // カツカツ音（選択肢や硬い境界を叩くノック音）
+    playClack: function () {
+      resume();
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = 'triangle';
+      osc.frequency.setValueAtTime(1200, ctx.currentTime);
+      osc.frequency.exponentialRampToValueAtTime(250, ctx.currentTime + 0.035);
+      gain.gain.setValueAtTime(0.35, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.035);
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start();
+      osc.stop(ctx.currentTime + 0.035);
+
+      const noiseGain = ctx.createGain();
+      const noise = ctx.createBufferSource();
+      const bufferSize = Math.floor(ctx.sampleRate * 0.015);
+      const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+      const data = buffer.getChannelData(0);
+      for (let i = 0; i < bufferSize; i++) {
+        data[i] = (Math.random() * 2 - 1) * Math.exp(-i / (bufferSize * 0.3));
+      }
+      noise.buffer = buffer;
+      noiseGain.gain.setValueAtTime(0.25, ctx.currentTime);
+      noiseGain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.015);
+      noise.connect(noiseGain);
+      noiseGain.connect(ctx.destination);
+      noise.start();
+    },
     // Shutdown sound (pitch drop)
     playShutdown: function () {
       resume();

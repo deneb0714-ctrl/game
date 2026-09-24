@@ -2190,141 +2190,421 @@ class BossScene extends Phaser.Scene {
     });
   }
 
-  askDemonLordShatterChoice(sayDoctor) {
+  askDemonLordShatterChoice(sayDoctor, sayHero) {
     return new Promise(resolve => {
-      let attemptCount = 0;
+      const w = 1920, h = 1080;
+      let isBusy = false;
+      let isSealed = false;
+      let hasIntervened = false;
+      let resistanceCount = 0;
+      let selectedIdx = 0; // 0: 殺す, 1: 殺さない
 
-      const runChoice = () => {
-        let isBusy = false;
-        let choiceContainer = [];
+      let uiElements = [];
+      let crackGfx = null;
+      let crackBranches = [];
 
-        const w = 1920, h = 1080;
-        const startY = h / 2 - 45;
+      // 半透明背景オーバーレイ
+      const overlay = this.add.graphics();
+      overlay.fillStyle(0x000000, 0.55);
+      overlay.fillRect(0, 0, w, h);
+      overlay.setDepth(200000).setScrollFactor(0);
+      uiElements.push(overlay);
 
-        const overlay = this.add.graphics();
-        overlay.fillStyle(0x000000, 0.5);
-        overlay.fillRect(0, 0, w, h);
-        overlay.setDepth(200000).setScrollFactor(0);
-        choiceContainer.push(overlay);
+      // 選択肢コンテナ
+      const startY = h / 2 - 50;
+      const choicesData = [
+        { text: '１ 殺す', val: 1 },
+        { text: '２ 殺さない', val: 2 }
+      ];
+      const choicesList = [];
 
-        const choicesData = [
-          { text: '1. 殺す', val: 1 },
-          { text: '2. 殺さない', val: 2 }
-        ];
+      choicesData.forEach((choice, i) => {
+        const y = startY + i * 130;
+        const btn = this.add.image(w / 2, y, 'ui_button_wide').setInteractive().setDepth(200002).setScrollFactor(0);
+        const txt = this.add.text(w / 2, y, choice.text, {
+          fontFamily: '"DotGothic16"',
+          fontSize: '32px',
+          color: '#E5E7EB',
+          fontStyle: 'bold'
+        }).setOrigin(0.5).setDepth(200003).setScrollFactor(0);
 
-        let selectedIdx = 0;
-        let choicesList = [];
+        uiElements.push(btn, txt);
+        choicesList.push({ btn, txt, val: choice.val, origY: y });
+      });
 
-        choicesData.forEach((choice, i) => {
-          const y = startY + i * 110;
-          const btn = this.add.image(w / 2, y, 'ui_button_wide').setInteractive().setDepth(200002).setScrollFactor(0);
-          const txt = this.add.text(w / 2, y, choice.text, {
-            fontFamily: '"DotGothic16"',
-            fontSize: '26px',
-            color: '#E5E7EB'
-          }).setOrigin(0.5).setDepth(200003).setScrollFactor(0);
+      // 封印オーバーレイ（ボタン２の上に配置）
+      const opt2Y = startY + 130;
+      const sealGfx = this.add.graphics().setDepth(200004).setScrollFactor(0);
+      const sealText = this.add.text(w / 2, opt2Y, '【 封 印 】', {
+        fontFamily: '"DotGothic16"',
+        fontSize: '28px',
+        color: '#FF2A6D',
+        fontStyle: 'bold',
+        stroke: '#000000',
+        strokeThickness: 5
+      }).setOrigin(0.5).setDepth(200005).setScrollFactor(0).setAlpha(0);
 
-          choiceContainer.push(btn, txt);
-          choicesList.push({ btn, txt, val: choice.val });
+      uiElements.push(sealGfx, sealText);
+
+      const updateSelection = () => {
+        choicesList.forEach((c, idx) => {
+          if (idx === selectedIdx) {
+            c.btn.setTint(idx === 1 ? 0x00FFCC : 0x4FD1FF);
+            c.txt.setColor('#FFFFFF');
+            c.txt.setScale(1.08);
+          } else {
+            c.btn.setTint(0x555555);
+            c.txt.setColor(idx === 1 && isSealed ? '#662222' : '#888888');
+            c.txt.setScale(1.0);
+          }
+        });
+      };
+      updateSelection();
+
+      const applySealVisuals = () => {
+        sealGfx.clear();
+        sealGfx.fillStyle(0x33000a, 0.75);
+        sealGfx.fillRoundedRect(w / 2 - 220, opt2Y - 38, 440, 76, 8);
+        sealGfx.lineStyle(3, 0xff0044, 0.95);
+        sealGfx.strokeRoundedRect(w / 2 - 220, opt2Y - 38, 440, 76, 8);
+        // 赤い鎖・交差線
+        sealGfx.lineBetween(w / 2 - 220, opt2Y - 38, w / 2 + 220, opt2Y + 38);
+        sealGfx.lineBetween(w / 2 - 220, opt2Y + 38, w / 2 + 220, opt2Y - 38);
+
+        sealText.setAlpha(1);
+        this.tweens.add({
+          targets: sealText,
+          alpha: { from: 0.5, to: 1 },
+          scale: { from: 0.95, to: 1.05 },
+          yoyo: true,
+          repeat: -1,
+          duration: 500
         });
 
-        const updateSelection = () => {
-          choicesList.forEach((c, idx) => {
-            if (idx === 0) {
-              c.btn.setTint(0x4FD1FF);
-              c.txt.setColor('#FFFFFF');
-            } else {
-              c.btn.setTint(0x555555);
-              c.txt.setColor('#666666');
-            }
-          });
-        };
-        updateSelection();
-
-        const destroyUI = () => {
-          this.input.keyboard.off('keydown', onKeyDown);
-          choiceContainer.forEach(el => el.destroy());
-          choiceContainer = [];
-        };
-
-        const trySelectOption2 = async () => {
-          if (isBusy) return;
-          attemptCount++;
-          if (attemptCount < 5) {
-            isBusy = true;
-            if (MOT.Audio && MOT.Audio.playBleep) MOT.Audio.playBleep('');
-            destroyUI();
-
-            await sayDoctor('「お前はさっきから、ろくな選択をしない。」');
-            await sayDoctor('「さぁ、魔王を殺すんだ。」');
-            isBusy = false;
-            runChoice();
-          } else {
-            isBusy = true;
-            if (MOT.Audio && MOT.Audio.playShot) MOT.Audio.playShot();
-            else if (MOT.Audio && MOT.Audio.playSelect) MOT.Audio.playSelect();
-
-            // Detroit Become Human style choice shatter effect
-            this.cameras.main.shake(600, 0.05);
-
-            // Shatter Option 1 into glitch fragments
-            const opt1X = w / 2;
-            const opt1Y = startY;
-            for (let k = 0; k < 35; k++) {
-              const part = this.add.rectangle(
-                opt1X + Phaser.Math.Between(-150, 150),
-                opt1Y + Phaser.Math.Between(-30, 30),
-                Phaser.Math.Between(8, 25),
-                Phaser.Math.Between(8, 25),
-                k % 2 === 0 ? 0xff0055 : 0x00ffff
-              ).setDepth(200015).setScrollFactor(0);
-              
-              this.tweens.add({
-                targets: part,
-                x: part.x + Phaser.Math.Between(-350, 350),
-                y: part.y + Phaser.Math.Between(-250, 250),
-                angle: Phaser.Math.Between(-360, 360),
-                alpha: 0,
-                scale: 0,
-                duration: Phaser.Math.Between(500, 1000),
-                onComplete: () => part.destroy()
-              });
-            }
-
-            const redFlash = this.add.rectangle(w / 2, h / 2, w, h, 0xff0000, 0.5).setDepth(200010);
-            this.tweens.add({ targets: redFlash, alpha: 0, duration: 400, onComplete: () => redFlash.destroy() });
-
-            destroyUI();
-
-            const heroName = MOT.flags.heroName || '勇者';
-            await new Promise(r => this.showDialogue(heroName, '「……それでも僕は、殺したくない……！！」', r));
-            resolve(2);
-          }
-        };
-
-        const selectOption1 = () => {
-          if (isBusy) return;
-          if (MOT.Audio && MOT.Audio.playSelect) MOT.Audio.playSelect();
-          destroyUI();
-          resolve(1);
-        };
-
-        choicesList[0].btn.on('pointerdown', () => selectOption1());
-        choicesList[1].btn.on('pointerdown', () => trySelectOption2());
-
-        const onKeyDown = (e) => {
-          if (isBusy) return;
-          if (e.key === 'ArrowDown' || e.key === 's' || e.key === 'S' || e.key === 'ArrowUp' || e.key === 'w' || e.key === 'W') {
-            trySelectOption2();
-          } else if (e.key === 'Enter' || e.key === ' ') {
-            selectOption1();
-          }
-        };
-
-        this.input.keyboard.on('keydown', onKeyDown);
+        choicesList[1].txt.setColor('#551111');
+        choicesList[1].btn.setTint(0x221111);
       };
 
-      runChoice();
+      const setUIVisible = (visible) => {
+        uiElements.forEach(el => {
+          if (el && el.setAlpha) {
+            el.setAlpha(visible ? 1 : 0);
+          }
+        });
+        if (visible && isSealed) {
+          applySealVisuals();
+        }
+      };
+
+      // ヒビ描画
+      const initCrackGraphics = () => {
+        if (!crackGfx) {
+          crackGfx = this.add.graphics().setDepth(200020).setScrollFactor(0);
+          uiElements.push(crackGfx);
+        }
+        const numMain = 8;
+        crackBranches = [];
+        for (let i = 0; i < numMain; i++) {
+          const baseAngle = (i / numMain) * Math.PI * 2 + (Math.random() - 0.5) * 0.35;
+          crackBranches.push({
+            points: [{ x: w / 2, y: h / 2 }],
+            angle: baseAngle,
+            currX: w / 2,
+            currY: h / 2,
+            subBranches: []
+          });
+        }
+      };
+
+      const growCracks = (step) => {
+        if (!crackGfx) initCrackGraphics();
+
+        crackBranches.forEach(br => {
+          const dist = Phaser.Math.Between(30, 60);
+          br.angle += (Math.random() - 0.5) * 0.45;
+          br.currX += Math.cos(br.angle) * dist;
+          br.currY += Math.sin(br.angle) * dist;
+          br.points.push({ x: br.currX, y: br.currY });
+
+          if (Math.random() < 0.45 && br.points.length > 2) {
+            const startPt = br.points[Phaser.Math.Between(1, br.points.length - 1)];
+            const subAngle = br.angle + (Math.random() > 0.5 ? 1 : -1) * (Math.PI / 4 + Math.random() * 0.4);
+            const subLen = Phaser.Math.Between(25, 60);
+            br.subBranches.push([
+              { x: startPt.x, y: startPt.y },
+              { x: startPt.x + Math.cos(subAngle) * subLen, y: startPt.y + Math.sin(subAngle) * subLen }
+            ]);
+          }
+        });
+
+        crackGfx.clear();
+
+        // 1. 光彩（グロー）
+        crackGfx.lineStyle(4, 0x00e5ff, 0.45);
+        crackBranches.forEach(br => {
+          if (br.points.length > 1) {
+            crackGfx.beginPath();
+            crackGfx.moveTo(br.points[0].x, br.points[0].y);
+            for (let i = 1; i < br.points.length; i++) {
+              crackGfx.lineTo(br.points[i].x, br.points[i].y);
+            }
+            crackGfx.strokePath();
+          }
+          br.subBranches.forEach(sub => {
+            crackGfx.beginPath();
+            crackGfx.moveTo(sub[0].x, sub[0].y);
+            crackGfx.lineTo(sub[1].x, sub[1].y);
+            crackGfx.strokePath();
+          });
+        });
+
+        // 2. コア（純白シャープライン）
+        crackGfx.lineStyle(1.8, 0xffffff, 0.95);
+        crackBranches.forEach(br => {
+          if (br.points.length > 1) {
+            crackGfx.beginPath();
+            crackGfx.moveTo(br.points[0].x, br.points[0].y);
+            for (let i = 1; i < br.points.length; i++) {
+              crackGfx.lineTo(br.points[i].x, br.points[i].y);
+            }
+            crackGfx.strokePath();
+          }
+          br.subBranches.forEach(sub => {
+            crackGfx.beginPath();
+            crackGfx.moveTo(sub[0].x, sub[0].y);
+            crackGfx.lineTo(sub[1].x, sub[1].y);
+            crackGfx.strokePath();
+          });
+        });
+
+        // 同心円クラック
+        crackGfx.lineStyle(1.2, 0xffffff, 0.7);
+        for (let r = 25; r <= Math.min(220, step * 14); r += 35) {
+          crackGfx.strokeCircle(w / 2 + (Math.random() - 0.5) * 4, h / 2 + (Math.random() - 0.5) * 4, r);
+        }
+
+        // 先端スパーク
+        for (let k = 0; k < 5; k++) {
+          const randomBr = Phaser.Utils.Array.GetRandom(crackBranches);
+          const p = this.add.rectangle(randomBr.currX, randomBr.currY, 4, 4, 0xffffff).setDepth(200025).setScrollFactor(0);
+          this.tweens.add({
+            targets: p,
+            x: p.x + Phaser.Math.Between(-35, 35),
+            y: p.y + Phaser.Math.Between(-35, 35),
+            alpha: 0,
+            scale: 0,
+            duration: 350,
+            onComplete: () => p.destroy()
+          });
+        }
+      };
+
+      const cleanupAndResolve = (val) => {
+        this.input.keyboard.off('keydown', onKeyDown);
+        uiElements.forEach(el => { if (el && el.destroy) el.destroy(); });
+        uiElements = [];
+        resolve(val);
+      };
+
+      const handleDoctorIntervene = async () => {
+        isBusy = true;
+        hasIntervened = true;
+        setUIVisible(false);
+
+        await sayDoctor('「お前はさっきから、ろくな選択をしない。」');
+        await sayDoctor('「さぁ、魔王を殺すんだ。」');
+
+        isSealed = true;
+        selectedIdx = 0; // １ 殺す に固定
+        setUIVisible(true);
+        applySealVisuals();
+        updateSelection();
+
+        this.cameras.main.shake(300, 0.02);
+        if (MOT.Audio && MOT.Audio.playExplosion) MOT.Audio.playExplosion();
+
+        isBusy = false;
+      };
+
+      const handleResistance = async () => {
+        if (isBusy) return;
+        resistanceCount++;
+
+        // カツカツという音
+        if (MOT.Audio && MOT.Audio.playClack) {
+          MOT.Audio.playClack();
+        } else if (MOT.Audio && MOT.Audio.playTick) {
+          MOT.Audio.playTick();
+        }
+
+        // 封印ボタンがカツッと反応して微小振動
+        this.tweens.add({
+          targets: [choicesList[1].btn, choicesList[1].txt, sealText],
+          x: choicesList[1].btn.x + Phaser.Math.Between(-6, 6),
+          duration: 40,
+          yoyo: true
+        });
+
+        if (resistanceCount < 5) {
+          // 1〜4回目: カツカツと弾かれる
+          this.cameras.main.shake(60, 0.003);
+          const sp = this.add.rectangle(w / 2 + Phaser.Math.Between(-80, 80), opt2Y + Phaser.Math.Between(-15, 15), 6, 6, 0xff0044).setDepth(200010).setScrollFactor(0);
+          this.tweens.add({ targets: sp, alpha: 0, scale: 0, duration: 200, onComplete: () => sp.destroy() });
+        } else if (resistanceCount < 20) {
+          // 5回目〜19回目: 画面中央からヒビが少しずつ入る！
+          const crackStep = resistanceCount - 4; // 1〜15
+          if (MOT.Audio && MOT.Audio.playCrack) MOT.Audio.playCrack();
+          growCracks(crackStep);
+          this.cameras.main.shake(120, 0.006 + crackStep * 0.002);
+        } else {
+          // 20回目: 画面が割れて、殺さないが選べるようになる！
+          isBusy = true;
+          if (MOT.Audio && MOT.Audio.playShatter) MOT.Audio.playShatter();
+          this.cameras.main.shake(900, 0.06);
+
+          // ホワイトフラッシュ
+          const flash = this.add.rectangle(w / 2, h / 2, w, h, 0xffffff, 0.95).setDepth(200030).setScrollFactor(0);
+          this.tweens.add({ targets: flash, alpha: 0, duration: 600, onComplete: () => flash.destroy() });
+
+          // 画面全体にガラス破片が飛び散る
+          for (let k = 0; k < 80; k++) {
+            const shard = this.add.rectangle(
+              w / 2 + Phaser.Math.Between(-60, 60),
+              h / 2 + Phaser.Math.Between(-60, 60),
+              Phaser.Math.Between(10, 32),
+              Phaser.Math.Between(10, 32),
+              k % 3 === 0 ? 0xffffff : (k % 3 === 1 ? 0x80deea : 0x00e5ff)
+            ).setDepth(200035).setScrollFactor(0);
+
+            const angle = Math.random() * Math.PI * 2;
+            const speed = Phaser.Math.Between(350, 950);
+            this.tweens.add({
+              targets: shard,
+              x: shard.x + Math.cos(angle) * speed,
+              y: shard.y + Math.sin(angle) * speed,
+              angle: Phaser.Math.Between(-720, 720),
+              alpha: 0,
+              scale: 0,
+              duration: Phaser.Math.Between(600, 1100),
+              ease: 'Cubic.easeOut',
+              onComplete: () => shard.destroy()
+            });
+          }
+
+          // 赤い封印の破片も飛び散る
+          for (let k = 0; k < 35; k++) {
+            const rShard = this.add.rectangle(
+              w / 2 + Phaser.Math.Between(-150, 150),
+              opt2Y + Phaser.Math.Between(-20, 20),
+              Phaser.Math.Between(8, 22),
+              Phaser.Math.Between(8, 22),
+              0xff0055
+            ).setDepth(200035).setScrollFactor(0);
+            this.tweens.add({
+              targets: rShard,
+              x: rShard.x + Phaser.Math.Between(-300, 300),
+              y: rShard.y + Phaser.Math.Between(-200, 200),
+              alpha: 0,
+              scale: 0,
+              duration: 700,
+              onComplete: () => rShard.destroy()
+            });
+          }
+
+          // ヒビと封印を消去
+          if (crackGfx) { crackGfx.destroy(); crackGfx = null; }
+          sealGfx.clear();
+          sealText.destroy();
+
+          // 殺さないの選択肢を解放！
+          isSealed = false;
+          selectedIdx = 1;
+          choicesList[1].txt.setColor('#FFFFFF');
+          choicesList[1].btn.clearTint();
+          choicesList[1].btn.setTint(0x00FFCC);
+          updateSelection();
+
+          this.tweens.add({
+            targets: choicesList[1].btn,
+            scaleX: { from: 1.2, to: 1.0 },
+            scaleY: { from: 1.2, to: 1.0 },
+            duration: 400,
+            ease: 'Back.easeOut'
+          });
+
+          await new Promise(r => this.time.delayedCall(400, r));
+
+          // 選べるようになると共に勇者の叫び
+          setUIVisible(false);
+          if (sayHero) {
+            await sayHero('「……それでも僕は、殺したくない……！！」');
+          } else {
+            const heroName = MOT.flags.heroName || '勇者';
+            await new Promise(r => this.showDialogue(heroName, '「……それでも僕は、殺したくない……！！」', r));
+          }
+
+          // 選択肢UIを再表示し、選べる状態にして決定待ちにする
+          setUIVisible(true);
+          selectedIdx = 1;
+          updateSelection();
+          isBusy = false;
+        }
+      };
+
+      const onKeyDown = (e) => {
+        if (isBusy) return;
+
+        if (e.key === 'ArrowDown' || e.key === 's' || e.key === 'S') {
+          if (!hasIntervened) {
+            handleDoctorIntervene();
+          } else if (isSealed) {
+            handleResistance();
+          } else {
+            selectedIdx = 1;
+            if (MOT.Audio && MOT.Audio.playSelect) MOT.Audio.playSelect();
+            updateSelection();
+          }
+        } else if (e.key === 'ArrowUp' || e.key === 'w' || e.key === 'W') {
+          if (!isSealed) {
+            selectedIdx = 0;
+            if (MOT.Audio && MOT.Audio.playSelect) MOT.Audio.playSelect();
+            updateSelection();
+          }
+        } else if (e.key === 'Enter' || e.key === ' ') {
+          if (isBusy) return;
+          if (selectedIdx === 0) {
+            if (MOT.Audio && MOT.Audio.playSelect) MOT.Audio.playSelect();
+            cleanupAndResolve(1);
+          } else if (selectedIdx === 1 && !isSealed) {
+            if (MOT.Audio && MOT.Audio.playSelect) MOT.Audio.playSelect();
+            cleanupAndResolve(2);
+          }
+        }
+      };
+
+      choicesList[0].btn.on('pointerdown', () => {
+        if (isBusy) return;
+        selectedIdx = 0;
+        updateSelection();
+        if (MOT.Audio && MOT.Audio.playSelect) MOT.Audio.playSelect();
+        cleanupAndResolve(1);
+      });
+
+      choicesList[1].btn.on('pointerdown', () => {
+        if (isBusy) return;
+        if (!hasIntervened) {
+          handleDoctorIntervene();
+        } else if (isSealed) {
+          handleResistance();
+        } else {
+          selectedIdx = 1;
+          updateSelection();
+          if (MOT.Audio && MOT.Audio.playSelect) MOT.Audio.playSelect();
+          cleanupAndResolve(2);
+        }
+      });
+
+      this.input.keyboard.on('keydown', onKeyDown);
     });
   }
 
@@ -2791,11 +3071,11 @@ class BossScene extends Phaser.Scene {
               const totalKills = (MOT.flags.killedBoss1 ? 1 : 0) + (MOT.flags.killedBoss2 ? 1 : 0) + (MOT.flags.killedTwins ? 1 : 0);
 
               if (totalKills === 0) {
-                // 1. 勇者の葛藤セリフ
-                await sayHero('「……魔王は……殺さなきゃ……エラーを消去……」');
+                // 博士の指示セリフ
+                await sayDoctor('「さあ、早くとどめを刺せ！」');
 
-                // 2. 10回選択干渉システム
-                let shatterResult = await this.askDemonLordShatterChoice(sayDoctor);
+                // 選択干渉システム
+                let shatterResult = await this.askDemonLordShatterChoice(sayDoctor, sayHero);
 
                 if (shatterResult === 1) {
                   await sayHero('「……魔王は……殺さなきゃ……エラーは消去しないと……」');
