@@ -476,31 +476,8 @@ class BossScene extends Phaser.Scene {
             this.boss4Bgm = this.sound.add('demon_lord_bgm', { loop: true, volume: 0.2 });
             this.boss4Bgm.play();
           });
-        } else if (this.isDoctorPhase1Unwinnable) {
-          // ハッピーエンドルート（魔王和解直後）：既に乱入会話を終えているため即座に戦闘開始
-          if (this.inunekoEnemy) { if (this.inunekoEnemy.destroy) this.inunekoEnemy.destroy(); this.inunekoEnemy = null; }
-          if (boss && boss.active) {
-            boss.setVisible(true);
-            boss.body.enable = true;
-          }
-          this.cutsceneActive = false;
-          this.dialogActive = false;
-          this.physics.resume();
-          this.startBossLaneMovement();
-          if (this.boss5Bgm) {
-            try { this.boss5Bgm.stop(); this.boss5Bgm.destroy(); } catch (e) {}
-          }
-          this.boss5Bgm = this.sound.add('doctor_bgm', { loop: true, volume: 0.2 });
-          this.boss5Bgm.play();
-
-          this.phase1DefeatTriggered = false;
-          this.time.delayedCall(12000, () => {
-            if (this.isDoctorPhase1Unwinnable && !this.phase1DefeatTriggered) {
-              this.fireDoctorUnavoidableAttack();
-            }
-          });
         } else {
-          // Doctor intro (通常ルート)
+          // Doctor intro
           if (this.inunekoEnemy) { if (this.inunekoEnemy.destroy) this.inunekoEnemy.destroy(); this.inunekoEnemy = null; }
           var w = 1920, h = 1080;
           var dimBg = this.add.rectangle(w/2, h/2, w, h, 0x000000, 0.6).setAlpha(0).setDepth(89);
@@ -534,12 +511,18 @@ class BossScene extends Phaser.Scene {
             this.dialogActive = false;
             this.physics.resume();
             this.startBossLaneMovement();
+            if (this.boss5Bgm) {
+              try { this.boss5Bgm.stop(); this.boss5Bgm.destroy(); } catch (e) {}
+            }
             this.boss5Bgm = this.sound.add('doctor_bgm', { loop: true, volume: 0.2 });
             this.boss5Bgm.play();
 
             if (this.isDoctorPhase1Unwinnable) {
+              MOT.flags.playerHP = MOT.flags.playerMaxHP || 5;
+              this.playerInvincible = false;
               this.phase1DefeatTriggered = false;
-              this.time.delayedCall(12000, () => {
+              this.updateHUD();
+              this.time.delayedCall(8000, () => {
                 if (this.isDoctorPhase1Unwinnable && !this.phase1DefeatTriggered) {
                   this.fireDoctorUnavoidableAttack();
                 }
@@ -3806,8 +3789,12 @@ class BossScene extends Phaser.Scene {
                 this.cameras.main.fadeIn(600, 0, 0, 0);
                 await new Promise(r => this.time.delayedCall(600, r));
 
-                // イベント戦闘(博士 Phase 1 - 負けイベント: 10秒後に自動死亡)
+                // イベント戦闘(博士 Phase 1 - 負けイベント: 8秒後に自動死亡)
                 this.isDoctorPhase1Unwinnable = true;
+                this.phase1DefeatTriggered = false;
+                MOT.flags.playerHP = MOT.flags.playerMaxHP || 5;
+                this.playerInvincible = false;
+                this.updateHUD();
                 this.currentBossIndex = this.bossQueue.indexOf('doctor');
                 if (this.currentBossIndex === -1) {
                   this.bossQueue.push('doctor');
