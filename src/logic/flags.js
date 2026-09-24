@@ -104,48 +104,46 @@ MOT.updateSpecialAura = function (scene) {
       scene.specialAuraGraphics = scene.add.graphics();
     }
     scene.specialAuraGraphics.clear();
+    scene.specialAuraGraphics.setBlendMode(Phaser.BlendModes.ADD);
     const pDepth = (scene.player.depth !== undefined) ? scene.player.depth : 10;
-    scene.specialAuraGraphics.setDepth(pDepth + 1);
+    scene.specialAuraGraphics.setDepth(pDepth - 1);
 
     const now = Date.now();
-    const pulse = (Math.sin(now / 120) + 1) / 2;
+    const pulse = (Math.sin(now / 200) + 1) / 2; // 0.0〜1.0 の緩やかな呼吸パルス
     const px = scene.player.x;
     const py = scene.player.y;
 
-    // 1. 周囲のふんわりとした赤い光のグロー（大）
-    scene.specialAuraGraphics.fillStyle(0xFF1133, 0.16 + 0.12 * pulse);
-    scene.specialAuraGraphics.fillCircle(px, py, 56 + pulse * 12);
+    // 1. 幾何学的な枠線を使わず、加算合成(ADD)の柔らかな光のグラデーションのみを描画
+    // 外層グロー（広範囲で非常に淡い赤光）
+    scene.specialAuraGraphics.fillStyle(0xFF2244, 0.08 + 0.06 * pulse);
+    scene.specialAuraGraphics.fillCircle(px, py, 58 + pulse * 10);
 
-    // 2. 内側の赤い光（中）
-    scene.specialAuraGraphics.fillStyle(0xFF3355, 0.26 + 0.15 * pulse);
-    scene.specialAuraGraphics.fillCircle(px, py, 38 + pulse * 8);
+    // 中層グロー（柔らかな光）
+    scene.specialAuraGraphics.fillStyle(0xFF3366, 0.14 + 0.08 * pulse);
+    scene.specialAuraGraphics.fillCircle(px, py, 40 + pulse * 6);
 
-    // 3. 脈動するエナジーリング（外輪）
-    scene.specialAuraGraphics.lineStyle(3.5, 0xFF0044, 0.7 + 0.3 * pulse);
-    scene.specialAuraGraphics.strokeCircle(px, py, 52 + pulse * 10);
+    // 内層コアグロー（光の芯）
+    scene.specialAuraGraphics.fillStyle(0xFF5588, 0.20 + 0.10 * pulse);
+    scene.specialAuraGraphics.fillCircle(px, py, 24 + pulse * 4);
 
-    // 4. 高輝度リング（中輪）
-    scene.specialAuraGraphics.lineStyle(2, 0xFFAAAA, 0.8 + 0.2 * pulse);
-    scene.specialAuraGraphics.strokeCircle(px, py, 34 + pulse * 5);
+    // 足元の柔らかい光の溜まり
+    scene.specialAuraGraphics.fillStyle(0xFF2255, 0.14 + 0.08 * pulse);
+    scene.specialAuraGraphics.fillEllipse(px, py + 36, 42 + pulse * 6, 14 + pulse * 3);
 
-    // 5. プレイヤーの足元チャージリング
-    scene.specialAuraGraphics.lineStyle(2.5, 0xFF2255, 0.85);
-    scene.specialAuraGraphics.strokeCircle(px, py + 30, 26 + pulse * 4);
-
-    // 6. 立ち上る光のスパーク（時間依存で上昇する赤い火の粉）
-    for (let i = 0; i < 4; i++) {
-      const offsetSeed = (now / 300 + i * 1.57) % 6.28;
-      const sparkX = px + Math.sin(offsetSeed * 3 + i) * 28;
-      const sparkY = py + 35 - ((now / 8 + i * 25) % 75);
-      const sparkAlpha = Math.max(0, 1 - ((py + 35 - sparkY) / 75));
-      scene.specialAuraGraphics.fillStyle(0xFFFFFF, sparkAlpha * 0.9);
-      scene.specialAuraGraphics.fillCircle(sparkX, sparkY, 2.5);
-      scene.specialAuraGraphics.fillStyle(0xFF2255, sparkAlpha * 0.6);
-      scene.specialAuraGraphics.fillCircle(sparkX, sparkY, 4.5);
+    // 2. 主人公本体自身がじんわりと赤く明滅して光る（無敵時間中でない場合）
+    if (!scene.playerInvincible) {
+      const gb = Math.floor(165 + 80 * (1 - pulse)); // 165〜245
+      const tint = (0xFF << 16) | (gb << 8) | gb;
+      scene.player.setTint(tint);
+      scene._specialTintActive = true;
     }
   } else {
     if (scene.specialAuraGraphics) {
       scene.specialAuraGraphics.clear();
+    }
+    if (scene._specialTintActive && !scene.playerInvincible) {
+      scene.player.clearTint();
+      scene._specialTintActive = false;
     }
   }
 };
