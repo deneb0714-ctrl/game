@@ -3592,6 +3592,7 @@ class BossScene extends Phaser.Scene {
               this.tweens.add({ targets: dimBg, alpha: 0.6, duration: 300 });
               if (this.heroImage) this.tweens.add({ targets: this.heroImage, alpha: 0.4, duration: 300 });
               if (this.demonImage) this.tweens.add({ targets: this.demonImage, alpha: 0.4, duration: 300 });
+              if (this.inunekoImage) this.tweens.add({ targets: this.inunekoImage, alpha: 0.4, duration: 300 });
               if (this.doctorImage) this.tweens.add({ targets: this.doctorImage, alpha: 0, duration: 300 });
               this.showDeviceDialogue(text, res);
             });
@@ -3600,6 +3601,7 @@ class BossScene extends Phaser.Scene {
               this.tweens.add({ targets: dimBg, alpha: 0.6, duration: 300 });
               if (this.heroImage) this.tweens.add({ targets: this.heroImage, alpha: 0.4, duration: 300 });
               if (this.doctorImage) this.tweens.add({ targets: this.doctorImage, alpha: 0, duration: 300 });
+              if (this.inunekoImage) this.tweens.add({ targets: this.inunekoImage, alpha: 0.4, duration: 300 });
               if (this.demonImage) {
                 this.tweens.add({ targets: this.demonImage, alpha: 1, duration: 300 });
                 this.demonImage.setTexture(tex);
@@ -3612,6 +3614,7 @@ class BossScene extends Phaser.Scene {
               this.tweens.add({ targets: dimBg, alpha: 0.6, duration: 300 });
               if (this.heroImage) this.tweens.add({ targets: this.heroImage, alpha: 1, duration: 300 });
               if (this.demonImage) this.tweens.add({ targets: this.demonImage, alpha: 0.4, duration: 300 });
+              if (this.inunekoImage) this.tweens.add({ targets: this.inunekoImage, alpha: 0.4, duration: 300 });
               if (this.doctorImage) this.tweens.add({ targets: this.doctorImage, alpha: 0, duration: 300 });
               this.showDialogue(MOT.flags.heroName || '勇者', text, res);
             });
@@ -3702,6 +3705,12 @@ class BossScene extends Phaser.Scene {
                   this.tweens.add({ targets: dimBg, alpha: 0.6, duration: 300 });
                   if (this.heroImage) this.tweens.add({ targets: this.heroImage, alpha: 0.4, duration: 300 });
                   if (this.demonImage) this.tweens.add({ targets: this.demonImage, alpha: 0.4, duration: 300 });
+                  if (!this.inunekoImage) {
+                    this.inunekoImage = this.add.image(w - 550, h / 2 + 100, 'inuneko_stand').setDepth(91).setAlpha(0);
+                    const inuScale = 500 / ((this.textures.exists('inuneko_stand') && this.textures.get('inuneko_stand').getSourceImage().width) || 500);
+                    this.inunekoImage.setScale(inuScale);
+                  }
+                  this.tweens.add({ targets: this.inunekoImage, alpha: 1, duration: 300 });
                   this.showDialogue('犬猫☆スター', text, res);
                 });
                 await sayInuneko('「そうわん！魔王様は、お前とは違って優しいにゃん！！」');
@@ -3851,35 +3860,60 @@ class BossScene extends Phaser.Scene {
             var dimBg = this.add.rectangle(w / 2, h / 2, w, h, 0x000000, 0.6).setAlpha(0).setDepth(89);
             this.dimBg = dimBg;
 
-            this.doctorImage = this.add.image(w - 300, h / 2, 'doctor_awaken_normal_dying').setAlpha(0).setDepth(90);
-            var docScale = 900 / (this.textures.get('doctor_stand').getSourceImage().width || 750);
-            this.doctorImage.setScale(docScale);
-            this.doctorImage.setY(100 + ((this.textures.get('doctor_stand').getSourceImage().height || 1000) * docScale) / 2);
-
             this.heroImage = this.add.image(300, h / 2, 'hero_stand').setAlpha(0).setDepth(90);
             var hScale = 750 / (this.heroImage.width || 1080);
             this.heroImage.setScale(hScale);
             this.heroImage.setY(100 + (this.heroImage.height * hScale) / 2);
 
-            const sayDoctor = (text, tex = 'doctor_awaken_normal_dying') => new Promise(res => {
-              this.tweens.add({ targets: dimBg, alpha: 0.6, duration: 300 });
-              if (this.heroImage) this.tweens.add({ targets: this.heroImage, alpha: 0.4, duration: 300 });
-              if (this.doctorImage) {
-                this.tweens.add({ targets: this.doctorImage, alpha: 1, duration: 300 });
-                this.doctorImage.setTexture(tex);
+            this.rightSpeakerImage = this.add.image(w - 300, h / 2, 'doctor_awaken_normal_dying').setAlpha(0).setDepth(90);
+            var docScale = 900 / ((this.textures.exists('doctor_stand') && this.textures.get('doctor_stand').getSourceImage().width) || 750);
+            this.rightSpeakerImage.setScale(docScale);
+            this.rightSpeakerImage.setY(100 + (((this.textures.exists('doctor_stand') && this.textures.get('doctor_stand').getSourceImage().height) || 1000) * docScale) / 2);
+
+            this.tweens.add({ targets: dimBg, alpha: 0.6, duration: 300 });
+
+            const setRightSpeaker = (speaker, texKey, targetW = 750, yOff = 0) => {
+              if (!this.rightSpeakerImage || !this.rightSpeakerImage.active) {
+                this.rightSpeakerImage = this.add.image(w - 300, h / 2, texKey).setDepth(90);
               }
-              this.showDialogue('博士', text, res);
+              if (this.textures.exists(texKey)) {
+                this.rightSpeakerImage.setTexture(texKey);
+                const src = this.textures.get(texKey).getSourceImage();
+                const sw = (src && src.width) || 750;
+                const sh = (src && src.height) || 1000;
+                const sc = targetW / sw;
+                this.rightSpeakerImage.setScale(sc);
+                this.rightSpeakerImage.setY(100 + (sh * sc) / 2 + yOff);
+              }
+            };
+
+            const sayRight = (speaker, texKey, text, targetW = 750, yOff = 0) => new Promise(res => {
+              setRightSpeaker(speaker, texKey, targetW, yOff);
+              if (dimBg && dimBg.active) this.tweens.add({ targets: dimBg, alpha: 0.6, duration: 250 });
+              if (this.heroImage && this.heroImage.active) this.tweens.add({ targets: this.heroImage, alpha: 0.4, duration: 250 });
+              if (this.rightSpeakerImage && this.rightSpeakerImage.active) {
+                this.tweens.add({ targets: this.rightSpeakerImage, alpha: 1, duration: 250 });
+              }
+              this.showDialogue(speaker, text, res);
             });
 
-            const sayKratos = (text) => new Promise(res => { this.showDialogue('クラトス', text, res); });
-            const sayTourelos = (text) => new Promise(res => { this.showDialogue('トゥレロス', text, res); });
-            const sayEnaria = (text) => new Promise(res => { this.showDialogue('エナリア', text, res); });
-            const sayEdio = (text) => new Promise(res => { this.showDialogue('エディオ', text, res); });
-            const sayDemon = (text) => new Promise(res => { this.showDialogue('魔王', text, res); });
-            const sayInuneko = (text) => new Promise(res => { this.showDialogue('犬猫☆スター', text, res); });
-            
             const heroName = MOT.flags.heroName || '勇者';
-            const sayHero = (text) => new Promise(res => { this.showDialogue(heroName, text, res); });
+            const sayHero = (text) => new Promise(res => {
+              if (dimBg && dimBg.active) this.tweens.add({ targets: dimBg, alpha: 0.6, duration: 250 });
+              if (this.heroImage && this.heroImage.active) this.tweens.add({ targets: this.heroImage, alpha: 1, duration: 250 });
+              if (this.rightSpeakerImage && this.rightSpeakerImage.active) {
+                this.tweens.add({ targets: this.rightSpeakerImage, alpha: 0.4, duration: 250 });
+              }
+              this.showDialogue(heroName, text, res);
+            });
+
+            const sayDoctor = (text, tex = 'doctor_awaken_normal_dying') => sayRight('博士', tex, text, 900, 0);
+            const sayDemon = (text, tex = 'demon_lord_normal') => sayRight('魔王', tex, text, 850, -50);
+            const sayInuneko = (text, tex = 'inuneko_stand') => sayRight('犬猫☆スター', tex, text, 500, 50);
+            const sayKratos = (text, tex = 'boss1_normal') => sayRight('クラトス', tex, text, 800, 0);
+            const sayTourelos = (text, tex = 'boss2_normal') => sayRight('トゥレロス', tex, text, 750, 20);
+            const sayEnaria = (text, tex = 'sister_normal') => sayRight('エナリア', tex, text, 650, 40);
+            const sayEdio = (text, tex = 'brother_normal') => sayRight('エディオ', tex, text, 700, 20);
 
             (async () => {
               // 博士撃破直後会話
@@ -3920,8 +3954,20 @@ class BossScene extends Phaser.Scene {
               const redOverlay = this.add.rectangle(w / 2, h / 2, w, h, 0xff0000, 0.5).setDepth(200000);
               this.tweens.add({ targets: redOverlay, alpha: 0, duration: 300, onComplete: () => redOverlay.destroy() });
 
+              // 博士が倒れて非表示に
+              if (this.rightSpeakerImage) {
+                this.tweens.add({
+                  targets: this.rightSpeakerImage,
+                  alpha: 0,
+                  y: this.rightSpeakerImage.y + 100,
+                  duration: 600
+                });
+              }
+
               // 博士自害ナレーション
               const sayNarration = (text) => new Promise(res => {
+                if (this.heroImage && this.heroImage.active) this.tweens.add({ targets: this.heroImage, alpha: 0.3, duration: 250 });
+                if (this.rightSpeakerImage && this.rightSpeakerImage.active) this.tweens.add({ targets: this.rightSpeakerImage, alpha: 0, duration: 250 });
                 this.showDialogue('', text, res);
               });
               await sayNarration('博士は、自分に向かって引き金を引いた。');
@@ -3981,6 +4027,19 @@ class BossScene extends Phaser.Scene {
               // （暗転）
               this.cameras.main.fadeOut(800, 0, 0, 0);
               await new Promise(r => this.time.delayedCall(800, r));
+
+              if (this.rightSpeakerImage && this.rightSpeakerImage.destroy) {
+                this.rightSpeakerImage.destroy();
+                this.rightSpeakerImage = null;
+              }
+              if (this.heroImage && this.heroImage.destroy) {
+                this.heroImage.destroy();
+                this.heroImage = null;
+              }
+              if (dimBg && dimBg.destroy) {
+                dimBg.destroy();
+                dimBg = null;
+              }
 
               // GGS Terminal 2 (Spaceキー / クリックで進行)
               this.cameras.main.fadeIn(300, 0, 0, 0);
