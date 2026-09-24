@@ -2303,6 +2303,15 @@ class BossScene extends Phaser.Scene {
       overlay.setDepth(200000).setScrollFactor(0);
       uiElements.push(overlay);
 
+      // [ENTER] KEY 決定ガイド
+      const enterGuide = this.add.text(w - 100, h - 60, '▶ [ENTER] 決定', {
+        fontFamily: '"Press Start 2P", "DotGothic16"',
+        fontSize: '20px',
+        color: '#9CA3AF'
+      }).setOrigin(1, 0.5).setDepth(200001).setScrollFactor(0);
+      this.tweens.add({ targets: enterGuide, alpha: 0.3, yoyo: true, repeat: -1, duration: 500 });
+      uiElements.push(enterGuide);
+
       // 選択肢コンテナ
       const startY = h / 2 - 50;
       const choicesData = [
@@ -2436,8 +2445,8 @@ class BossScene extends Phaser.Scene {
 
         crackGfx.clear();
 
-        // 1. 光彩（グロー）
-        crackGfx.lineStyle(4, 0x00e5ff, 0.45);
+        // 1. 赤い深層グロー（血赤・熱線）
+        crackGfx.lineStyle(6, 0xff1744, 0.5);
         crackBranches.forEach(br => {
           if (br.points.length > 1) {
             crackGfx.beginPath();
@@ -2455,8 +2464,8 @@ class BossScene extends Phaser.Scene {
           });
         });
 
-        // 2. コア（純白シャープライン）
-        crackGfx.lineStyle(1.8, 0xffffff, 0.95);
+        // 2. 鮮烈な赤色ライン
+        crackGfx.lineStyle(3, 0xff2a55, 0.85);
         crackBranches.forEach(br => {
           if (br.points.length > 1) {
             crackGfx.beginPath();
@@ -2474,16 +2483,30 @@ class BossScene extends Phaser.Scene {
           });
         });
 
-        // 同心円クラック
-        crackGfx.lineStyle(1.2, 0xffffff, 0.7);
-        for (let r = 25; r <= Math.min(220, step * 14); r += 35) {
-          crackGfx.strokeCircle(w / 2 + (Math.random() - 0.5) * 4, h / 2 + (Math.random() - 0.5) * 4, r);
-        }
+        // 3. コア（純白シャープライン）
+        crackGfx.lineStyle(1.4, 0xffffff, 0.95);
+        crackBranches.forEach(br => {
+          if (br.points.length > 1) {
+            crackGfx.beginPath();
+            crackGfx.moveTo(br.points[0].x, br.points[0].y);
+            for (let i = 1; i < br.points.length; i++) {
+              crackGfx.lineTo(br.points[i].x, br.points[i].y);
+            }
+            crackGfx.strokePath();
+          }
+          br.subBranches.forEach(sub => {
+            crackGfx.beginPath();
+            crackGfx.moveTo(sub[0].x, sub[0].y);
+            crackGfx.lineTo(sub[1].x, sub[1].y);
+            crackGfx.strokePath();
+          });
+        });
 
-        // 先端スパーク
-        for (let k = 0; k < 5; k++) {
+        // 先端スパーク（赤と白の粒子）
+        for (let k = 0; k < 6; k++) {
           const randomBr = Phaser.Utils.Array.GetRandom(crackBranches);
-          const p = this.add.rectangle(randomBr.currX, randomBr.currY, 4, 4, 0xffffff).setDepth(200025).setScrollFactor(0);
+          const color = k % 2 === 0 ? 0xff2a55 : 0xffffff;
+          const p = this.add.rectangle(randomBr.currX, randomBr.currY, 5, 5, color).setDepth(200025).setScrollFactor(0);
           this.tweens.add({
             targets: p,
             x: p.x + Phaser.Math.Between(-35, 35),
@@ -2571,7 +2594,7 @@ class BossScene extends Phaser.Scene {
               h / 2 + Phaser.Math.Between(-60, 60),
               Phaser.Math.Between(10, 32),
               Phaser.Math.Between(10, 32),
-              k % 3 === 0 ? 0xffffff : (k % 3 === 1 ? 0x80deea : 0x00e5ff)
+              k % 4 === 0 ? 0xffffff : (k % 4 === 1 ? 0xff2a55 : (k % 4 === 2 ? 0xff1744 : 0x80deea))
             ).setDepth(200035).setScrollFactor(0);
 
             const angle = Math.random() * Math.PI * 2;
@@ -2671,7 +2694,7 @@ class BossScene extends Phaser.Scene {
             if (MOT.Audio && MOT.Audio.playSelect) MOT.Audio.playSelect();
             updateSelection();
           }
-        } else if (e.key === 'Enter' || e.key === ' ') {
+        } else if (e.key === 'Enter') {
           if (isBusy) return;
           if (opt1Destroyed || selectedIdx === 1) {
             if (!isGrayedOut) {
