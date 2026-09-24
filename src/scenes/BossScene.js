@@ -2296,7 +2296,7 @@ class BossScene extends Phaser.Scene {
       await sayTourelos('「いや、正面切って今は戦うのはやめとけよ。お前、まだ怪我治ってなくね？」');
       await sayKratos('「そんなの関係ねぇ！俺は戦う！！」');
       await sayTourelos('「……。」');
-      await sayDemon('「後方支援はわらわたちに任せろ！」');
+      await sayDemon('「ふふ、後方支援は我らにまかせろ！」');
 
       await sayHeroDefeat('「今度こそ、決着をつけよう」');
 
