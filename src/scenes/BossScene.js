@@ -2433,22 +2433,34 @@ class BossScene extends Phaser.Scene {
         }
       };
 
-      // ヒビ描画
+      // ── 超リアル・スタイリッシュガラス破壊システム ──
+      const impactX = w / 2;
+      const impactY = startY + 65; // 選択肢中央の衝撃点
+
+      let crackRays = [];
+      let crackWebs = [];
+      let crackFacets = []; // ガラス破片面（半透明ポリゴン）
+      let microDust = [];
+
       const initCrackGraphics = () => {
         if (!crackGfx) {
           crackGfx = this.add.graphics().setDepth(200020).setScrollFactor(0);
           uiElements.push(crackGfx);
         }
-        const numMain = 8;
-        crackBranches = [];
-        for (let i = 0; i < numMain; i++) {
-          const baseAngle = (i / numMain) * Math.PI * 2 + (Math.random() - 0.5) * 0.35;
-          crackBranches.push({
-            points: [{ x: w / 2, y: h / 2 }],
+        crackRays = [];
+        crackWebs = [];
+        crackFacets = [];
+
+        // 12本の放射状主亀裂（鋭いジグザグ折れ線）
+        const numRays = 12;
+        for (let i = 0; i < numRays; i++) {
+          const baseAngle = (i / numRays) * Math.PI * 2 + (Math.random() - 0.5) * 0.25;
+          crackRays.push({
             angle: baseAngle,
-            currX: w / 2,
-            currY: h / 2,
-            subBranches: []
+            currX: impactX,
+            currY: impactY,
+            points: [{ x: impactX, y: impactY }],
+            speed: Phaser.Math.Between(35, 65)
           });
         }
       };
@@ -2456,96 +2468,135 @@ class BossScene extends Phaser.Scene {
       const growCracks = (step) => {
         if (!crackGfx) initCrackGraphics();
 
-        crackBranches.forEach(br => {
-          const dist = Phaser.Math.Between(30, 60);
-          br.angle += (Math.random() - 0.5) * 0.45;
-          br.currX += Math.cos(br.angle) * dist;
-          br.currY += Math.sin(br.angle) * dist;
-          br.points.push({ x: br.currX, y: br.currY });
+        // 1. 各レイ（主亀裂）を鋭角に伸長
+        crackRays.forEach((ray, rayIdx) => {
+          // 鋭角なジグザグ（折れ線）
+          ray.angle += (Math.random() - 0.5) * 0.7;
+          const segLen = Phaser.Math.Between(25, 55);
+          ray.currX += Math.cos(ray.angle) * segLen;
+          ray.currY += Math.sin(ray.angle) * segLen;
+          const newPt = { x: ray.currX, y: ray.currY };
+          ray.points.push(newPt);
 
-          if (Math.random() < 0.45 && br.points.length > 2) {
-            const startPt = br.points[Phaser.Math.Between(1, br.points.length - 1)];
-            const subAngle = br.angle + (Math.random() > 0.5 ? 1 : -1) * (Math.PI / 4 + Math.random() * 0.4);
-            const subLen = Phaser.Math.Between(25, 60);
-            br.subBranches.push([
-              { x: startPt.x, y: startPt.y },
-              { x: startPt.x + Math.cos(subAngle) * subLen, y: startPt.y + Math.sin(subAngle) * subLen }
-            ]);
+          // 2. 隣接するレイ同士を繋ぐ鋭角なウェブクラック（角ばった蜘蛛の巣状破壊面）
+          if (step >= 2 && Math.random() < 0.6) {
+            const nextRay = crackRays[(rayIdx + 1) % crackRays.length];
+            if (nextRay.points.length > 1) {
+              const p1 = newPt;
+              const p2 = nextRay.points[nextRay.points.length - 1];
+              // 直線で繋ぐ
+              crackWebs.push({ x1: p1.x, y1: p1.y, x2: p2.x, y2: p2.y });
+
+              // ガラス面（ファセットポリゴン）の生成
+              if (Math.random() < 0.4 && ray.points.length >= 2) {
+                const p0 = ray.points[ray.points.length - 2];
+                crackFacets.push([
+                  { x: p0.x, y: p0.y },
+                  { x: p1.x, y: p1.y },
+                  { x: p2.x, y: p2.y }
+                ]);
+              }
+            }
+          }
+
+          // 3. 枝分かれ（フォーク）
+          if (step >= 4 && Math.random() < 0.35 && ray.points.length > 2) {
+            const startPt = ray.points[Phaser.Math.Between(1, ray.points.length - 1)];
+            const forkAngle = ray.angle + (Math.random() > 0.5 ? 1 : -1) * (0.6 + Math.random() * 0.5);
+            const forkLen = Phaser.Math.Between(20, 50);
+            crackWebs.push({
+              x1: startPt.x,
+              y1: startPt.y,
+              x2: startPt.x + Math.cos(forkAngle) * forkLen,
+              y2: startPt.y + Math.sin(forkAngle) * forkLen
+            });
           }
         });
 
+        // 描画実行
         crackGfx.clear();
 
-        // 1. 赤い深層グロー（血赤・熱線）
-        crackGfx.lineStyle(6, 0xff1744, 0.5);
-        crackBranches.forEach(br => {
-          if (br.points.length > 1) {
-            crackGfx.beginPath();
-            crackGfx.moveTo(br.points[0].x, br.points[0].y);
-            for (let i = 1; i < br.points.length; i++) {
-              crackGfx.lineTo(br.points[i].x, br.points[i].y);
-            }
-            crackGfx.strokePath();
-          }
-          br.subBranches.forEach(sub => {
-            crackGfx.beginPath();
-            crackGfx.moveTo(sub[0].x, sub[0].y);
-            crackGfx.lineTo(sub[1].x, sub[1].y);
-            crackGfx.strokePath();
-          });
+        // [Layer 1] ガラス破片面（半透明の光沢・屈折ファセット）
+        crackFacets.slice(-16).forEach(poly => {
+          crackGfx.fillStyle(Math.random() < 0.5 ? 0xffffff : 0xff1744, Phaser.Math.FloatBetween(0.06, 0.16));
+          crackGfx.beginPath();
+          crackGfx.moveTo(poly[0].x, poly[0].y);
+          crackGfx.lineTo(poly[1].x, poly[1].y);
+          crackGfx.lineTo(poly[2].x, poly[2].y);
+          crackGfx.closePath();
+          crackGfx.fillPath();
         });
 
-        // 2. 鮮烈な赤色ライン
-        crackGfx.lineStyle(3, 0xff2a55, 0.85);
-        crackBranches.forEach(br => {
-          if (br.points.length > 1) {
-            crackGfx.beginPath();
-            crackGfx.moveTo(br.points[0].x, br.points[0].y);
-            for (let i = 1; i < br.points.length; i++) {
-              crackGfx.lineTo(br.points[i].x, br.points[i].y);
+        // [Layer 2] 深層の暗いクラック溝（奥行き感・シャドウ）
+        crackGfx.lineStyle(4, 0x000000, 0.7);
+        const drawAllLines = (ox = 0, oy = 0) => {
+          crackRays.forEach(ray => {
+            if (ray.points.length > 1) {
+              crackGfx.beginPath();
+              crackGfx.moveTo(ray.points[0].x + ox, ray.points[0].y + oy);
+              for (let i = 1; i < ray.points.length; i++) {
+                crackGfx.lineTo(ray.points[i].x + ox, ray.points[i].y + oy);
+              }
+              crackGfx.strokePath();
             }
-            crackGfx.strokePath();
-          }
-          br.subBranches.forEach(sub => {
+          });
+          crackWebs.forEach(web => {
             crackGfx.beginPath();
-            crackGfx.moveTo(sub[0].x, sub[0].y);
-            crackGfx.lineTo(sub[1].x, sub[1].y);
+            crackGfx.moveTo(web.x1 + ox, web.y1 + oy);
+            crackGfx.lineTo(web.x2 + ox, web.y2 + oy);
             crackGfx.strokePath();
           });
+        };
+        drawAllLines(2, 2);
+
+        // [Layer 3] 深紅のネオングロー（鮮血のようなエネルギー光）
+        crackGfx.lineStyle(5.5, 0xff0044, 0.65);
+        drawAllLines(0, 0);
+
+        // [Layer 4] 鮮烈なクリムゾンライン
+        crackGfx.lineStyle(2.8, 0xff1744, 0.95);
+        drawAllLines(0, 0);
+
+        // [Layer 5] 最上層シャープ純白コア（ガラスの鋭いエッジ）
+        crackGfx.lineStyle(1.2, 0xffffff, 1.0);
+        drawAllLines(0, 0);
+
+        // 衝撃波（ショックウェーブリング）の生成
+        const ring = this.add.circle(impactX, impactY, 20).setStrokeStyle(4, 0xff1744, 0.9).setDepth(200024).setScrollFactor(0);
+        this.tweens.add({
+          targets: ring,
+          radius: 120 + step * 18,
+          alpha: 0,
+          duration: 280,
+          ease: 'Cubic.easeOut',
+          onComplete: () => ring.destroy()
         });
 
-        // 3. コア（純白シャープライン）
-        crackGfx.lineStyle(1.4, 0xffffff, 0.95);
-        crackBranches.forEach(br => {
-          if (br.points.length > 1) {
-            crackGfx.beginPath();
-            crackGfx.moveTo(br.points[0].x, br.points[0].y);
-            for (let i = 1; i < br.points.length; i++) {
-              crackGfx.lineTo(br.points[i].x, br.points[i].y);
-            }
-            crackGfx.strokePath();
-          }
-          br.subBranches.forEach(sub => {
-            crackGfx.beginPath();
-            crackGfx.moveTo(sub[0].x, sub[0].y);
-            crackGfx.lineTo(sub[1].x, sub[1].y);
-            crackGfx.strokePath();
-          });
-        });
+        // 打撃点から飛び散るガラスの小破片（三角形シャード）
+        for (let k = 0; k < 10; k++) {
+          const shardSize = Phaser.Math.Between(6, 16);
+          const color = k % 3 === 0 ? 0xffffff : (k % 3 === 1 ? 0xff1744 : 0xff0044);
+          const shard = this.add.triangle(
+            impactX + Phaser.Math.Between(-20, 20),
+            impactY + Phaser.Math.Between(-20, 20),
+            0, -shardSize,
+            shardSize * 0.6, shardSize,
+            -shardSize * 0.6, shardSize,
+            color, 0.9
+          ).setDepth(200026).setScrollFactor(0);
 
-        // 先端スパーク（赤と白の粒子）
-        for (let k = 0; k < 6; k++) {
-          const randomBr = Phaser.Utils.Array.GetRandom(crackBranches);
-          const color = k % 2 === 0 ? 0xff2a55 : 0xffffff;
-          const p = this.add.rectangle(randomBr.currX, randomBr.currY, 5, 5, color).setDepth(200025).setScrollFactor(0);
+          const angle = Math.random() * Math.PI * 2;
+          const dist = Phaser.Math.Between(60, 220);
           this.tweens.add({
-            targets: p,
-            x: p.x + Phaser.Math.Between(-35, 35),
-            y: p.y + Phaser.Math.Between(-35, 35),
+            targets: shard,
+            x: shard.x + Math.cos(angle) * dist,
+            y: shard.y + Math.sin(angle) * dist + 40,
+            angle: Phaser.Math.Between(-360, 360),
             alpha: 0,
-            scale: 0,
-            duration: 350,
-            onComplete: () => p.destroy()
+            scale: 0.2,
+            duration: Phaser.Math.Between(350, 650),
+            ease: 'Power2',
+            onComplete: () => shard.destroy()
           });
         }
       };
@@ -2618,52 +2669,67 @@ class BossScene extends Phaser.Scene {
           const flash = this.add.rectangle(w / 2, h / 2, w, h, 0xffffff, 0.95).setDepth(200030).setScrollFactor(0);
           this.tweens.add({ targets: flash, alpha: 0, duration: 600, onComplete: () => flash.destroy() });
 
-          // 画面全体にガラス破片が飛び散る
-          for (let k = 0; k < 80; k++) {
-            const shard = this.add.rectangle(
-              w / 2 + Phaser.Math.Between(-60, 60),
-              h / 2 + Phaser.Math.Between(-60, 60),
-              Phaser.Math.Between(10, 32),
-              Phaser.Math.Between(10, 32),
-              k % 4 === 0 ? 0xffffff : (k % 4 === 1 ? 0xff2a55 : (k % 4 === 2 ? 0xff1744 : 0x80deea))
+          // 画面全体に三角形のリアルなガラスシャードが120枚以上吹き飛ぶ！
+          for (let k = 0; k < 130; k++) {
+            const wX = w / 2 + Phaser.Math.Between(-100, 100);
+            const wY = startY + 65 + Phaser.Math.Between(-80, 80);
+            const sW = Phaser.Math.Between(15, 55);
+            const sH = Phaser.Math.Between(20, 70);
+
+            // 多彩なガラスカラー（白・深紅・ネオンレッド・シアン・ダーク）
+            const colors = [0xffffff, 0xff1744, 0xff0044, 0xd50000, 0x80deea, 0xffffff];
+            const chosenColor = colors[k % colors.length];
+
+            const tri = this.add.triangle(
+              wX, wY,
+              0, -sH / 2,
+              sW / 2, sH / 2,
+              -sW / 2, sH / 2,
+              chosenColor,
+              Phaser.Math.FloatBetween(0.85, 1.0)
             ).setDepth(200035).setScrollFactor(0);
 
             const angle = Math.random() * Math.PI * 2;
-            const speed = Phaser.Math.Between(350, 950);
+            const speed = Phaser.Math.Between(450, 1300);
             this.tweens.add({
-              targets: shard,
-              x: shard.x + Math.cos(angle) * speed,
-              y: shard.y + Math.sin(angle) * speed,
-              angle: Phaser.Math.Between(-720, 720),
+              targets: tri,
+              x: tri.x + Math.cos(angle) * speed,
+              y: tri.y + Math.sin(angle) * speed + 150,
+              angle: Phaser.Math.Between(-1080, 1080),
               alpha: 0,
               scale: 0,
-              duration: Phaser.Math.Between(600, 1100),
+              duration: Phaser.Math.Between(700, 1300),
               ease: 'Cubic.easeOut',
-              onComplete: () => shard.destroy()
+              onComplete: () => tri.destroy()
             });
           }
 
-          // ★「１ 殺す」という選択肢が粉々に壊れる演出！★
+          // ★「１ 殺す」という選択肢が激しく粉々に破壊消滅する演出！★
           const opt1Y = startY;
-          for (let k = 0; k < 50; k++) {
-            const part = this.add.rectangle(
-              w / 2 + Phaser.Math.Between(-160, 160),
-              opt1Y + Phaser.Math.Between(-25, 25),
-              Phaser.Math.Between(8, 22),
-              Phaser.Math.Between(8, 22),
-              k % 3 === 0 ? 0x4FD1FF : (k % 3 === 1 ? 0x1e3a5f : 0xffffff)
+          for (let k = 0; k < 60; k++) {
+            const pW = Phaser.Math.Between(10, 30);
+            const pH = Phaser.Math.Between(10, 35);
+            const part = this.add.triangle(
+              w / 2 + Phaser.Math.Between(-180, 180),
+              opt1Y + Phaser.Math.Between(-30, 30),
+              0, -pH / 2,
+              pW / 2, pH / 2,
+              -pW / 2, pH / 2,
+              k % 3 === 0 ? 0x4FD1FF : (k % 3 === 1 ? 0xffffff : 0x0a192f),
+              1.0
             ).setDepth(200035).setScrollFactor(0);
 
             const angle = Math.random() * Math.PI * 2;
-            const speed = Phaser.Math.Between(300, 850);
+            const speed = Phaser.Math.Between(400, 1100);
             this.tweens.add({
               targets: part,
               x: part.x + Math.cos(angle) * speed,
-              y: part.y + Math.sin(angle) * speed,
-              angle: Phaser.Math.Between(-540, 540),
+              y: part.y + Math.sin(angle) * speed + 80,
+              angle: Phaser.Math.Between(-720, 720),
               alpha: 0,
               scale: 0,
-              duration: Phaser.Math.Between(500, 900),
+              duration: Phaser.Math.Between(550, 950),
+              ease: 'Power2',
               onComplete: () => part.destroy()
             });
           }
