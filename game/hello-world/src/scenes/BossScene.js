@@ -2300,12 +2300,26 @@ class BossScene extends Phaser.Scene {
 
       await sayHeroDefeat('「今度こそ、決着をつけよう」');
 
-      // 立ち絵・暗転背景の完全破棄（戦闘画面に戻す）
-      if (this.dimBg && this.dimBg.destroy) { this.dimBg.destroy(); this.dimBg = null; }
-      if (this.heroImage && this.heroImage.destroy) { this.heroImage.destroy(); this.heroImage = null; }
-      if (this.doctorImage && this.doctorImage.destroy) { this.doctorImage.destroy(); this.doctorImage = null; }
-      if (this.demonImage && this.demonImage.destroy) { this.demonImage.destroy(); this.demonImage = null; }
-      if (this.rightSpeakerImage && this.rightSpeakerImage.destroy) { this.rightSpeakerImage.destroy(); this.rightSpeakerImage = null; }
+      // 立ち絵と暗転背景をスムーズにフェードアウト
+      const fadeTargets = [this.dimBg, this.heroImage, this.doctorImage, this.demonImage, this.rightSpeakerImage].filter(t => t && t.active);
+      if (fadeTargets.length > 0) {
+        await new Promise(res => {
+          this.tweens.add({
+            targets: fadeTargets,
+            alpha: 0,
+            duration: 600,
+            onComplete: () => {
+              fadeTargets.forEach(t => { if (t && t.destroy) t.destroy(); });
+              this.dimBg = null;
+              this.heroImage = null;
+              this.doctorImage = null;
+              this.demonImage = null;
+              this.rightSpeakerImage = null;
+              res();
+            }
+          });
+        });
+      }
 
       // 3. Phase 2 博士戦 (HP 1000, 勇者復活)
       this.isDoctorPhase1Unwinnable = false;
@@ -2321,16 +2335,22 @@ class BossScene extends Phaser.Scene {
         this.bossMaxHP = 1000;
         this.bossHP = 1000;
       }
+
+      // 急にはじまるのではなく、数秒（2秒間）対峙の静寂・タメを設ける
+      await new Promise(r => this.time.delayedCall(2000, r));
+
+      // 博士戦のBGMを確実に再生
+      if (this.boss5Bgm) {
+        try { this.boss5Bgm.stop(); this.boss5Bgm.destroy(); } catch (e) {}
+      }
+      this.boss5Bgm = this.sound.add('doctor_bgm', { loop: true, volume: 0.25 });
+      this.boss5Bgm.play();
+
       this.cutsceneActive = false;
       this.dialogActive = false;
       this.playerInvincible = false;
       this.physics.resume();
       this.startBossLaneMovement();
-      if (this.boss5Bgm) {
-        this.boss5Bgm.stop();
-        this.boss5Bgm = this.sound.add('doctor_bgm', { loop: true, volume: 0.25 });
-        this.boss5Bgm.play();
-      }
     })();
   }
 
