@@ -969,9 +969,21 @@ class BossScene extends Phaser.Scene {
     // 当たり判定の描画（常にプレイヤーのbodyに追従する水色の線）
 
     // 博士の指示システム update（ダイアログ判定より先に実行して、表示非表示を管理する）
-    if (this.currentBossIndex >= 4 || MOT.flags.demonLordFinished) {
-      if (MOT.DoctorDirective && MOT.DoctorDirective.directiveContainer) {
-        MOT.DoctorDirective.hideDirective(this);
+    if (this.currentBossIndex >= 4 || MOT.flags.demonLordFinished || this.demonLordFinished) {
+      if (MOT.DoctorDirective) {
+        if (MOT.DoctorDirective.directiveContainer) {
+          MOT.DoctorDirective.directiveContainer.destroy();
+          MOT.DoctorDirective.directiveContainer = null;
+        }
+        if (MOT.DoctorDirective.currentMaskShape) {
+          MOT.DoctorDirective.currentMaskShape.destroy();
+          MOT.DoctorDirective.currentMaskShape = null;
+        }
+        if (MOT.DoctorDirective.currentHighlight) {
+          MOT.DoctorDirective.currentHighlight.destroy();
+          MOT.DoctorDirective.currentHighlight = null;
+        }
+        MOT.DoctorDirective.currentDirective = null;
       }
     } else {
       let isDialogOrChoice = this.dialogActive || this.choiceActive || (this.choiceContainer && this.choiceContainer.active);
@@ -2194,10 +2206,14 @@ class BossScene extends Phaser.Scene {
     return new Promise(resolve => {
       const w = 1920, h = 1080;
       let isBusy = false;
-      let isSealed = false;
+      let isGrayedOut = false;
       let hasIntervened = false;
+      let opt1Destroyed = false;
       let resistanceCount = 0;
       let selectedIdx = 0; // 0: 殺す, 1: 殺さない
+
+      this.dialogActive = true;
+      this.choiceActive = true;
 
       let uiElements = [];
       let crackGfx = null;
@@ -2229,70 +2245,74 @@ class BossScene extends Phaser.Scene {
         }).setOrigin(0.5).setDepth(200003).setScrollFactor(0);
 
         uiElements.push(btn, txt);
-        choicesList.push({ btn, txt, val: choice.val, origY: y });
+        choicesList.push({ btn, txt, val: choice.val, origY: y, origX: w / 2 });
       });
 
-      // 封印オーバーレイ（ボタン２の上に配置）
-      const opt2Y = startY + 130;
-      const sealGfx = this.add.graphics().setDepth(200004).setScrollFactor(0);
-      const sealText = this.add.text(w / 2, opt2Y, '【 封 印 】', {
-        fontFamily: '"DotGothic16"',
-        fontSize: '28px',
-        color: '#FF2A6D',
-        fontStyle: 'bold',
-        stroke: '#000000',
-        strokeThickness: 5
-      }).setOrigin(0.5).setDepth(200005).setScrollFactor(0).setAlpha(0);
-
-      uiElements.push(sealGfx, sealText);
-
       const updateSelection = () => {
-        choicesList.forEach((c, idx) => {
-          if (idx === selectedIdx) {
-            c.btn.setTint(idx === 1 ? 0x00FFCC : 0x4FD1FF);
-            c.txt.setColor('#FFFFFF');
-            c.txt.setScale(1.08);
-          } else {
-            c.btn.setTint(0x555555);
-            c.txt.setColor(idx === 1 && isSealed ? '#662222' : '#888888');
-            c.txt.setScale(1.0);
+        if (opt1Destroyed) {
+          // 「１ 殺す」が壊れた後は「２ 殺さない」だけが常に選ばれる
+          selectedIdx = 1;
+          if (choicesList[1] && choicesList[1].btn && choicesList[1].btn.active) {
+            choicesList[1].btn.clearTint();
+            choicesList[1].btn.setTint(0x00FFCC);
+            choicesList[1].btn.setAlpha(1.0);
+            choicesList[1].txt.setColor('#FFFFFF');
+            choicesList[1].txt.setAlpha(1.0);
+            choicesList[1].txt.setScale(1.08);
           }
-        });
+          return;
+        }
+
+        // 選択肢１（殺す）
+        if (choicesList[0] && choicesList[0].btn && choicesList[0].btn.active) {
+          if (selectedIdx === 0) {
+            choicesList[0].btn.clearTint();
+            choicesList[0].btn.setTint(0x4FD1FF);
+            choicesList[0].btn.setAlpha(1.0);
+            choicesList[0].txt.setColor('#FFFFFF');
+            choicesList[0].txt.setAlpha(1.0);
+            choicesList[0].txt.setScale(1.08);
+          } else {
+            choicesList[0].btn.clearTint();
+            choicesList[0].btn.setTint(0x555555);
+            choicesList[0].btn.setAlpha(1.0);
+            choicesList[0].txt.setColor('#888888');
+            choicesList[0].txt.setAlpha(1.0);
+            choicesList[0].txt.setScale(1.0);
+          }
+        }
+
+        // 選択肢２（殺さない）
+        if (choicesList[1] && choicesList[1].btn && choicesList[1].btn.active) {
+          if (isGrayedOut) {
+            // 灰色になって選択できなくなる
+            choicesList[1].btn.clearTint();
+            choicesList[1].btn.setTint(0x383838);
+            choicesList[1].btn.setAlpha(0.6);
+            choicesList[1].txt.setColor('#666666');
+            choicesList[1].txt.setAlpha(0.6);
+            choicesList[1].txt.setScale(1.0);
+          } else {
+            // 初期状態
+            choicesList[1].btn.clearTint();
+            choicesList[1].btn.setTint(0x555555);
+            choicesList[1].btn.setAlpha(1.0);
+            choicesList[1].txt.setColor('#888888');
+            choicesList[1].txt.setAlpha(1.0);
+            choicesList[1].txt.setScale(1.0);
+          }
+        }
       };
       updateSelection();
 
-      const applySealVisuals = () => {
-        sealGfx.clear();
-        sealGfx.fillStyle(0x33000a, 0.75);
-        sealGfx.fillRoundedRect(w / 2 - 220, opt2Y - 38, 440, 76, 8);
-        sealGfx.lineStyle(3, 0xff0044, 0.95);
-        sealGfx.strokeRoundedRect(w / 2 - 220, opt2Y - 38, 440, 76, 8);
-        // 赤い鎖・交差線
-        sealGfx.lineBetween(w / 2 - 220, opt2Y - 38, w / 2 + 220, opt2Y + 38);
-        sealGfx.lineBetween(w / 2 - 220, opt2Y + 38, w / 2 + 220, opt2Y - 38);
-
-        sealText.setAlpha(1);
-        this.tweens.add({
-          targets: sealText,
-          alpha: { from: 0.5, to: 1 },
-          scale: { from: 0.95, to: 1.05 },
-          yoyo: true,
-          repeat: -1,
-          duration: 500
-        });
-
-        choicesList[1].txt.setColor('#551111');
-        choicesList[1].btn.setTint(0x221111);
-      };
-
       const setUIVisible = (visible) => {
         uiElements.forEach(el => {
-          if (el && el.setAlpha) {
+          if (el && el.setAlpha && el.active) {
             el.setAlpha(visible ? 1 : 0);
           }
         });
-        if (visible && isSealed) {
-          applySealVisuals();
+        if (visible) {
+          updateSelection();
         }
       };
 
@@ -2400,6 +2420,8 @@ class BossScene extends Phaser.Scene {
       };
 
       const cleanupAndResolve = (val) => {
+        this.dialogActive = false;
+        this.choiceActive = false;
         this.input.keyboard.off('keydown', onKeyDown);
         uiElements.forEach(el => { if (el && el.destroy) el.destroy(); });
         uiElements = [];
@@ -2414,14 +2436,13 @@ class BossScene extends Phaser.Scene {
         await sayDoctor('「お前はさっきから、ろくな選択をしない。」');
         await sayDoctor('「さぁ、魔王を殺すんだ。」');
 
-        isSealed = true;
+        isGrayedOut = true;
         selectedIdx = 0; // １ 殺す に固定
         setUIVisible(true);
-        applySealVisuals();
         updateSelection();
 
-        this.cameras.main.shake(300, 0.02);
-        if (MOT.Audio && MOT.Audio.playExplosion) MOT.Audio.playExplosion();
+        this.cameras.main.shake(200, 0.015);
+        if (MOT.Audio && MOT.Audio.playBleep) MOT.Audio.playBleep('博士');
 
         isBusy = false;
       };
@@ -2437,19 +2458,19 @@ class BossScene extends Phaser.Scene {
           MOT.Audio.playTick();
         }
 
-        // 封印ボタンがカツッと反応して微小振動
-        this.tweens.add({
-          targets: [choicesList[1].btn, choicesList[1].txt, sealText],
-          x: choicesList[1].btn.x + Phaser.Math.Between(-6, 6),
-          duration: 40,
-          yoyo: true
-        });
+        // 灰色の選択肢２がカツッと小さく震える
+        if (choicesList[1] && choicesList[1].btn && choicesList[1].btn.active) {
+          this.tweens.add({
+            targets: [choicesList[1].btn, choicesList[1].txt],
+            x: choicesList[1].origX + Phaser.Math.Between(-5, 5),
+            duration: 35,
+            yoyo: true
+          });
+        }
 
         if (resistanceCount < 5) {
           // 1〜4回目: カツカツと弾かれる
-          this.cameras.main.shake(60, 0.003);
-          const sp = this.add.rectangle(w / 2 + Phaser.Math.Between(-80, 80), opt2Y + Phaser.Math.Between(-15, 15), 6, 6, 0xff0044).setDepth(200010).setScrollFactor(0);
-          this.tweens.add({ targets: sp, alpha: 0, scale: 0, duration: 200, onComplete: () => sp.destroy() });
+          this.cameras.main.shake(50, 0.003);
         } else if (resistanceCount < 20) {
           // 5回目〜19回目: 画面中央からヒビが少しずつ入る！
           const crackStep = resistanceCount - 4; // 1〜15
@@ -2457,7 +2478,7 @@ class BossScene extends Phaser.Scene {
           growCracks(crackStep);
           this.cameras.main.shake(120, 0.006 + crackStep * 0.002);
         } else {
-          // 20回目: 画面が割れて、殺さないが選べるようになる！
+          // 20回目: 画面が割れて、「１ 殺す」が粉々に壊れ、「２ 殺さない」が選べるようになる！
           isBusy = true;
           if (MOT.Audio && MOT.Audio.playShatter) MOT.Audio.playShatter();
           this.cameras.main.shake(900, 0.06);
@@ -2491,43 +2512,51 @@ class BossScene extends Phaser.Scene {
             });
           }
 
-          // 赤い封印の破片も飛び散る
-          for (let k = 0; k < 35; k++) {
-            const rShard = this.add.rectangle(
-              w / 2 + Phaser.Math.Between(-150, 150),
-              opt2Y + Phaser.Math.Between(-20, 20),
+          // ★「１ 殺す」という選択肢が粉々に壊れる演出！★
+          const opt1Y = startY;
+          for (let k = 0; k < 50; k++) {
+            const part = this.add.rectangle(
+              w / 2 + Phaser.Math.Between(-160, 160),
+              opt1Y + Phaser.Math.Between(-25, 25),
               Phaser.Math.Between(8, 22),
               Phaser.Math.Between(8, 22),
-              0xff0055
+              k % 3 === 0 ? 0x4FD1FF : (k % 3 === 1 ? 0x1e3a5f : 0xffffff)
             ).setDepth(200035).setScrollFactor(0);
+
+            const angle = Math.random() * Math.PI * 2;
+            const speed = Phaser.Math.Between(300, 850);
             this.tweens.add({
-              targets: rShard,
-              x: rShard.x + Phaser.Math.Between(-300, 300),
-              y: rShard.y + Phaser.Math.Between(-200, 200),
+              targets: part,
+              x: part.x + Math.cos(angle) * speed,
+              y: part.y + Math.sin(angle) * speed,
+              angle: Phaser.Math.Between(-540, 540),
               alpha: 0,
               scale: 0,
-              duration: 700,
-              onComplete: () => rShard.destroy()
+              duration: Phaser.Math.Between(500, 900),
+              onComplete: () => part.destroy()
             });
           }
 
-          // ヒビと封印を消去
-          if (crackGfx) { crackGfx.destroy(); crackGfx = null; }
-          sealGfx.clear();
-          sealText.destroy();
+          // 「１ 殺す」のボタンとテキストを物理的に完全消滅
+          if (choicesList[0]) {
+            if (choicesList[0].btn) choicesList[0].btn.destroy();
+            if (choicesList[0].txt) choicesList[0].txt.destroy();
+            choicesList[0] = null;
+          }
+          opt1Destroyed = true;
 
-          // 殺さないの選択肢を解放！
-          isSealed = false;
+          // ヒビグラフィック消去
+          if (crackGfx) { crackGfx.destroy(); crackGfx = null; }
+
+          // 「２ 殺さない」を灰色から完全解放！
+          isGrayedOut = false;
           selectedIdx = 1;
-          choicesList[1].txt.setColor('#FFFFFF');
-          choicesList[1].btn.clearTint();
-          choicesList[1].btn.setTint(0x00FFCC);
           updateSelection();
 
           this.tweens.add({
             targets: choicesList[1].btn,
-            scaleX: { from: 1.2, to: 1.0 },
-            scaleY: { from: 1.2, to: 1.0 },
+            scaleX: { from: 1.25, to: 1.0 },
+            scaleY: { from: 1.25, to: 1.0 },
             duration: 400,
             ease: 'Back.easeOut'
           });
@@ -2543,9 +2572,8 @@ class BossScene extends Phaser.Scene {
             await new Promise(r => this.showDialogue(heroName, '「……それでも僕は、殺したくない……！！」', r));
           }
 
-          // 選択肢UIを再表示し、選べる状態にして決定待ちにする
+          // 選択肢UIを再表示（画面上には解放された「２ 殺さない」だけが存在する！）
           setUIVisible(true);
-          selectedIdx = 1;
           updateSelection();
           isBusy = false;
         }
@@ -2557,52 +2585,54 @@ class BossScene extends Phaser.Scene {
         if (e.key === 'ArrowDown' || e.key === 's' || e.key === 'S') {
           if (!hasIntervened) {
             handleDoctorIntervene();
-          } else if (isSealed) {
+          } else if (isGrayedOut) {
             handleResistance();
-          } else {
-            selectedIdx = 1;
-            if (MOT.Audio && MOT.Audio.playSelect) MOT.Audio.playSelect();
-            updateSelection();
           }
         } else if (e.key === 'ArrowUp' || e.key === 'w' || e.key === 'W') {
-          if (!isSealed) {
+          if (!isGrayedOut && !opt1Destroyed) {
             selectedIdx = 0;
             if (MOT.Audio && MOT.Audio.playSelect) MOT.Audio.playSelect();
             updateSelection();
           }
         } else if (e.key === 'Enter' || e.key === ' ') {
           if (isBusy) return;
-          if (selectedIdx === 0) {
+          if (opt1Destroyed || selectedIdx === 1) {
+            if (!isGrayedOut) {
+              if (MOT.Audio && MOT.Audio.playSelect) MOT.Audio.playSelect();
+              cleanupAndResolve(2);
+            }
+          } else if (selectedIdx === 0 && !opt1Destroyed) {
             if (MOT.Audio && MOT.Audio.playSelect) MOT.Audio.playSelect();
             cleanupAndResolve(1);
-          } else if (selectedIdx === 1 && !isSealed) {
-            if (MOT.Audio && MOT.Audio.playSelect) MOT.Audio.playSelect();
-            cleanupAndResolve(2);
           }
         }
       };
 
-      choicesList[0].btn.on('pointerdown', () => {
-        if (isBusy) return;
-        selectedIdx = 0;
-        updateSelection();
-        if (MOT.Audio && MOT.Audio.playSelect) MOT.Audio.playSelect();
-        cleanupAndResolve(1);
-      });
-
-      choicesList[1].btn.on('pointerdown', () => {
-        if (isBusy) return;
-        if (!hasIntervened) {
-          handleDoctorIntervene();
-        } else if (isSealed) {
-          handleResistance();
-        } else {
-          selectedIdx = 1;
+      if (choicesList[0] && choicesList[0].btn) {
+        choicesList[0].btn.on('pointerdown', () => {
+          if (isBusy || opt1Destroyed) return;
+          selectedIdx = 0;
           updateSelection();
           if (MOT.Audio && MOT.Audio.playSelect) MOT.Audio.playSelect();
-          cleanupAndResolve(2);
-        }
-      });
+          cleanupAndResolve(1);
+        });
+      }
+
+      if (choicesList[1] && choicesList[1].btn) {
+        choicesList[1].btn.on('pointerdown', () => {
+          if (isBusy) return;
+          if (!hasIntervened) {
+            handleDoctorIntervene();
+          } else if (isGrayedOut) {
+            handleResistance();
+          } else {
+            selectedIdx = 1;
+            updateSelection();
+            if (MOT.Audio && MOT.Audio.playSelect) MOT.Audio.playSelect();
+            cleanupAndResolve(2);
+          }
+        });
+      }
 
       this.input.keyboard.on('keydown', onKeyDown);
     });
@@ -3017,6 +3047,24 @@ class BossScene extends Phaser.Scene {
           var cfg = this.getBossConfig(key);
 
           if (key === 'demon_lord') {
+            MOT.flags.demonLordFinished = true;
+            this.demonLordFinished = true;
+            this.dialogActive = true;
+            if (MOT.DoctorDirective) {
+              if (MOT.DoctorDirective.directiveContainer) {
+                MOT.DoctorDirective.directiveContainer.destroy();
+                MOT.DoctorDirective.directiveContainer = null;
+              }
+              if (MOT.DoctorDirective.currentMaskShape) {
+                MOT.DoctorDirective.currentMaskShape.destroy();
+                MOT.DoctorDirective.currentMaskShape = null;
+              }
+              if (MOT.DoctorDirective.currentHighlight) {
+                MOT.DoctorDirective.currentHighlight.destroy();
+                MOT.DoctorDirective.currentHighlight = null;
+              }
+              MOT.DoctorDirective.currentDirective = null;
+            }
             var w = 1920, h = 1080;
             var dimBg = this.add.rectangle(w / 2, h / 2, w, h, 0x000000, 0.6).setAlpha(0).setDepth(89);
             this.dimBg = dimBg;
