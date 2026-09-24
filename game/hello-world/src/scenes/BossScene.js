@@ -3580,8 +3580,10 @@ class BossScene extends Phaser.Scene {
 
                 // 主人公はその場所（戦闘定位置 x: 300）にスタンバイ（左からの歩き入場はなし）
                 this.tweens.killTweensOf(this.player);
-                this.player.setPosition(300, 540);
-                if (this.player.body) this.player.body.reset(300, 540);
+                this.player.setPosition(300, 460);
+                if (this.player.body) this.player.body.reset(300, 460);
+                this.player.currentCol = 1;
+                this.player.currentLane = 1;
                 this.player.setAlpha(1);
 
                 // 暗転明け
