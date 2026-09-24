@@ -4881,7 +4881,7 @@ class BossScene extends Phaser.Scene {
     let startY = h / 2 - (choicesData.length - 1) * 60;
     
     choicesData.forEach((data, index) => {
-      let btn = this.add.rectangle(w / 2, startY + index * 120, 600, 90, 0x1F2933).setStrokeStyle(2, 0x4FD1FF).setInteractive({ useHandCursor: true }).setDepth(200000).setScrollFactor(0);
+      let btn = this.add.rectangle(w / 2, startY + index * 120, 1100, 90, 0x1F2933).setStrokeStyle(2, 0x4FD1FF).setInteractive({ useHandCursor: true }).setDepth(200000).setScrollFactor(0);
       let txt = this.add.text(w / 2, startY + index * 120, data.label, { fontFamily: '"DotGothic16"', fontSize: '26px', color: '#4FD1FF' }).setOrigin(0.5).setDepth(200001).setScrollFactor(0);
       
       this.choicesList.push({ btn: btn, txt: txt, callback: data.callback });
@@ -5068,10 +5068,10 @@ class BossScene extends Phaser.Scene {
     this.input.keyboard.on('keydown', handleKey);
   }
 
-    showChoice(choices) {
+  showChoice(choices) {
     this.choiceActive = true;
     const w = 1920, h = 1080;
-    const startY = h / 2 - (choices.length * 45);
+    const startY = h / 2 - ((choices.length - 1) * 60);
     const elements = [];
 
     const overlay = this.add.graphics();
@@ -5094,13 +5094,17 @@ class BossScene extends Phaser.Scene {
     const self = this;
 
     choices.forEach(function (choice, i) {
-      const y = startY + i * 110;
-      const btn = self.add.image(w / 2, y, 'ui_button_wide').setInteractive(new Phaser.Geom.Rectangle(-100, -30, 560, 110), Phaser.Geom.Rectangle.Contains).setDepth(200002).setScrollFactor(0);
-      
+      const y = startY + i * 120;
+      const btn = self.add.rectangle(w / 2, y, 1100, 90, 0x1F2933)
+        .setStrokeStyle(2, 0x4FD1FF)
+        .setInteractive({ useHandCursor: true })
+        .setDepth(200002)
+        .setScrollFactor(0);
+
       const txt = self.add.text(w / 2, y, choice.text, {
         fontFamily: '"DotGothic16"',
         fontSize: '26px',
-        color: '#E5E7EB'
+        color: '#4FD1FF'
       }).setOrigin(0.5).setDepth(200003).setScrollFactor(0);
 
       elements.push(btn, txt);
@@ -5118,6 +5122,7 @@ class BossScene extends Phaser.Scene {
       btn.on('pointerdown', function () {
         self.choiceActive = false;
         self.input.keyboard.off('keydown');
+        if (window.MOT && MOT.Audio) MOT.Audio.playSelect();
         elements.forEach(function (el) { el.destroy(); });
         choice.callback();
       });
@@ -5126,13 +5131,15 @@ class BossScene extends Phaser.Scene {
     this.updateChoiceSelection = function(list) {
       list.forEach(function (choice, idx) {
         if (idx === self.selectedChoiceIndex) {
-          choice.btn.setTint(0x4FD1FF);
+          choice.btn.setFillStyle(0x3a3a5e);
+          choice.btn.setStrokeStyle(4, 0xffffff);
           choice.txt.setColor('#ffffff');
-          choice.btn.setScale(1.10);
-          choice.txt.setScale(1.10);
+          choice.btn.setScale(1.08);
+          choice.txt.setScale(1.08);
         } else {
-          choice.btn.clearTint();
-          choice.txt.setColor('#E5E7EB');
+          choice.btn.setFillStyle(0x1F2933);
+          choice.btn.setStrokeStyle(2, 0x4FD1FF);
+          choice.txt.setColor('#4FD1FF');
           choice.btn.setScale(1.0);
           choice.txt.setScale(1.0);
         }
@@ -5151,6 +5158,7 @@ class BossScene extends Phaser.Scene {
       } else if (event.code === 'Enter') {
         self.choiceActive = false;
         self.input.keyboard.off('keydown');
+        if (window.MOT && MOT.Audio) MOT.Audio.playSelect();
         elements.forEach(function (el) { el.destroy(); });
         choicesList[self.selectedChoiceIndex].callback();
       }
