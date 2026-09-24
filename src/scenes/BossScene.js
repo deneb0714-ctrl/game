@@ -475,7 +475,7 @@ class BossScene extends Phaser.Scene {
                await sayDoctor('「さぁ、最終決戦といこうじゃないか！」');
                this.tweens.add({
                  targets: [dimBg, this.doctorImage, this.heroImage], alpha: 0, duration: 500,
-                 onComplete: () => { dimBg.destroy(); this.doctorImage.destroy(); if(this.heroImage) this.heroImage.destroy(); }
+                 onComplete: () => { if (dimBg) dimBg.destroy(); if (this.doctorImage) this.doctorImage.destroy(); if (this.heroImage) this.heroImage.destroy(); this.doctorImage = null; this.heroImage = null; }
                });
                this.cutsceneActive = false;
                this.dialogActive = false;
@@ -1054,8 +1054,8 @@ class BossScene extends Phaser.Scene {
 
     MOT.handleMovement(this, this.player);
 
-    // 博士戦の味方支援システム
-    if (this.currentBoss && this.currentBoss.configKey === 'doctor' && !this.dialogActive) {
+    // 博士戦の味方支援システム（※第1フェーズ負けイベント中は支援しない）
+    if (!this.isDoctorPhase1Unwinnable && this.currentBoss && this.currentBoss.configKey === 'doctor' && !this.dialogActive) {
       if (!this.assistTimer) this.assistTimer = 0;
       this.assistTimer += delta;
       if (this.assistTimer >= 8000 + Phaser.Math.Between(0, 4000)) { // 8-12 seconds
@@ -1957,7 +1957,7 @@ class BossScene extends Phaser.Scene {
         this.triggerDoctorPhase1Defeat();
         return;
       }
-      if (this.currentBoss && this.currentBoss.configKey === 'doctor' && Phaser.Math.Between(0, 100) < 50) {
+      if (!this.isDoctorPhase1Unwinnable && this.currentBoss && this.currentBoss.configKey === 'doctor' && Phaser.Math.Between(0, 100) < 50) {
         // 兄が確率で助けてくれる
         MOT.flags.playerHP = 1;
         this.playerInvincible = true;
@@ -2003,25 +2003,61 @@ class BossScene extends Phaser.Scene {
     if (this.enemyBullets) this.enemyBullets.clear(true, true);
     if (this.playerBullets) this.playerBullets.clear(true, true);
 
+    const w = 1920, h = 1080;
     const heroName = MOT.flags.heroName || '勇者';
 
+    // 既存の立ち絵を安全に破棄
+    if (this.dimBg && this.dimBg.destroy) { this.dimBg.destroy(); this.dimBg = null; }
+    if (this.heroImage && this.heroImage.destroy) { this.heroImage.destroy(); this.heroImage = null; }
+    if (this.doctorImage && this.doctorImage.destroy) { this.doctorImage.destroy(); this.doctorImage = null; }
+    if (this.demonImage && this.demonImage.destroy) { this.demonImage.destroy(); this.demonImage = null; }
+
+    // 暗転背景
+    this.dimBg = this.add.rectangle(w / 2, h / 2, w, h, 0x000000, 0.6).setAlpha(0).setDepth(89);
+
+    // 立ち絵を新規生成
+    this.heroImage = this.add.image(300, h / 2, 'hero_stand').setAlpha(0).setDepth(90);
+    const hScale = 750 / (this.heroImage.width || 750);
+    this.heroImage.setScale(hScale);
+    this.heroImage.setY(100 + ((this.heroImage.height || 1000) * hScale) / 2);
+
+    this.doctorImage = this.add.image(w - 300, h / 2, 'doctor_awaken_smile_weapon').setAlpha(0).setDepth(90);
+    const docScale = 900 / (this.doctorImage.width || 750);
+    this.doctorImage.setScale(docScale);
+    this.doctorImage.setY(100 + ((this.doctorImage.height || 1000) * docScale) / 2);
+
+    this.demonImage = this.add.image(w / 2 + 100, h / 2, 'demon_lord_normal').setAlpha(0).setDepth(90);
+    const dScale = 800 / (this.demonImage.width || 600);
+    this.demonImage.setScale(dScale);
+    this.demonImage.setY(150 + ((this.demonImage.height || 800) * dScale) / 2);
+
+    this.tweens.add({ targets: this.dimBg, alpha: 0.6, duration: 300 });
+
+    const safeTween = (target, alpha) => {
+      if (target && target.active) {
+        this.tweens.add({ targets: target, alpha: alpha, duration: 300 });
+      }
+    };
+
     const sayDoctorDefeat = (text) => new Promise(res => {
-      if (this.dimBg) this.tweens.add({ targets: this.dimBg, alpha: 0.6, duration: 300 });
-      if (this.doctorImage) this.tweens.add({ targets: this.doctorImage, alpha: 1, duration: 300 });
-      if (this.heroImage) this.tweens.add({ targets: this.heroImage, alpha: 0.4, duration: 300 });
+      safeTween(this.dimBg, 0.6);
+      safeTween(this.doctorImage, 1);
+      safeTween(this.heroImage, 0.4);
+      safeTween(this.demonImage, 0.4);
       this.showDialogue('博士', text, res);
     });
     const sayHeroDefeat = (text) => new Promise(res => {
-      if (this.dimBg) this.tweens.add({ targets: this.dimBg, alpha: 0.6, duration: 300 });
-      if (this.heroImage) this.tweens.add({ targets: this.heroImage, alpha: 1, duration: 300 });
-      if (this.doctorImage) this.tweens.add({ targets: this.doctorImage, alpha: 0.4, duration: 300 });
+      safeTween(this.dimBg, 0.6);
+      safeTween(this.heroImage, 1);
+      safeTween(this.doctorImage, 0.4);
+      safeTween(this.demonImage, 0.4);
       this.showDialogue(heroName, text, res);
     });
     const sayDemonDefeat = (text) => new Promise(res => {
-      if (this.dimBg) this.tweens.add({ targets: this.dimBg, alpha: 0.6, duration: 300 });
-      if (this.demonImage) this.tweens.add({ targets: this.demonImage, alpha: 1, duration: 300 });
-      if (this.heroImage) this.tweens.add({ targets: this.heroImage, alpha: 0.4, duration: 300 });
-      if (this.doctorImage) this.tweens.add({ targets: this.doctorImage, alpha: 0.4, duration: 300 });
+      safeTween(this.dimBg, 0.6);
+      safeTween(this.demonImage, 1);
+      safeTween(this.heroImage, 0.4);
+      safeTween(this.doctorImage, 0.4);
       this.showDialogue('魔王', text, res);
     });
 
@@ -2036,14 +2072,10 @@ class BossScene extends Phaser.Scene {
       await sayDemonDefeat('「っ……。」');
 
       // 勇者以外背景も含めて少し暗くなる
-      const w = 1920, h = 1080;
-      if (!this.dimBg) {
-        this.dimBg = this.add.rectangle(w / 2, h / 2, w, h, 0x000000).setAlpha(0).setDepth(89);
-      }
-      this.tweens.add({ targets: this.dimBg, alpha: 0.85, duration: 500 });
-      if (this.heroImage) this.tweens.add({ targets: this.heroImage, alpha: 1, duration: 500 });
-      if (this.doctorImage) this.tweens.add({ targets: this.doctorImage, alpha: 0.2, duration: 500 });
-      if (this.demonImage) this.tweens.add({ targets: this.demonImage, alpha: 0.2, duration: 500 });
+      safeTween(this.dimBg, 0.85);
+      safeTween(this.heroImage, 1);
+      safeTween(this.doctorImage, 0.2);
+      safeTween(this.demonImage, 0.2);
 
       // 心の叫び
       await sayHeroDefeat('「（ああ、結局僕は人形なのか……。」');
@@ -2053,6 +2085,12 @@ class BossScene extends Phaser.Scene {
       this.cameras.main.shake(500, 0.03);
       this.cameras.main.fadeOut(800, 0, 0, 0);
       await new Promise(r => this.time.delayedCall(800, r));
+
+      // ターミナル中は立ち絵を非表示
+      if (this.dimBg && this.dimBg.active) this.dimBg.setAlpha(0);
+      if (this.heroImage && this.heroImage.active) this.heroImage.setAlpha(0);
+      if (this.doctorImage && this.doctorImage.active) this.doctorImage.setAlpha(0);
+      if (this.demonImage && this.demonImage.active) this.demonImage.setAlpha(0);
 
       // 1. GGS Terminal 1 (Spaceキー / クリックで進行)
       this.cameras.main.fadeIn(300, 0, 0, 0);
@@ -2080,18 +2118,51 @@ class BossScene extends Phaser.Scene {
       ]);
 
       // 暗転終了後。勇者以外背景も暗くした状態に戻り覚醒
-      this.tweens.add({ targets: this.dimBg, alpha: 0.85, duration: 300 });
-      if (this.heroImage) this.tweens.add({ targets: this.heroImage, alpha: 1, duration: 300 });
-      if (this.doctorImage) this.tweens.add({ targets: this.doctorImage, alpha: 0.2, duration: 300 });
-      if (this.demonImage) this.tweens.add({ targets: this.demonImage, alpha: 0.2, duration: 300 });
+      safeTween(this.dimBg, 0.85);
+      safeTween(this.heroImage, 1);
+      safeTween(this.doctorImage, 0.2);
+      safeTween(this.demonImage, 0.2);
 
-      const sayKratos = (text) => new Promise(res => { this.showDialogue('クラトス', text, res); });
-      const sayTourelos = (text) => new Promise(res => { this.showDialogue('トゥレロス', text, res); });
-      const sayEnaria = (text) => new Promise(res => { this.showDialogue('エナリア', text, res); });
-      const sayEdio = (text) => new Promise(res => { this.showDialogue('エディオ', text, res); });
-      const sayDemon = (text) => new Promise(res => { this.showDialogue('魔王', text, res); });
+      const sayKratos = (text) => new Promise(res => {
+        safeTween(this.dimBg, 0.6);
+        safeTween(this.heroImage, 0.4);
+        safeTween(this.doctorImage, 0.4);
+        safeTween(this.demonImage, 0.4);
+        this.showDialogue('クラトス', text, res);
+      });
+      const sayTourelos = (text) => new Promise(res => {
+        safeTween(this.dimBg, 0.6);
+        safeTween(this.heroImage, 0.4);
+        safeTween(this.doctorImage, 0.4);
+        safeTween(this.demonImage, 0.4);
+        this.showDialogue('トゥレロス', text, res);
+      });
+      const sayEnaria = (text) => new Promise(res => {
+        safeTween(this.dimBg, 0.6);
+        safeTween(this.heroImage, 0.4);
+        safeTween(this.doctorImage, 0.4);
+        safeTween(this.demonImage, 0.4);
+        this.showDialogue('エナリア', text, res);
+      });
+      const sayEdio = (text) => new Promise(res => {
+        safeTween(this.dimBg, 0.6);
+        safeTween(this.heroImage, 0.4);
+        safeTween(this.doctorImage, 0.4);
+        safeTween(this.demonImage, 0.4);
+        this.showDialogue('エディオ', text, res);
+      });
+      const sayDemon = (text) => new Promise(res => {
+        safeTween(this.dimBg, 0.6);
+        safeTween(this.demonImage, 1);
+        safeTween(this.heroImage, 0.4);
+        safeTween(this.doctorImage, 0.4);
+        this.showDialogue('魔王', text, res);
+      });
       const sayDoctor = (text) => new Promise(res => {
-        if (this.doctorImage) this.tweens.add({ targets: this.doctorImage, alpha: 1, duration: 300 });
+        safeTween(this.dimBg, 0.6);
+        safeTween(this.doctorImage, 1);
+        safeTween(this.heroImage, 0.4);
+        safeTween(this.demonImage, 0.4);
         this.showDialogue('博士', text, res);
       });
 
@@ -2099,9 +2170,9 @@ class BossScene extends Phaser.Scene {
       await sayHeroDefeat('「僕は…まだ倒れるわけにはいかないんだ！！」');
 
       // 背景の暗転が解除され仲間たちが加勢
-      this.tweens.add({ targets: this.dimBg, alpha: 0.6, duration: 500 });
-      if (this.doctorImage) this.tweens.add({ targets: this.doctorImage, alpha: 1, duration: 500 });
-      if (this.demonImage) this.tweens.add({ targets: this.demonImage, alpha: 1, duration: 500 });
+      safeTween(this.dimBg, 0.6);
+      safeTween(this.doctorImage, 1);
+      safeTween(this.demonImage, 1);
 
       await sayDoctor('「なんだ！？」');
       await sayHeroDefeat('「僕は博士から与えられた”勇者”じゃない。”兵器”でもない。」');
@@ -2121,6 +2192,12 @@ class BossScene extends Phaser.Scene {
       await sayDemon('「後方支援はわらわたちに任せろ！」');
 
       await sayHeroDefeat('「今度こそ、決着をつけよう」');
+
+      // 立ち絵・暗転背景の完全破棄（戦闘画面に戻す）
+      if (this.dimBg && this.dimBg.destroy) { this.dimBg.destroy(); this.dimBg = null; }
+      if (this.heroImage && this.heroImage.destroy) { this.heroImage.destroy(); this.heroImage = null; }
+      if (this.doctorImage && this.doctorImage.destroy) { this.doctorImage.destroy(); this.doctorImage = null; }
+      if (this.demonImage && this.demonImage.destroy) { this.demonImage.destroy(); this.demonImage = null; }
 
       // 3. Phase 2 博士戦 (HP 1000, 勇者復活)
       this.isDoctorPhase1Unwinnable = false;
@@ -3210,13 +3287,7 @@ class BossScene extends Phaser.Scene {
                 this.isDoctorPhase1Unwinnable = true;
                 this.bossQueue.push('doctor');
                 
-                // 10秒タイマーで絶対に死ぬ（ゲームオーバーにはしない）
-                this.time.delayedCall(10000, () => {
-                  if (this.isDoctorPhase1Unwinnable && !this.phase1DefeatTriggered) {
-                    MOT.flags.playerHP = 0;
-                    this.triggerDoctorPhase1Defeat();
-                  }
-                });
+                // （※第1フェーズ負けイベントは博士戦開始後のタイマーおよび被弾で管理）
 
                 this.proceedToNextArea(boss, true);
                 return;
@@ -4369,6 +4440,7 @@ class BossScene extends Phaser.Scene {
   }
 
   showDialogue(speaker, text, onComplete, keepOpen = false) {
+    text = String(text || '');
     this.dialogActive = true;
     this.input.setTopOnly(true);
     if (this.dialogContainer) {
@@ -4607,7 +4679,7 @@ class BossScene extends Phaser.Scene {
   }
 
   triggerAllyAssist() {
-    if (this.dialogActive) return;
+    if (this.isDoctorPhase1Unwinnable || this.dialogActive) return;
 
     let allies = ['demon', 'twins', 'boss2', 'boss1'];
     let chosen = allies[Phaser.Math.Between(0, allies.length - 1)];
