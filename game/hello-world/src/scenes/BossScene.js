@@ -2615,30 +2615,34 @@ class BossScene extends Phaser.Scene {
       uiElements.push(overlay);
 
       // [ENTER] KEY 決定ガイド
-      const enterGuide = this.add.text(w - 100, h - 60, '▶ [ENTER] 決定', {
-        fontFamily: '"Press Start 2P", "DotGothic16"',
+      const enterGuide = this.add.text(w - 100, h - 60, '▶ [ENTER] KEY', {
+        fontFamily: '"Press Start 2P"',
         fontSize: '20px',
         color: '#9CA3AF'
       }).setOrigin(1, 0.5).setDepth(200001).setScrollFactor(0);
       this.tweens.add({ targets: enterGuide, alpha: 0.3, yoyo: true, repeat: -1, duration: 500 });
       uiElements.push(enterGuide);
 
-      // 選択肢コンテナ
-      const startY = h / 2 - 50;
+      // 選択肢コンテナ（他の showChoice と同一レイアウト: 1100x90, 間隔 120）
+      const startY = h / 2 - 60;
       const choicesData = [
-        { text: '１ 殺す', val: 1 },
-        { text: '２ 殺さない', val: 2 }
+        { text: '1. 殺す', val: 1 },
+        { text: '2. 殺さない', val: 2 }
       ];
       const choicesList = [];
 
       choicesData.forEach((choice, i) => {
-        const y = startY + i * 130;
-        const btn = this.add.image(w / 2, y, 'ui_button_wide').setInteractive().setDepth(200002).setScrollFactor(0);
+        const y = startY + i * 120;
+        const btn = this.add.rectangle(w / 2, y, 1100, 90, 0x1F2933)
+          .setStrokeStyle(2, 0x4FD1FF)
+          .setInteractive({ useHandCursor: true })
+          .setDepth(200002)
+          .setScrollFactor(0);
+
         const txt = this.add.text(w / 2, y, choice.text, {
           fontFamily: '"DotGothic16"',
-          fontSize: '32px',
-          color: '#E5E7EB',
-          fontStyle: 'bold'
+          fontSize: '26px',
+          color: '#4FD1FF'
         }).setOrigin(0.5).setDepth(200003).setScrollFactor(0);
 
         uiElements.push(btn, txt);
@@ -2647,14 +2651,13 @@ class BossScene extends Phaser.Scene {
 
       const updateSelection = () => {
         if (opt1Destroyed) {
-          // 「１ 殺す」が壊れた後は「２ 殺さない」だけが常に選ばれる
+          // 「1. 殺す」が壊れた後は「2. 殺さない」だけが常に選ばれる
           selectedIdx = 1;
           if (choicesList[1] && choicesList[1].btn && choicesList[1].btn.active) {
-            choicesList[1].btn.clearTint();
-            choicesList[1].btn.setTint(0x00FFCC);
-            choicesList[1].btn.setAlpha(1.0);
-            choicesList[1].txt.setColor('#FFFFFF');
-            choicesList[1].txt.setAlpha(1.0);
+            choicesList[1].btn.setFillStyle(0x3a3a5e);
+            choicesList[1].btn.setStrokeStyle(4, 0xffffff);
+            choicesList[1].txt.setColor('#ffffff');
+            choicesList[1].btn.setScale(1.08);
             choicesList[1].txt.setScale(1.08);
           }
           return;
@@ -2663,18 +2666,16 @@ class BossScene extends Phaser.Scene {
         // 選択肢１（殺す）
         if (choicesList[0] && choicesList[0].btn && choicesList[0].btn.active) {
           if (selectedIdx === 0) {
-            choicesList[0].btn.clearTint();
-            choicesList[0].btn.setTint(0x4FD1FF);
-            choicesList[0].btn.setAlpha(1.0);
-            choicesList[0].txt.setColor('#FFFFFF');
-            choicesList[0].txt.setAlpha(1.0);
+            choicesList[0].btn.setFillStyle(0x3a3a5e);
+            choicesList[0].btn.setStrokeStyle(4, 0xffffff);
+            choicesList[0].txt.setColor('#ffffff');
+            choicesList[0].btn.setScale(1.08);
             choicesList[0].txt.setScale(1.08);
           } else {
-            choicesList[0].btn.clearTint();
-            choicesList[0].btn.setTint(0x555555);
-            choicesList[0].btn.setAlpha(1.0);
-            choicesList[0].txt.setColor('#888888');
-            choicesList[0].txt.setAlpha(1.0);
+            choicesList[0].btn.setFillStyle(0x1F2933);
+            choicesList[0].btn.setStrokeStyle(2, 0x4FD1FF);
+            choicesList[0].txt.setColor('#4FD1FF');
+            choicesList[0].btn.setScale(1.0);
             choicesList[0].txt.setScale(1.0);
           }
         }
@@ -2683,20 +2684,25 @@ class BossScene extends Phaser.Scene {
         if (choicesList[1] && choicesList[1].btn && choicesList[1].btn.active) {
           if (isGrayedOut) {
             // 灰色になって選択できなくなる
-            choicesList[1].btn.clearTint();
-            choicesList[1].btn.setTint(0x383838);
-            choicesList[1].btn.setAlpha(0.6);
-            choicesList[1].txt.setColor('#666666');
-            choicesList[1].txt.setAlpha(0.6);
+            choicesList[1].btn.setFillStyle(0x14181f);
+            choicesList[1].btn.setStrokeStyle(2, 0x2e3846);
+            choicesList[1].txt.setColor('#4b5563');
+            choicesList[1].btn.setScale(1.0);
             choicesList[1].txt.setScale(1.0);
           } else {
-            // 初期状態
-            choicesList[1].btn.clearTint();
-            choicesList[1].btn.setTint(0x555555);
-            choicesList[1].btn.setAlpha(1.0);
-            choicesList[1].txt.setColor('#888888');
-            choicesList[1].txt.setAlpha(1.0);
-            choicesList[1].txt.setScale(1.0);
+            if (selectedIdx === 1) {
+              choicesList[1].btn.setFillStyle(0x3a3a5e);
+              choicesList[1].btn.setStrokeStyle(4, 0xffffff);
+              choicesList[1].txt.setColor('#ffffff');
+              choicesList[1].btn.setScale(1.08);
+              choicesList[1].txt.setScale(1.08);
+            } else {
+              choicesList[1].btn.setFillStyle(0x1F2933);
+              choicesList[1].btn.setStrokeStyle(2, 0x4FD1FF);
+              choicesList[1].txt.setColor('#4FD1FF');
+              choicesList[1].btn.setScale(1.0);
+              choicesList[1].txt.setScale(1.0);
+            }
           }
         }
       };
@@ -2715,7 +2721,7 @@ class BossScene extends Phaser.Scene {
 
       // ── 画面全体に広がる鮮烈な赤い線の結晶亀裂システム ──
       const impactX = w / 2;
-      const impactY = startY + 65; // 選択肢中央の衝撃点
+      const impactY = startY + 60; // 選択肢中央の衝撃点
 
       let crackRays = [];
       let crackWebs = [];
@@ -3023,18 +3029,18 @@ class BossScene extends Phaser.Scene {
             });
           }
 
-          // ★「１ 殺す」という選択肢が激しく粉々に破壊消滅する演出！★
+          // ★「1. 殺す」という選択肢が激しく粉々に破壊消滅する演出！★
           const opt1Y = startY;
-          for (let k = 0; k < 80; k++) {
-            const pW = Phaser.Math.Between(12, 35);
-            const pH = Phaser.Math.Between(12, 40);
+          for (let k = 0; k < 100; k++) {
+            const pW = Phaser.Math.Between(15, 50);
+            const pH = Phaser.Math.Between(15, 45);
             const part = this.add.triangle(
-              w / 2 + Phaser.Math.Between(-200, 200),
-              opt1Y + Phaser.Math.Between(-35, 35),
+              w / 2 + Phaser.Math.Between(-520, 520),
+              opt1Y + Phaser.Math.Between(-40, 40),
               0, -pH / 2,
               pW / 2, pH / 2,
               -pW / 2, pH / 2,
-              k % 4 === 0 ? 0xff1744 : (k % 4 === 1 ? 0x4FD1FF : (k % 4 === 2 ? 0xffffff : 0x0a192f)),
+              k % 4 === 0 ? 0xff1744 : (k % 4 === 1 ? 0x4FD1FF : (k % 4 === 2 ? 0xffffff : 0x1F2933)),
               1.0
             ).setDepth(200035).setScrollFactor(0);
 
@@ -3053,7 +3059,7 @@ class BossScene extends Phaser.Scene {
             });
           }
 
-          // 「１ 殺す」のボタンとテキストを物理的に完全消滅
+          // 「1. 殺す」のボタンとテキストを物理的に完全消滅
           if (choicesList[0]) {
             if (choicesList[0].btn) choicesList[0].btn.destroy();
             if (choicesList[0].txt) choicesList[0].txt.destroy();
@@ -3064,15 +3070,15 @@ class BossScene extends Phaser.Scene {
           // ヒビグラフィック消去
           if (crackGfx) { crackGfx.destroy(); crackGfx = null; }
 
-          // 「２ 殺さない」を灰色から完全解放！
+          // 「2. 殺さない」を灰色から完全解放！
           isGrayedOut = false;
           selectedIdx = 1;
           updateSelection();
 
           this.tweens.add({
-            targets: choicesList[1].btn,
-            scaleX: { from: 1.25, to: 1.0 },
-            scaleY: { from: 1.25, to: 1.0 },
+            targets: [choicesList[1].btn, choicesList[1].txt],
+            scaleX: { from: 1.25, to: 1.08 },
+            scaleY: { from: 1.25, to: 1.08 },
             duration: 400,
             ease: 'Back.easeOut'
           });
@@ -3088,7 +3094,7 @@ class BossScene extends Phaser.Scene {
             await new Promise(r => this.showDialogue(heroName, '「……それでも僕は、殺したくない……！！」', r));
           }
 
-          // 選択肢UIを再表示（画面上には解放された「２ 殺さない」だけが存在する！）
+          // 選択肢UIを再表示（画面上には解放された「2. 殺さない」だけが存在する！）
           setUIVisible(true);
           updateSelection();
           isBusy = false;
@@ -3125,6 +3131,11 @@ class BossScene extends Phaser.Scene {
       };
 
       if (choicesList[0] && choicesList[0].btn) {
+        choicesList[0].btn.on('pointerover', () => {
+          if (isBusy || opt1Destroyed) return;
+          selectedIdx = 0;
+          updateSelection();
+        });
         choicesList[0].btn.on('pointerdown', () => {
           if (isBusy || opt1Destroyed) return;
           selectedIdx = 0;
@@ -3135,6 +3146,11 @@ class BossScene extends Phaser.Scene {
       }
 
       if (choicesList[1] && choicesList[1].btn) {
+        choicesList[1].btn.on('pointerover', () => {
+          if (isBusy || isGrayedOut) return;
+          selectedIdx = 1;
+          updateSelection();
+        });
         choicesList[1].btn.on('pointerdown', () => {
           if (isBusy) return;
           if (!hasIntervened) {
