@@ -2678,7 +2678,33 @@ class BossScene extends Phaser.Scene {
       return;
     }
 
-     if (this.bossHP <= 0 && !this.bossDefeated) {
+    if (this.currentBoss && this.currentBoss.configKey === 'boss3_twins') {
+      boss.hp -= dmg;
+      boss.setTint(0xffffff);
+      this.time.delayedCall(50, function () { if (boss.active) boss.clearTint(); });
+      
+      if (Phaser.Math.Between(0, 100) < 50) {
+        if(Phaser.Math.Between(0, 100) < 5) MOT.spawnHealthItem(this, boss.x, boss.y); else MOT.spawnEnergyItem(this, boss.x, boss.y);
+      }
+      
+      if (boss.hp <= 0 && boss.active) {
+        boss.active = false;
+        boss.setVisible(false);
+        boss.body.enable = false;
+      }
+      
+      return;
+    }
+
+    this.bossHP -= dmg;
+    boss.hp = this.bossHP;
+    boss.setTint(0xffffff);
+    this.time.delayedCall(50, function () { if (boss.active) boss.clearTint(); });
+    if (Phaser.Math.Between(0, 100) < 50) {
+      if(Phaser.Math.Between(0, 100) < 5) MOT.spawnHealthItem(this, boss.x, boss.y); else MOT.spawnEnergyItem(this, boss.x, boss.y);
+    }
+
+    if (this.bossHP <= 0 && !this.bossDefeated) {
       this.bossDefeated = true; // Prevent multiple triggers
       this.cutsceneActive = true;
       if (this.boss1Bgm) this.boss1Bgm.stop();
