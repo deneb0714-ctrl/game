@@ -251,6 +251,26 @@ class BossScene extends Phaser.Scene {
     }
 
     var key = this.bossQueue[this.currentBossIndex];
+
+    // 前のボスや敵スプライト・弾が残っていれば確実に破棄（魔王などのドット絵残留防止）
+    if (this.currentBoss) {
+      if (this.currentBoss.destroy) this.currentBoss.destroy();
+      this.currentBoss = null;
+    }
+    if (this.sisterBoss) {
+      if (this.sisterBoss.destroy) this.sisterBoss.destroy();
+      this.sisterBoss = null;
+    }
+    if (this.inunekoEnemy) {
+      if (this.inunekoEnemy.destroy) this.inunekoEnemy.destroy();
+      this.inunekoEnemy = null;
+    }
+    if (this.enemyGroup) {
+      this.enemyGroup.clear(true, true);
+    }
+    if (this.enemyBullets) {
+      this.enemyBullets.clear(true, true);
+    }
     var cfg = this.getBossConfig(key);
     this.bossMaxHP = cfg.hp;
     if (this.startData && this.startData.initialBossHP !== undefined) {
@@ -427,63 +447,72 @@ class BossScene extends Phaser.Scene {
       this.physics.pause();
     }
     
-    if (key === 'demon_lord' || key === 'doctor') {
+    if (key === 'demon_lord') {
        boss.setVisible(true); boss.body.enable = true;
        this.cameras.main.shake(400, 0.015);
-        if (key === 'demon_lord' && this.inunekoEnemy) {
+       if (this.inunekoEnemy) {
          this.inunekoEnemy.setVisible(true);
          // 会話中はボスの右隣に静止（上下小揺れのみ）
          this.inunekoEnemy.x = 1920;
          this.tweens.add({ targets: this.inunekoEnemy, x: 1350, duration: 1200, ease: 'Power2' });
          this.tweens.add({ targets: this.inunekoEnemy, y: '-=20', duration: 1600, yoyo: true, repeat: -1, ease: 'Sine.easeInOut' });
        }
-       this.tweens.add({
-         targets: boss, x: 1400, duration: 1200, ease: 'Power2',
-         onComplete: () => {
-           this.tweens.add({ targets: boss, y: boss.y - 30, yoyo: true, repeat: -1, duration: 1000, ease: 'Sine.easeInOut' });
-           
-           if (key === 'demon_lord') {
-             this.playDemonLordIntro(() => {
-               this.cutsceneActive = false;
-                this.cutsceneActive = false;
-               this.dialogActive = false;
-               this.physics.resume();
-               this.startBossLaneMovement();
-               this.boss4Bgm = this.sound.add('demon_lord_bgm', { loop: true, volume: 0.2 });
-               this.boss4Bgm.play();
-             });
-           } else {
-             // Doctor intro
-             var w = 1920, h = 1080;
-             var dimBg = this.add.rectangle(w/2, h/2, w, h, 0x000000, 0.6).setAlpha(0).setDepth(89);
-              this.heroImage = this.add.image(300, h / 2, 'hero_stand').setAlpha(0).setDepth(90);
-             var hScale = 750 / this.heroImage.width;
-             this.heroImage.setScale(hScale);
-             this.heroImage.setY(100 + (this.heroImage.height * hScale) / 2);
-    // removed demonImage init
-              this.doctorImage = this.add.image(w - 300, h / 2, 'doctor_awaken_smile_weapon').setAlpha(0).setDepth(90);
-             var docScale = 900 / this.doctorImage.width;
-             this.doctorImage.setScale(docScale);
-             this.doctorImage.setY(100 + (this.doctorImage.height * docScale) / 2);
-             
-             this.tweens.add({ targets: [dimBg, this.doctorImage], alpha: 1, duration: 500 });
-             
-             const sayDevice = (text) => new Promise(res => { this.tweens.add({ targets: dimBg, alpha: 0.6, duration: 300 }); this.tweens.add({ targets: [this.doctorImage, this.heroImage], alpha: 0.4, duration: 300 }); this.showDeviceDialogue(text, res); });
-             const sayDoctor = (text) => new Promise(res => { this.tweens.add({ targets: dimBg, alpha: 0.6, duration: 300 }); this.tweens.add({ targets: [this.doctorImage], alpha: 1, duration: 300 }); this.tweens.add({targets: this.heroImage, alpha: 0.4, duration: 300}); this.showDialogue('博士', text, res); });
-             
-             (async () => {
-                await sayDoctor('「これまで集めたデータ、幾度となく繰り返した実験、そしてお前のデータ。これにより私の準備はすべて整った！！」');
-                await sayDoctor('「さぁ、最終決戦といこうじゃないか！」');
-                this.tweens.add({
-                 targets: [dimBg, this.doctorImage, this.heroImage], alpha: 0, duration: 500,
-                 onComplete: () => { if (dimBg) dimBg.destroy(); if (this.doctorImage) this.doctorImage.destroy(); if (this.heroImage) this.heroImage.destroy(); this.doctorImage = null; this.heroImage = null; }
-               });
-               this.cutsceneActive = false;
-               this.dialogActive = false;
-               this.physics.resume();
-               this.startBossLaneMovement();
-               this.boss5Bgm = this.sound.add('doctor_bgm', { loop: true, volume: 0.2 });
-               this.boss5Bgm.play();
+    } else if (key === 'doctor') {
+       boss.setVisible(false);
+       boss.body.enable = false;
+       this.cameras.main.shake(400, 0.015);
+    }
+    this.tweens.add({
+      targets: boss, x: 1400, duration: 1200, ease: 'Power2',
+      onComplete: () => {
+        this.tweens.add({ targets: boss, y: boss.y - 30, yoyo: true, repeat: -1, duration: 1000, ease: 'Sine.easeInOut' });
+        
+        if (key === 'demon_lord') {
+          this.playDemonLordIntro(() => {
+            this.cutsceneActive = false;
+            this.dialogActive = false;
+            this.physics.resume();
+            this.startBossLaneMovement();
+            this.boss4Bgm = this.sound.add('demon_lord_bgm', { loop: true, volume: 0.2 });
+            this.boss4Bgm.play();
+          });
+        } else {
+          // Doctor intro
+          if (this.inunekoEnemy) { if (this.inunekoEnemy.destroy) this.inunekoEnemy.destroy(); this.inunekoEnemy = null; }
+          var w = 1920, h = 1080;
+          var dimBg = this.add.rectangle(w/2, h/2, w, h, 0x000000, 0.6).setAlpha(0).setDepth(89);
+          this.heroImage = this.add.image(300, h / 2, 'hero_stand').setAlpha(0).setDepth(90);
+          var hScale = 750 / this.heroImage.width;
+          this.heroImage.setScale(hScale);
+          this.heroImage.setY(100 + (this.heroImage.height * hScale) / 2);
+
+          this.doctorImage = this.add.image(w - 300, h / 2, 'doctor_awaken_smile_weapon').setAlpha(0).setDepth(90);
+          var docScale = 900 / this.doctorImage.width;
+          this.doctorImage.setScale(docScale);
+          this.doctorImage.setY(100 + (this.doctorImage.height * docScale) / 2);
+          
+          this.tweens.add({ targets: [dimBg, this.doctorImage], alpha: 1, duration: 500 });
+          
+          const sayDevice = (text) => new Promise(res => { this.tweens.add({ targets: dimBg, alpha: 0.6, duration: 300 }); this.tweens.add({ targets: [this.doctorImage, this.heroImage], alpha: 0.4, duration: 300 }); this.showDeviceDialogue(text, res); });
+          const sayDoctor = (text) => new Promise(res => { this.tweens.add({ targets: dimBg, alpha: 0.6, duration: 300 }); this.tweens.add({ targets: [this.doctorImage], alpha: 1, duration: 300 }); this.tweens.add({targets: this.heroImage, alpha: 0.4, duration: 300}); this.showDialogue('博士', text, res); });
+          
+          (async () => {
+             await sayDoctor('「これまで集めたデータ、幾度となく繰り返した実験、そしてお前のデータ。これにより私の準備はすべて整った！！」');
+             await sayDoctor('「さぁ、最終決戦といこうじゃないか！」');
+             this.tweens.add({
+              targets: [dimBg, this.doctorImage, this.heroImage], alpha: 0, duration: 500,
+              onComplete: () => { if (dimBg) dimBg.destroy(); if (this.doctorImage) this.doctorImage.destroy(); if (this.heroImage) this.heroImage.destroy(); this.doctorImage = null; this.heroImage = null; }
+            });
+            if (boss && boss.active) {
+              boss.setVisible(true);
+              boss.body.enable = true;
+            }
+            this.cutsceneActive = false;
+            this.dialogActive = false;
+            this.physics.resume();
+            this.startBossLaneMovement();
+            this.boss5Bgm = this.sound.add('doctor_bgm', { loop: true, volume: 0.2 });
+            this.boss5Bgm.play();
 
                if (this.isDoctorPhase1Unwinnable) {
                  this.phase1DefeatTriggered = false;
@@ -3664,8 +3693,22 @@ class BossScene extends Phaser.Scene {
                 this.cameras.main.fadeOut(800, 0, 0, 0);
                 await new Promise(r => this.time.delayedCall(850, r));
 
-                // 立ち絵・ダイアログの完全片付け
+                // 立ち絵・ダイアログ・前ボススプライト（魔王・犬猫）の完全片付け
                 this.clearConversationUI();
+                if (boss && boss.active) {
+                  if (boss.destroy) boss.destroy();
+                }
+                if (this.currentBoss && this.currentBoss.active) {
+                  if (this.currentBoss.destroy) this.currentBoss.destroy();
+                  this.currentBoss = null;
+                }
+                if (this.inunekoEnemy && this.inunekoEnemy.active) {
+                  if (this.inunekoEnemy.destroy) this.inunekoEnemy.destroy();
+                  this.inunekoEnemy = null;
+                }
+                if (this.enemyGroup) {
+                  this.enemyGroup.clear(true, true);
+                }
                 if (this.demonImage) { this.demonImage.destroy(); this.demonImage = null; }
                 if (this.inunekoImage) { this.inunekoImage.destroy(); this.inunekoImage = null; }
                 if (this.heroImage) { this.heroImage.destroy(); this.heroImage = null; }
