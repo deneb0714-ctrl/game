@@ -2126,26 +2126,26 @@ class BossScene extends Phaser.Scene {
       // 1. GGS Terminal 1 (Spaceキー / クリックで進行)
       this.cameras.main.fadeIn(300, 0, 0, 0);
       await this.terminalEffect([
-        'mmƂ̃bbggggO 「...link established」',
-        'mmƂ̃bbggggO 「...signal stable: 1.00」',
+        '観測者のログ: ...link established',
+        '観測者のログ: ...signal stable: 1.00',
         '',
-        'mmƂ̃````bbggggO 「こんにちは。『GGS』よ。」',
+        '観測者のログ: こんにちは。『GGS』よ。',
         '',
-        'mmƂ̃````bbggggO 「悪性因子、消失を確認。」',
+        '観測者のログ: 悪性因子、消失を確認。',
         '',
-        'mmƂ̃````bbggggO 「世界構造、再計測完了。観測値、許容範囲内。」',
+        '観測者のログ: 世界構造、再計測完了。観測値、許容範囲内。',
         '',
-        'mmƂ̃````bbggggO 「あなたは宿命を果たした。あなたの行動は祝福を授けるに値する。」',
-        'mmƂ̃````bbggggO 「あなたの望みを叶えよう。」',
-        'mmƂ̃````bbggggO 「個体情報、更新。」',
-        'mmƂ̃````bbggggO 「Designation："勇者" → "' + heroName + '"」',
-        'mmƂ̃````bbggggO 「登録情報、書き換え完了。」',
-        'mmƂ̃````bbggggO 「あなたは、もう人造人間ではない。」',
-        'mmƂ̃````bbggggO 「この世界に生きる、一人の人間──"' + heroName + '"として認証する。」',
-        'mmƂ̃````bbggggO 「ただの人間”' + heroName + '”として、自由に生きなさい。」',
+        '観測者のログ: あなたは宿命を果たした。あなたの行動は祝福を授けるに値する。',
+        '観測者のログ: あなたの望みを叶えよう。',
+        '観測者のログ: 個体情報、更新。',
+        '観測者のログ: Designation："勇者" → "' + heroName + '"',
+        '観測者のログ: 登録情報、書き換え完了。',
+        '観測者のログ: あなたは、もう人造人間ではない。',
+        '観測者のログ: この世界に生きる、一人の人間──"' + heroName + '"として認証する。',
+        '観測者のログ: ただの人間”' + heroName + '”として、自由に生きなさい。',
         '',
-        'mmƂ̃bbggggO 「...logging complete」',
-        'mmƂ̃bbggggO 「...connection closed」'
+        '観測者のログ: ...logging complete',
+        '観測者のログ: ...connection closed'
       ]);
 
       // 暗転終了後。勇者以外背景も暗くした状態に戻り覚醒
@@ -2249,64 +2249,158 @@ class BossScene extends Phaser.Scene {
   terminalEffect(lines) {
     return new Promise(resolve => {
       const w = 1920, h = 1080;
-      const bg = this.add.rectangle(w / 2, h / 2, w, h, 0x050a08, 0.95).setDepth(200);
-      const container = this.add.container(0, 0).setDepth(201);
       
-      const promptText = this.add.text(w / 2, h - 60, '[ SPACE / クリック で進む ]', {
-        fontFamily: '"DotGothic16", monospace',
-        fontSize: '24px',
+      // 背景 (CRTモニター風の深い黒緑)
+      const bg = this.add.rectangle(0, 0, w, h, 0x030803).setOrigin(0).setDepth(200);
+
+      // CRTスキャンライン（走査線）オーバーレイ
+      const scanlines = this.add.graphics().setDepth(201);
+      scanlines.fillStyle(0x000000, 0.35);
+      for (let y = 0; y < h; y += 4) {
+        scanlines.fillRect(0, y, w, 2);
+      }
+
+      // 送りガイド
+      const guideText = this.add.text(w - 60, h - 40, '▶ [SPACE / クリック] 文字送り / 進行', {
+        fontFamily: '"DotGothic16", "Courier New", monospace',
+        fontSize: '20px',
         color: '#00FF66'
-      }).setOrigin(0.5).setDepth(202);
-      
-      const blinkTween = this.tweens.add({
-        targets: promptText,
+      }).setOrigin(1, 1).setDepth(203);
+
+      const guideTween = this.tweens.add({
+        targets: guideText,
         alpha: 0.3,
         duration: 600,
         yoyo: true,
         repeat: -1
       });
 
-      let lineObjs = [];
-      let currentLineIdx = 0;
+      // 行数に応じた開始Y座標（画面中央付近に美しく配置）
+      const totalLines = lines.length;
+      const lineHeight = 40;
+      const totalH = totalLines * lineHeight;
+      const startX = w / 2 - 500;
+      const startY = Math.max(60, Math.min(200, (h - totalH) / 2));
 
-      const renderLines = () => {
-        lineObjs.forEach(o => o.destroy());
-        lineObjs = [];
-
-        const startY = Math.max(100, 540 - (currentLineIdx * 20));
-        for (let i = 0; i <= currentLineIdx && i < lines.length; i++) {
-          const lineText = lines[i];
-          const txt = this.add.text(200, startY + i * 40, lineText, {
-            fontFamily: '"DotGothic16", monospace',
-            fontSize: '28px',
-            color: '#00FF66',
-            shadow: { blur: 5, color: '#00FF66', fill: true }
-          });
-          container.add(txt);
-          lineObjs.push(txt);
+      const textObj = this.add.text(startX, startY, '', {
+        fontFamily: '"DotGothic16", "Courier New", Courier, monospace',
+        fontSize: '26px',
+        color: '#00FF66',
+        fontStyle: 'bold',
+        lineSpacing: 14,
+        shadow: {
+          offsetX: 0,
+          offsetY: 0,
+          color: '#00FF66',
+          blur: 10,
+          stroke: true,
+          fill: true
         }
+      }).setDepth(202);
+
+      let currentLine = 0;
+      let currentChar = 0;
+      let displayText = "";
+      let cursorChar = "■";
+      let isTypingDone = false;
+      let timerEvent = null;
+
+      // カーソル点滅タイマー
+      const cursorTimer = this.time.addEvent({
+        delay: 450,
+        loop: true,
+        callback: () => {
+          cursorChar = (cursorChar === "■") ? " " : "■";
+          if (textObj && textObj.active) {
+            textObj.setText(displayText + cursorChar);
+          }
+        }
+      });
+
+      const cleanupAndResolve = () => {
+        if (timerEvent) timerEvent.remove();
+        if (cursorTimer) cursorTimer.remove();
+        if (guideTween) guideTween.stop();
+        this.input.keyboard.off('keydown-SPACE', handleInput);
+        this.input.keyboard.off('keydown-ENTER', handleInput);
+        this.input.off('pointerdown', handleInput);
+        guideText.destroy();
+        textObj.destroy();
+        scanlines.destroy();
+        bg.destroy();
+        resolve();
       };
 
-      renderLines();
+      const stepTyping = () => {
+        if (currentLine >= lines.length) {
+          isTypingDone = true;
+          return;
+        }
 
-      const advance = () => {
-        if (MOT.Audio && MOT.Audio.playBleep) MOT.Audio.playBleep('');
-        if (currentLineIdx < lines.length - 1) {
-          currentLineIdx++;
-          renderLines();
+        const lineText = lines[currentLine];
+        if (currentChar < lineText.length) {
+          displayText += lineText[currentChar];
+          textObj.setText(displayText + "■");
+          currentChar++;
+
+          let delay = 16;
+          const lastChar = lineText[currentChar - 1];
+          if (lastChar === '。' || lastChar === '、' || lastChar === '！' || lastChar === '？') {
+            delay = 140;
+          } else if (lastChar === ' ') {
+            delay = 5;
+          }
+
+          timerEvent = this.time.delayedCall(delay, stepTyping);
         } else {
-          this.input.keyboard.off('keydown-SPACE', advance);
-          this.input.off('pointerdown', advance);
-          blinkTween.stop();
-          promptText.destroy();
-          container.destroy();
-          bg.destroy();
-          resolve();
+          // 行末
+          displayText += "\n";
+          textObj.setText(displayText + "■");
+          currentLine++;
+          currentChar = 0;
+          timerEvent = this.time.delayedCall(lines[currentLine] === "" ? 40 : 80, stepTyping);
         }
       };
 
-      this.input.keyboard.on('keydown-SPACE', advance);
-      this.input.on('pointerdown', advance);
+      const handleInput = () => {
+        if (MOT.Audio && MOT.Audio.playBleep) MOT.Audio.playBleep('');
+
+        if (!isTypingDone) {
+          // タイピング中なら、現在の行を即座に全文出して次の行に進める（文字送り）
+          if (timerEvent) timerEvent.remove();
+
+          if (currentLine < lines.length) {
+            const lineText = lines[currentLine];
+            // 残りの文字を一気に出す
+            if (currentChar < lineText.length) {
+              displayText += lineText.substring(currentChar);
+            }
+            displayText += "\n";
+            currentLine++;
+            currentChar = 0;
+            textObj.setText(displayText + "■");
+
+            if (currentLine >= lines.length) {
+              isTypingDone = true;
+            } else {
+              // 次の行のタイピングを即座に再開
+              timerEvent = this.time.delayedCall(60, stepTyping);
+            }
+          } else {
+            isTypingDone = true;
+          }
+        } else {
+          // タイピング完了済みなら終了して進行
+          cleanupAndResolve();
+        }
+      };
+
+      this.input.keyboard.on('keydown-SPACE', handleInput);
+      this.input.keyboard.on('keydown-ENTER', handleInput);
+      this.input.on('pointerdown', handleInput);
+
+      // 初回開始
+      stepTyping();
     });
   }
 
@@ -3618,26 +3712,26 @@ class BossScene extends Phaser.Scene {
               // GGS Terminal 2 (Spaceキー / クリックで進行)
               this.cameras.main.fadeIn(300, 0, 0, 0);
               await this.terminalEffect([
-                'mmƂ̃bbggggO 「...now loading...」',
-                'mmƂ̃bbggggO 「...完了」',
+                '観測者のログ: ...now loading...',
+                '観測者のログ: ...完了',
                 '',
-                'mmƂ̃````bbggggO 「エラーの確認...修復完了」',
+                '観測者のログ: エラーの確認...修復完了',
                 '',
-                'mmƂ̃````bbggggO 「...なんて、堅苦しいのはここまでにしましょう」',
+                '観測者のログ: ...なんて、堅苦しいのはここまでにしましょう',
                 '',
-                'mmƂ̃````bbggggO 「さっきぶりね。『GGS』よ。」',
-                'mmƂ̃````bbggggO 「この結末は気に入ってくれた？」',
+                '観測者のログ: さっきぶりね。『GGS』よ。',
+                '観測者のログ: この結末は気に入ってくれた？',
                 '',
-                'mmƂ̃````bbggggO 「あなたのおかげで、バグはなくなって世界の崩壊は止められた。彼らたちの未来はこれからも続くの。」',
+                '観測者のログ: あなたのおかげで、バグはなくなって世界の崩壊は止められた。彼らたちの未来はこれからも続くの。',
                 '',
-                'mmƂ̃````bbggggO 「創られた存在から、”' + heroName + '”となったあの子が幸せな道を歩むのを応援してくれると嬉しいわ。」',
+                '観測者のログ: 創られた存在から、”' + heroName + '”となったあの子が幸せな道を歩むのを応援してくれると嬉しいわ。',
                 '',
-                'mmƂ̃````bbggggO 「といっても、接続が難しくて、これ以上は見せられないのだけれど。」',
+                '観測者のログ: といっても、接続が難しくて、これ以上は見せられないのだけれど。',
                 '',
-                'mmƂ̃````bbggggO 「いずれ、またどこかで会いましょう。」',
+                '観測者のログ: いずれ、またどこかで会いましょう。',
                 '',
-                'mmƂ̃````bbggggO 「あ、こういった方が良かったかしら？」',
-                'mmƂ̃````bbggggO 「ごほん。……”またね”だにゃん！」'
+                '観測者のログ: あ、こういった方が良かったかしら？',
+                '観測者のログ: ごほん。……”またね”だにゃん！'
               ]);
 
               MOT.flags.finalEnding = 'hello_world';
