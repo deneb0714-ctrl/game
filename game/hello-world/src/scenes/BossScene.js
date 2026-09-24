@@ -2527,14 +2527,13 @@ class BossScene extends Phaser.Scene {
         }
       };
 
-      // ── 超リアル・スタイリッシュガラス破壊システム ──
+      // ── 超スタイリッシュ・強化ガラス結晶破砕システム ──
       const impactX = w / 2;
       const impactY = startY + 65; // 選択肢中央の衝撃点
 
       let crackRays = [];
       let crackWebs = [];
-      let crackFacets = []; // ガラス破片面（半透明ポリゴン）
-      let microDust = [];
+      let crackFacets = [];
 
       const initCrackGraphics = () => {
         if (!crackGfx) {
@@ -2545,16 +2544,15 @@ class BossScene extends Phaser.Scene {
         crackWebs = [];
         crackFacets = [];
 
-        // 12本の放射状主亀裂（鋭いジグザグ折れ線）
-        const numRays = 12;
+        // 衝撃点から走る10本の鋭角クリスタルレイ
+        const numRays = 10;
         for (let i = 0; i < numRays; i++) {
-          const baseAngle = (i / numRays) * Math.PI * 2 + (Math.random() - 0.5) * 0.25;
+          const baseAngle = (i / numRays) * Math.PI * 2 + (Math.random() - 0.5) * 0.2;
           crackRays.push({
             angle: baseAngle,
             currX: impactX,
             currY: impactY,
-            points: [{ x: impactX, y: impactY }],
-            speed: Phaser.Math.Between(35, 65)
+            points: [{ x: impactX, y: impactY }]
           });
         }
       };
@@ -2562,27 +2560,43 @@ class BossScene extends Phaser.Scene {
       const growCracks = (step) => {
         if (!crackGfx) initCrackGraphics();
 
-        // 1. 各レイ（主亀裂）を鋭角に伸長
+        // 打撃瞬間のインパクト閃光（白い瞬間フラッシュ）
+        const hitFlash = this.add.rectangle(w / 2, h / 2, w, h, 0xffffff, 0.16).setDepth(200028).setScrollFactor(0);
+        this.tweens.add({ targets: hitFlash, alpha: 0, duration: 80, onComplete: () => hitFlash.destroy() });
+
+        // 衝撃点に十字の光芒（クロススパーク）
+        const flare = this.add.graphics().setDepth(200025).setScrollFactor(0);
+        flare.lineStyle(2, 0xffffff, 0.9);
+        flare.lineBetween(impactX - 45, impactY, impactX + 45, impactY);
+        flare.lineBetween(impactX, impactY - 45, impactX, impactY + 45);
+        this.tweens.add({
+          targets: flare,
+          alpha: 0,
+          scaleX: 1.8,
+          scaleY: 1.8,
+          duration: 160,
+          onComplete: () => flare.destroy()
+        });
+
+        // 1. 各レイ（主亀裂）を直線的に鋭角に伸長（画面端まで行き過ぎない上品な範囲）
         crackRays.forEach((ray, rayIdx) => {
-          // 鋭角なジグザグ（折れ線）
-          ray.angle += (Math.random() - 0.5) * 0.7;
-          const segLen = Phaser.Math.Between(25, 55);
+          ray.angle += (Math.random() - 0.5) * 0.5;
+          const segLen = Phaser.Math.Between(20, 42);
           ray.currX += Math.cos(ray.angle) * segLen;
           ray.currY += Math.sin(ray.angle) * segLen;
           const newPt = { x: ray.currX, y: ray.currY };
           ray.points.push(newPt);
 
-          // 2. 隣接するレイ同士を繋ぐ鋭角なウェブクラック（角ばった蜘蛛の巣状破壊面）
-          if (step >= 2 && Math.random() < 0.6) {
+          // 2. 隣接レイ間を直線で結ぶ結晶ウェブ
+          if (step >= 2 && Math.random() < 0.55) {
             const nextRay = crackRays[(rayIdx + 1) % crackRays.length];
             if (nextRay.points.length > 1) {
               const p1 = newPt;
               const p2 = nextRay.points[nextRay.points.length - 1];
-              // 直線で繋ぐ
               crackWebs.push({ x1: p1.x, y1: p1.y, x2: p2.x, y2: p2.y });
 
-              // ガラス面（ファセットポリゴン）の生成
-              if (Math.random() < 0.4 && ray.points.length >= 2) {
+              // ガラス面の乱反射ファセット（ごく薄いプリズム面）
+              if (Math.random() < 0.35 && ray.points.length >= 2) {
                 const p0 = ray.points[ray.points.length - 2];
                 crackFacets.push([
                   { x: p0.x, y: p0.y },
@@ -2593,11 +2607,11 @@ class BossScene extends Phaser.Scene {
             }
           }
 
-          // 3. 枝分かれ（フォーク）
-          if (step >= 4 && Math.random() < 0.35 && ray.points.length > 2) {
+          // 3. 微細な鋭角フォーク
+          if (step >= 4 && Math.random() < 0.3 && ray.points.length > 2) {
             const startPt = ray.points[Phaser.Math.Between(1, ray.points.length - 1)];
-            const forkAngle = ray.angle + (Math.random() > 0.5 ? 1 : -1) * (0.6 + Math.random() * 0.5);
-            const forkLen = Phaser.Math.Between(20, 50);
+            const forkAngle = ray.angle + (Math.random() > 0.5 ? 1 : -1) * (0.5 + Math.random() * 0.4);
+            const forkLen = Phaser.Math.Between(15, 35);
             crackWebs.push({
               x1: startPt.x,
               y1: startPt.y,
@@ -2610,9 +2624,9 @@ class BossScene extends Phaser.Scene {
         // 描画実行
         crackGfx.clear();
 
-        // [Layer 1] ガラス破片面（半透明の光沢・屈折ファセット）
-        crackFacets.slice(-16).forEach(poly => {
-          crackGfx.fillStyle(Math.random() < 0.5 ? 0xffffff : 0xff1744, Phaser.Math.FloatBetween(0.06, 0.16));
+        // [Layer 1] 結晶面の屈折ファセット（薄い半透明ガラス）
+        crackFacets.slice(-12).forEach(poly => {
+          crackGfx.fillStyle(Math.random() < 0.6 ? 0xffffff : 0xff1744, Phaser.Math.FloatBetween(0.04, 0.10));
           crackGfx.beginPath();
           crackGfx.moveTo(poly[0].x, poly[0].y);
           crackGfx.lineTo(poly[1].x, poly[1].y);
@@ -2621,8 +2635,6 @@ class BossScene extends Phaser.Scene {
           crackGfx.fillPath();
         });
 
-        // [Layer 2] 深層の暗いクラック溝（奥行き感・シャドウ）
-        crackGfx.lineStyle(4, 0x000000, 0.7);
         const drawAllLines = (ox = 0, oy = 0) => {
           crackRays.forEach(ray => {
             if (ray.points.length > 1) {
@@ -2641,54 +2653,57 @@ class BossScene extends Phaser.Scene {
             crackGfx.strokePath();
           });
         };
-        drawAllLines(2, 2);
 
-        // [Layer 3] 深紅のネオングロー（鮮血のようなエネルギー光）
-        crackGfx.lineStyle(5.5, 0xff0044, 0.65);
+        // [Layer 2] シャドウクラック（溝の陰影）
+        crackGfx.lineStyle(2.5, 0x050510, 0.6);
+        drawAllLines(1, 1);
+
+        // [Layer 3] 深紅のエネルギーグロー（奥から漏れ出る赤い光）
+        crackGfx.lineStyle(3.0, 0xd50000, 0.45);
         drawAllLines(0, 0);
 
-        // [Layer 4] 鮮烈なクリムゾンライン
-        crackGfx.lineStyle(2.8, 0xff1744, 0.95);
+        // [Layer 4] 鮮烈なクリムゾンコア
+        crackGfx.lineStyle(1.4, 0xff1744, 0.85);
         drawAllLines(0, 0);
 
-        // [Layer 5] 最上層シャープ純白コア（ガラスの鋭いエッジ）
-        crackGfx.lineStyle(1.2, 0xffffff, 1.0);
+        // [Layer 5] 最前面・極細シャープ純白ガラスエッジ
+        crackGfx.lineStyle(0.8, 0xffffff, 1.0);
         drawAllLines(0, 0);
 
-        // 衝撃波（ショックウェーブリング）の生成
-        const ring = this.add.circle(impactX, impactY, 20).setStrokeStyle(4, 0xff1744, 0.9).setDepth(200024).setScrollFactor(0);
+        // 衝撃波（ショックウェーブリング）
+        const ring = this.add.circle(impactX, impactY, 15).setStrokeStyle(3, 0xffffff, 0.85).setDepth(200024).setScrollFactor(0);
         this.tweens.add({
           targets: ring,
-          radius: 120 + step * 18,
+          radius: 90 + step * 14,
           alpha: 0,
-          duration: 280,
+          duration: 240,
           ease: 'Cubic.easeOut',
           onComplete: () => ring.destroy()
         });
 
-        // 打撃点から飛び散るガラスの小破片（三角形シャード）
-        for (let k = 0; k < 10; k++) {
-          const shardSize = Phaser.Math.Between(6, 16);
-          const color = k % 3 === 0 ? 0xffffff : (k % 3 === 1 ? 0xff1744 : 0xff0044);
+        // 飛び散る微細なガラス破片（キラキラ光る三角形シャード）
+        for (let k = 0; k < 12; k++) {
+          const shardSize = Phaser.Math.Between(4, 12);
+          const color = k % 3 === 0 ? 0xffffff : (k % 3 === 1 ? 0xff1744 : 0x80deea);
           const shard = this.add.triangle(
-            impactX + Phaser.Math.Between(-20, 20),
-            impactY + Phaser.Math.Between(-20, 20),
+            impactX + Phaser.Math.Between(-15, 15),
+            impactY + Phaser.Math.Between(-15, 15),
             0, -shardSize,
-            shardSize * 0.6, shardSize,
-            -shardSize * 0.6, shardSize,
-            color, 0.9
+            shardSize * 0.5, shardSize,
+            -shardSize * 0.5, shardSize,
+            color, 0.95
           ).setDepth(200026).setScrollFactor(0);
 
           const angle = Math.random() * Math.PI * 2;
-          const dist = Phaser.Math.Between(60, 220);
+          const dist = Phaser.Math.Between(40, 180);
           this.tweens.add({
             targets: shard,
             x: shard.x + Math.cos(angle) * dist,
-            y: shard.y + Math.sin(angle) * dist + 40,
+            y: shard.y + Math.sin(angle) * dist + 30,
             angle: Phaser.Math.Between(-360, 360),
             alpha: 0,
-            scale: 0.2,
-            duration: Phaser.Math.Between(350, 650),
+            scale: 0.1,
+            duration: Phaser.Math.Between(300, 550),
             ease: 'Power2',
             onComplete: () => shard.destroy()
           });
@@ -2709,8 +2724,13 @@ class BossScene extends Phaser.Scene {
         hasIntervened = true;
         setUIVisible(false);
 
-        await sayDoctor('「お前はさっきから、ろくな選択をしない。」');
-        await sayDoctor('「さぁ、魔王を殺すんだ。」');
+        if (sayDoctor) {
+          await sayDoctor('「お前はさっきから、ろくな選択をしない。」');
+          await sayDoctor('「さぁ、魔王を殺すんだ。」');
+        } else {
+          await new Promise(r => this.showDeviceDialogue('「お前はさっきから、ろくな選択をしない。」', r));
+          await new Promise(r => this.showDeviceDialogue('「さぁ、魔王を殺すんだ。」', r));
+        }
 
         isGrayedOut = true;
         selectedIdx = 0; // １ 殺す に固定
@@ -3363,10 +3383,15 @@ class BossScene extends Phaser.Scene {
             this.heroImage.setScale(hScale);
             this.heroImage.setY(100 + (this.heroImage.height * hScale) / 2);
 
-            let lastRightSpeaker = 'doctor';
+            const sayDevice = (text) => new Promise(res => {
+              this.tweens.add({ targets: dimBg, alpha: 0.6, duration: 300 });
+              if (this.heroImage) this.tweens.add({ targets: this.heroImage, alpha: 0.4, duration: 300 });
+              if (this.demonImage) this.tweens.add({ targets: this.demonImage, alpha: 0.4, duration: 300 });
+              if (this.doctorImage) this.tweens.add({ targets: this.doctorImage, alpha: 0, duration: 300 });
+              this.showDeviceDialogue(text, res);
+            });
 
             const sayDemon = (text, tex = 'demon_lord_normal') => new Promise(res => {
-              lastRightSpeaker = 'demon';
               this.tweens.add({ targets: dimBg, alpha: 0.6, duration: 300 });
               if (this.heroImage) this.tweens.add({ targets: this.heroImage, alpha: 0.4, duration: 300 });
               if (this.doctorImage) this.tweens.add({ targets: this.doctorImage, alpha: 0, duration: 300 });
@@ -3381,21 +3406,12 @@ class BossScene extends Phaser.Scene {
             const sayHero = (text) => new Promise(res => {
               this.tweens.add({ targets: dimBg, alpha: 0.6, duration: 300 });
               if (this.heroImage) this.tweens.add({ targets: this.heroImage, alpha: 1, duration: 300 });
-              if (lastRightSpeaker === 'demon') {
-                if (this.demonImage) this.tweens.add({ targets: this.demonImage, alpha: 0.4, duration: 300 });
-                if (this.doctorImage) this.tweens.add({ targets: this.doctorImage, alpha: 0, duration: 300 });
-              } else if (lastRightSpeaker === 'doctor') {
-                if (this.doctorImage) this.tweens.add({ targets: this.doctorImage, alpha: 0.4, duration: 300 });
-                if (this.demonImage) this.tweens.add({ targets: this.demonImage, alpha: 0, duration: 300 });
-              } else {
-                if (this.demonImage) this.tweens.add({ targets: this.demonImage, alpha: 0, duration: 300 });
-                if (this.doctorImage) this.tweens.add({ targets: this.doctorImage, alpha: 0, duration: 300 });
-              }
+              if (this.demonImage) this.tweens.add({ targets: this.demonImage, alpha: 0.4, duration: 300 });
+              if (this.doctorImage) this.tweens.add({ targets: this.doctorImage, alpha: 0, duration: 300 });
               this.showDialogue(MOT.flags.heroName || '勇者', text, res);
             });
 
             const sayDoctor = (text, tex = 'doctor_stand') => new Promise(res => {
-              lastRightSpeaker = 'doctor';
               this.tweens.add({ targets: dimBg, alpha: 0.6, duration: 300 });
               if (this.heroImage) this.tweens.add({ targets: this.heroImage, alpha: 0.4, duration: 300 });
               if (this.demonImage) this.tweens.add({ targets: this.demonImage, alpha: 0, duration: 300 });
@@ -3420,11 +3436,11 @@ class BossScene extends Phaser.Scene {
               const totalKills = (MOT.flags.killedBoss1 ? 1 : 0) + (MOT.flags.killedBoss2 ? 1 : 0) + (MOT.flags.killedTwins ? 1 : 0);
 
               if (totalKills === 0) {
-                // 博士の指示セリフ
-                await sayDoctor('「さあ、早くとどめを刺せ！」');
+                // 博士の指示セリフ（通信機越し）
+                await sayDevice('「さあ、早くとどめを刺せ！」');
 
                 // 選択干渉システム
-                let shatterResult = await this.askDemonLordShatterChoice(sayDoctor, sayHero);
+                let shatterResult = await this.askDemonLordShatterChoice(sayDevice, sayHero);
 
                 if (shatterResult === 1) {
                   await sayHero('「……魔王は……殺さなきゃ……エラーは消去しないと……」');
@@ -3466,27 +3482,21 @@ class BossScene extends Phaser.Scene {
                 await sayDemon('「あいつはこの世界に人間以上の存在がいることが許せないのだ。わらわはやつに襲われていた魔族を保護し、あいつとながい間戦ってきた。」');
                 await sayDemon('「ながい、ながい戦いだった。……やつは気の毒な奴じゃ。だが、それはわらわたちを滅ぼす理由にはならない。」');
 
-                // 4. 博士乱入 (画面揺れ演出前は覚醒前: doctor_stand)
-                await sayDoctor('「…はははは。すべて話されてしまったみたいだな」', 'doctor_stand');
+                // 4. 博士乱入（画面揺れ演出前はすべて通信機越し）
+                await sayDevice('「…はははは。すべて話されてしまったみたいだな」');
                 await sayHero('「！」');
                 await sayHero('「僕は……ずっとあなたに嘘をつかれていたんだね。」');
-                await sayDoctor('「嘘？違うな、そいつらを殺せば平和な世界が訪れる。」', 'doctor_stand');
-                await sayDoctor('「……私にとってな。」', 'doctor_stand');
+                await sayDevice('「嘘？違うな、そいつらを殺せば平和な世界が訪れる。」');
+                await sayDevice('「……私にとってな。」');
                 await sayHero('「それでみんなを殺すだなんて、身勝手じゃないか。」');
-                await sayDoctor('「そうだな。しかしそれがどうした？自分の望む世界を目指すのは普通のことだろう？」', 'doctor_stand');
-                await sayDoctor('「それに、私だけじゃない。魔族に恐怖し、滅んでほしいと願う人間はごまんといる。そいつらにとっても、いい世界となるんだ。」', 'doctor_stand');
+                await sayDevice('「そうだな。しかしそれがどうした？自分の望む世界を目指すのは普通のことだろう？」');
+                await sayDevice('「それに、私だけじゃない。魔族に恐怖し、滅んでほしいと願う人間はごまんといる。そいつらにとっても、いい世界となるんだ。」');
                 await sayDemon('「わらわたちはただ生きているだけだ！むやみに人を傷つけたことなど、一度もない！」');
                 
                 const sayInuneko = (text) => new Promise(res => {
                   this.tweens.add({ targets: dimBg, alpha: 0.6, duration: 300 });
                   if (this.heroImage) this.tweens.add({ targets: this.heroImage, alpha: 0.4, duration: 300 });
-                  if (lastRightSpeaker === 'demon') {
-                    if (this.demonImage) this.tweens.add({ targets: this.demonImage, alpha: 0.4, duration: 300 });
-                    if (this.doctorImage) this.tweens.add({ targets: this.doctorImage, alpha: 0, duration: 300 });
-                  } else if (lastRightSpeaker === 'doctor') {
-                    if (this.doctorImage) this.tweens.add({ targets: this.doctorImage, alpha: 0.4, duration: 300 });
-                    if (this.demonImage) this.tweens.add({ targets: this.demonImage, alpha: 0, duration: 300 });
-                  }
+                  if (this.demonImage) this.tweens.add({ targets: this.demonImage, alpha: 0.4, duration: 300 });
                   this.showDialogue('犬猫☆スター', text, res);
                 });
                 await sayInuneko('「そうわん！魔王様は、お前とは違って優しいにゃん！！」');
@@ -3496,41 +3506,86 @@ class BossScene extends Phaser.Scene {
                 await sayHero('「僕は知った。魔族は悪い奴じゃないって。」');
                 await sayHero('「だからもう、あなたに従ったりはしない。」');
 
-                await sayDoctor('「……面白い。ただ創られた存在であるはずのお前が、そんな感情を持つなんてな。」', 'doctor_stand');
+                await sayDevice('「……面白い。ただ創られた存在であるはずのお前が、そんな感情を持つなんてな。」');
                 await sayHero('「創られた…？」');
-                await sayDoctor('「そうだ。お前は、”勇者”でもなんでもない。ただの”兵器”だ。」', 'doctor_stand');
+                await sayDevice('「そうだ。お前は、”勇者”でもなんでもない。ただの”兵器”だ。」');
                 await sayHero('「兵器……？」');
-                await sayDoctor('「そうだ。」', 'doctor_stand');
-                await sayDoctor('「しかし、私が何度殺せと指示をし、選択権を奪ってもなお、お前は最後まで従わなかった。」', 'doctor_stand');
-                await sayDoctor('「……思えば、最初からおかしかった。お前を創るとき、感情や思考力といったものは組み込まなかったはず。だから、お前は自分を”勇者”と認識したら、何も聞かず、ただ黙って戦いに行くはずだった。」', 'doctor_stand');
+                await sayDevice('「そうだ。」');
+                await sayDevice('「しかし、私が何度殺せと指示をし、選択権を奪ってもなお、お前は最後まで従わなかった。」');
+                await sayDevice('「……思えば、最初からおかしかった。お前を創るとき、感情や思考力といったものは組み込まなかったはず。だから、お前は自分を”勇者”と認識したら、何も聞かず、ただ黙って戦いに行くはずだった。」');
                 await sayHero('「でも僕には感情が……」');
-                await sayDoctor('「本当にそう思っているのか？」', 'doctor_stand');
+                await sayDevice('「本当にそう思っているのか？」');
                 await sayHero('「……。」');
-                await sayDoctor('「お前も気が付いているのだろう？自分の中にいる、お前を操っている存在を。」', 'doctor_stand');
+                await sayDevice('「お前も気が付いているのだろう？自分の中にいる、お前を操っている存在を。」');
                 await sayHero('「……。」');
-                await sayDoctor('「その表情……認めたくないのか？結局、お前は誰かに指示を仰がないと生きていけないんだ。いい加減認めて楽になった方がいい。」', 'doctor_stand');
-                await sayDoctor('「まぁ、お前が誰かに操られていたとしてももう関係ない。」', 'doctor_stand');
-                await sayDoctor('「もうお前は必要ないからな。」', 'doctor_stand');
+                await sayDevice('「その表情……認めたくないのか？結局、お前は誰かに指示を仰がないと生きていけないんだ。いい加減認めて楽になった方がいい。」');
+                await sayDevice('「まぁ、お前が誰かに操られていたとしてももう関係ない。」');
+                await sayDevice('「もうお前は必要ないからな。」');
 
-                this.cameras.main.shake(400, 0.03);
+                // 5. 画面揺れ演出（長めの1500ms、重低音SE）
+                if (MOT.Audio && MOT.Audio.playBomb) MOT.Audio.playBomb();
+                else if (MOT.Audio && MOT.Audio.playShot) MOT.Audio.playShot();
+                this.cameras.main.shake(1500, 0.04);
+                await new Promise(r => this.time.delayedCall(700, r));
+
                 await sayDemon('「なんだ？！」');
                 await sayInuneko('「にゃわわ！？」');
-                await sayDoctor('「これまで集めたデータ、幾度となく繰り返した実験、そしてお前のデータ。これにより私の準備はすべて整った！！」', 'doctor_awaken_smile_weapon');
-                await sayDoctor('「さぁ、最終決戦といこうじゃないか！」', 'doctor_awaken_smile_weapon');
 
+                // 6. 暗転して博士との最終戦の場所に移る（主人公が左から出てくる演出は行わない）
+                this.cameras.main.fadeOut(800, 0, 0, 0);
+                await new Promise(r => this.time.delayedCall(850, r));
+
+                // 立ち絵等の片付け
+                if (this.demonImage) { this.demonImage.destroy(); this.demonImage = null; }
+                if (this.inunekoImage) { this.inunekoImage.destroy(); this.inunekoImage = null; }
+                if (dimBg) dimBg.setAlpha(0);
+
+                // BGM停止
                 if (this.boss1Bgm) this.boss1Bgm.stop();
                 if (this.boss2Bgm) this.boss2Bgm.stop();
                 if (this.twinsBgm) this.twinsBgm.stop();
                 if (this.boss4Bgm) this.boss4Bgm.stop();
                 if (this.boss5Bgm) this.boss5Bgm.stop();
 
+                // 博士戦の背景にセット
+                if (this.textures.exists('bg_doctor')) {
+                  this.bg.setTexture('bg_doctor');
+                  this.bg.setOrigin(0.5, 0.5);
+                  this.bg.setPosition(1920 / 2, 1080 / 2);
+                  this.bg.setScale(Math.max(1920 / this.bg.width, 1080 / this.bg.height));
+                }
+
+                // 主人公はその場所（戦闘定位置 x: 300）にスタンバイ（左からの歩き入場はなし）
+                this.tweens.killTweensOf(this.player);
+                this.player.setPosition(300, 540);
+                if (this.player.body) this.player.body.reset(300, 540);
+                this.player.setAlpha(1);
+
+                // 暗転明け
+                this.cameras.main.fadeIn(600, 0, 0, 0);
+                await new Promise(r => this.time.delayedCall(600, r));
+
+                // 7. 博士本人が姿を現す！（覚醒立ち絵）
+                await sayDoctor('「これまで集めたデータ、幾度となく繰り返した実験、そしてお前のデータ。これにより私の準備はすべて整った！！」', 'doctor_awaken_smile_weapon');
+                await sayDoctor('「さぁ、最終決戦といこうじゃないか！」', 'doctor_awaken_smile_weapon');
+
+                // 会話UIの片付け
+                this.clearConversationUI();
+                if (this.doctorImage) { this.doctorImage.destroy(); this.doctorImage = null; }
+                if (this.heroImage) { this.heroImage.destroy(); this.heroImage = null; }
+                if (dimBg) { dimBg.destroy(); dimBg = null; }
+
                 // イベント戦闘(博士 Phase 1 - 負けイベント: 10秒後に自動死亡)
                 this.isDoctorPhase1Unwinnable = true;
-                this.bossQueue.push('doctor');
-                
-                // （※第1フェーズ負けイベントは博士戦開始後のタイマーおよび被弾で管理）
-
-                this.proceedToNextArea(boss, true);
+                this.currentBossIndex = this.bossQueue.indexOf('doctor');
+                if (this.currentBossIndex === -1) {
+                  this.bossQueue.push('doctor');
+                  this.currentBossIndex = this.bossQueue.length - 1;
+                }
+                this.dialogActive = false;
+                this.player.setCollideWorldBounds(true);
+                this.physics.resume();
+                this.time.delayedCall(500, () => { this.startBoss(); });
                 return;
               } else {
                 // 1~3 bosses killed -> normal choice
