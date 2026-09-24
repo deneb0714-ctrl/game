@@ -1002,6 +1002,7 @@ class BossScene extends Phaser.Scene {
 
     if (isDialog) {
       this.hideBossHPBar();
+      this.updateHUD();
       return;
     }
     
@@ -1950,6 +1951,8 @@ class BossScene extends Phaser.Scene {
       dmg = Math.max(dmg, MOT.flags.playerHP || 1);
     }
     MOT.flags.playerHP -= dmg;
+    if (MOT.flags.playerHP < 0) MOT.flags.playerHP = 0;
+    this.updateHUD();
     this.cameras.main.shake(150, 0.008);
     this.playerInvincible = true;
     player.setTint(0xFF4B6E);
@@ -2015,6 +2018,24 @@ class BossScene extends Phaser.Scene {
 
     // プレイヤー被弾ダウン演出 & HP0
     MOT.flags.playerHP = 0;
+    this.updateHUD();
+    if (this.hpText) {
+      this.tweens.add({
+        targets: this.hpText,
+        alpha: { from: 1, to: 0.2 },
+        scaleX: 1.3,
+        scaleY: 1.3,
+        yoyo: true,
+        repeat: 3,
+        duration: 80,
+        onComplete: () => {
+          if (this.hpText) {
+            this.hpText.setScale(1);
+            this.hpText.setAlpha(1);
+          }
+        }
+      });
+    }
     this.player.setTint(0xFF4B6E);
     this.cameras.main.flash(300, 255, 50, 50);
 
@@ -2029,6 +2050,7 @@ class BossScene extends Phaser.Scene {
     this.physics.pause();
     this.playerInvincible = true;
     MOT.flags.playerHP = 0; // ハート表示をゼロにする
+    this.updateHUD();
     if (this.enemyBullets) this.enemyBullets.clear(true, true);
     if (this.playerBullets) this.playerBullets.clear(true, true);
 
