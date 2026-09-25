@@ -11,6 +11,12 @@ window.MOT = window.MOT || {};
  */
 MOT.playHeroSpecialCutin = function (scene, onExecuteAttack) {
   if (scene._specialCutinRunning) return;
+
+  if (window.MOT && MOT.Settings && !MOT.Settings.specialCutinEnabled) {
+    if (onExecuteAttack) onExecuteAttack();
+    return;
+  }
+
   scene._specialCutinRunning = true;
 
   // プレイヤーを演出中無敵化

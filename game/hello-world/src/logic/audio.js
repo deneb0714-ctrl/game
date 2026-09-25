@@ -24,7 +24,8 @@ MOT.Audio = (function () {
     osc.type = type || 'square';
     osc.frequency.setValueAtTime(freq, ctx.currentTime);
 
-    gain.gain.setValueAtTime(volume || 0.1, ctx.currentTime);
+    let masterVol = (window.MOT && MOT.Settings) ? (MOT.Settings.seVolume / 100) : 1.0;
+    gain.gain.setValueAtTime((volume || 0.1) * masterVol, ctx.currentTime);
     gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + duration);
 
     osc.connect(gain);

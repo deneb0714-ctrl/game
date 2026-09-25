@@ -2,10 +2,11 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <meta name="description" content="Hello World 窶・繝峨ャ繝育�E��E�2D蝗樣∩繧�E�繝･繝ｼ繝�EぁE��ｳ繧�E�縲めE�E繝ｫ繝�Eお繝ｳ繝�EぁE��ｳ繧�E�蛻・�E�仙梛繧�E�繧�E�繧�E�繝ｧ繝ｳ繧�E�繝ｼ繝�縲・ />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <meta name="description" content="Hello World" />
   <meta name="theme-color" content="#050814" />
   <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <title>Hello World</title>
   <link rel="icon" type="image/png" sizes="192x192" href="assets/images/icon-192.png">
@@ -30,18 +31,46 @@
 <body>
   <div id="orientation-warning">
     <div class="warning-box">
-      <div class="warning-icon">📱 🔄</div>
-      <div class="warning-title">【横向きプレイ推奨、E/div>
-      <div class="warning-text">快適にプレイぁE��だくため、スマ�Eトフォンの画面回転をオンにして横向き�E�ランドスケープ）にしてお楽しみください、E/div>
-      <button class="warning-btn" onclick="document.getElementById('orientation-warning').style.display='none'">[ こ�Eままプレイする ]</button>
+      <div class="warning-icon">導 売</div>
+      <div class="warning-title">縲先ｨｪ蜷代″繝励Ξ繧､謗ｨ螂ｨ縲・/div>
+      <div class="warning-text">蠢ｫ驕ｩ縺ｫ繝励Ξ繧､縺励※縺・◆縺縺上◆繧√√せ繝槭・繝医ヵ繧ｩ繝ｳ縺ｮ逕ｻ髱｢蝗櫁ｻ｢繧偵が繝ｳ縺ｫ縺励※讓ｪ蜷代″・医Λ繝ｳ繝峨せ繧ｱ繝ｼ繝暦ｼ峨↓縺励※縺頑･ｽ縺励∩縺上□縺輔＞縲・/div>
+      <button class="warning-btn" onclick="document.getElementById('orientation-warning').style.display='none'">[ 縺薙・縺ｾ縺ｾ繝励Ξ繧､縺吶ｋ ]</button>
       <div style="margin-top: 16px; display: flex; gap: 10px; justify-content: center; flex-wrap: wrap;">
-        <button class="warning-btn" style="border-color: #00FF88; color: #00FF88; font-size: 14px; padding: 8px 16px;" onclick="window.toggleGameFullscreen()">[ ⛶ 全画面�E�フルスクリーン�E�表示 ]</button>
-              </div>
+        <button class="warning-btn" style="border-color: #00FF88; color: #00FF88; font-size: 14px; padding: 8px 16px;" onclick="window.toggleGameFullscreen()">[ 笵ｶ 蜈ｨ逕ｻ髱｢・医ヵ繝ｫ繧ｹ繧ｯ繝ｪ繝ｼ繝ｳ・芽｡ｨ遉ｺ ]</button>
+      </div>
     </div>
   </div>
-  <div id="floating-update-btn" class="mobile-only" style="position: fixed; top: 10px; right: 10px; z-index: 999998; opacity: 0.85; display: flex; gap: 8px;">
-    <button onclick="window.toggleGameFullscreen()" style="background: rgba(5,8,20,0.85); color: #00FF88; border: 1px solid #00FF88; border-radius: 4px; padding: 6px 10px; font-family: 'DotGothic16', sans-serif; font-size: 13px; cursor: pointer;">⛶ 全画面</button>
-      </div>
+  <div id="top-right-ui" style="position: fixed; top: 10px; right: 10px; z-index: 999998; opacity: 0.85; display: flex; gap: 8px;">
+    <button onclick="document.getElementById('settings-panel').style.display='block'" style="background: rgba(5,8,20,0.85); color: #4FD1FF; border: 1px solid #4FD1FF; border-radius: 4px; padding: 6px 10px; font-family: 'DotGothic16', sans-serif; font-size: 13px; cursor: pointer;">笞呻ｸ・險ｭ螳・/button>
+    <button class="mobile-only" onclick="window.toggleGameFullscreen()" style="background: rgba(5,8,20,0.85); color: #00FF88; border: 1px solid #00FF88; border-radius: 4px; padding: 6px 10px; font-family: 'DotGothic16', sans-serif; font-size: 13px; cursor: pointer;">笵ｶ 蜈ｨ逕ｻ髱｢</button>
+  </div>
+
+  <div id="settings-panel" style="display: none; position: fixed; top: 50px; right: 10px; z-index: 999999; background: rgba(5,8,20,0.95); border: 2px solid #4FD1FF; padding: 20px; color: white; border-radius: 8px; width: 320px; font-family: 'DotGothic16', sans-serif; box-shadow: 0 0 15px rgba(79, 209, 255, 0.3);">
+    <h3 style="color: #4FD1FF; margin-bottom: 15px; display: flex; justify-content: space-between;">
+      <span>笞呻ｸ・險ｭ螳・/span>
+      <span style="cursor: pointer; color: #FF4B6E;" onclick="document.getElementById('settings-panel').style.display='none'">笨・/span>
+    </h3>
+    <div style="margin-top: 15px;">
+      <label style="cursor: pointer; display: flex; align-items: center; gap: 8px;">
+        <input type="checkbox" id="setting-special-cutin" checked onchange="if(window.MOT && MOT.Settings) MOT.Settings.specialCutinEnabled = this.checked"> 
+        蜍・・・蠢・ｮｺ謚貍泌・繧呈怏蜉ｹ縺ｫ縺吶ｋ
+      </label>
+    </div>
+    <div style="margin-top: 15px;">
+      <label>BGM髻ｳ驥・ <span id="bgm-val">100</span>%</label>
+      <input type="range" id="setting-bgm" min="0" max="100" value="100" style="width: 100%; margin-top: 5px;" 
+        oninput="document.getElementById('bgm-val').innerText=this.value; if(window.MOT && MOT.Settings) { MOT.Settings.bgmVolume = parseInt(this.value); if (window.game && window.game.sound) window.game.sound.volume = MOT.Settings.bgmVolume / 100; }">
+    </div>
+    <div style="margin-top: 15px;">
+      <label>SE髻ｳ驥・ <span id="se-val">100</span>%</label>
+      <input type="range" id="setting-se" min="0" max="100" value="100" style="width: 100%; margin-top: 5px;"
+        oninput="document.getElementById('se-val').innerText=this.value; if(window.MOT && MOT.Settings) MOT.Settings.seVolume = parseInt(this.value);">
+    </div>
+    <div style="margin-top: 20px; padding-top: 15px; border-top: 1px solid #4FD1FF;">
+      <h4 style="color: #00FF88; margin-bottom: 8px;">当 謫堺ｽ懈婿豕・/h4>
+      <div id="control-instructions" style="font-size: 13px; line-height: 1.6; color: #E5E7EB; white-space: pre-wrap;"></div>
+    </div>
+  </div>
   <div id="game-root"></div>
   <!-- Phaser 3 from CDN -->
   <script src="https://cdn.jsdelivr.net/npm/phaser@3.80.1/dist/phaser.min.js"></script>
@@ -50,7 +79,7 @@
 
   <!-- Game Logic -->
   <script>
-    window.GAME_VERSION = 'v592';
+    window.GAME_VERSION = 'v593';
   </script>
   <script src="src/logic/audio.js?v=592"></script>
   <script src="src/logic/flags.js?v=592"></script>
@@ -74,17 +103,16 @@
   <script src="src/main.js?v=592"></script>
 
   <script>
-    // 全画面表示�E�フルスクリーン�E��Eり替ぁE
-    window.toggleGameFullscreen = function() {
+    // 蜈ｨ逕ｻ髱｢陦ｨ遉ｺ・医ヵ繝ｫ繧ｹ繧ｯ繝ｪ繝ｼ繝ｳ・牙・繧頑崛縺・    window.toggleGameFullscreen = function() {
       if (!document.fullscreenElement && !document.webkitFullscreenElement) {
         let elem = document.documentElement;
         let req = elem.requestFullscreen || elem.webkitRequestFullscreen || elem.msRequestFullscreen;
         if (req) {
           req.call(elem).catch(function() {
-            alert('【iPhone(iOS)などで全画面にする方法】\nSafariのアドレスバ�Eにある「ぁぁEaA)」をタチE�Eして「ツールバ�Eを非表示」を選択するか、ブラウザの下部メニューから「�Eーム画面に追加」をしてホ�Eム画面のアイコンから起動すると、アドレスバ�Eの無ぁE���Eな全画面でお楽しみぁE��だけます！E);
+            alert('縲進Phone(iOS)縺ｪ縺ｩ縺ｧ蜈ｨ逕ｻ髱｢縺ｫ縺吶ｋ譁ｹ豕輔曾nSafari縺ｮ繧｢繝峨Ξ繧ｹ繝舌・縺ｫ縺ゅｋ縲後＝縺・aA)縲阪ｒ繧ｿ繝・メ縺励※縲後ヤ繝ｼ繝ｫ繝舌・繧帝撼陦ｨ遉ｺ縲阪ｒ驕ｸ謚槭☆繧九°縲√ヶ繝ｩ繧ｦ繧ｶ縺ｮ荳矩Κ繝｡繝九Η繝ｼ縺九ｉ縲後・繝ｼ繝逕ｻ髱｢縺ｫ霑ｽ蜉縲阪ｒ縺励※繝帙・繝逕ｻ髱｢縺ｮ繧｢繧､繧ｳ繝ｳ縺九ｉ襍ｷ蜍輔☆繧九→縲√い繝峨Ξ繧ｹ繝舌・縺ｮ辟｡縺・・逕ｻ髱｢縺ｧ縺頑･ｽ縺励∩縺・◆縺縺代∪縺呻ｼ・);
           });
         } else {
-          alert('【iPhone(iOS)などで全画面にする方法】\nSafariのアドレスバ�Eにある「ぁぁEaA)」をタチE�Eして「ツールバ�Eを非表示」を選択するか、ブラウザの下部メニューから「�Eーム画面に追加」をしてホ�Eム画面のアイコンから起動すると、アドレスバ�Eの無ぁE���Eな全画面でお楽しみぁE��だけます！E);
+          alert('縲進Phone(iOS)縺ｪ縺ｩ縺ｧ蜈ｨ逕ｻ髱｢縺ｫ縺吶ｋ譁ｹ豕輔曾nSafari縺ｮ繧｢繝峨Ξ繧ｹ繝舌・縺ｫ縺ゅｋ縲後＝縺・aA)縲阪ｒ繧ｿ繝・メ縺励※縲後ヤ繝ｼ繝ｫ繝舌・繧帝撼陦ｨ遉ｺ縲阪ｒ驕ｸ謚槭☆繧九°縲√ヶ繝ｩ繧ｦ繧ｶ縺ｮ荳矩Κ繝｡繝九Η繝ｼ縺九ｉ縲後・繝ｼ繝逕ｻ髱｢縺ｫ霑ｽ蜉縲阪ｒ縺励※繝帙・繝逕ｻ髱｢縺ｮ繧｢繧､繧ｳ繝ｳ縺九ｉ襍ｷ蜍輔☆繧九→縲√い繝峨Ξ繧ｹ繝舌・縺ｮ辟｡縺・・逕ｻ髱｢縺ｧ縺頑･ｽ縺励∩縺・◆縺縺代∪縺呻ｼ・);
         }
       } else {
         if (document.exitFullscreen) {
@@ -105,6 +133,18 @@
           }
         });
       }
+
+      // Initialize control instructions
+      const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+      const instDiv = document.getElementById('control-instructions');
+      if (instDiv) {
+        if (isMobile) {
+          instDiv.innerText = "縲千ｧｻ蜍輔・逕ｻ髱｢繧剃ｸ贋ｸ句ｷｦ蜿ｳ縺ｫ繧ｹ繝ｯ繧､繝予n縲舌す繝ｼ繝ｫ繝峨・逕ｻ髱｢繧帝聞謚ｼ縺・(繧ｸ繝｣繧ｹ繝医ぎ繝ｼ繝峨〒蜿肴茶)\n縲仙ｿ・ｮｺ謚縲・逕ｻ髱｢繧偵ム繝悶Ν繧ｿ繝・・";
+        } else {
+          instDiv.innerText = "縲千ｧｻ蜍輔・WASD繧ｭ繝ｼ 縺ｾ縺溘・ 遏｢蜊ｰ繧ｭ繝ｼ\n縲舌す繝ｼ繝ｫ繝峨・繧ｹ繝壹・繧ｹ繧ｭ繝ｼ (繧ｸ繝｣繧ｹ繝医ぎ繝ｼ繝峨〒蜿肴茶)\n縲仙ｿ・ｮｺ謚縲・繧ｨ繝ｳ繧ｿ繝ｼ繧ｭ繝ｼ";
+        }
+      }
+
       if ('caches' in window) {
         caches.keys().then(function(names) {
           names.forEach(function(name) {

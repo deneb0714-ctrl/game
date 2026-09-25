@@ -3,6 +3,12 @@
 // =============================================
 window.MOT = window.MOT || {};
 
+MOT.Settings = {
+  seVolume: 100,
+  bgmVolume: 100,
+  specialCutinEnabled: true
+};
+
 MOT.flags = {
   heroName: 'メエリア',
   favor: {

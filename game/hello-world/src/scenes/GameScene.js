@@ -1217,7 +1217,7 @@ class GameScene extends Phaser.Scene {
           this.tweens.add({
             targets: e,
             x: 1300,
-            duration: 800,
+            duration: 2000,
             ease: 'Power2',
             onComplete: () => {
               this.physics.pause();
@@ -1258,7 +1258,7 @@ class GameScene extends Phaser.Scene {
             this.tweens.add({
               targets: e2,
               x: 1300,
-              duration: 800,
+              duration: 2000,
               ease: 'Power2',
               onComplete: () => {
                 // 敵2が1300に到着後、攻撃弾1を発射
@@ -1401,12 +1401,19 @@ class GameScene extends Phaser.Scene {
           // 雑魚敵3体がやってくる（必ず赤・青ダイヤドロップ）
           for (let i = 0; i < 3; i++) {
             let e = this.spawnTutorialEnemy(i, 0);
-            e.x = 1400 + Phaser.Math.Between(0, 80);
+            e.x = 1920 + Phaser.Math.Between(0, 80);
             e.stationaryDrop = true;
             e.tutorialRed = (i === 1);
+            
+            this.tweens.add({
+              targets: e,
+              x: 1400 + Phaser.Math.Between(0, 80),
+              duration: 2000,
+              ease: 'Power2'
+            });
           }
 
-          this.time.delayedCall(500, () => {
+          this.time.delayedCall(2000, () => {
             this.physics.pause();
             this.dialogActive = true;
             this.showDeviceDialogue('「試しに全部倒してみろ」', () => {
