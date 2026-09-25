@@ -5344,7 +5344,7 @@ class BossScene extends Phaser.Scene {
     };
 
     const handleKey = (event) => {
-      if (event.key === ' ' || event.code === 'Space') {
+      if (event.key === ' ' || event.code === 'Space' || event.key === 'Enter' || event.code === 'Enter') {
         handleInput();
       }
     };
@@ -5540,7 +5540,7 @@ class BossScene extends Phaser.Scene {
     };
 
     const handleKey = (event) => {
-      if (event.key === ' ' || event.code === 'Space') {
+      if (event.key === ' ' || event.code === 'Space' || event.key === 'Enter' || event.code === 'Enter') {
         handleInput();
       }
     };

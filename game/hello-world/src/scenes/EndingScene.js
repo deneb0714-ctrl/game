@@ -327,7 +327,13 @@ class EndingScene extends Phaser.Scene {
               if (MOT.Audio && MOT.Audio.playSelect) MOT.Audio.playSelect();
               const saveData = MOT.loadGame();
               if (saveData && saveData.flags) {
-                MOT.loadFlags(saveData.flags);
+                if (MOT.loadFlags) {
+                  MOT.loadFlags(saveData.flags);
+                } else {
+                  const newFlags = JSON.parse(JSON.stringify(saveData.flags));
+                  delete newFlags.maxEnergy;
+                  Object.assign(MOT.flags, newFlags);
+                }
                 MOT.flags.diedCount = 0;
                 MOT.flags.playerHP = MOT.flags.playerMaxHP || 5;
                 MOT.flags.useGlitchTitle = false;
@@ -521,7 +527,13 @@ class EndingScene extends Phaser.Scene {
       if (MOT.Audio && MOT.Audio.playSelect) MOT.Audio.playSelect();
       const saveData = MOT.loadGame();
       if (saveData && saveData.flags) {
-        MOT.loadFlags(saveData.flags);
+        if (MOT.loadFlags) {
+          MOT.loadFlags(saveData.flags);
+        } else {
+          const newFlags = JSON.parse(JSON.stringify(saveData.flags));
+          delete newFlags.maxEnergy;
+          Object.assign(MOT.flags, newFlags);
+        }
         MOT.flags.diedCount = 0;
         MOT.flags.playerHP = MOT.flags.playerMaxHP || 5;
         MOT.flags.useGlitchTitle = false;

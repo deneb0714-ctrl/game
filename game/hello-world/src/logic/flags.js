@@ -75,6 +75,14 @@ MOT.resetFlags = function () {
   MOT.flags.killedDemonLord = false;
 };
 
+MOT.loadFlags = function (savedFlags) {
+  if (!savedFlags) return;
+  const newFlags = typeof savedFlags === 'string' ? JSON.parse(savedFlags) : JSON.parse(JSON.stringify(savedFlags));
+  delete newFlags.maxEnergy; // getterを上書きして破壊しないように削除
+  if (!MOT.flags) MOT.flags = {};
+  Object.assign(MOT.flags, newFlags);
+};
+
 MOT.modifyFlag = function (key, value) {
   if (key.includes('.')) {
     const parts = key.split('.');
