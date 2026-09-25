@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <meta name="description" content="Hello World 窶・繝峨ャ繝育ｵｵ2D蝗樣∩繧ｷ繝･繝ｼ繝・ぅ繝ｳ繧ｰ縲ゅ・繝ｫ繝√お繝ｳ繝・ぅ繝ｳ繧ｰ蛻・ｲ仙梛繧｢繧ｯ繧ｷ繝ｧ繝ｳ繧ｲ繝ｼ繝�縲・ />
+  <meta name="description" content="Hello World 窶・繝峨ャ繝育�E��E�2D蝗樣∩繧�E�繝･繝ｼ繝�EぁE��ｳ繧�E�縲めE�E繝ｫ繝�Eお繝ｳ繝�EぁE��ｳ繧�E�蛻・�E�仙梛繧�E�繧�E�繧�E�繝ｧ繝ｳ繧�E�繝ｼ繝�縲・ />
   <meta name="theme-color" content="#050814" />
   <meta name="mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
@@ -31,11 +31,11 @@
   <div id="orientation-warning">
     <div class="warning-box">
       <div class="warning-icon">📱 🔄</div>
-      <div class="warning-title">【横向きプレイ推奨】</div>
-      <div class="warning-text">快適にプレイいただくため、スマートフォンの画面回転をオンにして横向き（ランドスケープ）にしてお楽しみください。</div>
-      <button class="warning-btn" onclick="document.getElementById('orientation-warning').style.display='none'">[ このままプレイする ]</button>
+      <div class="warning-title">【横向きプレイ推奨、E/div>
+      <div class="warning-text">快適にプレイぁE��だくため、スマ�Eトフォンの画面回転をオンにして横向き�E�ランドスケープ）にしてお楽しみください、E/div>
+      <button class="warning-btn" onclick="document.getElementById('orientation-warning').style.display='none'">[ こ�Eままプレイする ]</button>
       <div style="margin-top: 16px; display: flex; gap: 10px; justify-content: center; flex-wrap: wrap;">
-        <button class="warning-btn" style="border-color: #00FF88; color: #00FF88; font-size: 14px; padding: 8px 16px;" onclick="window.toggleGameFullscreen()">[ ⛶ 全画面（フルスクリーン）表示 ]</button>
+        <button class="warning-btn" style="border-color: #00FF88; color: #00FF88; font-size: 14px; padding: 8px 16px;" onclick="window.toggleGameFullscreen()">[ ⛶ 全画面�E�フルスクリーン�E�表示 ]</button>
               </div>
     </div>
   </div>
@@ -50,41 +50,41 @@
 
   <!-- Game Logic -->
   <script>
-    window.GAME_VERSION = 'v591';
+    window.GAME_VERSION = 'v592';
   </script>
-  <script src="src/logic/audio.js?v=591"></script>
-  <script src="src/logic/flags.js?v=591"></script>
-  <script src="src/logic/endings.js?v=591"></script>
-  <script src="src/logic/controls.js?v=591"></script>
-  <script src="src/logic/enemies.js?v=591"></script>
-  <script src="src/logic/items.js?v=591"></script>
-  <script src="src/logic/doctorDirective.js?v=591"></script>
-  <script src="src/logic/specialCutin.js?v=591"></script>
+  <script src="src/logic/audio.js?v=592"></script>
+  <script src="src/logic/flags.js?v=592"></script>
+  <script src="src/logic/endings.js?v=592"></script>
+  <script src="src/logic/controls.js?v=592"></script>
+  <script src="src/logic/enemies.js?v=592"></script>
+  <script src="src/logic/items.js?v=592"></script>
+  <script src="src/logic/doctorDirective.js?v=592"></script>
+  <script src="src/logic/specialCutin.js?v=592"></script>
 
   <!-- Scenes -->
-  <script src="src/scenes/BootScene.js?v=591"></script>
-  <script src="src/scenes/TitleScene.js?v=591"></script>
-  <script src="src/scenes/StoryScene.js?v=591"></script>
-  <script src="src/scenes/GameScene.js?v=591"></script>
-  <script src="src/scenes/EndingScene.js?v=591"></script>
-  <script src="src/scenes/BossScene.js?v=591"></script>
+  <script src="src/scenes/BootScene.js?v=592"></script>
+  <script src="src/scenes/TitleScene.js?v=592"></script>
+  <script src="src/scenes/StoryScene.js?v=592"></script>
+  <script src="src/scenes/GameScene.js?v=592"></script>
+  <script src="src/scenes/EndingScene.js?v=592"></script>
+  <script src="src/scenes/BossScene.js?v=592"></script>
 
   <!-- Core -->
-  <script src="src/config.js?v=591"></script>
-  <script src="src/main.js?v=591"></script>
+  <script src="src/config.js?v=592"></script>
+  <script src="src/main.js?v=592"></script>
 
   <script>
-    // 全画面表示（フルスクリーン）切り替え
+    // 全画面表示�E�フルスクリーン�E��Eり替ぁE
     window.toggleGameFullscreen = function() {
       if (!document.fullscreenElement && !document.webkitFullscreenElement) {
         let elem = document.documentElement;
         let req = elem.requestFullscreen || elem.webkitRequestFullscreen || elem.msRequestFullscreen;
         if (req) {
           req.call(elem).catch(function() {
-            alert('【iPhone(iOS)などで全画面にする方法】\nSafariのアドレスバーにある「ぁあ(aA)」をタップして「ツールバーを非表示」を選択するか、ブラウザの下部メニューから「ホーム画面に追加」をしてホーム画面のアイコンから起動すると、アドレスバーの無い完全な全画面でお楽しみいただけます！');
+            alert('【iPhone(iOS)などで全画面にする方法】\nSafariのアドレスバ�Eにある「ぁぁEaA)」をタチE�Eして「ツールバ�Eを非表示」を選択するか、ブラウザの下部メニューから「�Eーム画面に追加」をしてホ�Eム画面のアイコンから起動すると、アドレスバ�Eの無ぁE���Eな全画面でお楽しみぁE��だけます！E);
           });
         } else {
-          alert('【iPhone(iOS)などで全画面にする方法】\nSafariのアドレスバーにある「ぁあ(aA)」をタップして「ツールバーを非表示」を選択するか、ブラウザの下部メニューから「ホーム画面に追加」をしてホーム画面のアイコンから起動すると、アドレスバーの無い完全な全画面でお楽しみいただけます！');
+          alert('【iPhone(iOS)などで全画面にする方法】\nSafariのアドレスバ�Eにある「ぁぁEaA)」をタチE�Eして「ツールバ�Eを非表示」を選択するか、ブラウザの下部メニューから「�Eーム画面に追加」をしてホ�Eム画面のアイコンから起動すると、アドレスバ�Eの無ぁE���Eな全画面でお楽しみぁE��だけます！E);
         }
       } else {
         if (document.exitFullscreen) {

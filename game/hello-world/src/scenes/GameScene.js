@@ -545,7 +545,7 @@ class GameScene extends Phaser.Scene {
         if (charIndex >= text.length) {
           typeTimer.destroy();
           contText.setAlpha(1);
-          if (this.tweens) this.tweens.add({ targets: contText, alpha: 0.6, yoyo: true, repeat: -1, duration: 500 });
+          // 点滅（アルファTween）は無効化
         }
       },
       callbackScope: this,
@@ -580,7 +580,7 @@ class GameScene extends Phaser.Scene {
         charIndex = text.length;
         bodyText.setText(text);
         contText.setAlpha(1);
-        if (this.tweens) this.tweens.add({ targets: contText, alpha: 0.6, yoyo: true, repeat: -1, duration: 500 });
+        // 点滅（アルファTween）は無効化
       } else {
         advance();
       }
@@ -615,7 +615,7 @@ class GameScene extends Phaser.Scene {
       fontSize: '20px',
       color: '#FFFFFF'
     }).setOrigin(1, 0.5).setDepth(200001);
-    this.tweens.add({ targets: contText, alpha: 0.6, yoyo: true, repeat: -1, duration: 500 });
+    // 点滅（アルファTween）は無効化
     elements.push(contText);
 
     const choicesList = [];
@@ -852,7 +852,8 @@ class GameScene extends Phaser.Scene {
       }.bind(this)
     });
 
-    if (MOT.flags.playerHP <= 0 && this.currentStage !== 1) {
+    if (MOT.flags.playerHP <= 0 && this.currentStage !== 1 && !this.gameOverTriggered) {
+      this.gameOverTriggered = true;
       MOT.flags.diedCount++;
       this.cameras.main.fadeOut(1000, 0, 0, 0);
       this.time.delayedCall(1000, function () {
@@ -904,16 +905,16 @@ class GameScene extends Phaser.Scene {
   }
 
   cleanupOffscreen() {
-    this.enemyGroup.getChildren().forEach(function (e) {
+    this.enemyGroup.getChildren().slice().forEach(function (e) {
       if (e.x < -100) e.destroy();
     });
-    this.enemyBullets.getChildren().forEach(function (b) {
+    this.enemyBullets.getChildren().slice().forEach(function (b) {
       if (b.x < -50 || b.x > 2000 || b.y < -50 || b.y > 1130) b.destroy();
     });
-    this.playerBullets.getChildren().forEach(function (b) {
+    this.playerBullets.getChildren().slice().forEach(function (b) {
       if (b.x > 1600) b.destroy();
     });
-    this.itemGroup.getChildren().forEach(function (i) {
+    this.itemGroup.getChildren().slice().forEach(function (i) {
       if (i.x < -50) i.destroy();
     });
   }
@@ -1124,7 +1125,7 @@ class GameScene extends Phaser.Scene {
         if (charIndex >= text.length) {
           typeTimer.destroy();
           contText.setAlpha(1);
-          if (this.tweens) this.tweens.add({ targets: contText, alpha: 0.6, yoyo: true, repeat: -1, duration: 500 });
+          // 点滅（アルファTween）は無効化
         }
       }, callbackScope: this, loop: true
     });
@@ -1157,7 +1158,7 @@ class GameScene extends Phaser.Scene {
         charIndex = text.length;
         bodyText.setText(text);
         contText.setAlpha(1);
-        if (this.tweens) this.tweens.add({ targets: contText, alpha: 0.6, yoyo: true, repeat: -1, duration: 500 });
+        // 点滅（アルファTween）は無効化
       } else {
         advance();
       }
@@ -1535,7 +1536,7 @@ class GameScene extends Phaser.Scene {
             this.physics.resume();
 
             if (MOT.DoctorDirective) {
-              let directives = MOT.DoctorDirective.directives;
+              let directives = MOT.DoctorDirective.getValidDirectives(this.player);
               let d = directives[Math.floor(Math.random() * directives.length)];
               MOT.DoctorDirective.showDirective(this, d, this.player);
             }

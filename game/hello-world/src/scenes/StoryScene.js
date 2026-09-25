@@ -101,7 +101,7 @@ class StoryScene extends Phaser.Scene {
       fontSize: '20px',
       color: '#FFFFFF'
     }).setOrigin(1, 0).setAlpha(0);
-    this.tweens.add({ targets: this.contText, alpha: 0.6, yoyo: true, repeat: -1, duration: 500 });
+    // 点滅（アルファTween）は無効化
 
     // Advance on click
     this.input.on('pointerdown', () => {

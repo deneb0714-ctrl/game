@@ -1354,7 +1354,7 @@ class BossScene extends Phaser.Scene {
     }
 
     // Cleanup
-    this.enemyGroup.getChildren().forEach(function (e) {
+    this.enemyGroup.getChildren().slice().forEach(function (e) {
       if (e.x < -100) {
         if (e.isScenarioMinion || e.isIntermissionEnemy) {
           this.onBossHit({ active: true, damage: 9999, silent: true, destroy: function(){} }, e);
@@ -1365,11 +1365,11 @@ class BossScene extends Phaser.Scene {
     }.bind(this));
 
     let now = this.time.now;
-    this.enemyBullets.getChildren().forEach(function (b) {
+    this.enemyBullets.getChildren().slice().forEach(function (b) {
       if (b.updateBehavior) b.updateBehavior(now, delta);
       if (b.x < -50 || b.x > 2000 || b.y < -50 || b.y > 1130) b.destroy();
     });
-    this.playerBullets.getChildren().forEach(function (b) {
+    this.playerBullets.getChildren().slice().forEach(function (b) {
       if (b.x > 1600) b.destroy();
     });
 
@@ -3507,7 +3507,7 @@ class BossScene extends Phaser.Scene {
         }
         
         // 倒された敵が発射した弾を消去する
-        this.enemyBullets.getChildren().forEach(function(b) {
+        this.enemyBullets.getChildren().slice().forEach(function(b) {
           if (b.shooter === boss) {
             b.destroy();
           }
@@ -5304,7 +5304,7 @@ class BossScene extends Phaser.Scene {
         if (charIndex >= text.length) {
           typeTimer.destroy();
           contText.setAlpha(1);
-          if (this.tweens) this.tweens.add({ targets: contText, alpha: 0.6, yoyo: true, repeat: -1, duration: 500 });
+          // 点滅（アルファTween）は無効化
         }
       }, callbackScope: this, loop: true
     });
@@ -5337,7 +5337,7 @@ class BossScene extends Phaser.Scene {
         charIndex = text.length;
         bodyText.setText(text);
         contText.setAlpha(1);
-        if (this.tweens) this.tweens.add({ targets: contText, alpha: 0.6, yoyo: true, repeat: -1, duration: 500 });
+        // 点滅（アルファTween）は無効化
       } else {
         advance();
       }
@@ -5498,7 +5498,7 @@ class BossScene extends Phaser.Scene {
         if (charIndex >= text.length) {
           typeTimer.destroy();
           contText.setAlpha(1);
-          if (this.tweens) this.tweens.add({ targets: contText, alpha: 0.6, yoyo: true, repeat: -1, duration: 500 });
+          // 点滅（アルファTween）は無効化
         }
       }, callbackScope: this, loop: true
     });
@@ -5533,7 +5533,7 @@ class BossScene extends Phaser.Scene {
         charIndex = text.length;
         bodyText.setText(text);
         contText.setAlpha(1);
-        if (this.tweens) this.tweens.add({ targets: contText, alpha: 0.6, yoyo: true, repeat: -1, duration: 500 });
+        // 点滅（アルファTween）は無効化
       } else {
         advance();
       }
@@ -5569,7 +5569,7 @@ class BossScene extends Phaser.Scene {
       fontSize: '20px',
       color: '#FFFFFF'
     }).setOrigin(1, 0.5).setDepth(200001).setScrollFactor(0);
-    this.tweens.add({ targets: contText, alpha: 0.6, yoyo: true, repeat: -1, duration: 500 });
+    // 点滅（アルファTween）は無効化
     elements.push(contText);
 
     const choicesList = [];
