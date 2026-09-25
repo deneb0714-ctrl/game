@@ -52,6 +52,13 @@ MOT.resetFlags = function () {
   MOT.flags.playerMaxHP = 5;
 };
 
+MOT.loadFlags = function (savedFlags) {
+  if (!savedFlags) return;
+  const newFlags = JSON.parse(JSON.stringify(savedFlags));
+  delete newFlags.maxEnergy; // getterを上書きして破壊しないように削除
+  Object.assign(MOT.flags, newFlags);
+};
+
 MOT.modifyFlag = function (key, value) {
   if (key.includes('.')) {
     const parts = key.split('.');

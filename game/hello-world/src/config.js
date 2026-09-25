@@ -9,7 +9,7 @@ MOT.COLORS = {
   DANGER: '#FF4B6E',
   ENEMY_RED: '#FF2E2E',
   TEXT: '#E5E7EB',
-  TEXT_SUB: '#9CA3AF',
+  TEXT_SUB: '#FFFFFF',
   LAB: '#1F2933'
 };
 

@@ -149,7 +149,7 @@ class TitleScene extends Phaser.Scene {
       this.createButton(w / 2, h * 0.84, 'CONTINUE', 700, function () {
         const saveData = window.MOT && MOT.loadGame ? MOT.loadGame() : null;
         if (saveData && saveData.flags) {
-          MOT.flags = JSON.parse(JSON.stringify(saveData.flags));
+          MOT.loadFlags(saveData.flags);
           MOT.flags.diedCount = 0;
           MOT.flags.playerHP = MOT.flags.playerMaxHP || 5;
           MOT.flags.useGlitchTitle = false;
@@ -496,11 +496,11 @@ class TitleScene extends Phaser.Scene {
     });
 
     const closeText = this.add.text(boxX + boxW - 60, boxY + boxH - 50, '▶ CLOSE [TAP/CLICK]', {
-      fontFamily: '"Press Start 2P"', fontSize: '20px', color: '#9CA3AF'
+      fontFamily: '"Press Start 2P"', fontSize: '20px', color: '#FFFFFF'
     }).setOrigin(1, 0).setInteractive({ useHandCursor: true });
     this.creditsContainer.add(closeText);
     
-    this.tweens.add({ targets: closeText, alpha: 0.3, yoyo: true, repeat: -1, duration: 500 });
+    this.tweens.add({ targets: closeText, alpha: 0.6, yoyo: true, repeat: -1, duration: 500 });
 
     const handleClose = () => {
       if (window.MOT && MOT.Audio) MOT.Audio.playSelect();

@@ -327,7 +327,7 @@ class EndingScene extends Phaser.Scene {
               if (MOT.Audio && MOT.Audio.playSelect) MOT.Audio.playSelect();
               const saveData = MOT.loadGame();
               if (saveData && saveData.flags) {
-                MOT.flags = JSON.parse(JSON.stringify(saveData.flags));
+                MOT.loadFlags(saveData.flags);
                 MOT.flags.diedCount = 0;
                 MOT.flags.playerHP = MOT.flags.playerMaxHP || 5;
                 MOT.flags.useGlitchTitle = false;
@@ -373,14 +373,7 @@ class EndingScene extends Phaser.Scene {
     this.gameOverMenuButtons = [];
     this.gameOverMenuActionTaken = false;
 
-    // 操作ガイドテキスト
-    const guideText = this.add.text(w / 2, h * 0.985, '▶ ↑↓ / W S : 選択  |  [ENTER] : 決定', {
-      fontFamily: '"DotGothic16", sans-serif',
-      fontSize: '18px',
-      color: '#9CA3AF'
-    }).setOrigin(0.5, 1).setAlpha(0).setDepth(11);
-    this.tweens.add({ targets: guideText, alpha: 0.8, duration: 600 });
-    this.tweens.add({ targets: guideText, alpha: 0.35, yoyo: true, repeat: -1, duration: 800, delay: 600 });
+    // 操作ガイドテキストは削除
 
     const self = this;
     menuOptions.forEach((opt, idx) => {
@@ -528,7 +521,7 @@ class EndingScene extends Phaser.Scene {
       if (MOT.Audio && MOT.Audio.playSelect) MOT.Audio.playSelect();
       const saveData = MOT.loadGame();
       if (saveData && saveData.flags) {
-        MOT.flags = JSON.parse(JSON.stringify(saveData.flags));
+        MOT.loadFlags(saveData.flags);
         MOT.flags.diedCount = 0;
         MOT.flags.playerHP = MOT.flags.playerMaxHP || 5;
         MOT.flags.useGlitchTitle = false;

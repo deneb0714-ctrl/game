@@ -156,12 +156,9 @@ MOT.playHeroSpecialCutin = function (scene, onExecuteAttack) {
     heroCutin.setTexture('hero_special_cutin_open');
     heroCutin.setScale(1.04);
 
-    // 開放インパクト音＋必殺音
+    // 開放インパクト音
     if (MOT.Audio && MOT.Audio.playCutinRelease) {
       MOT.Audio.playCutinRelease();
-    }
-    if (MOT.Audio && MOT.Audio.playSpecial) {
-      MOT.Audio.playSpecial();
     }
 
     // 画面フラッシュ（白＆シアン）

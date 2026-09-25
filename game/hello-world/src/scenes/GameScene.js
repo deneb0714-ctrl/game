@@ -528,7 +528,7 @@ class GameScene extends Phaser.Scene {
     // Typewriter effect
     let charIndex = 0;
     const contText = this.add.text(w - 100, boxY + boxH - 40, '▶ NEXT [TAP/SPACE]', {
-      fontFamily: '"Press Start 2P"', fontSize: '20px', color: '#9CA3AF'
+      fontFamily: '"Press Start 2P"', fontSize: '20px', color: '#FFFFFF'
     }).setOrigin(1, 0).setAlpha(0).setScrollFactor(0).setDepth(200003);
 
     const typeTimer = this.time.addEvent({
@@ -545,7 +545,7 @@ class GameScene extends Phaser.Scene {
         if (charIndex >= text.length) {
           typeTimer.destroy();
           contText.setAlpha(1);
-          if (this.tweens) this.tweens.add({ targets: contText, alpha: 0.3, yoyo: true, repeat: -1, duration: 500 });
+          if (this.tweens) this.tweens.add({ targets: contText, alpha: 0.6, yoyo: true, repeat: -1, duration: 500 });
         }
       },
       callbackScope: this,
@@ -580,7 +580,7 @@ class GameScene extends Phaser.Scene {
         charIndex = text.length;
         bodyText.setText(text);
         contText.setAlpha(1);
-        if (this.tweens) this.tweens.add({ targets: contText, alpha: 0.3, yoyo: true, repeat: -1, duration: 500 });
+        if (this.tweens) this.tweens.add({ targets: contText, alpha: 0.6, yoyo: true, repeat: -1, duration: 500 });
       } else {
         advance();
       }
@@ -613,9 +613,9 @@ class GameScene extends Phaser.Scene {
     const contText = this.add.text(w - 100, h - 60, '▶ [ENTER] KEY', {
       fontFamily: '"Press Start 2P"',
       fontSize: '20px',
-      color: '#9CA3AF'
+      color: '#FFFFFF'
     }).setOrigin(1, 0.5).setDepth(200001);
-    this.tweens.add({ targets: contText, alpha: 0.3, yoyo: true, repeat: -1, duration: 500 });
+    this.tweens.add({ targets: contText, alpha: 0.6, yoyo: true, repeat: -1, duration: 500 });
     elements.push(contText);
 
     const choicesList = [];
@@ -730,17 +730,22 @@ class GameScene extends Phaser.Scene {
   }
 
   onPlayerHit(player, obj) {
-    if (this.playerInvincible || this.dialogActive) return;
+    if (this.dialogActive) return;
+    if (this.playerInvincible && !this.barrierBreakInvincible) return;
 
-    if (this.barrierActive) {
+    if (this.barrierActive || this.barrierBreakInvincible) {
       obj.destroy();
-      this.deactivateBarrier();
-
-      // 短い無敵時間
-      this.playerInvincible = true;
-      this.time.delayedCall(150, () => {
-        this.playerInvincible = false;
-      });
+      
+      if (this.barrierActive) {
+        this.deactivateBarrier();
+        // 短い無敵時間（同時にヒットした別の弾もシールドで防ぐため）
+        this.barrierBreakInvincible = true;
+        this.playerInvincible = true;
+        this.time.delayedCall(150, () => {
+          this.barrierBreakInvincible = false;
+          this.playerInvincible = false;
+        });
+      }
 
       // 反撃SE＆エフェクト（イエローフラッシュ＆ゴールド粒子）
       this.cameras.main.flash(200, 255, 215, 0);
@@ -1106,7 +1111,7 @@ class GameScene extends Phaser.Scene {
     this.dialogContainer.add(bodyText);
 
     var contText = this.add.text(w - 100, boxY + boxH - 40, '▶ NEXT [TAP/SPACE]', {
-      fontFamily: '"Press Start 2P"', fontSize: '20px', color: '#9CA3AF'
+      fontFamily: '"Press Start 2P"', fontSize: '20px', color: '#FFFFFF'
     }).setOrigin(1, 0).setAlpha(0);
     this.dialogContainer.add(contText);
 
@@ -1119,7 +1124,7 @@ class GameScene extends Phaser.Scene {
         if (charIndex >= text.length) {
           typeTimer.destroy();
           contText.setAlpha(1);
-          if (this.tweens) this.tweens.add({ targets: contText, alpha: 0.3, yoyo: true, repeat: -1, duration: 500 });
+          if (this.tweens) this.tweens.add({ targets: contText, alpha: 0.6, yoyo: true, repeat: -1, duration: 500 });
         }
       }, callbackScope: this, loop: true
     });
@@ -1152,7 +1157,7 @@ class GameScene extends Phaser.Scene {
         charIndex = text.length;
         bodyText.setText(text);
         contText.setAlpha(1);
-        if (this.tweens) this.tweens.add({ targets: contText, alpha: 0.3, yoyo: true, repeat: -1, duration: 500 });
+        if (this.tweens) this.tweens.add({ targets: contText, alpha: 0.6, yoyo: true, repeat: -1, duration: 500 });
       } else {
         advance();
       }

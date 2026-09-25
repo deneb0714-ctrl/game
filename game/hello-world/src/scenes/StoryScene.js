@@ -99,9 +99,9 @@ class StoryScene extends Phaser.Scene {
     this.contText = this.add.text(w - 100, boxY + boxH - 40, '▶ NEXT [TAP/SPACE]', {
       fontFamily: '"Press Start 2P"',
       fontSize: '20px',
-      color: '#9CA3AF'
+      color: '#FFFFFF'
     }).setOrigin(1, 0).setAlpha(0);
-    this.tweens.add({ targets: this.contText, alpha: 0.3, yoyo: true, repeat: -1, duration: 500 });
+    this.tweens.add({ targets: this.contText, alpha: 0.6, yoyo: true, repeat: -1, duration: 500 });
 
     // Advance on click
     this.input.on('pointerdown', () => {

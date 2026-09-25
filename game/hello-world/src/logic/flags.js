@@ -92,54 +92,66 @@ MOT.addEnergy = function (amount) {
 
 MOT.updateSpecialAura = function (scene) {
   if (!scene || !scene.player || !scene.player.active || scene.player.alpha <= 0) {
-    if (scene && scene.specialAuraGraphics) {
-      scene.specialAuraGraphics.clear();
+    if (scene && scene.specialAuraEmitter) {
+      scene.specialAuraEmitter.stop();
+    }
+    if (scene && scene._specialTintActive && !scene.playerInvincible) {
+      scene.player.clearTint();
+      scene._specialTintActive = false;
     }
     return;
   }
 
   const isSpecialReady = (MOT.flags.energy >= MOT.flags.maxEnergyThreshold);
   if (isSpecialReady) {
-    if (!scene.specialAuraGraphics) {
-      scene.specialAuraGraphics = scene.add.graphics();
+    if (!scene.textures.exists('special_aura_dot')) {
+      const g = scene.make.graphics({ x: 0, y: 0, add: false });
+      g.fillStyle(0xFFFFFF);
+      g.fillRect(0, 0, 4, 4);
+      g.generateTexture('special_aura_dot', 4, 4);
     }
-    scene.specialAuraGraphics.clear();
-    scene.specialAuraGraphics.setBlendMode(Phaser.BlendModes.ADD);
-    const pDepth = (scene.player.depth !== undefined) ? scene.player.depth : 10;
-    scene.specialAuraGraphics.setDepth(pDepth - 1);
-
-    const now = Date.now();
-    const pulse = (Math.sin(now / 200) + 1) / 2; // 0.0〜1.0 の緩やかな呼吸パルス
+    
+    if (!scene.specialAuraEmitter) {
+      scene.specialAuraEmitter = scene.add.particles(0, 0, 'special_aura_dot', {
+        x: { min: -24, max: 24 },
+        y: { min: -10, max: 30 },
+        speedY: { min: -100, max: -40 },
+        speedX: { min: -10, max: 10 },
+        scale: { start: 1, end: 0 },
+        alpha: { start: 0.8, end: 0 },
+        tint: [0xFF2244, 0xFF3366, 0xFF5588, 0xFF2255],
+        lifespan: { min: 400, max: 800 },
+        blendMode: 'ADD',
+        frequency: 40,
+        emitting: false
+      });
+      const pDepth = (scene.player.depth !== undefined) ? scene.player.depth : 10;
+      scene.specialAuraEmitter.setDepth(pDepth - 1);
+    }
+    
+    // Position the emitter relative to player
     const px = scene.player.x;
     const py = scene.player.y;
+    
+    scene.specialAuraEmitter.setPosition(px, py);
+    
+    // Start emitting if it was stopped
+    if (!scene.specialAuraEmitter.emitting) {
+      scene.specialAuraEmitter.start();
+    }
 
-    // 1. 幾何学的な枠線を使わず、加算合成(ADD)の柔らかな光のグラデーションのみを描画
-    // 外層グロー（広範囲で非常に淡い赤光）
-    scene.specialAuraGraphics.fillStyle(0xFF2244, 0.08 + 0.06 * pulse);
-    scene.specialAuraGraphics.fillCircle(px, py, 58 + pulse * 10);
-
-    // 中層グロー（柔らかな光）
-    scene.specialAuraGraphics.fillStyle(0xFF3366, 0.14 + 0.08 * pulse);
-    scene.specialAuraGraphics.fillCircle(px, py, 40 + pulse * 6);
-
-    // 内層コアグロー（光の芯）
-    scene.specialAuraGraphics.fillStyle(0xFF5588, 0.20 + 0.10 * pulse);
-    scene.specialAuraGraphics.fillCircle(px, py, 24 + pulse * 4);
-
-    // 足元の柔らかい光の溜まり
-    scene.specialAuraGraphics.fillStyle(0xFF2255, 0.14 + 0.08 * pulse);
-    scene.specialAuraGraphics.fillEllipse(px, py + 36, 42 + pulse * 6, 14 + pulse * 3);
-
-    // 2. 主人公本体自身がじんわりと赤く明滅して光る（無敵時間中でない場合）
+    // pulsing tint on player
+    const now = Date.now();
+    const pulse = (Math.sin(now / 200) + 1) / 2;
     if (!scene.playerInvincible) {
-      const gb = Math.floor(165 + 80 * (1 - pulse)); // 165〜245
+      const gb = Math.floor(165 + 80 * (1 - pulse));
       const tint = (0xFF << 16) | (gb << 8) | gb;
       scene.player.setTint(tint);
       scene._specialTintActive = true;
     }
   } else {
-    if (scene.specialAuraGraphics) {
-      scene.specialAuraGraphics.clear();
+    if (scene.specialAuraEmitter && scene.specialAuraEmitter.emitting) {
+      scene.specialAuraEmitter.stop();
     }
     if (scene._specialTintActive && !scene.playerInvincible) {
       scene.player.clearTint();
