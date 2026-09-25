@@ -26,93 +26,95 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=DotGothic16&family=Press+Start+2P&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="styles/styles.css?v=525" />
+  <link rel="stylesheet" href="styles/styles.css?v=594" />
 </head>
 <body>
   <div id="orientation-warning">
     <div class="warning-box">
-      <div class="warning-icon">導 売</div>
-      <div class="warning-title">縲先ｨｪ蜷代″繝励Ξ繧､謗ｨ螂ｨ縲・/div>
-      <div class="warning-text">蠢ｫ驕ｩ縺ｫ繝励Ξ繧､縺励※縺・◆縺縺上◆繧√√せ繝槭・繝医ヵ繧ｩ繝ｳ縺ｮ逕ｻ髱｢蝗櫁ｻ｢繧偵が繝ｳ縺ｫ縺励※讓ｪ蜷代″・医Λ繝ｳ繝峨せ繧ｱ繝ｼ繝暦ｼ峨↓縺励※縺頑･ｽ縺励∩縺上□縺輔＞縲・/div>
-      <button class="warning-btn" onclick="document.getElementById('orientation-warning').style.display='none'">[ 縺薙・縺ｾ縺ｾ繝励Ξ繧､縺吶ｋ ]</button>
+      <div class="warning-icon">📱 🔄</div>
+      <div class="warning-title">【横向きプレイ推奨】</div>
+      <div class="warning-text">快適にプレイしていただくため、スマートフォンの画面回転をオンにして横向き（ランドスケープ）にしてお楽しみください。</div>
+      <button class="warning-btn" onclick="document.getElementById('orientation-warning').style.display='none'">[ このままプレイする ]</button>
       <div style="margin-top: 16px; display: flex; gap: 10px; justify-content: center; flex-wrap: wrap;">
-        <button class="warning-btn" style="border-color: #00FF88; color: #00FF88; font-size: 14px; padding: 8px 16px;" onclick="window.toggleGameFullscreen()">[ 笵ｶ 蜈ｨ逕ｻ髱｢・医ヵ繝ｫ繧ｹ繧ｯ繝ｪ繝ｼ繝ｳ・芽｡ｨ遉ｺ ]</button>
+        <button class="warning-btn" style="border-color: #00FF88; color: #00FF88; font-size: 14px; padding: 8px 16px;" onclick="window.toggleGameFullscreen()">[ ⛶ 全画面（フルスクリーン）表示 ]</button>
       </div>
     </div>
   </div>
+
   <div id="top-right-ui" style="position: fixed; top: 10px; right: 10px; z-index: 999998; opacity: 0.85; display: flex; gap: 8px;">
-    <button onclick="document.getElementById('settings-panel').style.display='block'" style="background: rgba(5,8,20,0.85); color: #4FD1FF; border: 1px solid #4FD1FF; border-radius: 4px; padding: 6px 10px; font-family: 'DotGothic16', sans-serif; font-size: 13px; cursor: pointer;">笞呻ｸ・險ｭ螳・/button>
-    <button class="mobile-only" onclick="window.toggleGameFullscreen()" style="background: rgba(5,8,20,0.85); color: #00FF88; border: 1px solid #00FF88; border-radius: 4px; padding: 6px 10px; font-family: 'DotGothic16', sans-serif; font-size: 13px; cursor: pointer;">笵ｶ 蜈ｨ逕ｻ髱｢</button>
+    <button onclick="document.getElementById('settings-panel').style.display='block'" style="background: rgba(5,8,20,0.85); color: #4FD1FF; border: 1px solid #4FD1FF; border-radius: 4px; padding: 6px 10px; font-family: 'DotGothic16', sans-serif; font-size: 13px; cursor: pointer;">⚙️ 設定</button>
+    <button class="mobile-only" onclick="window.toggleGameFullscreen()" style="background: rgba(5,8,20,0.85); color: #00FF88; border: 1px solid #00FF88; border-radius: 4px; padding: 6px 10px; font-family: 'DotGothic16', sans-serif; font-size: 13px; cursor: pointer;">⛶ 全画面</button>
   </div>
 
   <div id="settings-panel" style="display: none; position: fixed; top: 50px; right: 10px; z-index: 999999; background: rgba(5,8,20,0.95); border: 2px solid #4FD1FF; padding: 20px; color: white; border-radius: 8px; width: 320px; font-family: 'DotGothic16', sans-serif; box-shadow: 0 0 15px rgba(79, 209, 255, 0.3);">
     <h3 style="color: #4FD1FF; margin-bottom: 15px; display: flex; justify-content: space-between;">
-      <span>笞呻ｸ・險ｭ螳・/span>
-      <span style="cursor: pointer; color: #FF4B6E;" onclick="document.getElementById('settings-panel').style.display='none'">笨・/span>
+      <span>⚙️ 設定</span>
+      <span style="cursor: pointer; color: #FF4B6E;" onclick="document.getElementById('settings-panel').style.display='none'">✕</span>
     </h3>
     <div style="margin-top: 15px;">
       <label style="cursor: pointer; display: flex; align-items: center; gap: 8px;">
         <input type="checkbox" id="setting-special-cutin" checked onchange="if(window.MOT && MOT.Settings) MOT.Settings.specialCutinEnabled = this.checked"> 
-        蜍・・・蠢・ｮｺ謚貍泌・繧呈怏蜉ｹ縺ｫ縺吶ｋ
+        勇者の必殺技演出を有効にする
       </label>
     </div>
     <div style="margin-top: 15px;">
-      <label>BGM髻ｳ驥・ <span id="bgm-val">100</span>%</label>
+      <label>BGM音量: <span id="bgm-val">100</span>%</label>
       <input type="range" id="setting-bgm" min="0" max="100" value="100" style="width: 100%; margin-top: 5px;" 
         oninput="document.getElementById('bgm-val').innerText=this.value; if(window.MOT && MOT.Settings) { MOT.Settings.bgmVolume = parseInt(this.value); if (window.game && window.game.sound) window.game.sound.volume = MOT.Settings.bgmVolume / 100; }">
     </div>
     <div style="margin-top: 15px;">
-      <label>SE髻ｳ驥・ <span id="se-val">100</span>%</label>
+      <label>SE音量: <span id="se-val">100</span>%</label>
       <input type="range" id="setting-se" min="0" max="100" value="100" style="width: 100%; margin-top: 5px;"
         oninput="document.getElementById('se-val').innerText=this.value; if(window.MOT && MOT.Settings) MOT.Settings.seVolume = parseInt(this.value);">
     </div>
     <div style="margin-top: 20px; padding-top: 15px; border-top: 1px solid #4FD1FF;">
-      <h4 style="color: #00FF88; margin-bottom: 8px;">当 謫堺ｽ懈婿豕・/h4>
+      <h4 style="color: #00FF88; margin-bottom: 8px;">📖 操作方法</h4>
       <div id="control-instructions" style="font-size: 13px; line-height: 1.6; color: #E5E7EB; white-space: pre-wrap;"></div>
     </div>
   </div>
+
   <div id="game-root"></div>
+  
   <!-- Phaser 3 from CDN -->
   <script src="https://cdn.jsdelivr.net/npm/phaser@3.80.1/dist/phaser.min.js"></script>
 
-  <!-- Base64 Images Removed (Loaded directly as PNG in BootScene) -->
-
   <!-- Game Logic -->
   <script>
-    window.GAME_VERSION = 'v593';
+    window.GAME_VERSION = 'v594';
   </script>
-  <script src="src/logic/audio.js?v=592"></script>
-  <script src="src/logic/flags.js?v=592"></script>
-  <script src="src/logic/endings.js?v=592"></script>
-  <script src="src/logic/controls.js?v=592"></script>
-  <script src="src/logic/enemies.js?v=592"></script>
-  <script src="src/logic/items.js?v=592"></script>
-  <script src="src/logic/doctorDirective.js?v=592"></script>
-  <script src="src/logic/specialCutin.js?v=592"></script>
+  <script src="src/logic/audio.js?v=594"></script>
+  <script src="src/logic/flags.js?v=594"></script>
+  <script src="src/logic/endings.js?v=594"></script>
+  <script src="src/logic/controls.js?v=594"></script>
+  <script src="src/logic/enemies.js?v=594"></script>
+  <script src="src/logic/items.js?v=594"></script>
+  <script src="src/logic/doctorDirective.js?v=594"></script>
+  <script src="src/logic/specialCutin.js?v=594"></script>
 
   <!-- Scenes -->
-  <script src="src/scenes/BootScene.js?v=592"></script>
-  <script src="src/scenes/TitleScene.js?v=592"></script>
-  <script src="src/scenes/StoryScene.js?v=592"></script>
-  <script src="src/scenes/GameScene.js?v=592"></script>
-  <script src="src/scenes/EndingScene.js?v=592"></script>
-  <script src="src/scenes/BossScene.js?v=592"></script>
+  <script src="src/scenes/BootScene.js?v=594"></script>
+  <script src="src/scenes/TitleScene.js?v=594"></script>
+  <script src="src/scenes/StoryScene.js?v=594"></script>
+  <script src="src/scenes/GameScene.js?v=594"></script>
+  <script src="src/scenes/EndingScene.js?v=594"></script>
+  <script src="src/scenes/BossScene.js?v=594"></script>
 
   <!-- Core -->
-  <script src="src/config.js?v=592"></script>
-  <script src="src/main.js?v=592"></script>
+  <script src="src/config.js?v=594"></script>
+  <script src="src/main.js?v=594"></script>
 
   <script>
-    // 蜈ｨ逕ｻ髱｢陦ｨ遉ｺ・医ヵ繝ｫ繧ｹ繧ｯ繝ｪ繝ｼ繝ｳ・牙・繧頑崛縺・    window.toggleGameFullscreen = function() {
+    // 全画面表示（フルスクリーン）切り替え
+    window.toggleGameFullscreen = function() {
       if (!document.fullscreenElement && !document.webkitFullscreenElement) {
         let elem = document.documentElement;
         let req = elem.requestFullscreen || elem.webkitRequestFullscreen || elem.msRequestFullscreen;
         if (req) {
           req.call(elem).catch(function() {
-            alert('縲進Phone(iOS)縺ｪ縺ｩ縺ｧ蜈ｨ逕ｻ髱｢縺ｫ縺吶ｋ譁ｹ豕輔曾nSafari縺ｮ繧｢繝峨Ξ繧ｹ繝舌・縺ｫ縺ゅｋ縲後＝縺・aA)縲阪ｒ繧ｿ繝・メ縺励※縲後ヤ繝ｼ繝ｫ繝舌・繧帝撼陦ｨ遉ｺ縲阪ｒ驕ｸ謚槭☆繧九°縲√ヶ繝ｩ繧ｦ繧ｶ縺ｮ荳矩Κ繝｡繝九Η繝ｼ縺九ｉ縲後・繝ｼ繝逕ｻ髱｢縺ｫ霑ｽ蜉縲阪ｒ縺励※繝帙・繝逕ｻ髱｢縺ｮ繧｢繧､繧ｳ繝ｳ縺九ｉ襍ｷ蜍輔☆繧九→縲√い繝峨Ξ繧ｹ繝舌・縺ｮ辟｡縺・・逕ｻ髱｢縺ｧ縺頑･ｽ縺励∩縺・◆縺縺代∪縺呻ｼ・);
+            alert('【iPhone(iOS)などで全画面にする方法】\nSafariのアドレスバーにある「ぁあ(aA)」をタッチして「ツールバーを非表示」を選択するか、ブラウザの下部メニューから「ホーム画面に追加」をしてホーム画面のアイコンから起動すると、アドレスバーの無い全画面でお楽しみいただけます！');
           });
         } else {
-          alert('縲進Phone(iOS)縺ｪ縺ｩ縺ｧ蜈ｨ逕ｻ髱｢縺ｫ縺吶ｋ譁ｹ豕輔曾nSafari縺ｮ繧｢繝峨Ξ繧ｹ繝舌・縺ｫ縺ゅｋ縲後＝縺・aA)縲阪ｒ繧ｿ繝・メ縺励※縲後ヤ繝ｼ繝ｫ繝舌・繧帝撼陦ｨ遉ｺ縲阪ｒ驕ｸ謚槭☆繧九°縲√ヶ繝ｩ繧ｦ繧ｶ縺ｮ荳矩Κ繝｡繝九Η繝ｼ縺九ｉ縲後・繝ｼ繝逕ｻ髱｢縺ｫ霑ｽ蜉縲阪ｒ縺励※繝帙・繝逕ｻ髱｢縺ｮ繧｢繧､繧ｳ繝ｳ縺九ｉ襍ｷ蜍輔☆繧九→縲√い繝峨Ξ繧ｹ繝舌・縺ｮ辟｡縺・・逕ｻ髱｢縺ｧ縺頑･ｽ縺励∩縺・◆縺縺代∪縺呻ｼ・);
+          alert('【iPhone(iOS)などで全画面にする方法】\nSafariのアドレスバーにある「ぁあ(aA)」をタッチして「ツールバーを非表示」を選択するか、ブラウザの下部メニューから「ホーム画面に追加」をしてホーム画面のアイコンから起動すると、アドレスバーの無い全画面でお楽しみいただけます！');
         }
       } else {
         if (document.exitFullscreen) {
@@ -122,7 +124,6 @@
         }
       }
     };
-
 
     window.addEventListener('load', () => {
       if ('serviceWorker' in navigator) {
@@ -139,9 +140,9 @@
       const instDiv = document.getElementById('control-instructions');
       if (instDiv) {
         if (isMobile) {
-          instDiv.innerText = "縲千ｧｻ蜍輔・逕ｻ髱｢繧剃ｸ贋ｸ句ｷｦ蜿ｳ縺ｫ繧ｹ繝ｯ繧､繝予n縲舌す繝ｼ繝ｫ繝峨・逕ｻ髱｢繧帝聞謚ｼ縺・(繧ｸ繝｣繧ｹ繝医ぎ繝ｼ繝峨〒蜿肴茶)\n縲仙ｿ・ｮｺ謚縲・逕ｻ髱｢繧偵ム繝悶Ν繧ｿ繝・・";
+          instDiv.innerText = "【移動】 画面を上下左右にスワイプ\n【シールド】 画面を長押し (ジャストガードで反撃)\n【必殺技】 画面をダブルタップ";
         } else {
-          instDiv.innerText = "縲千ｧｻ蜍輔・WASD繧ｭ繝ｼ 縺ｾ縺溘・ 遏｢蜊ｰ繧ｭ繝ｼ\n縲舌す繝ｼ繝ｫ繝峨・繧ｹ繝壹・繧ｹ繧ｭ繝ｼ (繧ｸ繝｣繧ｹ繝医ぎ繝ｼ繝峨〒蜿肴茶)\n縲仙ｿ・ｮｺ謚縲・繧ｨ繝ｳ繧ｿ繝ｼ繧ｭ繝ｼ";
+          instDiv.innerText = "【移動】 WASDキー または 矢印キー\n【シールド】 スペースキー (ジャストガードで反撃)\n【必殺技】 エンターキー";
         }
       }
 
@@ -149,7 +150,6 @@
         caches.keys().then(function(names) {
           names.forEach(function(name) {
             caches.delete(name);
-            console.log('Cache deleted:', name);
           });
         });
       }

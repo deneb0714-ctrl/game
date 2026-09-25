@@ -1,4 +1,4 @@
-// =============================================
+﻿// =============================================
 // BootScene.js – アセットプリロード＋プロシージャルスプライト生成
 // =============================================
 window.MOT = window.MOT || {};
@@ -146,7 +146,7 @@ class BootScene extends Phaser.Scene {
 
     // 博士の顔アイコン (assets/images から読み込むためBase64は削除)
 
-    const v = window.GAME_VERSION || 'v1';
+    const qs = (window.location.protocol === 'file:') ? '' : ('?v=' + (window.GAME_VERSION || 'v1'));
     
     // 双子用BGM
     this.load.audio('twins_bgm', 'assets/audio/twins_bgm.mp3');
@@ -161,172 +161,172 @@ class BootScene extends Phaser.Scene {
     this.load.audio('mob_bgm_demon', 'assets/audio/mob_bgm_demon.mp3');
 
     // 博士の立ち絵
-    this.load.image('doctor_stand', 'assets/images/doctor_normal.png?v=' + v);
-    this.load.image('doctor_stand_open', 'assets/images/doctor_open_eyes.png?v=' + v);
-    this.load.image('doctor_combat', 'assets/images/doctor_combat.png?v=' + v);
-    this.load.image('doctor_combat_beam', 'assets/images/doctor_combat_beam.png?v=' + v);
+    this.load.image('doctor_stand', 'assets/images/doctor_normal.png' + qs);
+    this.load.image('doctor_stand_open', 'assets/images/doctor_open_eyes.png' + qs);
+    this.load.image('doctor_combat', 'assets/images/doctor_combat.png' + qs);
+    this.load.image('doctor_combat_beam', 'assets/images/doctor_combat_beam.png' + qs);
     
     // 主人公の立ち絵は以下で読み込みます
     
     // 主人公の戦闘時・他者との会話時の立ち絵
-    this.load.image('hero_combat_down_open', 'assets/images/勇者_下目開け.png?v=' + v);
-    this.load.image('hero_combat_down_close', 'assets/images/勇者_下目閉じ.png?v=' + v);
-    this.load.image('hero_combat_up_open', 'assets/images/勇者_上目開け.png?v=' + v);
-    this.load.image('hero_combat_up_close', 'assets/images/勇者_上目閉じ.png?v=' + v);
-    this.load.image('demon_combat_down_open', 'assets/images/魔王_下目開け.png?v=' + v);
-    this.load.image('demon_combat_down_close', 'assets/images/魔王_下目閉じ.png?v=' + v);
-    this.load.image('demon_combat_up_open', 'assets/images/魔王_上目開け.png?v=' + v);
-    this.load.image('demon_combat_up_close', 'assets/images/魔王_上目閉じ.png?v=' + v);
+    this.load.image('hero_combat_down_open', 'assets/images/勇者_下目開け.png' + qs);
+    this.load.image('hero_combat_down_close', 'assets/images/勇者_下目閉じ.png' + qs);
+    this.load.image('hero_combat_up_open', 'assets/images/勇者_上目開け.png' + qs);
+    this.load.image('hero_combat_up_close', 'assets/images/勇者_上目閉じ.png' + qs);
+    this.load.image('demon_combat_down_open', 'assets/images/魔王_下目開け.png' + qs);
+    this.load.image('demon_combat_down_close', 'assets/images/魔王_下目閉じ.png' + qs);
+    this.load.image('demon_combat_up_open', 'assets/images/魔王_上目開け.png' + qs);
+    this.load.image('demon_combat_up_close', 'assets/images/魔王_上目閉じ.png' + qs);
 
     // 主人公の必殺技カットイン（目を閉じる・開ける）
-    this.load.image('hero_special_cutin_closed', 'assets/images/hero_special_cutin_closed.png?v=' + v);
-    this.load.image('hero_special_cutin_open', 'assets/images/hero_special_cutin_open.png?v=' + v);
+    this.load.image('hero_special_cutin_closed', 'assets/images/hero_special_cutin_closed.png' + qs);
+    this.load.image('hero_special_cutin_open', 'assets/images/hero_special_cutin_open.png' + qs);
 
     // 主人公の瞬き（表情切り替え用）
-    this.load.image('hero_stand_blink', 'assets/images/hero_stand_blink.png?v=' + v);
-    this.load.image('hero_stand', 'assets/images/hero_stand.png?v=' + v);
-    this.load.image('hero_stand_silent', 'assets/images/hero_stand_silent.png?v=' + v);
-    this.load.image('hero_stand_corrupted', 'assets/images/hero_stand_corrupted.png?v=' + v);
-    this.load.image('hero_cry', 'assets/images/hero_cry.png?v=' + v);
-    this.load.image('doctor_awaken_smile', 'assets/images/覚醒_笑.png?v=' + v);
-    this.load.image('doctor_awaken_smile_weapon', 'assets/images/覚醒_笑_武器展開.png?v=' + v);
-    this.load.image('doctor_awaken_smile_dying', 'assets/images/覚醒_笑_瀕死.png?v=' + v);
-    this.load.image('doctor_awaken_straight', 'assets/images/覚醒_真顔.png?v=' + v);
-    this.load.image('doctor_awaken_straight_dying', 'assets/images/覚醒_真顔_瀕死.png?v=' + v);
-    this.load.image('doctor_awaken_straight_weapon', 'assets/images/覚醒_真顔_武器展開.png?v=' + v);
-    this.load.image('doctor_awaken_normal', 'assets/images/覚醒_通常.png?v=' + v);
-    this.load.image('doctor_awaken_normal_dying', 'assets/images/覚醒_通常_瀕死.png?v=' + v);
-    this.load.image('doctor_awaken_normal_weapon', 'assets/images/覚醒_通常_武器展開.png?v=' + v);
+    this.load.image('hero_stand_blink', 'assets/images/hero_stand_blink.png' + qs);
+    this.load.image('hero_stand', 'assets/images/hero_stand.png' + qs);
+    this.load.image('hero_stand_silent', 'assets/images/hero_stand_silent.png' + qs);
+    this.load.image('hero_stand_corrupted', 'assets/images/hero_stand_corrupted.png' + qs);
+    this.load.image('hero_cry', 'assets/images/hero_cry.png' + qs);
+    this.load.image('doctor_awaken_smile', 'assets/images/覚醒_笑.png' + qs);
+    this.load.image('doctor_awaken_smile_weapon', 'assets/images/覚醒_笑_武器展開.png' + qs);
+    this.load.image('doctor_awaken_smile_dying', 'assets/images/覚醒_笑_瀕死.png' + qs);
+    this.load.image('doctor_awaken_straight', 'assets/images/覚醒_真顔.png' + qs);
+    this.load.image('doctor_awaken_straight_dying', 'assets/images/覚醒_真顔_瀕死.png' + qs);
+    this.load.image('doctor_awaken_straight_weapon', 'assets/images/覚醒_真顔_武器展開.png' + qs);
+    this.load.image('doctor_awaken_normal', 'assets/images/覚醒_通常.png' + qs);
+    this.load.image('doctor_awaken_normal_dying', 'assets/images/覚醒_通常_瀕死.png' + qs);
+    this.load.image('doctor_awaken_normal_weapon', 'assets/images/覚醒_通常_武器展開.png' + qs);
 
 
-    this.load.image('demon_lord_normal', 'assets/images/demon_lord_normal.png?v=' + v);
-    this.load.image('demon_lord_blink', 'assets/images/demon_lord_blink.png?v=' + v);
+    this.load.image('demon_lord_normal', 'assets/images/demon_lord_normal.png' + qs);
+    this.load.image('demon_lord_blink', 'assets/images/demon_lord_blink.png' + qs);
     
     // Inuneko Star
-    this.load.image('true_demon_lord', 'assets/images/true_demon_lord.gif?v=' + v);
-    this.load.image('cg_puppet', 'assets/images/cg_puppet.png?v=' + v);
-    this.load.image('cg_daily_1', 'assets/images/cg_daily_1.png?v=' + v);
-    this.load.image('cg_daily_2', 'assets/images/cg_daily_2.png?v=' + v);
-    this.load.image('cg_daily_3', 'assets/images/cg_daily_3.png?v=' + v);
-    this.load.image('cg_shutdown', 'assets/images/cg_shutdown.png?v=' + v);
-    this.load.image('cg_useless', 'assets/images/cg_useless.png?v=' + v);
-    this.load.image('cg_irresistible', 'assets/images/cg_irresistible.png?v=' + v);
-    this.load.image('cg_helloworld', 'assets/images/cg_helloworld.png?v=' + v);
-    this.load.image('inuneko_stand', 'assets/images/inuneko_stand.png?v=' + v);
-    this.load.image('inuneko_blink', 'assets/images/inuneko_blink.png?v=' + v);
-    this.load.image('inuneko_dying', 'assets/images/inuneko_dying.png?v=' + v);
-    this.load.spritesheet('inuneko_combat', 'assets/images/inuneko_combat_sheet.png?v=' + v, { frameWidth: 315, frameHeight: 560 });
+    this.load.image('true_demon_lord', 'assets/images/true_demon_lord.gif' + qs);
+    this.load.image('cg_puppet', 'assets/images/cg_puppet.png' + qs);
+    this.load.image('cg_daily_1', 'assets/images/cg_daily_1.png' + qs);
+    this.load.image('cg_daily_2', 'assets/images/cg_daily_2.png' + qs);
+    this.load.image('cg_daily_3', 'assets/images/cg_daily_3.png' + qs);
+    this.load.image('cg_shutdown', 'assets/images/cg_shutdown.png' + qs);
+    this.load.image('cg_useless', 'assets/images/cg_useless.png' + qs);
+    this.load.image('cg_irresistible', 'assets/images/cg_irresistible.png' + qs);
+    this.load.image('cg_helloworld', 'assets/images/cg_helloworld.png' + qs);
+    this.load.image('inuneko_stand', 'assets/images/inuneko_stand.png' + qs);
+    this.load.image('inuneko_blink', 'assets/images/inuneko_blink.png' + qs);
+    this.load.image('inuneko_dying', 'assets/images/inuneko_dying.png' + qs);
+    this.load.spritesheet('inuneko_combat', 'assets/images/inuneko_combat_sheet.png' + qs, { frameWidth: 315, frameHeight: 560 });
     
-    this.load.image('icon_person', 'assets/images/icon_person.png?v=' + v);
-    this.load.image('demon_lord_dying', 'assets/images/demon_lord_dying.png?v=' + v);
-    this.load.image('demon_lord_shock', 'assets/images/demon_lord_shock.png?v=' + v);
-    this.load.image('demon_lord_eyes_closed', 'assets/images/demon_lord_eyes_closed.png?v=' + v);
+    this.load.image('icon_person', 'assets/images/icon_person.png' + qs);
+    this.load.image('demon_lord_dying', 'assets/images/demon_lord_dying.png' + qs);
+    this.load.image('demon_lord_shock', 'assets/images/demon_lord_shock.png' + qs);
+    this.load.image('demon_lord_eyes_closed', 'assets/images/demon_lord_eyes_closed.png' + qs);
 
     // Boss 1 and 2
-    this.load.image('boss1_muscle', 'assets/images/boss1_muscle.jpg?v=' + v);
-    this.load.image('boss1_normal', 'assets/images/boss1_normal.png?v=' + v);
-    this.load.image('boss1_angry', 'assets/images/boss1_angry.png?v=' + v);
-    this.load.image('boss1_dying', 'assets/images/boss1_hurt_normal.png?v=' + v);
-    this.load.image('boss1_sweat', 'assets/images/boss1_sweat.png?v=' + v);
-    this.load.image('boss1_hurt_angry', 'assets/images/boss1_hurt_angry.png?v=' + v);
+    this.load.image('boss1_muscle', 'assets/images/boss1_muscle.jpg' + qs);
+    this.load.image('boss1_normal', 'assets/images/boss1_normal.png' + qs);
+    this.load.image('boss1_angry', 'assets/images/boss1_angry.png' + qs);
+    this.load.image('boss1_dying', 'assets/images/boss1_hurt_normal.png' + qs);
+    this.load.image('boss1_sweat', 'assets/images/boss1_sweat.png' + qs);
+    this.load.image('boss1_hurt_angry', 'assets/images/boss1_hurt_angry.png' + qs);
     
     // 新しいエフェクト・弾幕画像
-    this.load.image('boss1_wind_slash', 'assets/images/boss1_wind_slash.png?v=' + v);
-    this.load.image('boss2_bullet', 'assets/images/boss2_bullet.png?v=' + v);
-    this.load.spritesheet('boss1_combat', 'assets/images/boss1_combat_sheet.png?v=' + v, { frameWidth: 100, frameHeight: 100 });
-    this.load.image('boss2_combat_down_open', 'assets/images/狂人_下目開け.png?v=' + v);
-    this.load.image('boss2_combat_down_close', 'assets/images/狂人_下目閉じ.png?v=' + v);
-    this.load.image('boss2_combat_up_open', 'assets/images/狂人_上目開け.png?v=' + v);
-    this.load.image('boss2_combat_up_close', 'assets/images/狂人_上目閉じ.png?v=' + v);
-    this.load.spritesheet('boss3_battle_anim', 'assets/images/boss3_battle.png?v=' + v, { frameWidth: 560, frameHeight: 533 });
-    this.load.image('boss2_normal', 'assets/images/boss2_normal.png?v=' + v);
-    this.load.image('boss2_normal_dying', 'assets/images/boss2_normal_dying.png?v=' + v);
-    this.load.image('boss2_angry', 'assets/images/boss2_angry.png?v=' + v);
-    this.load.image('boss2_angry_dying', 'assets/images/boss2_angry_dying.png?v=' + v);
-    this.load.image('boss2_eyes_closed', 'assets/images/boss2_eyes_closed.png?v=' + v);
-    this.load.image('boss2_eyes_closed_dying', 'assets/images/boss2_eyes_closed_dying.png?v=' + v);
-    this.load.image('boss2_surprised', 'assets/images/boss2_surprised.png?v=' + v);
-    this.load.image('boss2_surprised_dying', 'assets/images/boss2_surprised_dying.png?v=' + v);
+    this.load.image('boss1_wind_slash', 'assets/images/boss1_wind_slash.png' + qs);
+    this.load.image('boss2_bullet', 'assets/images/boss2_bullet.png' + qs);
+    this.load.spritesheet('boss1_combat', 'assets/images/boss1_combat_sheet.png' + qs, { frameWidth: 100, frameHeight: 100 });
+    this.load.image('boss2_combat_down_open', 'assets/images/狂人_下目開け.png' + qs);
+    this.load.image('boss2_combat_down_close', 'assets/images/狂人_下目閉じ.png' + qs);
+    this.load.image('boss2_combat_up_open', 'assets/images/狂人_上目開け.png' + qs);
+    this.load.image('boss2_combat_up_close', 'assets/images/狂人_上目閉じ.png' + qs);
+    this.load.spritesheet('boss3_battle_anim', 'assets/images/boss3_battle.png' + qs, { frameWidth: 560, frameHeight: 533 });
+    this.load.image('boss2_normal', 'assets/images/boss2_normal.png' + qs);
+    this.load.image('boss2_normal_dying', 'assets/images/boss2_normal_dying.png' + qs);
+    this.load.image('boss2_angry', 'assets/images/boss2_angry.png' + qs);
+    this.load.image('boss2_angry_dying', 'assets/images/boss2_angry_dying.png' + qs);
+    this.load.image('boss2_eyes_closed', 'assets/images/boss2_eyes_closed.png' + qs);
+    this.load.image('boss2_eyes_closed_dying', 'assets/images/boss2_eyes_closed_dying.png' + qs);
+    this.load.image('boss2_surprised', 'assets/images/boss2_surprised.png' + qs);
+    this.load.image('boss2_surprised_dying', 'assets/images/boss2_surprised_dying.png' + qs);
     
     // Doctor
-    this.load.image('doctor_normal', 'assets/images/doctor_normal.png?v=' + v);
-    this.load.image('doctor_open_eyes', 'assets/images/doctor_open_eyes.png?v=' + v);
-    this.load.image('doctor_face', 'assets/images/doctor_stand.png?v=' + v);
+    this.load.image('doctor_normal', 'assets/images/doctor_normal.png' + qs);
+    this.load.image('doctor_open_eyes', 'assets/images/doctor_open_eyes.png' + qs);
+    this.load.image('doctor_face', 'assets/images/doctor_stand.png' + qs);
 
     // Inuneko Star
 
-    this.load.image('inuneko_stand', 'assets/images/inuneko_stand.png?v=' + v);
-    this.load.image('inuneko_dying', 'assets/images/inuneko_dying.png?v=' + v);
-    this.load.image('inuneko_blink', 'assets/images/inuneko_blink.png?v=' + v);
-    this.load.image('sister_normal', 'assets/images/sister_normal.png?v=' + v);
-    this.load.image('sister_blink', 'assets/images/sister_blink.png?v=' + v);
-    this.load.image('sister_hurt', 'assets/images/sister_hurt.png?v=' + v);
+    this.load.image('inuneko_stand', 'assets/images/inuneko_stand.png' + qs);
+    this.load.image('inuneko_dying', 'assets/images/inuneko_dying.png' + qs);
+    this.load.image('inuneko_blink', 'assets/images/inuneko_blink.png' + qs);
+    this.load.image('sister_normal', 'assets/images/sister_normal.png' + qs);
+    this.load.image('sister_blink', 'assets/images/sister_blink.png' + qs);
+    this.load.image('sister_hurt', 'assets/images/sister_hurt.png' + qs);
     
     // New sister combat images
-    this.load.image('sister_shoot1', 'assets/images/妹_撃つ1.png?v=' + v);
-    this.load.image('sister_shoot1_blink', 'assets/images/妹_撃つ1目閉じ.png?v=' + v);
-    this.load.image('sister_shoot2', 'assets/images/妹_撃つ2.png?v=' + v);
-    this.load.image('sister_shoot2_blink', 'assets/images/妹_撃つ2目閉じ.png?v=' + v);
-    this.load.image('sister_revive1', 'assets/images/妹_兄蘇生1.png?v=' + v);
-    this.load.image('sister_revive2', 'assets/images/妹_兄蘇生2.png?v=' + v);
-    this.load.image('brother_normal', 'assets/images/brother_normal.png?v=' + v);
-    this.load.image('brother_closed', 'assets/images/brother_closed.png?v=' + v);
+    this.load.image('sister_shoot1', 'assets/images/妹_撃つ1.png' + qs);
+    this.load.image('sister_shoot1_blink', 'assets/images/妹_撃つ1目閉じ.png' + qs);
+    this.load.image('sister_shoot2', 'assets/images/妹_撃つ2.png' + qs);
+    this.load.image('sister_shoot2_blink', 'assets/images/妹_撃つ2目閉じ.png' + qs);
+    this.load.image('sister_revive1', 'assets/images/妹_兄蘇生1.png' + qs);
+    this.load.image('sister_revive2', 'assets/images/妹_兄蘇生2.png' + qs);
+    this.load.image('brother_normal', 'assets/images/brother_normal.png' + qs);
+    this.load.image('brother_closed', 'assets/images/brother_closed.png' + qs);
     this.load.image('brother_stand_open', 'assets/images/双子兄_立つ目開け.png');
     this.load.image('brother_stand_closed', 'assets/images/双子兄_目閉じ.png');
     this.load.image('brother_sit_open', 'assets/images/双子兄_座る目開け.png');
     this.load.image('brother_sit_closed', 'assets/images/双子兄_座る目閉じ.png');
     this.load.image('brother_shoot_open', 'assets/images/双子兄_座る銃を打つ目開け.png');
     this.load.image('brother_shoot_closed', 'assets/images/双子兄_座る銃を打つ目閉じ.png');
-    this.load.image('brother_dying', 'assets/images/brother_dying.png?v=' + v);
-    this.load.image('brother_dying_closed', 'assets/images/brother_dying_closed.png?v=' + v);
-    this.load.image('brother_revive1', 'assets/images/brother_revive1.png?v=' + v);
-    this.load.image('brother_revive2', 'assets/images/brother_revive2.png?v=' + v);
-    this.load.image('brother_hurt', 'assets/images/brother_hurt.png?v=' + v);
-    this.load.image('brother_hurt_closed', 'assets/images/brother_hurt_closed.png?v=' + v);
+    this.load.image('brother_dying', 'assets/images/brother_dying.png' + qs);
+    this.load.image('brother_dying_closed', 'assets/images/brother_dying_closed.png' + qs);
+    this.load.image('brother_revive1', 'assets/images/brother_revive1.png' + qs);
+    this.load.image('brother_revive2', 'assets/images/brother_revive2.png' + qs);
+    this.load.image('brother_hurt', 'assets/images/brother_hurt.png' + qs);
+    this.load.image('brother_hurt_closed', 'assets/images/brother_hurt_closed.png' + qs);
 
 
     // Hero New
-    this.load.image('hero_silent_new', 'assets/images/hero_silent_new.png?v=' + v);
+    this.load.image('hero_silent_new', 'assets/images/hero_silent_new.png' + qs);
 
     // Icons
-    this.load.image('icon_person', 'assets/images/icon_person.png?v=' + v);
-    this.load.image('icon_battery', 'assets/images/icon_battery.png?v=' + v);
-    this.load.image('icon_battery', 'assets/images/icon_battery.png?v=' + v);
+    this.load.image('icon_person', 'assets/images/icon_person.png' + qs);
+    this.load.image('icon_battery', 'assets/images/icon_battery.png' + qs);
+    this.load.image('icon_battery', 'assets/images/icon_battery.png' + qs);
 
     // Title background (Hello World)
-    this.load.image('title_bg', 'assets/images/title_bg.png?v=' + v);
+    this.load.image('title_bg', 'assets/images/title_bg.png' + qs);
     
     // Title 1X assets
-    this.load.image('title_1x_back', 'assets/images/title_1x_back.png?v=' + v);
-    this.load.image('title_1x_number', 'assets/images/title_1x_number.png?v=' + v);
-    this.load.image('title_1x_hello_world', 'assets/images/title_1x_hello_world.png?v=' + v);
-    this.load.image('title_1x_baria', 'assets/images/title_1x_baria.png?v=' + v);
-    this.load.image('game_over_img', 'assets/images/game_over_img.png?v=' + v);
+    this.load.image('title_1x_back', 'assets/images/title_1x_back.png' + qs);
+    this.load.image('title_1x_number', 'assets/images/title_1x_number.png' + qs);
+    this.load.image('title_1x_hello_world', 'assets/images/title_1x_hello_world.png' + qs);
+    this.load.image('title_1x_baria', 'assets/images/title_1x_baria.png' + qs);
+    this.load.image('game_over_img', 'assets/images/game_over_img.png' + qs);
     
     // Title background (Glitch)
-    this.load.image('title_bg_glitch', 'assets/images/title_bg_glitch.png?v=' + v);
+    this.load.image('title_bg_glitch', 'assets/images/title_bg_glitch.png' + qs);
     
     // 強制シャットダウン用タイトル画像
-    this.load.image('404_bg', 'assets/images/404_bg.png?v=' + v);
-    this.load.image('not_found_text', 'assets/images/not_found_text.png?v=' + v);
+    this.load.image('404_bg', 'assets/images/404_bg.png' + qs);
+    this.load.image('not_found_text', 'assets/images/not_found_text.png' + qs);
 
     // Hero Title GIF (SpriteSheet)
-    this.load.spritesheet('hero_title_anim', 'assets/images/hero_title_sheet.png?v=' + v, {
+    this.load.spritesheet('hero_title_anim', 'assets/images/hero_title_sheet.png' + qs, {
       frameWidth: 960,
       frameHeight: 540
     });
     
     // Custom Backgrounds (swapped per user request)
-    this.load.image('bg_tutorial_scroll', 'assets/images/bg_tutorial_scroll.jpg?v=' + v);
-    this.load.image('bg_stage1_scroll', 'assets/images/bg_stage1_scroll.jpg?v=' + v);
-    this.load.image('bg_boss1_static', 'assets/images/bg_boss1_static.jpg?v=' + v);
-    this.load.image('bg_stage2_scroll', 'assets/images/bg_stage2_scroll.jpg?v=' + v);
-    this.load.image('bg_stage3_scroll', 'assets/images/bg_stage3_scroll.jpg?v=' + v);
-    this.load.image('bg_stage4_scroll', 'assets/images/bg_stage4_scroll.jpg?v=' + v);
-    this.load.image('bg_boss2', 'assets/images/bg_boss2.jpg?v=' + v);
-    this.load.image('bg_boss3', 'assets/images/bg_boss3.jpg?v=' + v);
-    this.load.image('bg_boss4', 'assets/images/bg_boss4.jpg?v=' + v);
-    this.load.image('bg_doctor', 'assets/images/bg_doctor.jpg?v=' + v);
+    this.load.image('bg_tutorial_scroll', 'assets/images/bg_tutorial_scroll.jpg' + qs);
+    this.load.image('bg_stage1_scroll', 'assets/images/bg_stage1_scroll.jpg' + qs);
+    this.load.image('bg_boss1_static', 'assets/images/bg_boss1_static.jpg' + qs);
+    this.load.image('bg_stage2_scroll', 'assets/images/bg_stage2_scroll.jpg' + qs);
+    this.load.image('bg_stage3_scroll', 'assets/images/bg_stage3_scroll.jpg' + qs);
+    this.load.image('bg_stage4_scroll', 'assets/images/bg_stage4_scroll.jpg' + qs);
+    this.load.image('bg_boss2', 'assets/images/bg_boss2.jpg' + qs);
+    this.load.image('bg_boss3', 'assets/images/bg_boss3.jpg' + qs);
+    this.load.image('bg_boss4', 'assets/images/bg_boss4.jpg' + qs);
+    this.load.image('bg_doctor', 'assets/images/bg_doctor.jpg' + qs);
     
     this.load.image('bg_lab', 'assets/bg_lab.png');
   }
