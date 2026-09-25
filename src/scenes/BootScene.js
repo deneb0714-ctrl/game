@@ -178,6 +178,10 @@ class BootScene extends Phaser.Scene {
     this.load.image('demon_combat_up_open', 'assets/images/魔王_上目開け.png?v=' + v);
     this.load.image('demon_combat_up_close', 'assets/images/魔王_上目閉じ.png?v=' + v);
 
+    // 主人公の必殺技カットイン（目を閉じる・開ける）
+    this.load.image('hero_special_cutin_closed', 'assets/images/hero_special_cutin_closed.png?v=' + v);
+    this.load.image('hero_special_cutin_open', 'assets/images/hero_special_cutin_open.png?v=' + v);
+
     // 主人公の瞬き（表情切り替え用）
     this.load.image('hero_stand_blink', 'assets/images/hero_stand_blink.png?v=' + v);
     this.load.image('hero_stand', 'assets/images/hero_stand.png?v=' + v);

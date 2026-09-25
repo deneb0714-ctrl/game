@@ -334,33 +334,44 @@ class GameScene extends Phaser.Scene {
 
   onSpecialAttack() {
     if (this.dialogActive) return;
-    if (MOT.flags.maxEnergy) {
-      MOT.Audio.playSpecial();
-      this.cameras.main.flash(500, 79, 209, 255);
-      for (let i = 0; i < 36; i++) {
-        const angle = Phaser.Math.DegToRad(i * 10);
-        const bullet = this.playerBullets.create(this.player.x, this.player.y, 'bullet_player');
-        if (bullet) {
-          bullet.setVelocity(Math.cos(angle) * 1000, Math.sin(angle) * 1000);
-          bullet.setScale(4);
-          bullet.setTint(0x4FD1FF);
-          bullet.damage = 10; // 10× damage for special attack
-          this.time.delayedCall(1500, function () {
-            if (bullet.active) bullet.destroy();
-          });
-        }
-      }
-
-      if (this.enemyGroup) {
-        this.enemyGroup.getChildren().slice().forEach(enemy => {
-          if (enemy !== this.minion1 && enemy.active) {
-            this.onEnemyHit({ damage: 9999, destroy: () => {} }, enemy);
-          }
-        });
-      }
-
+    if (MOT.flags.maxEnergy && !this._specialCutinRunning) {
       MOT.flags.energy = 0;
       MOT.flags.maxEnergy = false;
+
+      const executeAttack = () => {
+        if (!this.cameras || !this.cameras.main) return;
+        this.cameras.main.flash(500, 79, 209, 255);
+        const px = this.player ? this.player.x : 960;
+        const py = this.player ? this.player.y : 540;
+        for (let i = 0; i < 36; i++) {
+          const angle = Phaser.Math.DegToRad(i * 10);
+          const bullet = this.playerBullets.create(px, py, 'bullet_player');
+          if (bullet) {
+            bullet.setVelocity(Math.cos(angle) * 1000, Math.sin(angle) * 1000);
+            bullet.setScale(4);
+            bullet.setTint(0x4FD1FF);
+            bullet.damage = 10; // 10× damage for special attack
+            this.time.delayedCall(1500, function () {
+              if (bullet.active) bullet.destroy();
+            });
+          }
+        }
+
+        if (this.enemyGroup) {
+          this.enemyGroup.getChildren().slice().forEach(enemy => {
+            if (enemy !== this.minion1 && enemy.active) {
+              this.onEnemyHit({ damage: 9999, destroy: () => {} }, enemy);
+            }
+          });
+        }
+      };
+
+      if (MOT.playHeroSpecialCutin) {
+        MOT.playHeroSpecialCutin(this, executeAttack);
+      } else {
+        MOT.Audio.playSpecial();
+        executeAttack();
+      }
     }
   }
 

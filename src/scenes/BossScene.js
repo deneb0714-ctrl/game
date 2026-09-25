@@ -285,6 +285,9 @@ class BossScene extends Phaser.Scene {
     this.isLaneBeamActive = false;
     this.bossDefeated = false;
     this.cutsceneActive = false;
+    this.bossHalfHpSpoken = false;
+    this.brotherHalfHpSpoken = false;
+    this.sisterHalfHpSpoken = false;
 
     if (this.scrollBg1) {
       this.scrollBg1.setVisible(false);
@@ -1196,6 +1199,10 @@ class BossScene extends Phaser.Scene {
           if (this.twinReviveTimer) this.twinReviveTimer.destroy();
           if (this.twinReviveAnimTimer) this.twinReviveAnimTimer.destroy();
           this.cameras.main.shake(500, 0.01);
+
+          let downSpeaker = isBrotherDefeated ? 'エナリア' : 'エディオ';
+          let downText = isBrotherDefeated ? '兄さん…！？ 待ってて、今助けるわ！' : 'エナリア…！？ くそっ、待ってろ！';
+          this.showPixelSpeechBubble(aliveBoss, downSpeaker, downText, 2600);
           
           let totalReviveTime = 6000;
           let animDuration = 2500;
@@ -1232,10 +1239,9 @@ class BossScene extends Phaser.Scene {
                  else this.currentBoss.setTexture('brother_normal');
              }
              
-             let speakerText = isBrotherDefeated ? 'エナリア「兄さん！起きて！」' : 'エディオ「しっかりしろ！」';
-             let speakerColor = isBrotherDefeated ? '#FF4B6E' : '#4FD1FF';
-             let floatText = this.add.text(aliveBoss.x, aliveBoss.y - 80, speakerText, { fontFamily: '"DotGothic16"', fontSize: '28px', color: speakerColor }).setOrigin(0.5).setDepth(200);
-             this.tweens.add({ targets: floatText, y: floatText.y - 40, alpha: 0, duration: 2500, ease: 'Power1', onComplete: () => floatText.destroy() });
+             let speaker = isBrotherDefeated ? 'エナリア' : 'エディオ';
+             let speakerText = isBrotherDefeated ? '兄さん！起きて！' : 'しっかりしろ！';
+             this.showPixelSpeechBubble(aliveBoss, speaker, speakerText, 2600);
           });
         }
       }
@@ -1266,6 +1272,159 @@ class BossScene extends Phaser.Scene {
 
 
     this.updateHUD();
+  }
+
+  /**
+   * 双子戦などの戦闘ドット用レトロ風吹き出しを表示する
+   * @param {Phaser.GameObjects.Sprite|Phaser.GameObjects.Components.Transform} target 話者スプライト
+   * @param {string} speaker 話者名 ('エナリア' または 'エディオ')
+   * @param {string} text セリフ本文
+   * @param {number} duration 表示ミリ秒
+   */
+  showPixelSpeechBubble(target, speaker, text, duration = 2600) {
+    if (!target) return;
+
+    let themeColor = 0x4FD1FF;
+    let themeHex = '#4FD1FF';
+    let nameLabel = speaker;
+
+    if (speaker.includes('エナリア')) {
+      themeColor = 0xFF4B6E; themeHex = '#FF4B6E'; nameLabel = 'エナリア';
+    } else if (speaker.includes('エディオ')) {
+      themeColor = 0x4FD1FF; themeHex = '#4FD1FF'; nameLabel = 'エディオ';
+    } else if (speaker.includes('クラトス')) {
+      themeColor = 0xF59E0B; themeHex = '#F59E0B'; nameLabel = 'クラトス';
+    } else if (speaker.includes('トゥレロス')) {
+      themeColor = 0xA855F7; themeHex = '#A855F7'; nameLabel = 'トゥレロス';
+    } else if (speaker.includes('魔王')) {
+      themeColor = 0xE11D48; themeHex = '#E11D48'; nameLabel = '魔王';
+    } else if (speaker.includes('博士')) {
+      themeColor = 0x00FF88; themeHex = '#00FF88'; nameLabel = '博士';
+    }
+
+    if (target._speechBubble && target._speechBubble.active) {
+      target._speechBubble.destroy();
+      target._speechBubble = null;
+    }
+
+    const initX = target.x || 960;
+    const initY = (target.y || 540) - 100;
+
+    const container = this.add.container(initX, initY).setDepth(600);
+    target._speechBubble = container;
+
+    const nameText = this.add.text(0, 0, `▼ ${nameLabel}`, {
+      fontFamily: '"DotGothic16", monospace',
+      fontSize: '20px',
+      color: themeHex,
+      fontStyle: 'bold'
+    }).setOrigin(0, 0);
+
+    const mainText = this.add.text(0, 24, text, {
+      fontFamily: '"DotGothic16", monospace',
+      fontSize: '28px',
+      color: '#FFFFFF',
+      fontStyle: 'bold',
+      stroke: '#050814',
+      strokeThickness: 3
+    }).setOrigin(0, 0);
+
+    const padX = 22;
+    const padY = 14;
+    const contentW = Math.max(nameText.width, mainText.width);
+    const bubbleW = Math.max(240, contentW + padX * 2);
+    const bubbleH = nameText.height + mainText.height + padY * 2 + 8;
+
+    const bx = -bubbleW / 2;
+    const by = -bubbleH;
+
+    nameText.setPosition(bx + padX, by + padY);
+    mainText.setPosition(bx + padX, by + padY + 26);
+
+    const gfx = this.add.graphics();
+    gfx.clear();
+
+    // 1. 最外周の黒フチ（ドット風階段長方形 + しっぽ）
+    gfx.fillStyle(0x000000, 1);
+    gfx.fillRect(bx - 3, by + 6, bubbleW + 6, bubbleH - 12);
+    gfx.fillRect(bx + 6, by - 3, bubbleW - 12, bubbleH + 6);
+    gfx.fillRect(bx, by + 3, bubbleW, bubbleH - 6);
+    gfx.fillRect(bx + 3, by, bubbleW - 6, bubbleH);
+    gfx.fillTriangle(-14, by + bubbleH - 2, 14, by + bubbleH - 2, 0, by + bubbleH + 20);
+
+    // 2. キャラカラーのドットボーダー（厚さ4px）
+    gfx.fillStyle(themeColor, 1);
+    gfx.fillRect(bx, by + 4, bubbleW, bubbleH - 8);
+    gfx.fillRect(bx + 4, by, bubbleW - 8, bubbleH);
+    gfx.fillTriangle(-10, by + bubbleH - 2, 10, by + bubbleH - 2, 0, by + bubbleH + 16);
+
+    // 3. 内側の背景（深黒紺 #050914、不透明度 0.95 で視認性抜群）
+    gfx.fillStyle(0x050914, 0.95);
+    const m = 4;
+    gfx.fillRect(bx + m, by + 4 + m, bubbleW - m * 2, bubbleH - 8 - m * 2);
+    gfx.fillRect(bx + 4 + m, by + m, bubbleW - 8 - m * 2, bubbleH - m * 2);
+    gfx.fillTriangle(-6, by + bubbleH - m - 2, 6, by + bubbleH - m - 2, 0, by + bubbleH + 10);
+
+    // 4. 内側のハイライトライン
+    gfx.lineStyle(2, themeColor, 0.5);
+    gfx.lineBetween(bx + 8, by + 8, bx + bubbleW - 8, by + 8);
+
+    container.add([gfx, nameText, mainText]);
+
+    const clampPos = () => {
+      const halfW = bubbleW / 2;
+      if (container.x - halfW < 30) container.x = halfW + 30;
+      if (container.x + halfW > 1890) container.x = 1890 - halfW;
+      if (container.y - bubbleH < 30) container.y = bubbleH + 30;
+    };
+    clampPos();
+
+    const trackEvent = this.time.addEvent({
+      delay: 16,
+      loop: true,
+      callback: () => {
+        if (!container.active || !target.active) {
+          trackEvent.remove();
+          return;
+        }
+        container.x = target.x;
+        container.y = target.y - (target.displayHeight ? target.displayHeight * 0.5 + 40 : 100);
+        clampPos();
+      }
+    });
+
+    container.setScale(0);
+    this.tweens.add({
+      targets: container,
+      scaleX: 1,
+      scaleY: 1,
+      duration: 160,
+      ease: 'Back.easeOut'
+    });
+
+    if (MOT.Audio && MOT.Audio.playBleep) {
+      MOT.Audio.playBleep(nameLabel);
+    }
+
+    this.time.delayedCall(duration, () => {
+      trackEvent.remove();
+      if (!container.active) return;
+      this.tweens.add({
+        targets: container,
+        scaleY: 0,
+        alpha: 0,
+        duration: 160,
+        ease: 'Power2.easeIn',
+        onComplete: () => {
+          container.destroy();
+          if (target._speechBubble === container) {
+            target._speechBubble = null;
+          }
+        }
+      });
+    });
+
+    return container;
   }
 
   onBarrierUse() {
@@ -1299,33 +1458,44 @@ class BossScene extends Phaser.Scene {
   }
 
   onSpecialAttack() {
-    if (MOT.flags.maxEnergy) {
-      MOT.Audio.playSpecial();
-      this.cameras.main.flash(500, 79, 209, 255);
-      for (let i = 0; i < 36; i++) {
-        const angle = Phaser.Math.DegToRad(i * 10);
-        const bullet = this.playerBullets.create(this.player.x, this.player.y, 'bullet_player');
-        if (bullet) {
-          bullet.setVelocity(Math.cos(angle) * 1000, Math.sin(angle) * 1000);
-          bullet.setScale(4);
-          bullet.setTint(0x4FD1FF);
-          bullet.damage = 8; // 必殺技ダメージ
-          this.time.delayedCall(1500, function () {
-            if (bullet.active) bullet.destroy();
-          });
-        }
-      }
-
-      if (this.enemyGroup) {
-        this.enemyGroup.getChildren().slice().forEach(enemy => {
-          if (enemy.isIntermissionEnemy && enemy.active) {
-            this.onBossHit({ active: true, damage: 9999, silent: true, destroy: () => { } }, enemy);
-          }
-        });
-      }
-
+    if (MOT.flags.maxEnergy && !this._specialCutinRunning) {
       MOT.flags.energy = 0;
       MOT.flags.maxEnergy = false;
+
+      const executeAttack = () => {
+        if (!this.cameras || !this.cameras.main) return;
+        this.cameras.main.flash(500, 79, 209, 255);
+        const px = this.player ? this.player.x : 960;
+        const py = this.player ? this.player.y : 540;
+        for (let i = 0; i < 36; i++) {
+          const angle = Phaser.Math.DegToRad(i * 10);
+          const bullet = this.playerBullets.create(px, py, 'bullet_player');
+          if (bullet) {
+            bullet.setVelocity(Math.cos(angle) * 1000, Math.sin(angle) * 1000);
+            bullet.setScale(4);
+            bullet.setTint(0x4FD1FF);
+            bullet.damage = 8;
+            this.time.delayedCall(1500, function () {
+              if (bullet.active) bullet.destroy();
+            });
+          }
+        }
+
+        if (this.enemyGroup) {
+          this.enemyGroup.getChildren().slice().forEach(enemy => {
+            if (enemy.isIntermissionEnemy && enemy.active) {
+              this.onBossHit({ active: true, damage: 9999, silent: true, destroy: () => { } }, enemy);
+            }
+          });
+        }
+      };
+
+      if (MOT.playHeroSpecialCutin) {
+        MOT.playHeroSpecialCutin(this, executeAttack);
+      } else {
+        MOT.Audio.playSpecial();
+        executeAttack();
+      }
     }
   }
 
@@ -2401,6 +2571,7 @@ class BossScene extends Phaser.Scene {
       // 7. Phase 2 博士戦準備 (HP 1000, 勇者復活)
       this.isDoctorPhase1Unwinnable = false;
       this.phase1DefeatTriggered = false;
+      this.bossHalfHpSpoken = false;
       MOT.flags.playerHP = MOT.flags.playerMaxHP || 5;
       this.updateHUD();
       this.heroAttackSpeedBoost = true;
@@ -3553,6 +3724,42 @@ class BossScene extends Phaser.Scene {
       if (Phaser.Math.Between(0, 100) < 50) {
         if(Phaser.Math.Between(0, 100) < 5) MOT.spawnHealthItem(this, boss.x, boss.y); else MOT.spawnEnergyItem(this, boss.x, boss.y);
       }
+
+      // ── 双子のHP半分セリフ判定 ──────────────────
+      const isSister = (boss === this.sisterBoss);
+      const isBrother = (boss === this.currentBoss);
+
+      if (isSister && !this.sisterHalfHpSpoken && boss.hp <= (boss.maxHp || 300) * 0.5 && boss.hp > 0) {
+        this.sisterHalfHpSpoken = true;
+        const isBrotherAlive = (this.currentBoss && this.currentBoss.active && this.currentBoss.visible && this.currentBoss.hp > 0);
+        if (isBrotherAlive) {
+          // 兄生存時、エナリアのHPが半分を割る
+          this.showPixelSpeechBubble(this.sisterBoss, 'エナリア', '兄さま……！！', 2200);
+          this.time.delayedCall(1500, () => {
+            if (this.currentBoss && this.currentBoss.active && this.currentBoss.hp > 0) {
+              this.showPixelSpeechBubble(this.currentBoss, 'エディオ', '大丈夫。俺たちは二人で最強なんだから', 2600);
+            }
+          });
+        } else {
+          // 兄死亡、エナリアのHPが半分を割る
+          this.showPixelSpeechBubble(this.sisterBoss, 'エナリア', '兄さまがいないと……私は……。戻ってきて……兄さま……', 3000);
+        }
+      } else if (isBrother && !this.brotherHalfHpSpoken && boss.hp <= (boss.maxHp || 300) * 0.5 && boss.hp > 0) {
+        this.brotherHalfHpSpoken = true;
+        const isSisterAlive = (this.sisterBoss && this.sisterBoss.active && this.sisterBoss.visible && this.sisterBoss.hp > 0);
+        if (isSisterAlive) {
+          // 妹生存時、エディオのHPが半分を割る
+          this.showPixelSpeechBubble(this.currentBoss, 'エディオ', 'エナリア、大丈夫だ。まだやれる', 2200);
+          this.time.delayedCall(1500, () => {
+            if (this.sisterBoss && this.sisterBoss.active && this.sisterBoss.hp > 0) {
+              this.showPixelSpeechBubble(this.sisterBoss, 'エナリア', '兄さま、無理はしないでちょうだい……！！', 2600);
+            }
+          });
+        } else {
+          // 妹死亡、エディオのHPが半分を割る
+          this.showPixelSpeechBubble(this.currentBoss, 'エディオ', 'エナリアがいないと……くそっ……！戻ってきてくれ、エナリア……！', 3000);
+        }
+      }
       
       if (boss.hp <= 0 && boss.active) {
         boss.active = false;
@@ -3567,6 +3774,22 @@ class BossScene extends Phaser.Scene {
     boss.hp = this.bossHP;
     boss.setTint(0xffffff);
     this.time.delayedCall(50, function () { if (boss.active) boss.clearTint(); });
+
+    // ── 一般ボスのHP半分セリフ判定 ──────────────────
+    if (!this.bossHalfHpSpoken && this.bossHP <= this.bossMaxHP * 0.5 && this.bossHP > 0 && !this.bossDefeated) {
+      this.bossHalfHpSpoken = true;
+      var bKey = boss.configKey || (this.currentBoss ? this.currentBoss.configKey : '');
+      if (bKey === 'boss1') {
+        this.showPixelSpeechBubble(boss, 'クラトス', 'くっ、俺はまだまだやれるぞ！', 2600);
+      } else if (bKey === 'boss2') {
+        this.showPixelSpeechBubble(boss, 'トゥレロス', 'なかなかやるな！', 2600);
+      } else if (bKey === 'demon_lord') {
+        this.showPixelSpeechBubble(boss, '魔王', 'わらわは……負けるわけにはいかぬ……！！', 2600);
+      } else if (bKey === 'doctor') {
+        this.showPixelSpeechBubble(boss, '博士', 'ふん', 2200);
+      }
+    }
+
     if (Phaser.Math.Between(0, 100) < 50) {
       if(Phaser.Math.Between(0, 100) < 5) MOT.spawnHealthItem(this, boss.x, boss.y); else MOT.spawnEnergyItem(this, boss.x, boss.y);
     }
