@@ -38,13 +38,13 @@ MOT.playHeroSpecialCutin = function (scene, onExecuteAttack) {
   scene.tweens.add({
     targets: topBar,
     y: 0,
-    duration: 180,
+    duration: 100,
     ease: 'Cubic.easeOut'
   });
   scene.tweens.add({
     targets: bottomBar,
     y: h - letterboxH,
-    duration: 180,
+    duration: 100,
     ease: 'Cubic.easeOut'
   });
 
@@ -71,7 +71,7 @@ MOT.playHeroSpecialCutin = function (scene, onExecuteAttack) {
   scene.tweens.add({
     targets: bannerGfx,
     x: 0,
-    duration: 220,
+    duration: 120,
     ease: 'Power2.easeOut'
   });
 
@@ -125,7 +125,7 @@ MOT.playHeroSpecialCutin = function (scene, onExecuteAttack) {
     alpha: 1,
     scaleX: 0.98,
     scaleY: 0.98,
-    duration: 320,
+    duration: 180,
     ease: 'Cubic.easeOut'
   });
 
@@ -137,7 +137,7 @@ MOT.playHeroSpecialCutin = function (scene, onExecuteAttack) {
   scene.tweens.addCounter({
     from: 150,
     to: 12,
-    duration: 400,
+    duration: 200,
     onUpdate: (tween) => {
       chargeRing.clear();
       const r = tween.getValue();
@@ -148,20 +148,17 @@ MOT.playHeroSpecialCutin = function (scene, onExecuteAttack) {
     }
   });
 
-  // 7. 【目を開ける】瞬間への切り替え（約420ms後）
-  scene.time.delayedCall(420, () => {
+  // 7. 【目を開ける】瞬間への切り替え（約220ms後）
+  scene.time.delayedCall(220, () => {
     if (!heroCutin.active) return;
 
     // テクスチャを目を開けた画像に切り替え！
     heroCutin.setTexture('hero_special_cutin_open');
     heroCutin.setScale(1.04);
 
-    // 開放インパクト音＋必殺音
+    // 開放インパクト音
     if (MOT.Audio && MOT.Audio.playCutinRelease) {
       MOT.Audio.playCutinRelease();
-    }
-    if (MOT.Audio && MOT.Audio.playSpecial) {
-      MOT.Audio.playSpecial();
     }
 
     // 画面フラッシュ（白＆シアン）
@@ -170,13 +167,13 @@ MOT.playHeroSpecialCutin = function (scene, onExecuteAttack) {
     scene.tweens.add({
       targets: flash,
       alpha: 0,
-      duration: 180,
+      duration: 100,
       onComplete: () => flash.destroy()
     });
 
     // カメラ揺れ
     if (scene.cameras && scene.cameras.main) {
-      scene.cameras.main.shake(200, 0.012);
+      scene.cameras.main.shake(120, 0.012);
     }
 
     // 開眼ショックウェーブリング（一気に拡大拡散）
@@ -187,7 +184,7 @@ MOT.playHeroSpecialCutin = function (scene, onExecuteAttack) {
     scene.tweens.addCounter({
       from: 12,
       to: 460,
-      duration: 360,
+      duration: 220,
       ease: 'Quad.easeOut',
       onUpdate: (tween) => {
         burstRing.clear();
@@ -216,17 +213,17 @@ MOT.playHeroSpecialCutin = function (scene, onExecuteAttack) {
       targets: burstText,
       scale: 1.0,
       alpha: 1,
-      duration: 120,
+      duration: 80,
       ease: 'Back.easeOut'
     });
 
-    // 8. 攻撃実行（弾幕・敵撃破）
-    scene.time.delayedCall(220, () => {
+    // 8. 攻撃実行（弾幕・敵撃破：開眼とほぼ同時に発動！）
+    scene.time.delayedCall(50, () => {
       if (onExecuteAttack) onExecuteAttack();
     });
 
-    // 9. 退場・フィニッシュアニメーション（開眼後380msで高速スライドアウト）
-    scene.time.delayedCall(380, () => {
+    // 9. 退場・フィニッシュアニメーション（開眼後180msで高速スライドアウト）
+    scene.time.delayedCall(180, () => {
       speedLineTimer.remove();
 
       // 残像スプライト生成
@@ -240,7 +237,7 @@ MOT.playHeroSpecialCutin = function (scene, onExecuteAttack) {
           targets: ghost,
           alpha: 0,
           x: ghost.x - 140,
-          duration: 180,
+          duration: 100,
           onComplete: () => ghost.destroy()
         });
       }
@@ -251,7 +248,7 @@ MOT.playHeroSpecialCutin = function (scene, onExecuteAttack) {
         x: heroCutin.x - 320,
         alpha: 0,
         scaleX: 1.15,
-        duration: 200,
+        duration: 120,
         ease: 'Cubic.easeIn'
       });
 
@@ -259,13 +256,13 @@ MOT.playHeroSpecialCutin = function (scene, onExecuteAttack) {
       scene.tweens.add({
         targets: topBar,
         y: -letterboxH,
-        duration: 220,
+        duration: 120,
         ease: 'Cubic.easeIn'
       });
       scene.tweens.add({
         targets: bottomBar,
         y: h,
-        duration: 220,
+        duration: 120,
         ease: 'Cubic.easeIn'
       });
 
@@ -273,13 +270,13 @@ MOT.playHeroSpecialCutin = function (scene, onExecuteAttack) {
       scene.tweens.add({
         targets: [bannerGfx, darkBg, burstText, bgText],
         alpha: 0,
-        duration: 220,
+        duration: 120,
         onComplete: () => {
           container.destroy();
           scene._specialCutinRunning = false;
 
           // プレイヤー無敵を少し継続してから解除（安全マージン）
-          scene.time.delayedCall(400, () => {
+          scene.time.delayedCall(200, () => {
             if (scene.player && !prevInvulnerable) {
               scene.player.isInvulnerable = false;
             }

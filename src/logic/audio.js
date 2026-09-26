@@ -114,14 +114,14 @@ MOT.Audio = (function () {
 
       const now = ctx.currentTime;
       osc.frequency.setValueAtTime(140, now);
-      osc.frequency.exponentialRampToValueAtTime(880, now + 0.45);
+      osc.frequency.exponentialRampToValueAtTime(880, now + 0.2);
 
       osc2.frequency.setValueAtTime(70, now);
-      osc2.frequency.exponentialRampToValueAtTime(440, now + 0.45);
+      osc2.frequency.exponentialRampToValueAtTime(440, now + 0.2);
 
       gain.gain.setValueAtTime(0.01, now);
-      gain.gain.linearRampToValueAtTime(0.22, now + 0.35);
-      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.48);
+      gain.gain.linearRampToValueAtTime(0.22, now + 0.17);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.23);
 
       osc.connect(gain);
       osc2.connect(gain);
@@ -129,8 +129,8 @@ MOT.Audio = (function () {
 
       osc.start(now);
       osc2.start(now);
-      osc.stop(now + 0.5);
-      osc2.stop(now + 0.5);
+      osc.stop(now + 0.25);
+      osc2.stop(now + 0.25);
     },
     // 必殺技カットイン：開眼・解放インパクト音
     playCutinRelease: function () {

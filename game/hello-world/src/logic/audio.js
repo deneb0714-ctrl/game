@@ -113,31 +113,31 @@ MOT.Audio = (function () {
       const gain1 = ctx.createGain();
       osc1.type = 'sawtooth';
       osc1.frequency.setValueAtTime(200, now);
-      osc1.frequency.exponentialRampToValueAtTime(2400, now + 0.4);
+      osc1.frequency.exponentialRampToValueAtTime(2400, now + 0.2);
       gain1.gain.setValueAtTime(0.01, now);
-      gain1.gain.exponentialRampToValueAtTime(0.3, now + 0.35);
-      gain1.gain.exponentialRampToValueAtTime(0.01, now + 0.45);
+      gain1.gain.exponentialRampToValueAtTime(0.3, now + 0.18);
+      gain1.gain.exponentialRampToValueAtTime(0.01, now + 0.23);
       osc1.connect(gain1);
       gain1.connect(ctx.destination);
       osc1.start(now);
-      osc1.stop(now + 0.5);
+      osc1.stop(now + 0.25);
 
       // 2. 高音の共鳴（サイン波でキーン）
       const osc2 = ctx.createOscillator();
       const gain2 = ctx.createGain();
       osc2.type = 'sine';
       osc2.frequency.setValueAtTime(800, now);
-      osc2.frequency.exponentialRampToValueAtTime(3200, now + 0.4);
+      osc2.frequency.exponentialRampToValueAtTime(3200, now + 0.2);
       gain2.gain.setValueAtTime(0.01, now);
-      gain2.gain.exponentialRampToValueAtTime(0.2, now + 0.35);
-      gain2.gain.exponentialRampToValueAtTime(0.01, now + 0.45);
+      gain2.gain.exponentialRampToValueAtTime(0.2, now + 0.18);
+      gain2.gain.exponentialRampToValueAtTime(0.01, now + 0.23);
       osc2.connect(gain2);
       gain2.connect(ctx.destination);
       osc2.start(now);
-      osc2.stop(now + 0.5);
+      osc2.stop(now + 0.25);
 
       // 3. 風切り音/エネルギー収束ノイズ
-      const bufferSize = Math.floor(ctx.sampleRate * 0.5);
+      const bufferSize = Math.floor(ctx.sampleRate * 0.25);
       const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
       const data = buffer.getChannelData(0);
       for (let i = 0; i < bufferSize; i++) {
@@ -149,20 +149,20 @@ MOT.Audio = (function () {
       const noiseFilter = ctx.createBiquadFilter();
       noiseFilter.type = 'bandpass';
       noiseFilter.frequency.setValueAtTime(400, now);
-      noiseFilter.frequency.exponentialRampToValueAtTime(4000, now + 0.4);
+      noiseFilter.frequency.exponentialRampToValueAtTime(4000, now + 0.2);
       noiseFilter.Q.value = 5;
 
       const noiseGain = ctx.createGain();
       noiseGain.gain.setValueAtTime(0.01, now);
-      noiseGain.gain.exponentialRampToValueAtTime(0.3, now + 0.35);
-      noiseGain.gain.exponentialRampToValueAtTime(0.01, now + 0.45);
+      noiseGain.gain.exponentialRampToValueAtTime(0.3, now + 0.18);
+      noiseGain.gain.exponentialRampToValueAtTime(0.01, now + 0.23);
 
       noise.connect(noiseFilter);
       noiseFilter.connect(noiseGain);
       noiseGain.connect(ctx.destination);
       
       noise.start(now);
-      noise.stop(now + 0.5);
+      noise.stop(now + 0.25);
     },
     // 必殺技カットイン：開眼・解放インパクト音
     playCutinRelease: function () {
