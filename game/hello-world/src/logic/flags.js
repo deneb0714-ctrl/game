@@ -126,32 +126,76 @@ MOT.updateSpecialAura = function (scene) {
 
   const isSpecialReady = (MOT.flags.energy >= MOT.flags.maxEnergyThreshold);
   if (isSpecialReady) {
-    if (scene.specialAuraEmitter && scene.specialAuraEmitter.emitting) {
-      scene.specialAuraEmitter.stop();
+    // 1. 上昇するエネルギー粒子エフェクト（足元から上空へ湧き上がる光の火花・エネルギー粒子）
+    if (!scene.specialAuraEmitter) {
+      scene.specialAuraEmitter = scene.add.particles(0, 0, 'particle', {
+        follow: scene.player,
+        followOffset: { x: 0, y: 15 },
+        x: { min: -18, max: 18 },
+        speedY: { min: -140, max: -60 },
+        speedX: { min: -25, max: 25 },
+        scale: { start: 1.1, end: 0.1 },
+        alpha: { start: 0.85, end: 0 },
+        tint: [0xFF1744, 0xFF5252, 0xFFFF00, 0xFF7043],
+        lifespan: { min: 350, max: 650 },
+        frequency: 30,
+        blendMode: 'ADD'
+      });
+      scene.specialAuraEmitter.setDepth(11);
+    } else {
+      if (scene.specialAuraEmitter.follow !== scene.player) {
+        scene.specialAuraEmitter.follow = scene.player;
+      }
+      if (!scene.specialAuraEmitter.emitting) {
+        scene.specialAuraEmitter.start();
+      }
     }
+
+    // 2. 立ち上るエネルギーオーラ＆炎のゆらぎ（円枠は完全撤廃し、勇者から湧き上がる気流を表現）
     if (!scene.specialAuraGraphics) {
       scene.specialAuraGraphics = scene.add.graphics();
     }
     scene.specialAuraGraphics.clear();
     const pDepth = (scene.player.depth !== undefined) ? scene.player.depth : 10;
-    // 勇者の背後に描画してスプライトや顔を遮らないようにする
     scene.specialAuraGraphics.setDepth(Math.max(0, pDepth - 1));
 
     const now = Date.now();
-    const pulse = (Math.sin(now / 180) + 1) / 2; // 0.0〜1.0 の滑らかな脈動
+    const pulse = (Math.sin(now / 160) + 1) / 2; // 0.0〜1.0 の滑らかな脈動
     const px = scene.player.x;
     const py = scene.player.y;
 
-    // シンプルで分かりやすい単一の必殺技エナジーオーラ（多重の重なり円・足元円・粒子を完全撤廃）
-    // 1. 勇者の背後に広がる柔らかな淡い赤い光（1つのみ）
-    scene.specialAuraGraphics.fillStyle(0xFF0033, 0.18 + 0.10 * pulse);
-    scene.specialAuraGraphics.fillCircle(px, py, 46 + pulse * 6);
+    // (A) 勇者の背後に広がる縦長の柔らかなエネルギー光柱
+    scene.specialAuraGraphics.fillStyle(0xFF1744, 0.13 + 0.07 * pulse);
+    scene.specialAuraGraphics.fillEllipse(px, py - 6, 48 + pulse * 6, 84 + pulse * 10);
 
-    // 2. 勇者の背後を包む単一の赤いエナジーリング（1本のみ）
-    scene.specialAuraGraphics.lineStyle(2.5, 0xFF1744, 0.75 + 0.25 * pulse);
-    scene.specialAuraGraphics.strokeCircle(px, py, 46 + pulse * 6);
+    // (B) より高輝度な黄金・オレンジのエネルギーコア
+    scene.specialAuraGraphics.fillStyle(0xFFA000, 0.16 + 0.08 * pulse);
+    scene.specialAuraGraphics.fillEllipse(px, py - 4, 30 + pulse * 4, 56 + pulse * 8);
 
-    // 3. プレイヤー本体自身の赤いエネルギー脈動（必殺技チャージ完了が直感的に伝わる）
+    // (C) 足元から頭上へ立ち上り揺らめくオーラの炎筋（エネルギーの湧出感）
+    const t = now / 140;
+    const tendrils = [
+      { ox: -16, baseY: 28, height: 62 + Math.sin(t * 1.5) * 12, sway: 6, color: 0xFF1744, alpha: 0.50 },
+      { ox: -6,  baseY: 32, height: 78 + Math.cos(t * 1.8) * 15, sway: 8, color: 0xFF5252, alpha: 0.60 },
+      { ox: 6,   baseY: 30, height: 82 + Math.sin(t * 2.1) * 14, sway: -7, color: 0xFFFF52, alpha: 0.65 },
+      { ox: 16,  baseY: 26, height: 64 + Math.cos(t * 1.6) * 12, sway: -5, color: 0xFF7043, alpha: 0.50 }
+    ];
+
+    tendrils.forEach(tr => {
+      scene.specialAuraGraphics.lineStyle(2.5, tr.color, tr.alpha * (0.8 + 0.2 * pulse));
+      scene.specialAuraGraphics.beginPath();
+      const sx = px + tr.ox;
+      const sy = py + tr.baseY;
+      const cx = sx + Math.sin(t + tr.ox) * tr.sway;
+      const cy = py - tr.height * 0.35;
+      const ex = sx + Math.cos(t * 1.4 + tr.ox) * (tr.sway * 1.4);
+      const ey = py + tr.baseY - tr.height;
+      scene.specialAuraGraphics.moveTo(sx, sy);
+      scene.specialAuraGraphics.quadraticBezierTo(cx, cy, ex, ey);
+      scene.specialAuraGraphics.strokePath();
+    });
+
+    // 3. プレイヤー本体自身のエネルギー脈動（必殺技チャージ完了状態の明示）
     if (!scene.playerInvincible) {
       const gb = Math.floor(160 + 80 * (1 - pulse));
       const tint = (0xFF << 16) | (gb << 8) | gb;
