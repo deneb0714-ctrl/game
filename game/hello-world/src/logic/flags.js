@@ -31,7 +31,8 @@ MOT.flags = {
   playerHP: 3,
   playerMaxHP: 3,
   dollPoints: 0,
-  killingIntent: 0
+  killingIntent: 0,
+  bossIntroSeen: {}
 };
 
 Object.defineProperty(MOT.flags, 'maxEnergy', {
@@ -67,6 +68,7 @@ MOT.resetFlags = function () {
   MOT.flags.playerMaxHP = 3;
   MOT.flags.dollPoints = 0;
   MOT.flags.killingIntent = 0;
+  MOT.flags.bossIntroSeen = {};
 
   // New Boss Kill Flags
   MOT.flags.killedBoss1 = false;
@@ -81,6 +83,9 @@ MOT.loadFlags = function (savedFlags) {
   delete newFlags.maxEnergy; // getterを上書きして破壊しないように削除
   if (!MOT.flags) MOT.flags = {};
   Object.assign(MOT.flags, newFlags);
+  if (!MOT.flags.bossIntroSeen) {
+    MOT.flags.bossIntroSeen = {};
+  }
 };
 
 MOT.modifyFlag = function (key, value) {

@@ -441,8 +441,122 @@ class BossScene extends Phaser.Scene {
     if (onComplete) onComplete();
   }
 
+  playContinueIntro(key, boss, onComplete) {
+    var w = 1920, h = 1080;
+    var dimBg = this.add.rectangle(w/2, h/2, w, h, 0x000000, 0.6).setAlpha(0).setDepth(89);
+    this.tweens.add({ targets: dimBg, alpha: 0.6, duration: 300 });
+
+    if (key === 'boss3_twins') {
+       this.showDialogue('エナリア', '「私は貴方を止めるわ」', () => {
+           this.showDialogue('エディオ', '「ここは通さない」', () => {
+               this.tweens.add({ targets: dimBg, alpha: 0, duration: 300, onComplete: () => { dimBg.destroy(); onComplete(); }});
+           });
+       });
+    } else {
+       let speaker = '';
+       let text = '';
+       if (key === 'boss1') { speaker = 'クラトス'; text = '「よし、戦うぞ！！」'; }
+       else if (key === 'boss2') { speaker = 'トゥレロス'; text = '「俺の速さについてこれるか？」'; }
+       else if (key === 'demon_lord') { speaker = '魔王 – ヴェリタス'; text = '「わらわを倒せるかな？」'; }
+       else if (key === 'doctor') {
+          speaker = '博士';
+          MOT.flags.doctorContinueCount = (MOT.flags.doctorContinueCount || 0) + 1;
+          const count = MOT.flags.doctorContinueCount;
+          if (count === 1) text = '「今度も倒してやろう」';
+          else if (count === 2) text = '「私の野望はお前ごときには止められない」';
+          else if (count === 3) text = '「三度目の正直にはなれそうにないな？」';
+          else text = `「${count}回目だな。何回やってもおなじことだぞ。」`;
+       }
+       this.showDialogue(speaker, text, () => {
+           this.tweens.add({ targets: dimBg, alpha: 0, duration: 300, onComplete: () => { dimBg.destroy(); onComplete(); }});
+       });
+    }
+  }
+
   startBossIntro(key, boss) {
     this.cutsceneActive = true;
+
+    const isRetryContinue = Boolean(
+      this.startData && 
+      this.startData.fromContinue && 
+      MOT.flags && 
+      MOT.flags.bossIntroSeen && 
+      MOT.flags.bossIntroSeen[key]
+    );
+
+    if (isRetryContinue) {
+      this.dialogActive = true;
+      this.physics.pause();
+      
+      boss.setVisible(true); boss.body.enable = true;
+      this.cameras.main.shake(400, 0.015);
+      
+      let movePromise;
+      if (key === 'boss3_twins') {
+         if (this.sisterBoss) {
+             this.sisterBoss.setVisible(true); this.sisterBoss.body.enable = true;
+             this.tweens.add({ targets: this.sisterBoss, x: 1550, duration: 1200, ease: 'Power2' });
+             this.tweens.add({ targets: this.sisterBoss, y: this.sisterBoss.y + 30, yoyo: true, repeat: -1, duration: 1100, ease: 'Sine.easeInOut' });
+         }
+         movePromise = new Promise(r => this.tweens.add({ targets: boss, x: 1400, duration: 1200, ease: 'Power2', onComplete: r }));
+         this.tweens.add({ targets: boss, y: boss.y - 30, yoyo: true, repeat: -1, duration: 1000, ease: 'Sine.easeInOut' });
+      } else if (key === 'demon_lord') {
+         if (this.inunekoEnemy) {
+            this.inunekoEnemy.setVisible(true);
+            this.inunekoEnemy.x = 1920;
+            this.tweens.add({ targets: this.inunekoEnemy, x: 1350, duration: 1200, ease: 'Power2' });
+            this.tweens.add({ targets: this.inunekoEnemy, y: '-=20', duration: 1600, yoyo: true, repeat: -1, ease: 'Sine.easeInOut' });
+         }
+         movePromise = new Promise(r => this.tweens.add({ targets: boss, x: 1400, duration: 1200, ease: 'Power2', onComplete: r }));
+         this.tweens.add({ targets: boss, y: boss.y - 30, yoyo: true, repeat: -1, duration: 1000, ease: 'Sine.easeInOut' });
+      } else {
+         movePromise = new Promise(r => this.tweens.add({ targets: boss, x: 1400, duration: 1200, ease: 'Power2', onComplete: r }));
+         this.tweens.add({ targets: boss, y: boss.y - 30, yoyo: true, repeat: -1, duration: 1000, ease: 'Sine.easeInOut' });
+      }
+
+      movePromise.then(() => {
+          this.playContinueIntro(key, boss, () => {
+             this.cutsceneActive = false;
+             this.dialogActive = false;
+             this.physics.resume();
+             this.startBossLaneMovement();
+             if (key === 'boss1') {
+                this.boss1Bgm = this.sound.add('boss1_bgm', { loop: true, volume: 0.2 });
+                this.boss1Bgm.play();
+             } else if (key === 'boss2') {
+                this.boss2Bgm = this.sound.add('boss2_bgm', { loop: true, volume: 0.2 });
+                this.boss2Bgm.play();
+             } else if (key === 'boss3_twins') {
+                this.startSisterLaneMovement();
+                this.twinsBgm = this.sound.add('twins_bgm', { loop: true, volume: 0.2 });
+                this.twinsBgm.play();
+                if (this.sisterBoss && this.sisterBoss.active) {
+                   this.sisterBoss.play('sister_shoot_anim');
+                }
+             } else if (key === 'demon_lord') {
+                this.boss4Bgm = this.sound.add('demon_lord_bgm', { loop: true, volume: 0.2 });
+                this.boss4Bgm.play();
+             } else if (key === 'doctor') {
+                if (this.inunekoEnemy) { if (this.inunekoEnemy.destroy) this.inunekoEnemy.destroy(); this.inunekoEnemy = null; }
+                this.boss5Bgm = this.sound.add('doctor_bgm', { loop: true, volume: 0.2 });
+                this.boss5Bgm.play();
+                if (this.isDoctorPhase1Unwinnable) {
+                  MOT.flags.playerHP = MOT.flags.playerMaxHP || 5;
+                  this.playerInvincible = false;
+                  this.phase1DefeatTriggered = false;
+                  this.updateHUD();
+                  this.time.delayedCall(8000, () => {
+                    if (this.isDoctorPhase1Unwinnable && !this.phase1DefeatTriggered) {
+                      this.fireDoctorUnavoidableAttack();
+                    }
+                  });
+                }
+             }
+          });
+      });
+      return;
+    }
+
     if (key !== 'demon_lord' && key !== 'doctor') {
       this.cutsceneActive = false;
       this.dialogActive = false;
@@ -516,6 +630,9 @@ class BossScene extends Phaser.Scene {
             this.dialogActive = false;
             this.physics.resume();
             this.startBossLaneMovement();
+            if (!MOT.flags) MOT.flags = {};
+            if (!MOT.flags.bossIntroSeen) MOT.flags.bossIntroSeen = {};
+            MOT.flags.bossIntroSeen['doctor'] = true;
             if (this.boss5Bgm) {
               try { this.boss5Bgm.stop(); this.boss5Bgm.destroy(); } catch (e) {}
             }
@@ -653,6 +770,9 @@ class BossScene extends Phaser.Scene {
       
       this.tweens.add({ targets: [dimBg, this.heroImage, this.demonImage], alpha: 0, duration: 300 });
       if(this.inunekoImage) this.tweens.add({ targets: this.inunekoImage, alpha: 0, duration: 300 });
+      if (!MOT.flags) MOT.flags = {};
+      if (!MOT.flags.bossIntroSeen) MOT.flags.bossIntroSeen = {};
+      MOT.flags.bossIntroSeen['demon_lord'] = true;
       onComplete();
     })();
   }
@@ -1058,14 +1178,14 @@ class BossScene extends Phaser.Scene {
       if (this.barrierActive) {
         this.barrierTime += delta;
         if (this.barrierVisual) {
-                  this.barrierVisual.setPosition(this.player.x, this.player.y);
-        this.barrierHitbox.setPosition(this.player.x, this.player.y);
-        if (this.barrierVisual.type === 'Star') this.barrierVisual.rotation += 0.02;
-        if (this.barrierTime > 2000 && this.barrierTime < 3000) {
-          this.barrierVisual.setVisible(Math.floor(this.barrierTime / 100) % 2 === 0);
-        } else {
-          this.barrierVisual.setVisible(true);
-        }
+          this.barrierVisual.setPosition(this.player.x, this.player.y);
+          this.barrierHitbox.setPosition(this.player.x, this.player.y);
+          if (this.barrierVisual.type === 'Star') this.barrierVisual.rotation += 0.02;
+          if (this.barrierTime > 2000 && this.barrierTime < 3000) {
+            this.barrierVisual.setVisible(Math.floor(this.barrierTime / 100) % 2 === 0);
+          } else {
+            this.barrierVisual.setVisible(true);
+          }
         }
         if (this.barrierTime >= 3000) {
           this.deactivateBarrier();
@@ -1263,7 +1383,7 @@ class BossScene extends Phaser.Scene {
     }
 
     // Cleanup
-    this.enemyGroup.getChildren().forEach(function (e) {
+    this.enemyGroup.getChildren().slice().forEach(function (e) {
       if (e.x < -100) {
         if (e.isScenarioMinion || e.isIntermissionEnemy) {
           this.onBossHit({ active: true, damage: 9999, silent: true, destroy: function(){} }, e);
@@ -1274,11 +1394,11 @@ class BossScene extends Phaser.Scene {
     }.bind(this));
 
     let now = this.time.now;
-    this.enemyBullets.getChildren().forEach(function (b) {
+    this.enemyBullets.getChildren().slice().forEach(function (b) {
       if (b.updateBehavior) b.updateBehavior(now, delta);
       if (b.x < -50 || b.x > 2000 || b.y < -50 || b.y > 1130) b.destroy();
     });
-    this.playerBullets.getChildren().forEach(function (b) {
+    this.playerBullets.getChildren().slice().forEach(function (b) {
       if (b.x > 1600) b.destroy();
     });
 
@@ -2963,9 +3083,9 @@ class BossScene extends Phaser.Scene {
       const enterGuide = this.add.text(w - 100, h - 60, '▶ [ENTER] KEY', {
         fontFamily: '"Press Start 2P"',
         fontSize: '20px',
-        color: '#9CA3AF'
+        color: '#FFFFFF'
       }).setOrigin(1, 0.5).setDepth(200001).setScrollFactor(0);
-      const enterGuideTween = this.tweens.add({ targets: enterGuide, alpha: 0.3, yoyo: true, repeat: -1, duration: 500 });
+      const enterGuideTween = this.tweens.add({ targets: enterGuide, alpha: 0.6, yoyo: true, repeat: -1, duration: 500 });
       uiElements.push(enterGuide);
 
       // 選択肢コンテナ（他の showChoice と同一レイアウト: 1100x90, 間隔 120）
@@ -3602,7 +3722,7 @@ class BossScene extends Phaser.Scene {
         }
         
         // 倒された敵が発射した弾を消去する
-        this.enemyBullets.getChildren().forEach(function(b) {
+        this.enemyBullets.getChildren().slice().forEach(function(b) {
           if (b.shooter === boss) {
             b.destroy();
           }
@@ -3909,6 +4029,9 @@ class BossScene extends Phaser.Scene {
                 this.boss4Bgm = this.sound.add('demon_lord_bgm', { loop: true, volume: 0.2 });
                 this.boss4Bgm.play();
               }
+              if (!MOT.flags) MOT.flags = {};
+              if (!MOT.flags.bossIntroSeen) MOT.flags.bossIntroSeen = {};
+              MOT.flags.bossIntroSeen[key] = true;
             })();
           }
         } else {
@@ -4630,14 +4753,14 @@ class BossScene extends Phaser.Scene {
                 }
 
               } else if (bossKey === 'boss2') {
-                this.bossImage = this.add.image(w - 300, h / 2, 'boss2_hurt').setAlpha(0).setDepth(90);
+                this.bossImage = this.add.image(w - 300, h / 2, 'boss2_normal_dying').setAlpha(0).setDepth(90);
                 var bw2 = this.bossImage.width || 576;
                 var bh2 = this.bossImage.height || 1024;
                 var b2Scale = 750 / bw2;
                 this.bossImage.setScale(b2Scale);
                 this.bossImage.setY(100 + (bh2 * b2Scale) / 2);
 
-                const sayTourelos = (text, tex = 'boss2_hurt') => new Promise(res => {
+                const sayTourelos = (text, tex = 'boss2_normal_dying') => new Promise(res => {
                   this.tweens.add({ targets: dimBg, alpha: 0.6, duration: 300 });
                   if (this.heroImage) this.tweens.add({ targets: this.heroImage, alpha: 0.4, duration: 300 });
                   if (this.bossImage) {
@@ -5034,6 +5157,9 @@ class BossScene extends Phaser.Scene {
     var resumeFn = function() {
       this.currentBoss = null;
       this.currentBossIndex++;
+      if (this.startData) {
+        this.startData.fromContinue = false;
+      }
       
       // ─── 自動セーブ処理（各ボス撃破直後） ───
       if (this.currentBossIndex > 0 && this.currentBossIndex <= 4) {
@@ -5384,7 +5510,7 @@ class BossScene extends Phaser.Scene {
     this.dialogContainer.add(bodyText);
 
     var contText = this.add.text(w - 100, boxY + boxH - 40, '▶ NEXT [TAP/SPACE]', {
-      fontFamily: '"Press Start 2P"', fontSize: '20px', color: '#9CA3AF'
+      fontFamily: '"Press Start 2P"', fontSize: '20px', color: '#FFFFFF'
     }).setOrigin(1, 0).setAlpha(0);
     this.dialogContainer.add(contText);
 
@@ -5397,7 +5523,7 @@ class BossScene extends Phaser.Scene {
         if (charIndex >= text.length) {
           typeTimer.destroy();
           contText.setAlpha(1);
-          if (this.tweens) this.tweens.add({ targets: contText, alpha: 0.3, yoyo: true, repeat: -1, duration: 500 });
+          // 点滅（アルファTween）は無効化
         }
       }, callbackScope: this, loop: true
     });
@@ -5430,14 +5556,14 @@ class BossScene extends Phaser.Scene {
         charIndex = text.length;
         bodyText.setText(text);
         contText.setAlpha(1);
-        if (this.tweens) this.tweens.add({ targets: contText, alpha: 0.3, yoyo: true, repeat: -1, duration: 500 });
+        // 点滅（アルファTween）は無効化
       } else {
         advance();
       }
     };
 
     const handleKey = (event) => {
-      if (event.key === ' ' || event.code === 'Space') {
+      if (event.key === ' ' || event.code === 'Space' || event.key === 'Enter' || event.code === 'Enter') {
         handleInput();
       }
     };
@@ -5551,7 +5677,7 @@ class BossScene extends Phaser.Scene {
     this.dialogContainer.add(bodyText);
 
     var contText = this.add.text(w - 100, boxY + boxH - 40, '▶ NEXT [TAP/SPACE]', {
-      fontFamily: '"Press Start 2P"', fontSize: '20px', color: '#9CA3AF'
+      fontFamily: '"Press Start 2P"', fontSize: '20px', color: '#FFFFFF'
     }).setOrigin(1, 0).setAlpha(0);
     this.dialogContainer.add(contText);
 
@@ -5591,7 +5717,7 @@ class BossScene extends Phaser.Scene {
         if (charIndex >= text.length) {
           typeTimer.destroy();
           contText.setAlpha(1);
-          if (this.tweens) this.tweens.add({ targets: contText, alpha: 0.3, yoyo: true, repeat: -1, duration: 500 });
+          // 点滅（アルファTween）は無効化
         }
       }, callbackScope: this, loop: true
     });
@@ -5626,14 +5752,14 @@ class BossScene extends Phaser.Scene {
         charIndex = text.length;
         bodyText.setText(text);
         contText.setAlpha(1);
-        if (this.tweens) this.tweens.add({ targets: contText, alpha: 0.3, yoyo: true, repeat: -1, duration: 500 });
+        // 点滅（アルファTween）は無効化
       } else {
         advance();
       }
     };
 
     const handleKey = (event) => {
-      if (event.key === ' ' || event.code === 'Space') {
+      if (event.key === ' ' || event.code === 'Space' || event.key === 'Enter' || event.code === 'Enter') {
         handleInput();
       }
     };
@@ -5660,9 +5786,9 @@ class BossScene extends Phaser.Scene {
     const contText = this.add.text(w - 100, h - 60, '▶ [ENTER] KEY', {
       fontFamily: '"Press Start 2P"',
       fontSize: '20px',
-      color: '#9CA3AF'
+      color: '#FFFFFF'
     }).setOrigin(1, 0.5).setDepth(200001).setScrollFactor(0);
-    this.tweens.add({ targets: contText, alpha: 0.3, yoyo: true, repeat: -1, duration: 500 });
+    // 点滅（アルファTween）は無効化
     elements.push(contText);
 
     const choicesList = [];

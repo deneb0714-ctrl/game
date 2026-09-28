@@ -476,7 +476,15 @@ class BossScene extends Phaser.Scene {
   startBossIntro(key, boss) {
     this.cutsceneActive = true;
 
-    if (this.startData && this.startData.fromContinue) {
+    const isRetryContinue = Boolean(
+      this.startData && 
+      this.startData.fromContinue && 
+      MOT.flags && 
+      MOT.flags.bossIntroSeen && 
+      MOT.flags.bossIntroSeen[key]
+    );
+
+    if (isRetryContinue) {
       this.dialogActive = true;
       this.physics.pause();
       
@@ -622,6 +630,9 @@ class BossScene extends Phaser.Scene {
             this.dialogActive = false;
             this.physics.resume();
             this.startBossLaneMovement();
+            if (!MOT.flags) MOT.flags = {};
+            if (!MOT.flags.bossIntroSeen) MOT.flags.bossIntroSeen = {};
+            MOT.flags.bossIntroSeen['doctor'] = true;
             if (this.boss5Bgm) {
               try { this.boss5Bgm.stop(); this.boss5Bgm.destroy(); } catch (e) {}
             }
@@ -759,6 +770,9 @@ class BossScene extends Phaser.Scene {
       
       this.tweens.add({ targets: [dimBg, this.heroImage, this.demonImage], alpha: 0, duration: 300 });
       if(this.inunekoImage) this.tweens.add({ targets: this.inunekoImage, alpha: 0, duration: 300 });
+      if (!MOT.flags) MOT.flags = {};
+      if (!MOT.flags.bossIntroSeen) MOT.flags.bossIntroSeen = {};
+      MOT.flags.bossIntroSeen['demon_lord'] = true;
       onComplete();
     })();
   }
@@ -4015,6 +4029,9 @@ class BossScene extends Phaser.Scene {
                 this.boss4Bgm = this.sound.add('demon_lord_bgm', { loop: true, volume: 0.2 });
                 this.boss4Bgm.play();
               }
+              if (!MOT.flags) MOT.flags = {};
+              if (!MOT.flags.bossIntroSeen) MOT.flags.bossIntroSeen = {};
+              MOT.flags.bossIntroSeen[key] = true;
             })();
           }
         } else {
@@ -5140,6 +5157,9 @@ class BossScene extends Phaser.Scene {
     var resumeFn = function() {
       this.currentBoss = null;
       this.currentBossIndex++;
+      if (this.startData) {
+        this.startData.fromContinue = false;
+      }
       
       // ─── 自動セーブ処理（各ボス撃破直後） ───
       if (this.currentBossIndex > 0 && this.currentBossIndex <= 4) {

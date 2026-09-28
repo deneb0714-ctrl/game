@@ -160,13 +160,13 @@ class TitleScene extends Phaser.Scene {
           this.heroGif.once('animationcomplete', function() {
             this.cameras.main.fadeOut(500, 5, 8, 20);
             this.time.delayedCall(500, function () {
-              this.scene.start('BossScene', { startBossIndex: startIdx, fromContinue: true });
+              this.scene.start('BossScene', { startBossIndex: startIdx, fromContinue: false });
             }, [], this);
           }, this);
         } else {
           this.cameras.main.fadeOut(500, 5, 8, 20);
           this.time.delayedCall(500, function () {
-            this.scene.start('BossScene', { startBossIndex: startIdx, fromContinue: true });
+            this.scene.start('BossScene', { startBossIndex: startIdx, fromContinue: false });
           }, [], this);
         }
       }.bind(this));

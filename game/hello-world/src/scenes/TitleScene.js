@@ -170,7 +170,7 @@ class TitleScene extends Phaser.Scene {
         const startIdx = (saveData && saveData.bossIndex !== undefined) ? saveData.bossIndex : 0;
         this.cameras.main.fadeOut(500, 5, 8, 20);
         this.time.delayedCall(500, function () {
-          this.scene.start('BossScene', { startBossIndex: startIdx, fromContinue: true });
+          this.scene.start('BossScene', { startBossIndex: startIdx, fromContinue: false });
         }, [], this);
       }.bind(this));
     }
