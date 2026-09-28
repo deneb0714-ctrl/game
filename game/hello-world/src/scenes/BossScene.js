@@ -1627,13 +1627,48 @@ class BossScene extends Phaser.Scene {
     }
   }
 
+  grantSpecialInvincibility(durationMs = 200) {
+    this.playerInvincible = true;
+    if (this.player) {
+      this.player.isInvincible = true;
+      this.player.isInvulnerable = true;
+    }
+    if (this.specialInvincibleTimer) {
+      this.specialInvincibleTimer.remove();
+    }
+    if (this.player && this.player.active) {
+      this.tweens.add({
+        targets: this.player,
+        alpha: 0.6,
+        yoyo: true,
+        repeat: 1,
+        duration: Math.max(30, Math.floor(durationMs / 4)),
+        onComplete: () => {
+          if (this.player && this.player.active) this.player.setAlpha(1);
+        }
+      });
+    }
+    this.specialInvincibleTimer = this.time.delayedCall(durationMs, () => {
+      if (!this._specialCutinRunning) {
+        this.playerInvincible = false;
+        if (this.player) {
+          this.player.isInvincible = false;
+          this.player.isInvulnerable = false;
+          if (this.player.active) this.player.setAlpha(1);
+        }
+      }
+    });
+  }
+
   onSpecialAttack() {
     if (!this.canUseCombatSkills()) return;
     if (MOT.flags.maxEnergy && !this._specialCutinRunning) {
       MOT.flags.energy = 0;
       MOT.flags.maxEnergy = false;
+      this.grantSpecialInvincibility(200);
 
       const executeAttack = () => {
+        this.grantSpecialInvincibility(200);
         if (!this.cameras || !this.cameras.main) return;
         this.cameras.main.flash(500, 79, 209, 255);
         const px = this.player ? this.player.x : 960;
@@ -2291,7 +2326,7 @@ class BossScene extends Phaser.Scene {
 
   onPlayerHit(player, obj) {
     if (this.dialogActive) return;
-    if (this.playerInvincible && !this.barrierBreakInvincible) return;
+    if ((this.playerInvincible || (player && (player.isInvincible || player.isInvulnerable))) && !this.barrierBreakInvincible) return;
 
     if (this.barrierActive || this.barrierBreakInvincible) {
       const isJustGuard = (this.time.now - this.barrierActivatedTime) <= 150; // シビアな判定 (150ms)

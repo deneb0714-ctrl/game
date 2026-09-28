@@ -11,12 +11,20 @@ window.MOT = window.MOT || {};
  */
 MOT.playHeroSpecialCutin = function (scene, onExecuteAttack) {
   if (scene._specialCutinRunning) return;
+
+  if (window.MOT && MOT.Settings && !MOT.Settings.specialCutinEnabled) {
+    if (onExecuteAttack) onExecuteAttack();
+    return;
+  }
+
   scene._specialCutinRunning = true;
 
   // プレイヤーを演出中無敵化
   const prevInvulnerable = scene.player ? scene.player.isInvulnerable : false;
+  scene.playerInvincible = true;
   if (scene.player) {
     scene.player.isInvulnerable = true;
+    scene.player.isInvincible = true;
   }
 
   const w = (scene.cameras && scene.cameras.main) ? scene.cameras.main.width : 1920;
@@ -275,12 +283,23 @@ MOT.playHeroSpecialCutin = function (scene, onExecuteAttack) {
           container.destroy();
           scene._specialCutinRunning = false;
 
-          // プレイヤー無敵を少し継続してから解除（安全マージン）
-          scene.time.delayedCall(200, () => {
-            if (scene.player && !prevInvulnerable) {
-              scene.player.isInvulnerable = false;
+          // 必殺技演出完了後も確実に0.2秒（200ms）の無敵時間を付与
+          if (scene.grantSpecialInvincibility) {
+            scene.grantSpecialInvincibility(200);
+          } else {
+            scene.playerInvincible = true;
+            if (scene.player) {
+              scene.player.isInvincible = true;
+              scene.player.isInvulnerable = true;
             }
-          });
+            scene.time.delayedCall(200, () => {
+              scene.playerInvincible = false;
+              if (scene.player) {
+                scene.player.isInvincible = false;
+                scene.player.isInvulnerable = false;
+              }
+            });
+          }
         }
       });
     });
