@@ -293,6 +293,9 @@ class BossScene extends Phaser.Scene {
     this.bossHalfHpSpoken = false;
     this.brotherHalfHpSpoken = false;
     this.sisterHalfHpSpoken = false;
+    this.heroAttackSpeedBoost = false;
+    this.heroFirepowerBoost = false;
+    this.inunekoBoostActive = false;
 
     if (this.scrollBg1) {
       this.scrollBg1.setVisible(false);
@@ -340,6 +343,10 @@ class BossScene extends Phaser.Scene {
     if (key === 'boss3_twins') {
       boss.body.setSize(50, 110);
       boss.body.setOffset(35, 5);
+    }
+    if (key === 'doctor') {
+      boss.body.setSize(70, 90);
+      boss.body.setOffset(15, 5);
     }
 
     if (key === 'boss3_twins') {
@@ -2632,9 +2639,13 @@ class BossScene extends Phaser.Scene {
     }
     if (this.currentBoss) {
       this.tweens.killTweensOf(this.currentBoss);
+      if (this.currentBoss.body) this.currentBoss.body.enable = false;
       this.currentBoss.setVisible(false);
       this.currentBoss.setActive(false);
+      if (this.currentBoss.destroy) this.currentBoss.destroy();
+      this.currentBoss = null;
     }
+    if (this.enemyGroup) this.enemyGroup.clear(true, true);
     if (this.enemyBullets) this.enemyBullets.clear(true, true);
     if (this.playerBullets) this.playerBullets.clear(true, true);
 
@@ -2938,20 +2949,33 @@ class BossScene extends Phaser.Scene {
       this.bossHalfHpSpoken = false;
       MOT.flags.playerHP = MOT.flags.playerMaxHP || 5;
       this.updateHUD();
-      this.heroAttackSpeedBoost = true;
-      this.heroFirepowerBoost = true;
-      this.inunekoBoostActive = true;
+      this.heroAttackSpeedBoost = false;
+      this.heroFirepowerBoost = false;
+      this.inunekoBoostActive = false;
 
-      // ボスの確実な再活性化・出現
-      if (!this.currentBoss || !this.currentBoss.active) {
-        const cfg = this.getBossConfig('doctor');
-        this.currentBoss = this.physics.add.sprite(1400, 460, 'doctor_combat');
-        this.currentBoss.setScale(cfg ? cfg.scale : 2.5);
-        this.currentBoss.setDepth(8);
-        this.enemyGroup.add(this.currentBoss);
-        this.currentBoss.configKey = 'doctor';
+      // 敵グループと旧ボスの残骸を完全にクリーンアップして幽霊判定・重複スプライトを排除
+      if (this.currentBoss) {
+        this.tweens.killTweensOf(this.currentBoss);
+        if (this.currentBoss.destroy) this.currentBoss.destroy();
+        this.currentBoss = null;
       }
-      this.tweens.killTweensOf(this.currentBoss);
+      if (this.enemyGroup) {
+        this.enemyGroup.clear(true, true);
+      }
+      if (this.enemyBullets) {
+        this.enemyBullets.clear(true, true);
+      }
+      if (this.playerBullets) {
+        this.playerBullets.clear(true, true);
+      }
+
+      // ボスの新規活性化・出現
+      const cfg = this.getBossConfig('doctor');
+      this.currentBoss = this.physics.add.sprite(1400, 460, 'doctor_combat');
+      this.currentBoss.setScale(cfg ? cfg.scale : 2.5);
+      this.currentBoss.setDepth(8);
+      this.enemyGroup.add(this.currentBoss);
+      this.currentBoss.configKey = 'doctor';
       this.currentBoss.setTexture('doctor_combat');
       this.currentBoss.setVisible(true);
       this.currentBoss.setActive(true);
@@ -2959,6 +2983,8 @@ class BossScene extends Phaser.Scene {
       this.currentBoss.setPosition(1400, 460);
       if (this.currentBoss.body) {
         this.currentBoss.body.enable = true;
+        this.currentBoss.body.setSize(70, 90);
+        this.currentBoss.body.setOffset(15, 5);
         this.currentBoss.body.reset(1400, 460);
       }
       this.currentBoss.hp = 1000;
@@ -3785,6 +3811,8 @@ class BossScene extends Phaser.Scene {
 
   onBossHit(bullet, boss) {
     if (!bullet || !bullet.active) return;
+    if (!boss || !boss.active || !boss.visible) return;
+    if (this.dialogActive || this.cutsceneActive) return;
     if (boss.x > 1920) {
       bullet.destroy();
       return;
