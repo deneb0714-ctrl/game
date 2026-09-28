@@ -81,11 +81,13 @@ MOT.loadFlags = function (savedFlags) {
   if (!savedFlags) return;
   const newFlags = typeof savedFlags === 'string' ? JSON.parse(savedFlags) : JSON.parse(JSON.stringify(savedFlags));
   delete newFlags.maxEnergy; // getterを上書きして破壊しないように削除
+  const prevIntroSeen = (MOT.flags && MOT.flags.bossIntroSeen) ? Object.assign({}, MOT.flags.bossIntroSeen) : {};
   if (!MOT.flags) MOT.flags = {};
   Object.assign(MOT.flags, newFlags);
   if (!MOT.flags.bossIntroSeen) {
     MOT.flags.bossIntroSeen = {};
   }
+  Object.assign(MOT.flags.bossIntroSeen, prevIntroSeen);
 };
 
 MOT.modifyFlag = function (key, value) {

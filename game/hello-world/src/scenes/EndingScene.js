@@ -327,6 +327,7 @@ class EndingScene extends Phaser.Scene {
               if (MOT.Audio && MOT.Audio.playSelect) MOT.Audio.playSelect();
               const saveData = MOT.loadGame();
               if (saveData && saveData.flags) {
+                const prevIntroSeen = (MOT.flags && MOT.flags.bossIntroSeen) ? Object.assign({}, MOT.flags.bossIntroSeen) : {};
                 if (MOT.loadFlags) {
                   MOT.loadFlags(saveData.flags);
                 } else {
@@ -334,6 +335,8 @@ class EndingScene extends Phaser.Scene {
                   delete newFlags.maxEnergy;
                   Object.assign(MOT.flags, newFlags);
                 }
+                if (!MOT.flags.bossIntroSeen) MOT.flags.bossIntroSeen = {};
+                Object.assign(MOT.flags.bossIntroSeen, prevIntroSeen);
                 MOT.flags.diedCount = 0;
                 MOT.flags.playerHP = MOT.flags.playerMaxHP || 5;
                 MOT.flags.useGlitchTitle = false;
@@ -527,6 +530,7 @@ class EndingScene extends Phaser.Scene {
       if (MOT.Audio && MOT.Audio.playSelect) MOT.Audio.playSelect();
       const saveData = MOT.loadGame();
       if (saveData && saveData.flags) {
+        const prevIntroSeen = (MOT.flags && MOT.flags.bossIntroSeen) ? Object.assign({}, MOT.flags.bossIntroSeen) : {};
         if (MOT.loadFlags) {
           MOT.loadFlags(saveData.flags);
         } else {
@@ -534,6 +538,8 @@ class EndingScene extends Phaser.Scene {
           delete newFlags.maxEnergy;
           Object.assign(MOT.flags, newFlags);
         }
+        if (!MOT.flags.bossIntroSeen) MOT.flags.bossIntroSeen = {};
+        Object.assign(MOT.flags.bossIntroSeen, prevIntroSeen);
         MOT.flags.diedCount = 0;
         MOT.flags.playerHP = MOT.flags.playerMaxHP || 5;
         MOT.flags.useGlitchTitle = false;

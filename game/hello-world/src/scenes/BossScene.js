@@ -480,13 +480,23 @@ class BossScene extends Phaser.Scene {
   startBossIntro(key, boss) {
     this.cutsceneActive = true;
 
+    if (!MOT.flags) MOT.flags = {};
+    if (!MOT.flags.bossIntroSeen) MOT.flags.bossIntroSeen = {};
+
+    const targetIdx = (this.startData && this.startData.startBossIndex !== undefined) 
+      ? this.startData.startBossIndex 
+      : (this.startData && this.startData.bossIndex !== undefined ? this.startData.bossIndex : undefined);
+
     const isRetryContinue = Boolean(
       this.startData && 
       this.startData.fromContinue && 
-      MOT.flags && 
-      MOT.flags.bossIntroSeen && 
-      MOT.flags.bossIntroSeen[key]
+      (targetIdx === undefined || targetIdx === this.currentBossIndex)
     );
+
+    MOT.flags.bossIntroSeen[key] = true;
+    if (this.startData) {
+      this.startData.fromContinue = false;
+    }
 
     if (isRetryContinue) {
       this.dialogActive = true;
@@ -5239,6 +5249,7 @@ class BossScene extends Phaser.Scene {
       this.currentBossIndex++;
       if (this.startData) {
         this.startData.fromContinue = false;
+        this.startData.startBossIndex = -1;
       }
       
       // ─── 自動セーブ処理（各ボス撃破直後） ───
