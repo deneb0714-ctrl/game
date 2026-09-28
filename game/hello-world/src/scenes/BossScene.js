@@ -4686,10 +4686,14 @@ class BossScene extends Phaser.Scene {
                   else if (MOT.Audio && MOT.Audio.playSelect) MOT.Audio.playSelect();
                   this.cameras.main.shake(500, 0.05);
                   if (boss && boss.active) {
-                    this.tweens.add({ targets: boss, scale: boss.scale * 1.5, alpha: 0, duration: 600, ease: 'Power2', onComplete: () => { if (boss.destroy) boss.destroy(); } });
+                    this.showExplosion(boss.x, boss.y);
+                    boss.destroy();
+                    this.currentBoss = null;
                   }
                   if (this.inunekoEnemy && this.inunekoEnemy.active) {
-                    this.tweens.add({ targets: this.inunekoEnemy, scale: 1.5, alpha: 0, duration: 600, ease: 'Power2', onComplete: () => { if (this.inunekoEnemy.destroy) this.inunekoEnemy.destroy(); } });
+                    this.showExplosion(this.inunekoEnemy.x, this.inunekoEnemy.y);
+                    this.inunekoEnemy.destroy();
+                    this.inunekoEnemy = null;
                   }
                   if (this.demonImage) {
                     this.tweens.add({ targets: this.demonImage, scale: 2, alpha: 0, duration: 500, ease: 'Power2' });
@@ -4857,13 +4861,20 @@ class BossScene extends Phaser.Scene {
                   if (MOT.Audio && MOT.Audio.playSelect) MOT.Audio.playSelect();
                   this.cameras.main.shake(500, 0.05);
                   if (boss && boss.active) {
-                    this.tweens.add({ targets: boss, scale: boss.scale * 1.5, alpha: 0, duration: 600, ease: 'Power2', onComplete: () => { if (boss.destroy) boss.destroy(); } });
+                    this.showExplosion(boss.x, boss.y);
+                    boss.destroy();
+                    this.currentBoss = null;
                   }
                   if (this.inunekoEnemy && this.inunekoEnemy.active) {
-                    this.tweens.add({ targets: this.inunekoEnemy, scale: 1.5, alpha: 0, duration: 600, ease: 'Power2', onComplete: () => { if (this.inunekoEnemy.destroy) this.inunekoEnemy.destroy(); } });
+                    this.showExplosion(this.inunekoEnemy.x, this.inunekoEnemy.y);
+                    this.inunekoEnemy.destroy();
+                    this.inunekoEnemy = null;
                   }
                   if (this.demonImage) {
                     this.tweens.add({ targets: this.demonImage, scale: 2, alpha: 0, duration: 500, ease: 'Power2' });
+                  }
+                  if (this.inunekoImage) {
+                    this.tweens.add({ targets: this.inunekoImage, scale: 2, alpha: 0, duration: 500, ease: 'Power2' });
                   }
                   await new Promise(r => this.time.delayedCall(1000, r));
                   const decKill = (window.MOT && MOT.decideEnding) ? MOT.decideEnding() : { key: 'normal_daily' };
@@ -4872,6 +4883,29 @@ class BossScene extends Phaser.Scene {
                 } else {
                   await sayDemon('「わらわを見逃して何が望みだ？しもべたちを殺しているんだ。和平を求めて居るわけではないのであろう？」');
                   await sayDemon('「わらわは、しもべを殺された恨みを忘れることはできん。何が目的であれ、お前を許すことはできないだろう。」');
+                  if (this.demonImage) {
+                    this.tweens.add({ targets: this.demonImage, alpha: 0, duration: 400 });
+                  }
+                  if (this.inunekoImage) {
+                    this.tweens.add({ targets: this.inunekoImage, alpha: 0, duration: 400 });
+                  }
+                  const retreatTargets = [boss, this.inunekoEnemy].filter(t => t && t.active);
+                  if (retreatTargets.length > 0) {
+                    await new Promise(r => {
+                      this.tweens.add({
+                        targets: retreatTargets,
+                        x: 2200,
+                        duration: 1500,
+                        ease: 'Power2',
+                        onComplete: () => {
+                          retreatTargets.forEach(t => { if (t.destroy) t.destroy(); });
+                          this.currentBoss = null;
+                          this.inunekoEnemy = null;
+                          r();
+                        }
+                      });
+                    });
+                  }
                   const decSpare = (window.MOT && MOT.decideEnding) ? MOT.decideEnding() : { key: 'normal_useless' };
                   MOT.flags.finalEnding = decSpare.key;
                   this.scene.start('EndingScene', { endingKey: decSpare.key });
@@ -5245,6 +5279,10 @@ class BossScene extends Phaser.Scene {
 
                   if (MOT.Audio && MOT.Audio.playShot) MOT.Audio.playShot();
                   this.cameras.main.shake(400, 0.03);
+                  if (boss && boss.active) {
+                    this.showExplosion(boss.x, boss.y);
+                    boss.setVisible(false);
+                  }
                   if (this.bossImage) {
                     this.tweens.add({ targets: this.bossImage, alpha: 0, duration: 500 });
                   }
@@ -5263,6 +5301,9 @@ class BossScene extends Phaser.Scene {
                   await sayKratos('「お前が魔王様に従うなら、協力する」');
                   if (this.bossImage) {
                     this.tweens.add({ targets: this.bossImage, alpha: 0, duration: 500 });
+                  }
+                  if (boss && boss.active) {
+                    this.tweens.add({ targets: boss, x: 2200, duration: 1500, ease: 'Power2' });
                   }
                   await sayDevice('「君は一体何をしている？」');
                   await sayDevice('「奴らを倒さないと、世界が救われないんだ。何がしたいのかさっぱりだが、次はちゃんと止めを刺せ。」');
@@ -5309,6 +5350,10 @@ class BossScene extends Phaser.Scene {
                     await sayTourelos('「はは…あいつと同じで負けるのはむかつくけど、戦いは楽しかったしまあいいかな」');
                     if (MOT.Audio && MOT.Audio.playShot) MOT.Audio.playShot();
                     this.cameras.main.shake(400, 0.03);
+                    if (boss && boss.active) {
+                      this.showExplosion(boss.x, boss.y);
+                      boss.setVisible(false);
+                    }
                     if (this.bossImage) {
                       this.tweens.add({ targets: this.bossImage, alpha: 0, duration: 500 });
                     }
@@ -5317,6 +5362,10 @@ class BossScene extends Phaser.Scene {
                     await sayTourelos('「はは…負けたのはむかつくけど、戦いは楽しかったしまあいいかな」');
                     if (MOT.Audio && MOT.Audio.playShot) MOT.Audio.playShot();
                     this.cameras.main.shake(400, 0.03);
+                    if (boss && boss.active) {
+                      this.showExplosion(boss.x, boss.y);
+                      boss.setVisible(false);
+                    }
                     if (this.bossImage) {
                       this.tweens.add({ targets: this.bossImage, alpha: 0, duration: 500 });
                     }
@@ -5337,12 +5386,18 @@ class BossScene extends Phaser.Scene {
                     if (this.bossImage) {
                       this.tweens.add({ targets: this.bossImage, alpha: 0, duration: 500 });
                     }
+                    if (boss && boss.active) {
+                      this.tweens.add({ targets: boss, x: 2200, duration: 1500, ease: 'Power2' });
+                    }
                     await sayDevice('「おい、何をしている？なぜ止めを刺さなかった。」');
                     await sayHero('「……」');
                   } else {
                     await sayTourelos('「はは、君はやっぱり殺さないんだ。舐めてるの？とはいえ、僕も今は限界だから引こうかな。次は負けないから！」');
                     if (this.bossImage) {
                       this.tweens.add({ targets: this.bossImage, alpha: 0, duration: 500 });
+                    }
+                    if (boss && boss.active) {
+                      this.tweens.add({ targets: boss, x: 2200, duration: 1500, ease: 'Power2' });
                     }
                     await sayDevice('「またか。お前は何がしたい？この世界を終わらせたいのか？」');
                     await sayDevice('「それとも、役立たずとして処分されたいのか？」');
@@ -5384,14 +5439,18 @@ class BossScene extends Phaser.Scene {
           }
         });
       } else {
+        boss.setVisible(true);
+        boss.setAlpha(1);
+        if (key === 'boss2' && this.textures.exists('boss2_combat_down_open')) {
+          boss.setTexture('boss2_combat_down_open');
+        }
         this.tweens.add({
           targets: boss,
-          alpha: 0,
-          scale: boss.scale * 1.5,
-          duration: 800,
+          x: 1400,
+          y: 460,
+          duration: 600,
           ease: 'Power2',
           onComplete: () => {
-            boss.setVisible(false);
             handleDefeatedDialogue();
           }
         });
@@ -5420,11 +5479,16 @@ class BossScene extends Phaser.Scene {
     this.sisterBoss.setVisible(true).setAlpha(1);
     
     this.tweens.add({
-      targets: [this.currentBoss, this.sisterBoss], alpha: 0.3, yoyo: true, repeat: 8, duration: 150,
+      targets: [this.currentBoss, this.sisterBoss], alpha: 0.3, yoyo: true, repeat: 4, duration: 150,
       onComplete: () => {
-        // Hide the physical bosses so they don't bleed into the background
-        if (this.currentBoss) this.currentBoss.setVisible(false);
-        if (this.sisterBoss) this.sisterBoss.setVisible(false);
+        if (this.currentBoss) {
+          this.currentBoss.setVisible(true).setAlpha(1);
+          this.tweens.add({ targets: this.currentBoss, x: 1400, y: 460, duration: 600, ease: 'Power2' });
+        }
+        if (this.sisterBoss) {
+          this.sisterBoss.setVisible(true).setAlpha(1);
+          this.tweens.add({ targets: this.sisterBoss, x: 1550, y: 500, duration: 600, ease: 'Power2' });
+        }
         
         this.dialogActive = true;
         this.physics.pause();
@@ -5507,12 +5571,30 @@ class BossScene extends Phaser.Scene {
             if (MOT.flags.killedBoss1 && MOT.flags.killedBoss2) {
               await sayMan('「目を...覚ましてくれ...」', 'エディオ');
               await sayWoman('「このままいけば、あなた取返しのつかないことになるわ...」', 'エナリア');
-              MOT.Audio.playSelect(); MOT.Audio.playSelect(); // 銃声SE2回
+              if (MOT.Audio && MOT.Audio.playShot) MOT.Audio.playShot(); else MOT.Audio.playSelect();
+              this.cameras.main.shake(400, 0.03);
+              if (this.currentBoss && this.currentBoss.active) {
+                this.showExplosion(this.currentBoss.x, this.currentBoss.y);
+                this.currentBoss.setVisible(false);
+              }
+              if (this.sisterBoss && this.sisterBoss.active) {
+                this.showExplosion(this.sisterBoss.x, this.sisterBoss.y);
+                this.sisterBoss.setVisible(false);
+              }
               await sayDevice('「よくやった。君は役に立つみたいだ。こいつらとは違うな…いや、なんでもない。そのまま進んでくれ。そろそろ魔王城に着くはずだ。」');
             } else {
               await sayMan('「これも、因果なのかな...僕たちは奴から逃げきれなかった」', 'エディオ');
               await sayWoman('「兄さま！！」', 'エナリア');
-              MOT.Audio.playSelect(); MOT.Audio.playSelect(); // 銃声SE2回
+              if (MOT.Audio && MOT.Audio.playShot) MOT.Audio.playShot(); else MOT.Audio.playSelect();
+              this.cameras.main.shake(400, 0.03);
+              if (this.currentBoss && this.currentBoss.active) {
+                this.showExplosion(this.currentBoss.x, this.currentBoss.y);
+                this.currentBoss.setVisible(false);
+              }
+              if (this.sisterBoss && this.sisterBoss.active) {
+                this.showExplosion(this.sisterBoss.x, this.sisterBoss.y);
+                this.sisterBoss.setVisible(false);
+              }
               await sayDevice('「まさか生きていたとはな…いや、なんでもない。そのまま進んでくれ」');
               await sayDevice('「魔王を逃がすなんてしたらわかっているな？」');
             }
@@ -5576,13 +5658,11 @@ class BossScene extends Phaser.Scene {
   skipToDemonLord(isSpared = false) {
     this.clearConversationUI();
     if (!isSpared) {
-      if (this.currentBoss) this.showExplosion(this.currentBoss.x, this.currentBoss.y);
-      if (this.sisterBoss) this.showExplosion(this.sisterBoss.x, this.sisterBoss.y);
+      if (this.currentBoss && this.currentBoss.active && this.currentBoss.visible) this.showExplosion(this.currentBoss.x, this.currentBoss.y);
+      if (this.sisterBoss && this.sisterBoss.active && this.sisterBoss.visible) this.showExplosion(this.sisterBoss.x, this.sisterBoss.y);
     }
-    this.currentBoss.destroy();
-    this.sisterBoss.destroy();
-    this.currentBoss = null;
-    this.sisterBoss = null;
+    if (this.currentBoss) { if (this.currentBoss.destroy) this.currentBoss.destroy(); this.currentBoss = null; }
+    if (this.sisterBoss) { if (this.sisterBoss.destroy) this.sisterBoss.destroy(); this.sisterBoss = null; }
     this.dialogActive = false;
     this.physics.resume();
     MOT.spawnHealthItem(this, 960, 460);
@@ -5796,29 +5876,37 @@ class BossScene extends Phaser.Scene {
     }.bind(this);
 
     if (isSpared) {
-      if (boss.configKey === 'demon_lord' && this.inunekoEnemy && this.inunekoEnemy.active) {
+      if (boss && boss.active) {
+        if (boss.configKey === 'demon_lord' && this.inunekoEnemy && this.inunekoEnemy.active) {
+          this.tweens.add({
+            targets: this.inunekoEnemy, x: 2200, duration: 1500, ease: 'Power2',
+            onComplete: () => {
+              if (this.inunekoEnemy) { this.inunekoEnemy.destroy(); this.inunekoEnemy = null; }
+            }
+          });
+        }
         this.tweens.add({
-          targets: this.inunekoEnemy, x: 2200, duration: 1500, ease: 'Power2',
-          onComplete: () => {
-            if (this.inunekoEnemy) { this.inunekoEnemy.destroy(); this.inunekoEnemy = null; }
+          targets: boss, x: 2200, duration: 1500, ease: 'Power2',
+          onComplete: function() {
+            if (boss.destroy) boss.destroy();
+            resumeFn();
           }
         });
+      } else {
+        resumeFn();
       }
-      this.tweens.add({
-        targets: boss, x: 2200, duration: 1500, ease: 'Power2',
-        onComplete: function() {
-          boss.destroy();
-          resumeFn();
-        }
-      });
     } else {
-      if (boss.configKey === 'demon_lord' && this.inunekoEnemy && this.inunekoEnemy.active) {
-        this.showExplosion(this.inunekoEnemy.x, this.inunekoEnemy.y);
-        this.inunekoEnemy.destroy();
-        this.inunekoEnemy = null;
+      if (boss && boss.active && boss.visible) {
+        if (boss.configKey === 'demon_lord' && this.inunekoEnemy && this.inunekoEnemy.active && this.inunekoEnemy.visible) {
+          this.showExplosion(this.inunekoEnemy.x, this.inunekoEnemy.y);
+          this.inunekoEnemy.destroy();
+          this.inunekoEnemy = null;
+        }
+        this.showExplosion(boss.x, boss.y);
+        boss.destroy();
+      } else if (boss) {
+        if (boss.destroy) boss.destroy();
       }
-      this.showExplosion(boss.x, boss.y);
-      boss.destroy();
       resumeFn();
     }
   }
