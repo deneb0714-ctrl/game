@@ -14,6 +14,7 @@ class GameScene extends Phaser.Scene {
     this.eventTriggered = {};
     this.dialogActive = false;
     this.lastDialogActive = false; // 会話終了時のクールタイム検出用
+    this.dialogEndTime = 0;
     this.minionBattleActive = false;
     this.minion1 = null;
     this.playerInvincible = false;
@@ -205,6 +206,7 @@ class GameScene extends Phaser.Scene {
     if (!this.dialogActive && this.lastDialogActive) {
       // 2秒（2000ms）のフルクールタイムをセットし、戦闘開始直後のバリアを完全に防ぐ
       this.barrierCooldown = 2000;
+      this.dialogEndTime = Date.now();
     }
     this.lastDialogActive = this.dialogActive;
 
@@ -302,8 +304,16 @@ class GameScene extends Phaser.Scene {
     }
   }
 
+  canUseCombatSkills() {
+    if (this.dialogActive) return false;
+    if (this.dialogContainer && this.dialogContainer.active) return false;
+    if (Date.now() - (this.dialogEndTime || 0) < 500) return false;
+    return true;
+  }
+
   onBarrierUse() {
-    if (this.barrierCooldown <= 0 && !this.barrierActive && !this.dialogActive) {
+    if (!this.canUseCombatSkills()) return;
+    if (this.barrierCooldown <= 0 && !this.barrierActive) {
       MOT.Audio.playBleep('博士');
       this.barrierActive = true;
       this.barrierTime = 0;
@@ -339,7 +349,7 @@ class GameScene extends Phaser.Scene {
   }
 
   onSpecialAttack() {
-    if (this.dialogActive) return;
+    if (!this.canUseCombatSkills()) return;
     if (MOT.flags.maxEnergy && !this._specialCutinRunning) {
       MOT.flags.energy = 0;
       MOT.flags.maxEnergy = false;

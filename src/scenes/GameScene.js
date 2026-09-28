@@ -14,6 +14,7 @@ class GameScene extends Phaser.Scene {
     this.eventTriggered = {};
     this.dialogActive = false;
     this.lastDialogActive = false; // 会話終了時のクールタイム検出用
+    this.dialogEndTime = 0;
     this.minionBattleActive = false;
     this.minion1 = null;
     this.playerInvincible = false;
@@ -205,6 +206,7 @@ class GameScene extends Phaser.Scene {
     if (!this.dialogActive && this.lastDialogActive) {
       // 2秒（2000ms）のフルクールタイムをセットし、戦闘開始直後のバリアを完全に防ぐ
       this.barrierCooldown = 2000;
+      this.dialogEndTime = Date.now();
     }
     this.lastDialogActive = this.dialogActive;
 
@@ -302,8 +304,16 @@ class GameScene extends Phaser.Scene {
     }
   }
 
+  canUseCombatSkills() {
+    if (this.dialogActive) return false;
+    if (this.dialogContainer && this.dialogContainer.active) return false;
+    if (Date.now() - (this.dialogEndTime || 0) < 500) return false;
+    return true;
+  }
+
   onBarrierUse() {
-    if (this.barrierCooldown <= 0 && !this.barrierActive && !this.dialogActive) {
+    if (!this.canUseCombatSkills()) return;
+    if (this.barrierCooldown <= 0 && !this.barrierActive) {
       MOT.Audio.playBleep('博士');
       this.barrierActive = true;
       this.barrierTime = 0;
@@ -339,7 +349,7 @@ class GameScene extends Phaser.Scene {
   }
 
   onSpecialAttack() {
-    if (this.dialogActive) return;
+    if (!this.canUseCombatSkills()) return;
     if (MOT.flags.maxEnergy && !this._specialCutinRunning) {
       MOT.flags.energy = 0;
       MOT.flags.maxEnergy = false;
@@ -534,7 +544,7 @@ class GameScene extends Phaser.Scene {
     // Typewriter effect
     let charIndex = 0;
     const contText = this.add.text(w - 100, boxY + boxH - 40, '▶ NEXT [TAP/SPACE]', {
-      fontFamily: '"Press Start 2P"', fontSize: '20px', color: '#9CA3AF'
+      fontFamily: '"Press Start 2P"', fontSize: '20px', color: '#FFFFFF'
     }).setOrigin(1, 0).setAlpha(0).setScrollFactor(0).setDepth(200003);
 
     const typeTimer = this.time.addEvent({
@@ -551,7 +561,7 @@ class GameScene extends Phaser.Scene {
         if (charIndex >= text.length) {
           typeTimer.destroy();
           contText.setAlpha(1);
-          if (this.tweens) this.tweens.add({ targets: contText, alpha: 0.3, yoyo: true, repeat: -1, duration: 500 });
+          // 点滅（アルファTween）は無効化
         }
       },
       callbackScope: this,
@@ -586,7 +596,7 @@ class GameScene extends Phaser.Scene {
         charIndex = text.length;
         bodyText.setText(text);
         contText.setAlpha(1);
-        if (this.tweens) this.tweens.add({ targets: contText, alpha: 0.3, yoyo: true, repeat: -1, duration: 500 });
+        // 点滅（アルファTween）は無効化
       } else {
         advance();
       }
@@ -619,9 +629,9 @@ class GameScene extends Phaser.Scene {
     const contText = this.add.text(w - 100, h - 60, '▶ [ENTER] KEY', {
       fontFamily: '"Press Start 2P"',
       fontSize: '20px',
-      color: '#9CA3AF'
+      color: '#FFFFFF'
     }).setOrigin(1, 0.5).setDepth(200001);
-    this.tweens.add({ targets: contText, alpha: 0.3, yoyo: true, repeat: -1, duration: 500 });
+    // 点滅（アルファTween）は無効化
     elements.push(contText);
 
     const choicesList = [];
@@ -880,7 +890,8 @@ class GameScene extends Phaser.Scene {
       }.bind(this)
     });
 
-    if (MOT.flags.playerHP <= 0 && this.currentStage !== 1) {
+    if (MOT.flags.playerHP <= 0 && this.currentStage !== 1 && !this.gameOverTriggered) {
+      this.gameOverTriggered = true;
       MOT.flags.diedCount++;
       this.cameras.main.fadeOut(1000, 0, 0, 0);
       this.time.delayedCall(1000, function () {
@@ -932,16 +943,16 @@ class GameScene extends Phaser.Scene {
   }
 
   cleanupOffscreen() {
-    this.enemyGroup.getChildren().forEach(function (e) {
+    this.enemyGroup.getChildren().slice().forEach(function (e) {
       if (e.x < -100) e.destroy();
     });
-    this.enemyBullets.getChildren().forEach(function (b) {
+    this.enemyBullets.getChildren().slice().forEach(function (b) {
       if (b.x < -50 || b.x > 2000 || b.y < -50 || b.y > 1130) b.destroy();
     });
-    this.playerBullets.getChildren().forEach(function (b) {
+    this.playerBullets.getChildren().slice().forEach(function (b) {
       if (b.x > 1600) b.destroy();
     });
-    this.itemGroup.getChildren().forEach(function (i) {
+    this.itemGroup.getChildren().slice().forEach(function (i) {
       if (i.x < -50) i.destroy();
     });
   }
@@ -1147,7 +1158,7 @@ class GameScene extends Phaser.Scene {
     this.dialogContainer.add(bodyText);
 
     var contText = this.add.text(w - 100, boxY + boxH - 40, '▶ NEXT [TAP/SPACE]', {
-      fontFamily: '"Press Start 2P"', fontSize: '20px', color: '#9CA3AF'
+      fontFamily: '"Press Start 2P"', fontSize: '20px', color: '#FFFFFF'
     }).setOrigin(1, 0).setAlpha(0);
     this.dialogContainer.add(contText);
 
@@ -1160,7 +1171,7 @@ class GameScene extends Phaser.Scene {
         if (charIndex >= text.length) {
           typeTimer.destroy();
           contText.setAlpha(1);
-          if (this.tweens) this.tweens.add({ targets: contText, alpha: 0.3, yoyo: true, repeat: -1, duration: 500 });
+          // 点滅（アルファTween）は無効化
         }
       }, callbackScope: this, loop: true
     });
@@ -1193,7 +1204,7 @@ class GameScene extends Phaser.Scene {
         charIndex = text.length;
         bodyText.setText(text);
         contText.setAlpha(1);
-        if (this.tweens) this.tweens.add({ targets: contText, alpha: 0.3, yoyo: true, repeat: -1, duration: 500 });
+        // 点滅（アルファTween）は無効化
       } else {
         advance();
       }
@@ -1252,7 +1263,7 @@ class GameScene extends Phaser.Scene {
           this.tweens.add({
             targets: e,
             x: 1300,
-            duration: 800,
+            duration: 2000,
             ease: 'Power2',
             onComplete: () => {
               this.physics.pause();
@@ -1293,7 +1304,7 @@ class GameScene extends Phaser.Scene {
             this.tweens.add({
               targets: e2,
               x: 1300,
-              duration: 800,
+              duration: 2000,
               ease: 'Power2',
               onComplete: () => {
                 // 敵2が1300に到着後、攻撃弾1を発射
@@ -1436,12 +1447,19 @@ class GameScene extends Phaser.Scene {
           // 雑魚敵3体がやってくる（必ず赤・青ダイヤドロップ）
           for (let i = 0; i < 3; i++) {
             let e = this.spawnTutorialEnemy(i, 0);
-            e.x = 1400 + Phaser.Math.Between(0, 80);
+            e.x = 1920 + Phaser.Math.Between(0, 80);
             e.stationaryDrop = true;
             e.tutorialRed = (i === 1);
+            
+            this.tweens.add({
+              targets: e,
+              x: 1400 + Phaser.Math.Between(0, 80),
+              duration: 2000,
+              ease: 'Power2'
+            });
           }
 
-          this.time.delayedCall(500, () => {
+          this.time.delayedCall(2000, () => {
             this.physics.pause();
             this.dialogActive = true;
             this.showDeviceDialogue('「試しに全部倒してみろ」', () => {
@@ -1571,7 +1589,7 @@ class GameScene extends Phaser.Scene {
             this.physics.resume();
 
             if (MOT.DoctorDirective) {
-              let directives = MOT.DoctorDirective.directives;
+              let directives = MOT.DoctorDirective.getValidDirectives(this.player);
               let d = directives[Math.floor(Math.random() * directives.length)];
               MOT.DoctorDirective.showDirective(this, d, this.player);
             }

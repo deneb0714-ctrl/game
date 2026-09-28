@@ -38,6 +38,8 @@ class BossScene extends Phaser.Scene {
     this.debugSkipCombat = data && data.debugSkipCombat;
     this.dialogActive = false;
     this.lastDialogActive = false; // 会話終了時のクールタイム検出用
+    this.dialogEndTime = 0;
+    this.combatActive = false;
     this.bossHP = 0;
     this.bossMaxHP = 0;
     this.currentBoss = null;
@@ -250,6 +252,8 @@ class BossScene extends Phaser.Scene {
     if (MOT.saveGame) {
       MOT.saveGame(this.currentBossIndex);
     }
+
+    this.combatActive = false;
 
     var key = this.bossQueue[this.currentBossIndex];
 
@@ -518,8 +522,10 @@ class BossScene extends Phaser.Scene {
           this.playContinueIntro(key, boss, () => {
              this.cutsceneActive = false;
              this.dialogActive = false;
+             this.dialogEndTime = Date.now();
              this.physics.resume();
              this.startBossLaneMovement();
+             this.combatActive = true;
              if (key === 'boss1') {
                 this.boss1Bgm = this.sound.add('boss1_bgm', { loop: true, volume: 0.2 });
                 this.boss1Bgm.play();
@@ -590,8 +596,10 @@ class BossScene extends Phaser.Scene {
           this.playDemonLordIntro(() => {
             this.cutsceneActive = false;
             this.dialogActive = false;
+            this.dialogEndTime = Date.now();
             this.physics.resume();
             this.startBossLaneMovement();
+            this.combatActive = true;
             this.boss4Bgm = this.sound.add('demon_lord_bgm', { loop: true, volume: 0.2 });
             this.boss4Bgm.play();
           });
@@ -628,8 +636,10 @@ class BossScene extends Phaser.Scene {
             }
             this.cutsceneActive = false;
             this.dialogActive = false;
+            this.dialogEndTime = Date.now();
             this.physics.resume();
             this.startBossLaneMovement();
+            this.combatActive = true;
             if (!MOT.flags) MOT.flags = {};
             if (!MOT.flags.bossIntroSeen) MOT.flags.bossIntroSeen = {};
             MOT.flags.bossIntroSeen['doctor'] = true;
@@ -1076,6 +1086,13 @@ class BossScene extends Phaser.Scene {
 
 
   update(time, delta) {
+    if (this.dialogActive) {
+      this.lastDialogActive = true;
+    } else if (this.lastDialogActive) {
+      this.lastDialogActive = false;
+      this.dialogEndTime = Date.now();
+    }
+
     if (MOT.updateSpecialAura) MOT.updateSpecialAura(this);
 
     if (this.scrollBg1 && this.scrollBg1.visible && this.intermissionActive) {
@@ -1562,8 +1579,20 @@ class BossScene extends Phaser.Scene {
     return container;
   }
 
+  canUseCombatSkills() {
+    if (!this.combatActive) return false;
+    if (this.dialogActive) return false;
+    if (this.cutsceneActive) return false;
+    if (this.choiceActive) return false;
+    if (this.bossDefeated) return false;
+    if (this.dialogContainer && this.dialogContainer.active) return false;
+    if (Date.now() - (this.dialogEndTime || 0) < 500) return false;
+    return true;
+  }
+
   onBarrierUse() {
-    if (this.barrierCooldown <= 0 && !this.barrierActive && !this.dialogActive) {
+    if (!this.canUseCombatSkills()) return;
+    if (this.barrierCooldown <= 0 && !this.barrierActive) {
       MOT.Audio.playBleep('');
       this.barrierActive = true;
       this.barrierTime = 0;
@@ -1599,6 +1628,7 @@ class BossScene extends Phaser.Scene {
   }
 
   onSpecialAttack() {
+    if (!this.canUseCombatSkills()) return;
     if (MOT.flags.maxEnergy && !this._specialCutinRunning) {
       MOT.flags.energy = 0;
       MOT.flags.maxEnergy = false;
@@ -2474,6 +2504,8 @@ class BossScene extends Phaser.Scene {
       }
       
       MOT.flags.diedCount++;
+      this.combatActive = false;
+      this.deactivateBarrier();
       this.cameras.main.fadeOut(1000, 0, 0, 0);
       this.time.delayedCall(1000, function () { let __img = document.getElementById('trueDemonLordImg'); if (__img) __img.remove(); this.scene.start('EndingScene'); }, [], this);
     }
@@ -4003,10 +4035,21 @@ class BossScene extends Phaser.Scene {
               
               this.tweens.add({
                 targets: [dimBg, enemyFrame, enemyLabel, bossImage, this.heroImage].filter(Boolean), alpha: 0, duration: 500,
-                onComplete: () => { dimBg.destroy(); enemyFrame.destroy(); enemyLabel.destroy(); if(bossImage) bossImage.destroy(); if(this.heroImage) this.heroImage.destroy(); if(sisterImage) sisterImage.destroy(); }
+                onComplete: () => {
+                  if (dimBg) dimBg.destroy();
+                  if (enemyFrame) enemyFrame.destroy();
+                  if (enemyLabel) enemyLabel.destroy();
+                  if (bossImage) bossImage.destroy();
+                  if (this.heroImage) this.heroImage.destroy();
+                  if (sisterImage) sisterImage.destroy();
+                  this.combatActive = true;
+                  this.dialogEndTime = Date.now();
+                }
               });
               if(sisterImage) this.tweens.add({ targets: sisterImage, alpha: 0, duration: 500 });
               this.dialogActive = false;
+              this.cutsceneActive = false;
+              this.dialogEndTime = Date.now();
               this.physics.resume();
               this.startBossLaneMovement();
               if (this.sisterBoss && this.sisterBoss.active) {
@@ -4125,6 +4168,8 @@ class BossScene extends Phaser.Scene {
 
     if (this.bossHP <= 0 && !this.bossDefeated) {
       this.bossDefeated = true; // Prevent multiple triggers
+      this.combatActive = false;
+      this.deactivateBarrier();
       this.cutsceneActive = true;
       if (this.boss1Bgm) this.boss1Bgm.stop();
       if (this.boss2Bgm) this.boss2Bgm.stop();
@@ -5365,6 +5410,7 @@ class BossScene extends Phaser.Scene {
 
     let beginIntermission = () => {
       this.time.delayedCall(1000, function () {
+        self.combatActive = true;
         let schedule = [
           { time: 500, action: 'wave', count: 5, speed: 200 },
           { time: 4500, action: 'wave', count: 7, speed: 220 },
@@ -5415,7 +5461,11 @@ class BossScene extends Phaser.Scene {
     };
 
     if (areaText !== '') {
-      this.showDeviceDialogue(areaText, beginIntermission);
+      this.combatActive = false;
+      this.showDeviceDialogue(areaText, () => {
+        this.dialogEndTime = Date.now();
+        beginIntermission();
+      });
     } else {
       beginIntermission();
     }
@@ -5425,6 +5475,7 @@ class BossScene extends Phaser.Scene {
   endIntermission() {
     if (!this.intermissionActive) return;
     this.intermissionActive = false;
+    this.combatActive = false;
     
     if (this.stageBgm) this.stageBgm.stop();
     
@@ -5529,6 +5580,7 @@ class BossScene extends Phaser.Scene {
     });
 
     const advance = () => {
+      this.dialogEndTime = Date.now();
       this.dialogActive = false;
       this.input.off('pointerdown', handleInput);
       if (touchZone && touchZone.active) {
@@ -5576,6 +5628,7 @@ class BossScene extends Phaser.Scene {
 
 
   showChoices(choicesData) {
+    this.choiceActive = true;
     const w = this.cameras.main.width;
     const h = this.cameras.main.height;
     
@@ -5593,6 +5646,8 @@ class BossScene extends Phaser.Scene {
         this.updateChoiceSelection();
       });
       btn.on('pointerdown', () => {
+        this.choiceActive = false;
+        this.dialogEndTime = Date.now();
         this.input.keyboard.off('keydown');
         if (window.MOT && MOT.Audio) MOT.Audio.playSelect();
         this.destroyChoices();
@@ -5612,6 +5667,8 @@ class BossScene extends Phaser.Scene {
         self.selectedChoiceIndex = (self.selectedChoiceIndex + 1) % self.choicesList.length;
         self.updateChoiceSelection();
       } else if (event.code === 'Enter') {
+        self.choiceActive = false;
+        self.dialogEndTime = Date.now();
         self.input.keyboard.off('keydown');
         if (window.MOT && MOT.Audio) MOT.Audio.playSelect();
         self.destroyChoices();
@@ -5723,6 +5780,7 @@ class BossScene extends Phaser.Scene {
     });
 
     const advance = () => {
+      this.dialogEndTime = Date.now();
       if (!keepOpen) {
         this.dialogActive = false;
       }
@@ -5823,6 +5881,7 @@ class BossScene extends Phaser.Scene {
 
       btn.on('pointerdown', function () {
         self.choiceActive = false;
+        self.dialogEndTime = Date.now();
         self.input.keyboard.off('keydown');
         if (window.MOT && MOT.Audio) MOT.Audio.playSelect();
         elements.forEach(function (el) { el.destroy(); });
@@ -5859,6 +5918,7 @@ class BossScene extends Phaser.Scene {
         self.updateChoiceSelection(choicesList);
       } else if (event.code === 'Enter') {
         self.choiceActive = false;
+        self.dialogEndTime = Date.now();
         self.input.keyboard.off('keydown');
         if (window.MOT && MOT.Audio) MOT.Audio.playSelect();
         elements.forEach(function (el) { el.destroy(); });

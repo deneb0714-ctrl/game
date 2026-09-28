@@ -51,6 +51,19 @@ MOT.setupControls = function (scene) {
   });
   scene.enterKey = scene.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.ENTER);
   scene.spaceKey = scene.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE);
+
+  // イベントリスナーによる確実な発動（JustDown漏れ対策）
+  scene.input.keyboard.on('keydown-ENTER', function () {
+    if (scene.dialogActive || (scene.dialogContainer && scene.dialogContainer.active)) return;
+    if (scene.canUseCombatSkills && !scene.canUseCombatSkills()) return;
+    if (scene.onSpecialAttack) scene.onSpecialAttack();
+  });
+  
+  scene.input.keyboard.on('keydown-SPACE', function () {
+    if (scene.dialogActive || (scene.dialogContainer && scene.dialogContainer.active)) return;
+    if (scene.canUseCombatSkills && !scene.canUseCombatSkills()) return;
+    if (scene.onBarrierUse) scene.onBarrierUse();
+  });
 };
 
 /**
@@ -83,15 +96,8 @@ MOT.handleMovement = function (scene, player) {
     MOT.moveToCell(scene, player, player.currentLane, player.currentCol + 1);
   }
 
-  // 必殺技（Enter）
-  if (Phaser.Input.Keyboard.JustDown(scene.enterKey)) {
-    if (scene.onSpecialAttack) scene.onSpecialAttack();
-  }
-
-  // バリア（Space）
-  if (Phaser.Input.Keyboard.JustDown(scene.spaceKey)) {
-    if (scene.onBarrierUse) scene.onBarrierUse();
-  }
+  // 必殺技とバリアは setupControls 内の keydown イベントで処理するため
+  // ここでの JustDown 判定は削除（キーの取りこぼしを防ぐため）
 };
 
 /**
@@ -120,6 +126,7 @@ MOT.setupTouchControls = function (scene, player) {
       }
       scene.ignoreCurrentTouch = true;
       scene.lastTapTime = 0;
+      if (scene.canUseCombatSkills && !scene.canUseCombatSkills()) return;
       if (scene.onSpecialAttack) scene.onSpecialAttack();
       return;
     }
@@ -132,6 +139,7 @@ MOT.setupTouchControls = function (scene, player) {
     scene.longPressTimer = scene.time.delayedCall(200, () => {
       if (pointer.isDown && !scene.hasSwiped && !scene.ignoreCurrentTouch && !scene.dialogActive) {
         scene.ignoreCurrentTouch = true;
+        if (scene.canUseCombatSkills && !scene.canUseCombatSkills()) return;
         if (scene.onBarrierUse) scene.onBarrierUse();
       }
     });
