@@ -2847,7 +2847,7 @@ class BossScene extends Phaser.Scene {
         fontSize: '20px',
         color: '#9CA3AF'
       }).setOrigin(1, 0.5).setDepth(200001).setScrollFactor(0);
-      this.tweens.add({ targets: enterGuide, alpha: 0.3, yoyo: true, repeat: -1, duration: 500 });
+      const enterGuideTween = this.tweens.add({ targets: enterGuide, alpha: 0.3, yoyo: true, repeat: -1, duration: 500 });
       uiElements.push(enterGuide);
 
       // 選択肢コンテナ（他の showChoice と同一レイアウト: 1100x90, 間隔 120）
@@ -2937,10 +2937,21 @@ class BossScene extends Phaser.Scene {
 
       const setUIVisible = (visible) => {
         uiElements.forEach(el => {
-          if (el && el.setAlpha && el.active) {
-            el.setAlpha(visible ? 1 : 0);
+          if (el && el.active) {
+            if (el.setVisible) el.setVisible(visible);
+            if (el.setAlpha) el.setAlpha(visible ? 1 : 0);
           }
         });
+        if (enterGuide && enterGuide.active) {
+          enterGuide.setVisible(visible);
+          if (!visible) {
+            if (enterGuideTween && enterGuideTween.isPlaying) enterGuideTween.pause();
+            enterGuide.setAlpha(0);
+          } else {
+            if (enterGuideTween && enterGuideTween.isPaused) enterGuideTween.resume();
+            enterGuide.setAlpha(1);
+          }
+        }
         if (visible) {
           updateSelection();
         }
@@ -3108,6 +3119,7 @@ class BossScene extends Phaser.Scene {
         this.dialogActive = false;
         this.choiceActive = false;
         this.input.keyboard.off('keydown', onKeyDown);
+        if (enterGuideTween) enterGuideTween.stop();
         uiElements.forEach(el => { if (el && el.destroy) el.destroy(); });
         uiElements = [];
         resolve(val);
