@@ -1915,7 +1915,7 @@ class BossScene extends Phaser.Scene {
     this.time.delayedCall(7000, function () { if (slash.active) slash.destroy(); });
   }
 
-  // 5秒間の警告のあと、レーン全体を薙ぎ払う極太レーザー
+  // 3.2秒間の警告のあと、レーン全体を薙ぎ払う極太レーザー（旧5秒から短縮）
   fireLaneBeam() {
     if (this.dialogActive) return;
     this.isLaneBeamActive = true;
@@ -1938,21 +1938,21 @@ class BossScene extends Phaser.Scene {
       }
       this.currentBoss.targetLaneY = targetY;
       this.tweens.killTweensOf(this.currentBoss);
-      this.tweens.add({ targets: this.currentBoss, y: targetY, duration: 800, ease: 'Cubic.easeInOut' });
+      this.tweens.add({ targets: this.currentBoss, y: targetY, duration: 600, ease: 'Cubic.easeInOut' });
     }
     
-    // 警告演出 (赤い半透明の帯を点滅させる)
+    // 警告演出 (赤い半透明の帯を点滅させる) - 5秒から3.2秒に短縮
     let warningRect = this.add.rectangle(1920 / 2, targetY, 1920, 100, 0xff0000, 0.2).setDepth(8);
     this.tweens.add({
       targets: warningRect,
       alpha: 0.5,
-      duration: 250,
+      duration: 200,
       yoyo: true,
-      repeat: 19 // 計5秒 (20回 * 250ms = 5000ms)
+      repeat: 15 // 計3.2秒 (16回 * 200ms = 3200ms)
     });
     
-    // 5秒後に極太レーザー発射
-    this.time.delayedCall(5000, () => {
+    // 3.2秒後に極太レーザー発射（旧5秒から短縮）
+    this.time.delayedCall(3200, () => {
       if (warningRect) warningRect.destroy();
       
       if (this.currentBoss && this.currentBoss.configKey === 'boss3_twins') {
@@ -1979,7 +1979,7 @@ class BossScene extends Phaser.Scene {
       this.tweens.add({
         targets: beam,
         alpha: 0,
-        duration: 800, // 長すぎると謎の当たり判定と誤認されるため短縮
+        duration: 800,
         delay: 400,
         onComplete: () => {
           beam.destroy();
@@ -2035,6 +2035,40 @@ class BossScene extends Phaser.Scene {
           this.showExplosion(x, y);
           MOT.Audio.playExplosion();
           star.destroy();
+
+          // 星がはじけたら、時間差（300ms後）でその周りに星の球（bullet_star）を放射状に発射！
+          const burstX = x;
+          const burstY = y;
+          const starColor = isSilver ? 0xE0E0E0 : 0x7CFF00;
+          this.time.delayedCall(300, () => {
+            if (!this.scene || this.dialogActive) return;
+            if (MOT.Audio && MOT.Audio.playShot) MOT.Audio.playShot();
+
+            const numShots = 8;
+            const speed = 250;
+            const startAngle = Phaser.Math.FloatBetween(0, Math.PI / 4);
+
+            for (let i = 0; i < numShots; i++) {
+              const ang = startAngle + (i * Math.PI * 2) / numShots;
+              const vx = Math.cos(ang) * speed;
+              const vy = Math.sin(ang) * speed;
+
+              const b = this.enemyBullets.create(burstX, burstY, 'bullet_star');
+              if (b) {
+                b.setScale(1.2);
+                if (isSilver) b.setTintFill(starColor);
+                else b.setTint(starColor);
+                b.setVelocity(vx, vy);
+                b.setDepth(9);
+                this.tweens.add({
+                  targets: b,
+                  angle: 360,
+                  duration: 1200,
+                  repeat: -1
+                });
+              }
+            }
+          });
         }
       });
     });
