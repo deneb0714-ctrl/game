@@ -225,8 +225,9 @@ class EndingScene extends Phaser.Scene {
     let endBg = this.add.rectangle(w/2, h/2, w, h, parseInt(ending.bgColor.replace('#', '0x'))).setDepth(0).setAlpha(0);
     this.tweens.add({ targets: endBg, alpha: 1, duration: 1500 });
     
-    if (ending.bgImageEnding) {
-        let cgBg = this.add.image(w/2, h/2, ending.bgImageEnding).setDisplaySize(w, h).setDepth(0.5).setAlpha(0);
+    let cgKey = ending.bgImageEnding || ending.bgImagePost || ending.bgImage;
+    if (cgKey) {
+        let cgBg = this.add.image(w/2, h/2, cgKey).setDisplaySize(w, h).setDepth(0.5).setAlpha(0);
         this.tweens.add({ targets: cgBg, alpha: 1, duration: 1500 });
     }
 

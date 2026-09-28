@@ -124,7 +124,8 @@ MOT.collectItem = function (scene, player, item) {
     MOT.flags.playerHP = Math.min(MOT.flags.playerHP + item.value, MOT.flags.playerMaxHP);
     MOT.showPickupText(scene, item.x, item.y, '+' + item.value + ' HP', 0x4FFF7F);
   } else if (item.itemType === 'red_diamond') {
-        let oldAttack = Math.min(5, 1 + Math.floor((MOT.flags.killingIntent || 0) / 10) * 0.2);
+    MOT.flags.redDiamondCount = (MOT.flags.redDiamondCount || 0) + 1;
+    let oldAttack = Math.min(5, 1 + Math.floor((MOT.flags.killingIntent || 0) / 10) * 0.2);
     MOT.flags.killingIntent = Math.min(200, MOT.flags.killingIntent + item.value);
         let newAttack = Math.min(5, 1 + Math.floor((MOT.flags.killingIntent || 0) / 10) * 0.2);
         if (Math.floor(newAttack) > Math.floor(oldAttack)) {

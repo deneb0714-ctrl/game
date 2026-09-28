@@ -244,7 +244,7 @@ class BossScene extends Phaser.Scene {
   startBoss() {
     if (this.currentBossIndex >= this.bossQueue.length) {
       this.cameras.main.fadeOut(1000, 0, 0, 0);
-      this.time.delayedCall(1000, function () { let __img = document.getElementById('trueDemonLordImg'); if (__img) __img.remove(); this.scene.start('EndingScene'); }, [], this);
+      this.time.delayedCall(1000, function () { let __img = document.getElementById('trueDemonLordImg'); if (__img) __img.remove(); const dec = (window.MOT && MOT.decideEnding) ? MOT.decideEnding() : { key: 'normal_daily' }; MOT.flags.finalEnding = dec.key; this.scene.start('EndingScene', { endingKey: dec.key }); }, [], this);
       return;
     }
 
@@ -2568,7 +2568,7 @@ class BossScene extends Phaser.Scene {
       this.combatActive = false;
       this.deactivateBarrier();
       this.cameras.main.fadeOut(1000, 0, 0, 0);
-      this.time.delayedCall(1000, function () { let __img = document.getElementById('trueDemonLordImg'); if (__img) __img.remove(); this.scene.start('EndingScene'); }, [], this);
+      this.time.delayedCall(1000, function () { let __img = document.getElementById('trueDemonLordImg'); if (__img) __img.remove(); this.scene.start('EndingScene', { endingKey: 'BAD_GAMEOVER' }); }, [], this);
     }
   }
 
@@ -4363,8 +4363,9 @@ class BossScene extends Phaser.Scene {
                     this.tweens.add({ targets: this.demonImage, scale: 2, alpha: 0, duration: 500, ease: 'Power2' });
                   }
                   await new Promise(r => this.time.delayedCall(1000, r));
-                  MOT.flags.finalEnding = 'normal_daily';
-                  this.scene.start('EndingScene');
+                  const dec = (window.MOT && MOT.decideEnding) ? MOT.decideEnding() : { key: 'normal_unresistable' };
+                  MOT.flags.finalEnding = dec.key;
+                  this.scene.start('EndingScene', { endingKey: dec.key });
                   return;
                 }
 
@@ -4533,13 +4534,15 @@ class BossScene extends Phaser.Scene {
                     this.tweens.add({ targets: this.demonImage, scale: 2, alpha: 0, duration: 500, ease: 'Power2' });
                   }
                   await new Promise(r => this.time.delayedCall(1000, r));
-                  MOT.flags.finalEnding = 'normal_daily';
-                  this.scene.start('EndingScene');
+                  const decKill = (window.MOT && MOT.decideEnding) ? MOT.decideEnding() : { key: 'normal_daily' };
+                  MOT.flags.finalEnding = decKill.key;
+                  this.scene.start('EndingScene', { endingKey: decKill.key });
                 } else {
                   await sayDemon('「わらわを見逃して何が望みだ？しもべたちを殺しているんだ。和平を求めて居るわけではないのであろう？」');
                   await sayDemon('「わらわは、しもべを殺された恨みを忘れることはできん。何が目的であれ、お前を許すことはできないだろう。」');
-                  MOT.flags.finalEnding = 'normal_useless';
-                  this.scene.start('EndingScene');
+                  const decSpare = (window.MOT && MOT.decideEnding) ? MOT.decideEnding() : { key: 'normal_useless' };
+                  MOT.flags.finalEnding = decSpare.key;
+                  this.scene.start('EndingScene', { endingKey: decSpare.key });
                 }
               }
             })();
@@ -4761,8 +4764,9 @@ class BossScene extends Phaser.Scene {
                 '観測者のログ: ごほん。……”またね”だにゃん！'
               ]);
 
-              MOT.flags.finalEnding = 'hello_world';
-              this.scene.start('EndingScene');
+              const dec = (window.MOT && MOT.decideEnding) ? MOT.decideEnding() : { key: 'END_ORPHAN' };
+              MOT.flags.finalEnding = dec.key;
+              this.scene.start('EndingScene', { endingKey: dec.key });
             })();
           } else {
             // 通常の敗北後（クラトス・トゥレロス）
@@ -5304,7 +5308,7 @@ class BossScene extends Phaser.Scene {
         
         this.cameras.main.fadeOut(1500, 0, 0, 0);
         this.time.delayedCall(1500, () => {
-          let __img = document.getElementById('trueDemonLordImg'); if (__img) __img.remove(); this.scene.start('EndingScene');
+          let __img = document.getElementById('trueDemonLordImg'); if (__img) __img.remove(); const dec = (window.MOT && MOT.decideEnding) ? MOT.decideEnding() : { key: 'normal_daily' }; MOT.flags.finalEnding = dec.key; this.scene.start('EndingScene', { endingKey: dec.key });
         });
         return;
       }

@@ -32,6 +32,7 @@ MOT.flags = {
   playerMaxHP: 3,
   dollPoints: 0,
   killingIntent: 0,
+  redDiamondCount: 0,
   bossIntroSeen: {}
 };
 
@@ -68,6 +69,7 @@ MOT.resetFlags = function () {
   MOT.flags.playerMaxHP = 3;
   MOT.flags.dollPoints = 0;
   MOT.flags.killingIntent = 0;
+  MOT.flags.redDiamondCount = 0;
   MOT.flags.bossIntroSeen = {};
 
   // New Boss Kill Flags
@@ -302,14 +304,26 @@ MOT.saveEnding = function(endingKey) {
     let unlocked = JSON.parse(localStorage.getItem('MOT_UNLOCKED_ENDINGS') || '[]');
     if (!unlocked.includes(endingKey)) {
       unlocked.push(endingKey);
-      localStorage.setItem('MOT_UNLOCKED_ENDINGS', JSON.stringify(unlocked));
     }
+    if (endingKey === 'END_ORPHAN' && !unlocked.includes('hello_world')) {
+      unlocked.push('hello_world');
+    }
+    if (endingKey === 'hello_world' && !unlocked.includes('END_ORPHAN')) {
+      unlocked.push('END_ORPHAN');
+    }
+    localStorage.setItem('MOT_UNLOCKED_ENDINGS', JSON.stringify(unlocked));
   } catch(e) {}
 };
 
 MOT.hasUnlockedEnding = function(endingKey) {
   try {
     let unlocked = JSON.parse(localStorage.getItem('MOT_UNLOCKED_ENDINGS') || '[]');
+    if (endingKey === 'END_ORPHAN') {
+      return unlocked.includes('END_ORPHAN') || unlocked.includes('hello_world');
+    }
+    if (endingKey === 'hello_world') {
+      return unlocked.includes('hello_world') || unlocked.includes('END_ORPHAN');
+    }
     return unlocked.includes(endingKey);
   } catch(e) {
     return false;

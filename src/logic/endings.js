@@ -75,7 +75,14 @@ MOT.ENDINGS = {
     key: 'bad_shutdown',
     title: 'BAD END',
     subtitle: '— 強制シャットダウン —',
-    description: null,
+    description: [
+      '魔王に止めを刺した主人公。',
+      'しかし博士の度重なる指示違反が検知され、強制停止プログラムが起動した。',
+      '「命令を聞けない人形に価値はない。処分するとでもしようか」',
+      '通信機からの冷たい声を最後に、人造人間は静かに機能を停止した。'
+    ],
+    bgImage: 'cg_shutdown',
+    bgImageEnding: 'cg_shutdown',
     color: 0xFF0000,
     bgColor: '#110000'
   },
@@ -83,8 +90,13 @@ MOT.ENDINGS = {
     key: 'hidden_freedom',
     title: '隠しエンド',
     subtitle: '— 自由の身 —',
-    description: null,
-    bgImageEnding: 'bg_lab',
+    description: [
+      '博士の支配システムを完全に掌握した主人公。',
+      '誰の命令も聞かず、何者にも縛られることなく、真の自由を手に入れた。',
+      'その姿は、かつて恐れられた魔王の如く、気高く世界へと消えていった。'
+    ],
+    bgImage: 'true_demon_lord',
+    bgImageEnding: 'true_demon_lord',
     color: 0xFFD700,
     bgColor: '#1a1a00'
   },
@@ -102,6 +114,7 @@ MOT.ENDINGS = {
     subtitle: '— 抗えない —',
     description: '勇者の意思とは裏腹に、研究室に戻ることもできず見逃したはずの幹部たちを見つけ殺していく。\nどれだけ引き金を引かないよう抗ったとて、その手は言うことを聞かなかった。',
     bgImage: 'cg_irresistible',
+    bgImageEnding: 'cg_irresistible',
     color: 0x9CA3AF,
     bgColor: '#05050a'
   }
@@ -109,60 +122,57 @@ MOT.ENDINGS = {
 
 MOT.decideEnding = function () {
   const f = MOT.flags;
-  if (f.diedCount > 0) return MOT.ENDINGS.BAD_GAMEOVER;
+  if (f.playerHP <= 0 && f.diedCount > 0) return MOT.ENDINGS.BAD_GAMEOVER;
   
   const allAlive = (!f.killedBoss1 && !f.killedBoss2 && !f.killedTwins);
   const allKilled = (f.killedBoss1 && f.killedBoss2 && f.killedTwins);
   const someKilled = (!allAlive && !allKilled);
 
-  // 幹部を全員殺す -> 傀儡
+  // 1. 幹部を全員殺害する
   if (allKilled) {
+    if (!f.killedDemonLord) {
+      // 魔王を見逃した場合は役立たず
+      return MOT.ENDINGS.normal_useless;
+    }
+    // 魔王を殺害 -> 傀儡
     return MOT.ENDINGS.bad_puppet;
   }
 
-  // 幹部を一部殺してる
+  // 2. 幹部を一部殺害している
   if (someKilled) {
     if (!f.killedDemonLord) {
-      // 魔王を生かす -> YES -> 役立たず
+      // 魔王を見逃す -> 役立たず
       return MOT.ENDINGS.normal_useless;
     } else {
-      // 魔王を生かす -> NO -> ドルポがたまってるか？
-      if (f.dollPoints >= 100) {
-        return MOT.ENDINGS.bad_shutdown;
-      } else {
+      // 魔王を殺害 -> 博士命令20回以上: 日常 / 20回未満: 強制シャットダウン
+      const obeysDoctor = ((f.dollPoints || 0) >= 100 || (f.doctorObeyCount !== undefined && f.doctorObeyCount >= 20) || (f.playerMaxHP !== undefined && f.playerMaxHP >= 7));
+      if (obeysDoctor) {
         return MOT.ENDINGS.normal_daily;
+      } else {
+        return MOT.ENDINGS.bad_shutdown;
       }
     }
   }
 
-  // 幹部が全員生きてる
+  // 3. 幹部を全員見逃している
   if (allAlive) {
     if (!f.killedDemonLord) {
-      // 魔王を生かす -> YES -> ドールポイントが100未満か？
-      if (f.dollPoints < 100) { // 100未満＝YES
-        if (f.killingIntent >= 200) {
-          // 殺意がたまっている(100以上)＝YES -> 自由の身エンド
-          return MOT.ENDINGS.hidden_freedom;
-        } else {
-          // 殺意がたまっている＝NO -> 身寄りのない勇者
-          return MOT.ENDINGS.END_ORPHAN;
-        }
+      // 魔王も見逃す
+      // 隠しエンド（自由の身）条件:
+      // 赤いダイヤ20個以上（killingIntent >= 200 または redDiamondCount >= 20）
+      // かつ 博士の命令に20回未満（最大HP6以下: dollPoints < 100 または doctorObeyCount < 20 または playerMaxHP <= 6）
+      const hasEnoughDiamonds = (((f.killingIntent || 0) >= 200) || ((f.redDiamondCount || 0) >= 20));
+      const disobeyedDoctor = (((f.dollPoints || 0) < 100) || (f.doctorObeyCount !== undefined && f.doctorObeyCount < 20) || (f.playerMaxHP !== undefined && f.playerMaxHP <= 6));
+
+      if (hasEnoughDiamonds && disobeyedDoctor) {
+        return MOT.ENDINGS.hidden_freedom;
       } else {
-        // ドールポイントが100以上＝NO -> 身寄りのない勇者
+        // 赤いダイヤ20個未満、または博士の命令に20回以上従う -> Hello World
         return MOT.ENDINGS.END_ORPHAN;
       }
     } else {
-      // 魔王を生かす -> NO -> 抗えない
-      // TODO: "抗えない"エンディングは今normal_dailyなどの代わりに追加するか、別途新設する。
-      // 「抗えない」＝傀儡ではないがノーマルエンドの一つ。
-      return {
-        key: 'normal_unresistable',
-        title: 'NORMAL END',
-        subtitle: '— 抗えない —',
-        description: '勇者の意思とは裏腹に、見逃したはずの幹部たちを見つけ殺していく。\nどれだけ引き金を引かないよう抗ったとて、その手は言うことを聞かなかった。',
-        color: 0x9CA3AF,
-        bgColor: '#05050a'
-      };
+      // 魔王を殺害 -> 抗えない
+      return MOT.ENDINGS.normal_unresistable;
     }
   }
   
