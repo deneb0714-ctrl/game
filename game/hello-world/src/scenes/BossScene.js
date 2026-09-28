@@ -2862,7 +2862,7 @@ class BossScene extends Phaser.Scene {
           this.showDialogue(heroName, text, res);
         });
 
-        const sayDoctor = (text) => sayRight('博士', 'doctor_awaken_smile_weapon', text, 900, 0);
+        const sayDoctor = (text) => sayRight('博士', 'doctor_awaken_straight_weapon', text, 900, 0);
         const sayEnaria = (text) => sayRight('エナリア', 'sister_normal', text, 650, 40);
         const sayEdio = (text) => sayRight('エディオ', 'brother_normal', text, 700, 20);
         const sayKratos = (text) => sayRight('クラトス', 'boss1_normal', text, 800, 0);
@@ -4014,13 +4014,6 @@ class BossScene extends Phaser.Scene {
       if (bossImage) this.tweens.add({ targets: bossImage, alpha: 0.4, duration: 300 });
       else this.tweens.add({ targets: [enemyFrame, enemyLabel], alpha: 0, duration: 300 });
       if(sisterImage) this.tweens.add({ targets: sisterImage, alpha: 0.4, duration: 300 });
-      if (text === '「……」' || text === '「……。」' || text === '「…」') {
-        this.heroImage.setTexture('hero_stand_silent');
-      } else {
-        this.heroImage.setTexture('hero_stand');
-      }
-      this.heroImage.setScale(750 / this.heroImage.width);
-      this.heroImage.setY(100 + (this.heroImage.height * this.heroImage.scaleY) / 2);
       this.showDialogue('勇者', text, res);
     });
 
@@ -4816,7 +4809,7 @@ class BossScene extends Phaser.Scene {
                   if (this.heroImage) this.tweens.add({ targets: this.heroImage, alpha: 0.4, duration: 300 });
                   if (this.bossImage) {
                     this.tweens.add({ targets: this.bossImage, alpha: 1, duration: 300 });
-                    this.bossImage.setTexture(tex);
+                    this.setSpriteTexture(this.bossImage, tex);
                   }
                   this.showDialogue('クラトス', text, res);
                 });
@@ -4875,7 +4868,7 @@ class BossScene extends Phaser.Scene {
                   if (this.heroImage) this.tweens.add({ targets: this.heroImage, alpha: 0.4, duration: 300 });
                   if (this.bossImage) {
                     this.tweens.add({ targets: this.bossImage, alpha: 1, duration: 300 });
-                    this.bossImage.setTexture(tex);
+                    this.setSpriteTexture(this.bossImage, tex);
                   }
                   this.showDialogue('トゥレロス', text, res);
                 });
@@ -5083,7 +5076,7 @@ class BossScene extends Phaser.Scene {
         });
         const sayDevice = (text) => new Promise(res => { this.tweens.add({ targets: dimBg, alpha: 0.6, duration: 300 }); this.tweens.add({targets: this.heroImage, alpha: 0.4, duration: 300}); if(this.sisterImage) this.tweens.add({targets: this.sisterImage, alpha: 0.4, duration: 300}); if(this.brotherImage) this.tweens.add({targets: this.brotherImage, alpha: 0.4, duration: 300}); this.showDeviceDialogue(text, res); });
         
-        const sayHero = (text) => new Promise(res => { this.tweens.add({ targets: dimBg, alpha: 0.6, duration: 300 }); this.tweens.add({targets: this.heroImage, alpha: 1, duration: 300}); if(this.sisterImage) this.tweens.add({targets: this.sisterImage, alpha: 0.4, duration: 300}); if(this.brotherImage) this.tweens.add({targets: this.brotherImage, alpha: 0.4, duration: 300}); if (text === '「……」' || text === '「……。」' || text === '「…」') { this.heroImage.setTexture('hero_stand_silent'); } else { this.heroImage.setTexture('hero_stand'); } this.heroImage.setScale(750 / this.heroImage.width); this.heroImage.setY(100 + (this.heroImage.height * this.heroImage.scaleY) / 2); this.showDialogue('勇者', text, res); });
+        const sayHero = (text) => new Promise(res => { this.tweens.add({ targets: dimBg, alpha: 0.6, duration: 300 }); this.tweens.add({targets: this.heroImage, alpha: 1, duration: 300}); if(this.sisterImage) this.tweens.add({targets: this.sisterImage, alpha: 0.4, duration: 300}); if(this.brotherImage) this.tweens.add({targets: this.brotherImage, alpha: 0.4, duration: 300}); this.showDialogue('勇者', text, res); });
         const sayMan = (text, name = 'エディオ') => new Promise(res => { this.tweens.add({ targets: dimBg, alpha: 0.6, duration: 300 }); this.tweens.add({targets: this.heroImage, alpha: 0.4, duration: 300}); if(this.sisterImage) { this.tweens.add({targets: this.sisterImage, alpha: 0.4, duration: 300}); this.sisterImage.setDepth(90); } if(this.brotherImage) { this.tweens.add({targets: this.brotherImage, alpha: 1, duration: 300}); this.brotherImage.setDepth(91); } this.showDialogue(name, text, res); });
         const sayWoman = (text, name = 'エナリア') => new Promise(res => { this.tweens.add({ targets: dimBg, alpha: 0.6, duration: 300 }); this.tweens.add({targets: this.heroImage, alpha: 0.4, duration: 300}); if(this.sisterImage) { this.tweens.add({targets: this.sisterImage, alpha: 1, duration: 300}); this.sisterImage.setDepth(91); } if(this.brotherImage) { this.tweens.add({targets: this.brotherImage, alpha: 0.4, duration: 300}); this.brotherImage.setDepth(90); } this.showDialogue(name, text, res); });
 
@@ -5579,6 +5572,259 @@ class BossScene extends Phaser.Scene {
   }
 
 
+  // 立ち絵のテクスチャ変更時に縦横比やサイズが崩れないように安全にスケール・位置を維持するヘルパー
+  setSpriteTexture(sprite, texKey, targetWidth = null, yOffset = 0) {
+    if (!sprite || !sprite.active || !this.textures.exists(texKey)) return;
+    const oldKey = sprite.texture ? sprite.texture.key : null;
+    const oldFrame = sprite.frame;
+    const oldBaseH = sprite.baseHeight || (oldFrame ? oldFrame.height * sprite.scaleY : sprite.displayHeight);
+    const oldBaseY = sprite.baseY !== undefined ? sprite.baseY : sprite.y;
+    
+    sprite.setTexture(texKey);
+    const newFrame = sprite.frame;
+    if (newFrame && newFrame.height > 0) {
+      if (targetWidth) {
+        const sc = targetWidth / newFrame.width;
+        sprite.setScale(sc);
+        sprite.setY(100 + (newFrame.height * sc) / 2 + yOffset);
+      } else if (oldBaseH) {
+        const sc = oldBaseH / newFrame.height;
+        sprite.setScale(sc);
+        sprite.setY(oldBaseY + yOffset);
+      }
+    }
+  }
+
+  // テクスチャキーに対応する瞬き（目閉じ）テクスチャを取得
+  getBlinkTextureKey(texKey) {
+    if (!texKey) return null;
+    if (texKey === 'hero_stand' || texKey === 'hero_stand_silent' || texKey === 'hero_cry') {
+      return 'hero_stand_blink';
+    }
+    if (texKey === 'demon_lord_normal' || texKey === 'demon_lord_shock' || texKey === 'demon_lord_dying') {
+      return 'demon_lord_blink';
+    }
+    if (texKey === 'inuneko_stand' || texKey === 'inuneko_dying') {
+      return 'inuneko_blink';
+    }
+    if (texKey === 'sister_normal' || texKey === 'sister_hurt') {
+      return 'sister_blink';
+    }
+    if (texKey === 'brother_normal') return 'brother_closed';
+    if (texKey === 'brother_hurt') return 'brother_hurt_closed';
+    if (texKey === 'brother_dying') return 'brother_dying_closed';
+    if (texKey === 'boss2_normal') return 'boss2_eyes_closed';
+    if (texKey === 'boss2_normal_dying') return 'boss2_eyes_closed_dying';
+    if (texKey === 'boss2_angry') return 'boss2_eyes_closed';
+    if (texKey === 'boss2_angry_dying') return 'boss2_eyes_closed_dying';
+    if (texKey === 'boss2_surprised') return 'boss2_eyes_closed';
+    if (texKey === 'boss2_surprised_dying') return 'boss2_eyes_closed_dying';
+    if (texKey === 'doctor_normal' || texKey === 'doctor_stand' || texKey === 'doctor_open_eyes') {
+      return 'doctor_normal';
+    }
+    return null;
+  }
+
+  // 単一スプライトの瞬き実行（テクスチャ差し替えまたはクラトス等の縦スクイーズ）
+  blinkSprite(sprite) {
+    if (!sprite || !sprite.active || sprite.isBlinking) return;
+    const curKey = sprite.texture ? sprite.texture.key : null;
+    const blinkKey = this.getBlinkTextureKey(curKey);
+
+    if (curKey === 'doctor_normal') {
+      sprite.isBlinking = true;
+      if (this.textures.exists('doctor_open_eyes')) {
+        sprite.setTexture('doctor_open_eyes');
+        this.time.delayedCall(160, () => {
+          if (sprite && sprite.active && sprite.texture.key === 'doctor_open_eyes') {
+            sprite.setTexture('doctor_normal');
+          }
+          if (sprite) sprite.isBlinking = false;
+        });
+        return;
+      }
+    }
+
+    if (blinkKey && this.textures.exists(blinkKey)) {
+      sprite.isBlinking = true;
+      const originalKey = curKey;
+      const origScaleX = sprite.scaleX;
+      const origScaleY = sprite.scaleY;
+      const origY = sprite.y;
+      
+      this.setSpriteTexture(sprite, blinkKey);
+      this.time.delayedCall(150, () => {
+        if (sprite && sprite.active) {
+          this.setSpriteTexture(sprite, originalKey);
+          sprite.setScale(origScaleX, origScaleY);
+          sprite.setY(origY);
+        }
+        if (sprite) sprite.isBlinking = false;
+      });
+      return;
+    }
+
+    // テクスチャが無いキャラ（クラトスや覚醒博士など）は自然な目線・縦スクイーズ瞬き
+    sprite.isBlinking = true;
+    const origScaleY = sprite.scaleY;
+    const origY = sprite.y;
+    this.tweens.add({
+      targets: sprite,
+      scaleY: origScaleY * 0.88,
+      y: origY + (sprite.displayHeight * 0.06),
+      duration: 75,
+      yoyo: true,
+      ease: 'Quad.easeInOut',
+      onComplete: () => {
+        if (sprite && sprite.active) {
+          sprite.setScale(sprite.scaleX, origScaleY);
+          sprite.setY(origY);
+        }
+        if (sprite) sprite.isBlinking = false;
+      }
+    });
+  }
+
+  // 現在画面上に表示されている全ての会話キャラを一斉瞬き
+  blinkDialogueCharacters(speaker = null) {
+    const list = [
+      this.heroImage,
+      this.demonImage,
+      this.inunekoImage,
+      this.bossImage,
+      this.boss1Image,
+      this.boss2Image,
+      this.sisterImage,
+      this.brotherImage,
+      this.doctorImage,
+      this.rightSpeakerImage
+    ];
+
+    list.forEach(sp => {
+      if (sp && sp.active && sp.visible && sp.alpha > 0.05) {
+        this.blinkSprite(sp);
+      }
+    });
+
+    if (this.deviceFace && this.deviceFace.active) {
+      this.blinkSprite(this.deviceFace);
+    }
+  }
+
+  // 会話テキストの感情・文脈に合わせてキャラクターの表情テクスチャを自動・動的に切り替える
+  applyDialogueExpression(speaker, text) {
+    speaker = String(speaker || '');
+    text = String(text || '');
+
+    // 1. 勇者
+    if ((speaker.includes('勇者') || speaker.includes(MOT.flags.heroName || '勇者')) && this.heroImage && this.heroImage.active) {
+      if (text.includes('…') || text.includes('……') || text.includes('…？') || text.includes('…！')) {
+        this.setSpriteTexture(this.heroImage, 'hero_stand_silent');
+      } else if (
+        text.includes('！') || text.includes('！？') || text.includes('兵器') ||
+        text.includes('創られた') || text.includes('止められなかった') ||
+        text.includes('殺せない') || text.includes('どうして') || text.includes('許せない') ||
+        text.includes('ぐっ') || text.includes('失礼だな')
+      ) {
+        this.setSpriteTexture(this.heroImage, 'hero_cry');
+      } else {
+        this.setSpriteTexture(this.heroImage, 'hero_stand');
+      }
+    }
+
+    // 2. クラトス
+    const kratosSprite = [this.bossImage, this.rightSpeakerImage].find(s => s && s.active && s.texture && s.texture.key.startsWith('boss1_'));
+    if (kratosSprite && speaker.includes('クラトス')) {
+      if (text.includes('くそっ') || text.includes('ここまでか') || text.includes('負け') || text.includes('怪我')) {
+        this.setSpriteTexture(kratosSprite, 'boss1_dying');
+      } else if (text.includes('！') || text.includes('戦うぞ') || text.includes('ぼそぼそ') || text.includes('関係ねぇ')) {
+        this.setSpriteTexture(kratosSprite, 'boss1_angry');
+      } else if (text.includes('？') || text.includes('ラッキー') || text.includes('悪い悪い') || text.includes('なんで')) {
+        this.setSpriteTexture(kratosSprite, 'boss1_sweat');
+      } else {
+        this.setSpriteTexture(kratosSprite, 'boss1_normal');
+      }
+    }
+
+    // 3. トゥレロス
+    const tourelosSprite = [this.bossImage, this.rightSpeakerImage].find(s => s && s.active && s.texture && s.texture.key.startsWith('boss2_'));
+    if (tourelosSprite && speaker.includes('トゥレロス')) {
+      const isDying = tourelosSprite.texture.key.includes('dying');
+      if (text.includes('はは') || text.includes('あは') || text.includes('嬉しい') || text.includes('まあいいかな')) {
+        this.setSpriteTexture(tourelosSprite, isDying ? 'boss2_eyes_closed_dying' : 'boss2_eyes_closed');
+      } else if (text.includes('言いやがった') || text.includes('むかつく') || text.includes('馬鹿')) {
+        this.setSpriteTexture(tourelosSprite, isDying ? 'boss2_angry_dying' : 'boss2_angry');
+      } else if (text.includes('？') || text.includes('うん？') || text.includes('なんで') || text.includes('舐めてるの')) {
+        this.setSpriteTexture(tourelosSprite, isDying ? 'boss2_surprised_dying' : 'boss2_surprised');
+      } else {
+        this.setSpriteTexture(tourelosSprite, isDying ? 'boss2_normal_dying' : 'boss2_normal');
+      }
+    }
+
+    // 4. 魔王
+    const demonSprite = [this.demonImage, this.rightSpeakerImage].find(s => s && s.active && s.texture && s.texture.key.startsWith('demon_lord_'));
+    if (demonSprite && speaker.includes('魔王')) {
+      if (text.includes('ここまでか') || text.includes('っ……') || text.includes('英断') || text.includes('恨み')) {
+        this.setSpriteTexture(demonSprite, 'demon_lord_dying');
+      } else if (text.includes('！') || text.includes('なんだ') || text.includes('違うぞ') || text.includes('一度もない')) {
+        this.setSpriteTexture(demonSprite, 'demon_lord_shock');
+      } else if (text.includes('ふふ') || text.includes('任せろ') || text.includes('来るんじゃ')) {
+        this.setSpriteTexture(demonSprite, 'demon_lord_eyes_closed');
+      } else {
+        this.setSpriteTexture(demonSprite, 'demon_lord_normal');
+      }
+    }
+
+    // 5. 犬猫☆すたー
+    const inuSprite = [this.inunekoImage, this.rightSpeakerImage].find(s => s && s.active && s.texture && s.texture.key.startsWith('inuneko_'));
+    if (inuSprite && (speaker.includes('犬猫') || speaker.includes('いぬねこ'))) {
+      if (text.includes('にゃわわ') || text.includes('！？') || text.includes('？！')) {
+        this.setSpriteTexture(inuSprite, 'inuneko_dying');
+      } else {
+        this.setSpriteTexture(inuSprite, 'inuneko_stand');
+      }
+    }
+
+    // 6. エディオ (兄)
+    if (this.brotherImage && this.brotherImage.active && (speaker.includes('エディオ') || speaker.includes('男'))) {
+      if (text.includes('因果') || text.includes('逃げきれなかった') || text.includes('目を...覚まして')) {
+        this.setSpriteTexture(this.brotherImage, 'brother_dying');
+      } else if (text.includes('博士の言うこと') || text.includes('おかしい') || text.includes('片をつけて')) {
+        this.setSpriteTexture(this.brotherImage, 'brother_hurt');
+      } else {
+        this.setSpriteTexture(this.brotherImage, 'brother_normal');
+      }
+    }
+
+    // 7. エナリア (妹)
+    if (this.sisterImage && this.sisterImage.active && (speaker.includes('エナリア') || speaker.includes('女'))) {
+      if (text.includes('兄さま！！') || text.includes('取返しのつかない') || text.includes('死ぬつもり') || text.includes('随分な物言い')) {
+        this.setSpriteTexture(this.sisterImage, 'sister_hurt');
+      } else {
+        this.setSpriteTexture(this.sisterImage, 'sister_normal');
+      }
+    }
+
+    // 8. 博士 (覚醒立ち絵 & デバイス立ち絵)
+    const docSprite = [this.doctorImage, this.rightSpeakerImage].find(s => s && s.active && s.texture && s.texture.key.startsWith('doctor_awaken_'));
+    if (docSprite && speaker.includes('博士')) {
+      const hasWeapon = docSprite.texture.key.includes('weapon');
+      const isDying = docSprite.texture.key.includes('dying');
+      let base = 'doctor_awaken_normal';
+      if (text.includes('ははは') || text.includes('最高傑作') || text.includes('さらばだ') || text.includes('普通のこと')) {
+        base = 'doctor_awaken_smile';
+      } else if (text.includes('チッ') || text.includes('なんだ') || text.includes('欠陥品') || text.includes('忌々しい')) {
+        base = 'doctor_awaken_straight';
+      }
+      let finalKey = base;
+      if (isDying) finalKey += '_dying';
+      else if (hasWeapon) finalKey += '_weapon';
+      if (this.textures.exists(finalKey)) {
+        this.setSpriteTexture(docSprite, finalKey);
+      }
+    }
+  }
+
   showDeviceDialogue(text, onComplete) {
     this.dialogActive = true;
     this.input.setTopOnly(true);
@@ -5604,7 +5850,11 @@ class BossScene extends Phaser.Scene {
     iconBox.strokeRect(80, boxY + 40, 200, 200);
     this.dialogContainer.add(iconBox);
     
-    var face = this.add.image(180, boxY + 140, 'doctor_normal');
+    // テキスト感情に応じた博士の表情（通常 vs 目開き・驚き）
+    const isDoctorSurprised = text.includes('！？') || text.includes('！') || text.includes('何をしている') || text.includes('なぜ') || text.includes('役立たず');
+    const docFaceKey = (isDoctorSurprised && this.textures.exists('doctor_open_eyes')) ? 'doctor_open_eyes' : 'doctor_normal';
+
+    var face = this.add.image(180, boxY + 140, docFaceKey);
     var scaleRatio = 1000 / face.height;
     face.setScale(scaleRatio);
     var maskShape = this.make.graphics();
@@ -5614,6 +5864,7 @@ class BossScene extends Phaser.Scene {
     // 顔が中心に来るよう調整
     face.setY(boxY + 140 + (face.height * scaleRatio) * 0.35);
     this.dialogContainer.add(face);
+    this.deviceFace = face;
 
     var nameText = this.add.text(310, boxY + 10, '博士 📡', {
       fontFamily: '"DotGothic16"', fontSize: '44px', color: '#39FF14'
@@ -5631,12 +5882,21 @@ class BossScene extends Phaser.Scene {
     }).setOrigin(1, 0).setAlpha(0);
     this.dialogContainer.add(contText);
 
+    // 開始時の瞬き演出
+    this.blinkDialogueCharacters('博士');
+
     var charIndex = 0;
     var typeTimer = this.time.addEvent({
       delay: 40, callback: function () {
         charIndex++;
         bodyText.setText(text.substring(0, charIndex));
         if (text[charIndex - 1] !== ' ') MOT.Audio.playBleep('博士');
+
+        // 長文入力中の周期的瞬き
+        if (charIndex % 60 === 15) {
+          this.blinkDialogueCharacters();
+        }
+
         if (charIndex >= text.length) {
           typeTimer.destroy();
           contText.setAlpha(1);
@@ -5646,6 +5906,8 @@ class BossScene extends Phaser.Scene {
     });
 
     const advance = () => {
+      this.blinkDialogueCharacters();
+      this.deviceFace = null;
       this.dialogEndTime = Date.now();
       this.dialogActive = false;
       this.input.off('pointerdown', handleInput);
@@ -5674,7 +5936,7 @@ class BossScene extends Phaser.Scene {
         charIndex = text.length;
         bodyText.setText(text);
         contText.setAlpha(1);
-        // 点滅（アルファTween）は無効化
+        this.blinkDialogueCharacters();
       } else {
         advance();
       }
@@ -5804,6 +6066,12 @@ class BossScene extends Phaser.Scene {
     }).setOrigin(1, 0).setAlpha(0);
     this.dialogContainer.add(contText);
 
+    // セリフ内容と話者に応じた感情表情の自動反映
+    this.applyDialogueExpression(speaker, text);
+
+    // 会話開始時の一斉瞬き演出
+    this.blinkDialogueCharacters(speaker);
+
     var charIndex = 0;
     var typeTimer = this.time.addEvent({
       delay: 40, callback: function () {
@@ -5811,30 +6079,9 @@ class BossScene extends Phaser.Scene {
         bodyText.setText(text.substring(0, charIndex));
         if (text[charIndex - 1] !== ' ' && window.MOT && MOT.Audio && MOT.Audio.playBleep) MOT.Audio.playBleep(speaker);
         
-        // まばたき演出（話し始めのみ一瞬）
-        const isHero = speaker && speaker.includes('勇者');
-        if (isHero && this.heroImage && this.heroImage.active) {
-          if (charIndex === 1 && text[charIndex - 1] !== ' ') {
-            if (this.heroImage.texture.key === 'hero_stand') {
-              this.heroImage.setTexture('hero_stand_blink');
-            }
-          } else if (charIndex === 4 || charIndex >= text.length) {
-            if (this.heroImage.texture.key === 'hero_stand_blink') {
-              this.heroImage.setTexture('hero_stand');
-            }
-          }
-        }
-
-        const isDemon = speaker && speaker.includes('魔王');
-        if (isDemon && this.demonImage && this.demonImage.active) {
-          const currentTex = this.demonImage.texture.key;
-          if (currentTex === 'demon_lord_normal' || currentTex === 'demon_lord_blink' || currentTex === 'demon_lord_silent') {
-            if (charIndex < text.length && (charIndex % 15 === 1 || charIndex % 15 === 2)) {
-              this.demonImage.setTexture('demon_lord_blink');
-            } else {
-              this.demonImage.setTexture('demon_lord_normal');
-            }
-          }
+        // 長いセリフの途中でも自然に瞬きさせる
+        if (charIndex % 60 === 20) {
+          this.blinkDialogueCharacters(speaker);
         }
 
         if (charIndex >= text.length) {
@@ -5846,6 +6093,8 @@ class BossScene extends Phaser.Scene {
     });
 
     const advance = () => {
+      // 会話送り時に全キャラクターが瞬きする
+      this.blinkDialogueCharacters();
       this.dialogEndTime = Date.now();
       if (!keepOpen) {
         this.dialogActive = false;
@@ -5876,7 +6125,7 @@ class BossScene extends Phaser.Scene {
         charIndex = text.length;
         bodyText.setText(text);
         contText.setAlpha(1);
-        // 点滅（アルファTween）は無効化
+        this.blinkDialogueCharacters();
       } else {
         advance();
       }
