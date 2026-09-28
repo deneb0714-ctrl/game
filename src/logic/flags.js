@@ -114,109 +114,121 @@ MOT.addEnergy = function (amount) {
 };
 
 MOT.updateSpecialAura = function (scene) {
-  if (!scene || !scene.player || !scene.player.active || scene.player.alpha <= 0) {
-    if (scene && scene.specialAuraGraphics) {
-      scene.specialAuraGraphics.clear();
+  try {
+    if (!scene || !scene.player || !scene.player.active || scene.player.alpha <= 0) {
+      if (scene && scene.specialAuraGraphics) {
+        scene.specialAuraGraphics.clear();
+      }
+      if (scene && scene.specialAuraEmitter && scene.specialAuraEmitter.emitting) {
+        scene.specialAuraEmitter.stop();
+      }
+      if (scene && scene._specialTintActive && scene.player && !scene.playerInvincible) {
+        if (scene.player.clearTint) scene.player.clearTint();
+        scene._specialTintActive = false;
+      }
+      return;
     }
-    if (scene && scene.specialAuraEmitter) {
-      scene.specialAuraEmitter.stop();
-    }
-    if (scene && scene._specialTintActive && !scene.playerInvincible) {
-      scene.player.clearTint();
-      scene._specialTintActive = false;
-    }
-    return;
-  }
 
-  const isSpecialReady = (MOT.flags.energy >= MOT.flags.maxEnergyThreshold);
-  if (isSpecialReady) {
-    // 1. 上昇するエネルギー粒子エフェクト（足元から上空へ湧き上がる光の火花・エネルギー粒子）
-    if (!scene.specialAuraEmitter) {
-      scene.specialAuraEmitter = scene.add.particles(0, 0, 'particle', {
-        follow: scene.player,
-        followOffset: { x: 0, y: 15 },
-        x: { min: -18, max: 18 },
-        speedY: { min: -140, max: -60 },
-        speedX: { min: -25, max: 25 },
-        scale: { start: 1.1, end: 0.1 },
-        alpha: { start: 0.85, end: 0 },
-        tint: [0xFF1744, 0xFF5252, 0xFFFF00, 0xFF7043],
-        lifespan: { min: 350, max: 650 },
-        frequency: 30,
-        blendMode: 'ADD'
+    const isSpecialReady = (MOT.flags.energy >= MOT.flags.maxEnergyThreshold);
+    if (isSpecialReady) {
+      // 1. 上昇するエネルギー粒子エフェクト（足元から上空へ湧き上がる光の火花・エネルギー粒子）
+      if (!scene.specialAuraEmitter) {
+        scene.specialAuraEmitter = scene.add.particles(0, 0, 'particle', {
+          follow: scene.player,
+          followOffset: { x: 0, y: 15 },
+          x: { min: -18, max: 18 },
+          speedY: { min: -140, max: -60 },
+          speedX: { min: -25, max: 25 },
+          scale: { start: 1.1, end: 0.1 },
+          alpha: { start: 0.85, end: 0 },
+          tint: [0xFF1744, 0xFF5252, 0xFFFF00, 0xFF7043],
+          lifespan: { min: 350, max: 650 },
+          frequency: 30,
+          blendMode: 'ADD'
+        });
+        const pDepth = (scene.player.depth !== undefined) ? scene.player.depth : 10;
+        scene.specialAuraEmitter.setDepth(pDepth + 1);
+      } else {
+        if (scene.specialAuraEmitter.follow !== scene.player) {
+          scene.specialAuraEmitter.follow = scene.player;
+        }
+        if (!scene.specialAuraEmitter.emitting) {
+          scene.specialAuraEmitter.start();
+        }
+      }
+
+      // 2. 立ち上るエネルギーオーラ＆炎のゆらぎ（円枠は完全撤廃し、勇者から湧き上がる気流を表現）
+      if (!scene.specialAuraGraphics) {
+        scene.specialAuraGraphics = scene.add.graphics();
+      }
+      scene.specialAuraGraphics.clear();
+      const pDepth = (scene.player.depth !== undefined) ? scene.player.depth : 10;
+      scene.specialAuraGraphics.setDepth(Math.max(0, pDepth - 1));
+
+      const now = Date.now();
+      const pulse = (Math.sin(now / 160) + 1) / 2; // 0.0〜1.0 の滑らかな脈動
+      const px = scene.player.x;
+      const py = scene.player.y;
+
+      // (A) 勇者の背後に広がる縦長の柔らかなエネルギー光柱
+      scene.specialAuraGraphics.fillStyle(0xFF1744, 0.13 + 0.07 * pulse);
+      scene.specialAuraGraphics.fillCircle(px, py, 46 + pulse * 6);
+
+      // (B) より高輝度な黄金・オレンジのエネルギーコア
+      scene.specialAuraGraphics.fillStyle(0xFFA000, 0.16 + 0.08 * pulse);
+      scene.specialAuraGraphics.fillCircle(px, py - 4, 30 + pulse * 4);
+
+      // (C) 足元から頭上へ立ち上り揺らめくオーラの炎筋（Phaser.Graphicsで安全な多段階lineToで滑らかにベジェ描画）
+      const t = now / 140;
+      const tendrils = [
+        { ox: -16, baseY: 28, height: 62 + Math.sin(t * 1.5) * 12, sway: 6, color: 0xFF1744, alpha: 0.50 },
+        { ox: -6,  baseY: 32, height: 78 + Math.cos(t * 1.8) * 15, sway: 8, color: 0xFF5252, alpha: 0.60 },
+        { ox: 6,   baseY: 30, height: 82 + Math.sin(t * 2.1) * 14, sway: -7, color: 0xFFFF52, alpha: 0.65 },
+        { ox: 16,  baseY: 26, height: 64 + Math.cos(t * 1.6) * 12, sway: -5, color: 0xFF7043, alpha: 0.50 }
+      ];
+
+      tendrils.forEach(tr => {
+        scene.specialAuraGraphics.lineStyle(2.5, tr.color, tr.alpha * (0.8 + 0.2 * pulse));
+        scene.specialAuraGraphics.beginPath();
+        const sx = px + tr.ox;
+        const sy = py + tr.baseY;
+        const cx = sx + Math.sin(t + tr.ox) * tr.sway;
+        const cy = py - tr.height * 0.35;
+        const ex = sx + Math.cos(t * 1.4 + tr.ox) * (tr.sway * 1.4);
+        const ey = py + tr.baseY - tr.height;
+        scene.specialAuraGraphics.moveTo(sx, sy);
+        // 5分割ステップでベジェ曲線を安全・滑らかに描画
+        for (let step = 1; step <= 5; step++) {
+          const u = step / 5;
+          const inv = 1 - u;
+          const qx = inv * inv * sx + 2 * inv * u * cx + u * u * ex;
+          const qy = inv * inv * sy + 2 * inv * u * cy + u * u * ey;
+          scene.specialAuraGraphics.lineTo(qx, qy);
+        }
+        scene.specialAuraGraphics.strokePath();
       });
-      scene.specialAuraEmitter.setDepth(11);
+
+      // 3. プレイヤー本体自身のエネルギー脈動（必殺技チャージ完了状態の明示）
+      if (scene.player.setTint && !scene.playerInvincible) {
+        const gb = Math.floor(160 + 80 * (1 - pulse));
+        const tint = (0xFF << 16) | (gb << 8) | gb;
+        scene.player.setTint(tint);
+        scene._specialTintActive = true;
+      }
     } else {
-      if (scene.specialAuraEmitter.follow !== scene.player) {
-        scene.specialAuraEmitter.follow = scene.player;
+      if (scene.specialAuraGraphics) {
+        scene.specialAuraGraphics.clear();
       }
-      if (!scene.specialAuraEmitter.emitting) {
-        scene.specialAuraEmitter.start();
+      if (scene.specialAuraEmitter && scene.specialAuraEmitter.emitting) {
+        scene.specialAuraEmitter.stop();
+      }
+      if (scene._specialTintActive && scene.player && !scene.playerInvincible) {
+        if (scene.player.clearTint) scene.player.clearTint();
+        scene._specialTintActive = false;
       }
     }
-
-    // 2. 立ち上るエネルギーオーラ＆炎のゆらぎ（円枠は完全撤廃し、勇者から湧き上がる気流を表現）
-    if (!scene.specialAuraGraphics) {
-      scene.specialAuraGraphics = scene.add.graphics();
-    }
-    scene.specialAuraGraphics.clear();
-    const pDepth = (scene.player.depth !== undefined) ? scene.player.depth : 10;
-    scene.specialAuraGraphics.setDepth(Math.max(0, pDepth - 1));
-
-    const now = Date.now();
-    const pulse = (Math.sin(now / 160) + 1) / 2; // 0.0〜1.0 の滑らかな脈動
-    const px = scene.player.x;
-    const py = scene.player.y;
-
-    // (A) 勇者の背後に広がる縦長の柔らかなエネルギー光柱
-    scene.specialAuraGraphics.fillStyle(0xFF1744, 0.13 + 0.07 * pulse);
-    scene.specialAuraGraphics.fillEllipse(px, py - 6, 48 + pulse * 6, 84 + pulse * 10);
-
-    // (B) より高輝度な黄金・オレンジのエネルギーコア
-    scene.specialAuraGraphics.fillStyle(0xFFA000, 0.16 + 0.08 * pulse);
-    scene.specialAuraGraphics.fillEllipse(px, py - 4, 30 + pulse * 4, 56 + pulse * 8);
-
-    // (C) 足元から頭上へ立ち上り揺らめくオーラの炎筋（エネルギーの湧出感）
-    const t = now / 140;
-    const tendrils = [
-      { ox: -16, baseY: 28, height: 62 + Math.sin(t * 1.5) * 12, sway: 6, color: 0xFF1744, alpha: 0.50 },
-      { ox: -6,  baseY: 32, height: 78 + Math.cos(t * 1.8) * 15, sway: 8, color: 0xFF5252, alpha: 0.60 },
-      { ox: 6,   baseY: 30, height: 82 + Math.sin(t * 2.1) * 14, sway: -7, color: 0xFFFF52, alpha: 0.65 },
-      { ox: 16,  baseY: 26, height: 64 + Math.cos(t * 1.6) * 12, sway: -5, color: 0xFF7043, alpha: 0.50 }
-    ];
-
-    tendrils.forEach(tr => {
-      scene.specialAuraGraphics.lineStyle(2.5, tr.color, tr.alpha * (0.8 + 0.2 * pulse));
-      scene.specialAuraGraphics.beginPath();
-      const sx = px + tr.ox;
-      const sy = py + tr.baseY;
-      const cx = sx + Math.sin(t + tr.ox) * tr.sway;
-      const cy = py - tr.height * 0.35;
-      const ex = sx + Math.cos(t * 1.4 + tr.ox) * (tr.sway * 1.4);
-      const ey = py + tr.baseY - tr.height;
-      scene.specialAuraGraphics.moveTo(sx, sy);
-      scene.specialAuraGraphics.quadraticBezierTo(cx, cy, ex, ey);
-      scene.specialAuraGraphics.strokePath();
-    });
-
-    // 3. プレイヤー本体自身のエネルギー脈動（必殺技チャージ完了状態の明示）
-    if (!scene.playerInvincible) {
-      const gb = Math.floor(160 + 80 * (1 - pulse));
-      const tint = (0xFF << 16) | (gb << 8) | gb;
-      scene.player.setTint(tint);
-      scene._specialTintActive = true;
-    }
-  } else {
-    if (scene.specialAuraGraphics) {
-      scene.specialAuraGraphics.clear();
-    }
-    if (scene.specialAuraEmitter && scene.specialAuraEmitter.emitting) {
-      scene.specialAuraEmitter.stop();
-    }
-    if (scene._specialTintActive && !scene.playerInvincible) {
-      scene.player.clearTint();
-      scene._specialTintActive = false;
-    }
+  } catch (err) {
+    console.error("Error in updateSpecialAura:", err);
   }
 };
 
