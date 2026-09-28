@@ -457,33 +457,131 @@ class BossScene extends Phaser.Scene {
 
   playContinueIntro(key, boss, onComplete) {
     var w = 1920, h = 1080;
-    var dimBg = this.add.rectangle(w/2, h/2, w, h, 0x000000, 0.6).setAlpha(0).setDepth(89);
+    var dimBg = this.add.rectangle(w / 2, h / 2, w, h, 0x000000, 0.6).setAlpha(0).setDepth(89);
     this.tweens.add({ targets: dimBg, alpha: 0.6, duration: 300 });
 
+    var heroImage = this.add.image(300, h / 2, 'hero_stand').setAlpha(0).setDepth(90);
+    var hScale = 750 / (heroImage.width || 600);
+    heroImage.setScale(hScale);
+    heroImage.setY(100 + (heroImage.height * hScale) / 2);
+    this.tweens.add({ targets: heroImage, alpha: 0.4, duration: 300 });
+
     if (key === 'boss3_twins') {
-       this.showDialogue('エナリア', '「私は貴方を止めるわ」', () => {
-           this.showDialogue('エディオ', '「ここは通さない」', () => {
-               this.tweens.add({ targets: dimBg, alpha: 0, duration: 300, onComplete: () => { dimBg.destroy(); onComplete(); }});
-           });
-       });
+      var sisterImage = this.add.image(w - 450, h / 2, 'sister_normal').setAlpha(0).setDepth(90);
+      var sWidth = (this.textures.exists('sister_normal') && this.textures.get('sister_normal').getSourceImage()) ? this.textures.get('sister_normal').getSourceImage().width : 600;
+      var sScale = 750 / (sWidth || 600);
+      sisterImage.setScale(sScale);
+      sisterImage.setY(100 + (sisterImage.height * sScale) / 2);
+
+      var brotherImage = this.add.image(w - 200, h / 2, 'brother_normal').setAlpha(0).setDepth(90);
+      var bWidth = (this.textures.exists('brother_normal') && this.textures.get('brother_normal').getSourceImage()) ? this.textures.get('brother_normal').getSourceImage().width : 600;
+      var bScale = 750 / (bWidth || 600);
+      brotherImage.setScale(bScale);
+      brotherImage.setY(100 + (brotherImage.height * bScale) / 2);
+
+      this.tweens.add({ targets: [sisterImage, brotherImage], alpha: 1, duration: 300 });
+      sisterImage.setDepth(91);
+      brotherImage.setDepth(90);
+
+      this.showDialogue('エナリア', '「私は貴方を止めるわ」', () => {
+        this.tweens.add({ targets: brotherImage, alpha: 1, duration: 200 });
+        brotherImage.setDepth(91);
+        this.tweens.add({ targets: sisterImage, alpha: 0.4, duration: 200 });
+        sisterImage.setDepth(90);
+        this.showDialogue('エディオ', '「ここは通さない」', () => {
+          this.tweens.add({
+            targets: [dimBg, heroImage, sisterImage, brotherImage],
+            alpha: 0,
+            duration: 300,
+            onComplete: () => {
+              if (dimBg) dimBg.destroy();
+              if (heroImage) heroImage.destroy();
+              if (sisterImage) sisterImage.destroy();
+              if (brotherImage) brotherImage.destroy();
+              onComplete();
+            }
+          });
+        });
+      });
+    } else if (key === 'demon_lord') {
+      var demonImage = this.add.image(w - 300, h / 2, 'demon_lord_normal').setAlpha(0).setDepth(90);
+      var dScale = 1000 / (demonImage.width || 800);
+      demonImage.setScale(dScale);
+      demonImage.setY(100 + (demonImage.height * dScale) / 2 - 200);
+
+      var inunekoImage = this.add.image(w - 120, 350, 'inuneko_stand').setAlpha(0).setDepth(91);
+      inunekoImage.setScale(300 / 691);
+
+      this.tweens.add({ targets: [demonImage, inunekoImage], alpha: 1, duration: 300 });
+
+      this.showDialogue('魔王', '「わらわを倒せるかな？」', () => {
+        this.tweens.add({
+          targets: [dimBg, heroImage, demonImage, inunekoImage],
+          alpha: 0,
+          duration: 300,
+          onComplete: () => {
+            if (dimBg) dimBg.destroy();
+            if (heroImage) heroImage.destroy();
+            if (demonImage) demonImage.destroy();
+            if (inunekoImage) inunekoImage.destroy();
+            onComplete();
+          }
+        });
+      });
+    } else if (key === 'doctor') {
+      var doctorImage = this.add.image(w - 300, h / 2, 'doctor_awaken_smile_weapon').setAlpha(0).setDepth(90);
+      var docScale = 900 / (doctorImage.width || 700);
+      doctorImage.setScale(docScale);
+      doctorImage.setY(100 + (doctorImage.height * docScale) / 2);
+
+      this.tweens.add({ targets: doctorImage, alpha: 1, duration: 300 });
+
+      MOT.flags.doctorContinueCount = (MOT.flags.doctorContinueCount || 0) + 1;
+      const count = MOT.flags.doctorContinueCount;
+      let text = '';
+      if (count === 1) text = '「今度も倒してやろう」';
+      else if (count === 2) text = '「私の野望はお前ごときには止められない」';
+      else if (count === 3) text = '「三度目の正直にはなれそうにないな？」';
+      else text = `「${count}回目だな。何回やってもおなじことだぞ。」`;
+
+      this.showDialogue('博士', text, () => {
+        this.tweens.add({
+          targets: [dimBg, heroImage, doctorImage],
+          alpha: 0,
+          duration: 300,
+          onComplete: () => {
+            if (dimBg) dimBg.destroy();
+            if (heroImage) heroImage.destroy();
+            if (doctorImage) doctorImage.destroy();
+            onComplete();
+          }
+        });
+      });
     } else {
-       let speaker = '';
-       let text = '';
-       if (key === 'boss1') { speaker = 'クラトス'; text = '「よし、戦うぞ！！」'; }
-       else if (key === 'boss2') { speaker = 'トゥレロス'; text = '「俺の速さについてこれるか？」'; }
-       else if (key === 'demon_lord') { speaker = '魔王 – ヴェリタス'; text = '「わらわを倒せるかな？」'; }
-       else if (key === 'doctor') {
-          speaker = '博士';
-          MOT.flags.doctorContinueCount = (MOT.flags.doctorContinueCount || 0) + 1;
-          const count = MOT.flags.doctorContinueCount;
-          if (count === 1) text = '「今度も倒してやろう」';
-          else if (count === 2) text = '「私の野望はお前ごときには止められない」';
-          else if (count === 3) text = '「三度目の正直にはなれそうにないな？」';
-          else text = `「${count}回目だな。何回やってもおなじことだぞ。」`;
-       }
-       this.showDialogue(speaker, text, () => {
-           this.tweens.add({ targets: dimBg, alpha: 0, duration: 300, onComplete: () => { dimBg.destroy(); onComplete(); }});
-       });
+      var bossTex = key === 'boss1' ? 'boss1_normal' : 'boss2_normal';
+      var speaker = key === 'boss1' ? 'クラトス' : 'トゥレロス';
+      var text = key === 'boss1' ? '「よし、戦うぞ！！」' : '「俺の速さについてこれるか？」';
+
+      var bossImage = this.add.image(w - 300, h / 2, bossTex).setAlpha(0).setDepth(90);
+      var bScale = 750 / (bossImage.width || 600);
+      bossImage.setScale(bScale);
+      bossImage.setY(100 + (bossImage.height * bScale) / 2);
+
+      this.tweens.add({ targets: bossImage, alpha: 1, duration: 300 });
+
+      this.showDialogue(speaker, text, () => {
+        this.tweens.add({
+          targets: [dimBg, heroImage, bossImage],
+          alpha: 0,
+          duration: 300,
+          onComplete: () => {
+            if (dimBg) dimBg.destroy();
+            if (heroImage) heroImage.destroy();
+            if (bossImage) bossImage.destroy();
+            onComplete();
+          }
+        });
+      });
     }
   }
 
@@ -498,14 +596,16 @@ class BossScene extends Phaser.Scene {
       : (this.startData && this.startData.bossIndex !== undefined ? this.startData.bossIndex : undefined);
 
     const isRetryContinue = Boolean(
-      this.startData && 
-      this.startData.fromContinue && 
-      (targetIdx === undefined || targetIdx === this.currentBossIndex)
+      (this.startData && this.startData.fromContinue) ||
+      (MOT.flags && MOT.flags.bossIntroSeen && MOT.flags.bossIntroSeen[key])
     );
 
     MOT.flags.bossIntroSeen[key] = true;
     if (this.startData) {
       this.startData.fromContinue = false;
+    }
+    if (MOT.saveGame) {
+      MOT.saveGame(this.currentBossIndex);
     }
 
     if (isRetryContinue) {

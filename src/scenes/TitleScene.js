@@ -11,12 +11,19 @@ class TitleScene extends Phaser.Scene {
     const w = this.cameras.main.width;
     const h = this.cameras.main.height;
 
+    const setCover = (img) => {
+      let scaleX = w / img.width;
+      let scaleY = h / img.height;
+      img.setScale(Math.max(scaleX, scaleY));
+      return img;
+    };
+
     const isGlitch = (window.MOT && window.MOT.flags && window.MOT.flags.useGlitchTitle);
     const isShutdown = (window.MOT && window.MOT.flags && window.MOT.flags.finalEnding === 'bad_shutdown');
 
     if (isShutdown) {
       // 強制シャットダウン後の特殊タイトル
-      this.add.image(w / 2, h / 2, '404_bg').setDisplaySize(w, h).setDepth(0);
+      setCover(this.add.image(w / 2, h / 2, '404_bg')).setDepth(0);
       let notFoundImg = this.add.image(0, h / 2, 'not_found_text').setOrigin(0, 0.5).setDepth(1);
       // 画面の高さにぴったり合わせる
       let scaleY = h / notFoundImg.height;
@@ -42,8 +49,8 @@ class TitleScene extends Phaser.Scene {
       }
 
       if (!isGlitch) {
-        this.add.image(w / 2, h / 2, 'title_1x_back').setDisplaySize(w, h).setDepth(0);
-        this.add.image(w / 2, h / 2, 'title_1x_back').setDisplaySize(w, h).setDepth(0);
+        setCover(this.add.image(w / 2, h / 2, 'title_1x_back')).setDepth(0);
+        setCover(this.add.image(w / 2, h / 2, 'title_1x_back')).setDepth(0);
         
         // プログラムによる動的なマトリックス風・文字降らしエフェクト（単一テキスト・完全整列版）
         const sourceSeq = "01010100 01010010 01010101 01010011 01010100 00100000 01001110 01001111 00100000 01001111 01001110 01000101 00100000 01011001 01001111 01010101 00100000 01000001 01010010 01000101 00100000 01001110 01001111 01010100 00100000 01000001 00100000 01000100 01001111 01001100 01001100 ";
@@ -65,11 +72,11 @@ class TitleScene extends Phaser.Scene {
         this.matrixXOffset = 0; // Yの代わりにXオフセットを使用
         this.matrixStartIdx = 0;
         
-        this.helloImg = this.add.image(w / 2, h / 2, 'title_1x_hello_world').setDisplaySize(w, h).setDepth(3);
-        this.add.image(w / 2, h / 2, 'title_1x_baria').setDisplaySize(w, h).setDepth(3);
+        this.helloImg = setCover(this.add.image(w / 2, h / 2, 'title_1x_hello_world')).setDepth(3);
+        setCover(this.add.image(w / 2, h / 2, 'title_1x_baria')).setDepth(3);
       } else {
         // エラータイトルの場合
-        this.add.image(w / 2, h / 2, 'title_bg_glitch').setDisplaySize(w, h).setDepth(0);
+        setCover(this.add.image(w / 2, h / 2, 'title_bg_glitch')).setDepth(0);
         this.matrixTextObj = null;
         
         // 色を反転して不気味な演出にする
@@ -149,26 +156,22 @@ class TitleScene extends Phaser.Scene {
       this.createButton(w / 2, h * 0.84, 'CONTINUE', 700, function () {
         const saveData = window.MOT && MOT.loadGame ? MOT.loadGame() : null;
         if (saveData && saveData.flags) {
-          MOT.flags = JSON.parse(JSON.stringify(saveData.flags));
+          if (MOT.loadFlags) {
+            MOT.loadFlags(saveData.flags);
+          } else {
+            const newFlags = JSON.parse(JSON.stringify(saveData.flags));
+            delete newFlags.maxEnergy;
+            Object.assign(MOT.flags, newFlags);
+          }
           MOT.flags.diedCount = 0;
           MOT.flags.playerHP = MOT.flags.playerMaxHP || 5;
           MOT.flags.useGlitchTitle = false;
         }
         const startIdx = (saveData && saveData.bossIndex !== undefined) ? saveData.bossIndex : 0;
-        if (this.heroGif) {
-          this.heroGif.play('play_hero_title');
-          this.heroGif.once('animationcomplete', function() {
-            this.cameras.main.fadeOut(500, 5, 8, 20);
-            this.time.delayedCall(500, function () {
-              this.scene.start('BossScene', { startBossIndex: startIdx, fromContinue: false });
-            }, [], this);
-          }, this);
-        } else {
-          this.cameras.main.fadeOut(500, 5, 8, 20);
-          this.time.delayedCall(500, function () {
-            this.scene.start('BossScene', { startBossIndex: startIdx, fromContinue: false });
-          }, [], this);
-        }
+        this.cameras.main.fadeOut(500, 5, 8, 20);
+        this.time.delayedCall(500, function () {
+          this.scene.start('BossScene', { startBossIndex: startIdx, fromContinue: true });
+        }, [], this);
       }.bind(this));
     }
 
@@ -496,11 +499,11 @@ class TitleScene extends Phaser.Scene {
     });
 
     const closeText = this.add.text(boxX + boxW - 60, boxY + boxH - 50, '▶ CLOSE [TAP/CLICK]', {
-      fontFamily: '"Press Start 2P"', fontSize: '20px', color: '#9CA3AF'
+      fontFamily: '"Press Start 2P"', fontSize: '20px', color: '#FFFFFF'
     }).setOrigin(1, 0).setInteractive({ useHandCursor: true });
     this.creditsContainer.add(closeText);
     
-    this.tweens.add({ targets: closeText, alpha: 0.3, yoyo: true, repeat: -1, duration: 500 });
+    this.tweens.add({ targets: closeText, alpha: 0.6, yoyo: true, repeat: -1, duration: 500 });
 
     const handleClose = () => {
       if (window.MOT && MOT.Audio) MOT.Audio.playSelect();
