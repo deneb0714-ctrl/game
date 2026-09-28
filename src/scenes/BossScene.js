@@ -1996,7 +1996,7 @@ class BossScene extends Phaser.Scene {
     }
   }
 
-  // 魔王の追尾弾（HP50%以下で10秒に一回発射）
+  // 魔王の追尾弾（HP50%以下で10秒に一回発射：星型＆スピードUP）
   fireDemonHomingBullet() {
     if (!this.currentBoss || !this.currentBoss.active || !this.player || !this.player.active || this.dialogActive) return;
 
@@ -2018,19 +2018,33 @@ class BossScene extends Phaser.Scene {
 
     if (MOT.Audio && MOT.Audio.playShot) MOT.Audio.playShot();
 
-    // 追尾弾（bullet_enemy_white をベースに濃い魔王パープルで描画）
-    const bullet = this.enemyBullets.create(bx, by, 'bullet_enemy_white');
+    // 追尾弾（星型の弾 bullet_star、妖しく輝く魔王パープル）
+    const bullet = this.enemyBullets.create(bx, by, 'bullet_star');
     if (!bullet) return;
 
-    bullet.setScale(2.4);
-    bullet.setTint(0x9900ff);
+    bullet.setScale(2.2);
+    bullet.setTint(0xEA00D9);
     bullet.setDepth(14);
     bullet.isHoming = true;
     bullet.damage = 1;
 
-    // 初速はプレイヤー方向へ向けて発射
+    // 星型弾の軌跡パーティクル
+    const starTrail = this.add.particles(0, 0, 'particle', {
+      follow: bullet,
+      scale: { start: 0.7, end: 0 },
+      alpha: { start: 0.65, end: 0 },
+      tint: [0xd500f9, 0xff4081, 0x7c4dff],
+      lifespan: 220,
+      frequency: 35,
+      blendMode: 'ADD'
+    });
+    bullet.once('destroy', () => {
+      if (starTrail) starTrail.destroy();
+    });
+
+    // 初速はプレイヤー方向へ向けて発射（スピードを260から320へ適度にUP）
     const initAngle = Phaser.Math.Angle.Between(bx, by, this.player.x, this.player.y);
-    const baseSpeed = 260; // 回避可能な適正スピード
+    const baseSpeed = 320; // 従来(260)より適度にスピードアップ
     bullet.setVelocity(Math.cos(initAngle) * baseSpeed, Math.sin(initAngle) * baseSpeed);
     bullet.spawnTime = this.time.now;
     bullet.homingDuration = 6000; // 6秒間プレイヤーを追跡、その後は直進
@@ -2038,6 +2052,9 @@ class BossScene extends Phaser.Scene {
     const scene = this;
     bullet.updateBehavior = function(now, delta) {
       if (!this.active) return;
+
+      // 星自体の回転演出
+      this.rotation += 0.08;
 
       const elapsed = now - this.spawnTime;
       // 追尾時間内かつプレイヤーが生存している場合、滑らかに追跡
@@ -2050,17 +2067,16 @@ class BossScene extends Phaser.Scene {
         // 角度差を -PI .. PI に正規化
         const angleDiff = Phaser.Math.Angle.Wrap(targetAngle - currentAngle);
 
-        // 毎秒約2.5ラジアンの旋回速度（自然にカーブしつつ、切り返しでかわせる絶妙な追尾）
-        const maxTurn = 2.5 * (delta / 1000);
+        // スピードUPに合わせて旋回速度も微調整（自然なカーブを描きつつ回避の駆け引きを維持）
+        const maxTurn = 2.8 * (delta / 1000);
         const turn = Phaser.Math.Clamp(angleDiff, -maxTurn, maxTurn);
         const newAngle = currentAngle + turn;
 
         this.setVelocity(Math.cos(newAngle) * baseSpeed, Math.sin(newAngle) * baseSpeed);
-        this.setRotation(newAngle);
 
         // 追尾弾の不気味な脈動エフェクト
         const pulse = (Math.sin(now / 100) + 1) / 2;
-        this.setScale(2.2 + pulse * 0.4);
+        this.setScale(2.0 + pulse * 0.4);
       }
     };
   }
