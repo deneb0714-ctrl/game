@@ -2854,28 +2854,75 @@ class BossScene extends Phaser.Scene {
           this.rightSpeakerImage.setY(100 + (imgH * scale) / 2 + yOffset);
         };
 
+        const ensureTwinsPhase1 = () => {
+          if (!this.sisterImage || !this.sisterImage.active) {
+            this.sisterImage = this.add.image(w - 450, h / 2, 'sister_normal').setDepth(90).setAlpha(0);
+            const tex = this.textures.exists('sister_normal') ? this.textures.get('sister_normal').getSourceImage() : null;
+            const sW = (tex && tex.width) || 1080;
+            const sH = (tex && tex.height) || 1920;
+            const sScale = 750 / sW;
+            this.sisterImage.setScale(sScale);
+            this.sisterImage.setY(100 + (sH * sScale) / 2);
+          }
+          if (!this.brotherImage || !this.brotherImage.active) {
+            this.brotherImage = this.add.image(w - 200, h / 2, 'brother_normal').setDepth(90).setAlpha(0);
+            const tex = this.textures.exists('brother_normal') ? this.textures.get('brother_normal').getSourceImage() : null;
+            const bW = (tex && tex.width) || 1080;
+            const bH = (tex && tex.height) || 1920;
+            const bScale = 750 / bW;
+            this.brotherImage.setScale(bScale);
+            this.brotherImage.setY(100 + (bH * bScale) / 2);
+          }
+        };
+
+        const sayTwinsPhase1 = (speaker, text) => new Promise(res => {
+          ensureTwinsPhase1();
+          safeTween(this.dimBg, 0.6);
+          safeTween(this.heroImage, 0.4);
+          if (this.rightSpeakerImage) safeTween(this.rightSpeakerImage, 0);
+          if (this.doctorImage) safeTween(this.doctorImage, 0);
+          if (this.demonImage) safeTween(this.demonImage, 0);
+
+          if (speaker === 'エナリア') {
+            safeTween(this.sisterImage, 1);
+            if (this.sisterImage) this.sisterImage.setDepth(91);
+            safeTween(this.brotherImage, 0.4);
+            if (this.brotherImage) this.brotherImage.setDepth(90);
+          } else {
+            safeTween(this.brotherImage, 1);
+            if (this.brotherImage) this.brotherImage.setDepth(91);
+            safeTween(this.sisterImage, 0.4);
+            if (this.sisterImage) this.sisterImage.setDepth(90);
+          }
+          this.showDialogue(speaker, text, res);
+        });
+
         const sayRight = (speaker, texKey, text, targetW = 750, yOff = 0) => new Promise(res => {
           setRightSpeaker(speaker, texKey, targetW, yOff);
           safeTween(this.dimBg, 0.6);
           safeTween(this.rightSpeakerImage, 1);
           safeTween(this.heroImage, 0.4);
-          if (this.doctorImage) this.doctorImage.setAlpha(0);
-          if (this.demonImage) this.demonImage.setAlpha(0);
+          if (this.doctorImage) safeTween(this.doctorImage, 0);
+          if (this.demonImage) safeTween(this.demonImage, 0);
+          if (this.sisterImage) safeTween(this.sisterImage, 0);
+          if (this.brotherImage) safeTween(this.brotherImage, 0);
           this.showDialogue(speaker, text, res);
         });
 
         const sayHeroNormal = (text) => new Promise(res => {
           safeTween(this.dimBg, 0.6);
           safeTween(this.heroImage, 1);
-          if (this.rightSpeakerImage) safeTween(this.rightSpeakerImage, 0.4);
+          if (this.rightSpeakerImage && this.rightSpeakerImage.alpha > 0.1) safeTween(this.rightSpeakerImage, 0.4);
+          if (this.sisterImage && this.sisterImage.alpha > 0.1) safeTween(this.sisterImage, 0.4);
+          if (this.brotherImage && this.brotherImage.alpha > 0.1) safeTween(this.brotherImage, 0.4);
           if (this.doctorImage) this.doctorImage.setAlpha(0);
           if (this.demonImage) this.demonImage.setAlpha(0);
           this.showDialogue(heroName, text, res);
         });
 
         const sayDoctor = (text) => sayRight('博士', 'doctor_awaken_straight_weapon', text, 900, 0);
-        const sayEnaria = (text) => sayRight('エナリア', 'sister_normal', text, 650, 40);
-        const sayEdio = (text) => sayRight('エディオ', 'brother_normal', text, 700, 20);
+        const sayEnaria = (text) => sayTwinsPhase1('エナリア', text);
+        const sayEdio = (text) => sayTwinsPhase1('エディオ', text);
         const sayKratos = (text) => sayRight('クラトス', 'boss1_normal', text, 800, 0);
         const sayTourelos = (text) => sayRight('トゥレロス', 'boss2_normal', text, 750, 20);
         const sayDemon = (text) => sayRight('魔王', 'demon_lord_normal', text, 850, -50);
@@ -2905,7 +2952,7 @@ class BossScene extends Phaser.Scene {
         await sayHeroNormal('「今度こそ、決着をつけよう」');
 
         // 立ち絵と暗転背景をスムーズにフェードアウト
-        const fadeTargets = [this.dimBg, this.heroImage, this.doctorImage, this.demonImage, this.rightSpeakerImage].filter(t => t && t.active);
+        const fadeTargets = [this.dimBg, this.heroImage, this.doctorImage, this.demonImage, this.rightSpeakerImage, this.sisterImage, this.brotherImage].filter(t => t && t.active);
         if (fadeTargets.length > 0) {
           await new Promise(res => {
             let resolved = false;
@@ -2918,6 +2965,8 @@ class BossScene extends Phaser.Scene {
               this.doctorImage = null;
               this.demonImage = null;
               this.rightSpeakerImage = null;
+              this.sisterImage = null;
+              this.brotherImage = null;
               res();
             };
             this.tweens.add({
@@ -4613,6 +4662,12 @@ class BossScene extends Phaser.Scene {
               if (this.rightSpeakerImage && this.rightSpeakerImage.active) {
                 this.tweens.add({ targets: this.rightSpeakerImage, alpha: 1, duration: 250 });
               }
+              if (this.sisterImage && this.sisterImage.active) {
+                this.tweens.add({ targets: this.sisterImage, alpha: 0, duration: 250 });
+              }
+              if (this.brotherImage && this.brotherImage.active) {
+                this.tweens.add({ targets: this.brotherImage, alpha: 0, duration: 250 });
+              }
               this.showDialogue(speaker, text, res);
             });
 
@@ -4620,10 +4675,66 @@ class BossScene extends Phaser.Scene {
             const sayHero = (text) => new Promise(res => {
               if (dimBg && dimBg.active) this.tweens.add({ targets: dimBg, alpha: 0.6, duration: 250 });
               if (this.heroImage && this.heroImage.active) this.tweens.add({ targets: this.heroImage, alpha: 1, duration: 250 });
-              if (this.rightSpeakerImage && this.rightSpeakerImage.active) {
+              if (this.rightSpeakerImage && this.rightSpeakerImage.active && this.rightSpeakerImage.alpha > 0.1) {
                 this.tweens.add({ targets: this.rightSpeakerImage, alpha: 0.4, duration: 250 });
               }
+              if (this.sisterImage && this.sisterImage.active && this.sisterImage.alpha > 0.1) {
+                this.tweens.add({ targets: this.sisterImage, alpha: 0.4, duration: 250 });
+              }
+              if (this.brotherImage && this.brotherImage.active && this.brotherImage.alpha > 0.1) {
+                this.tweens.add({ targets: this.brotherImage, alpha: 0.4, duration: 250 });
+              }
               this.showDialogue(heroName, text, res);
+            });
+
+            const ensureTwinsEpilogue = () => {
+              if (!this.sisterImage || !this.sisterImage.active) {
+                this.sisterImage = this.add.image(w - 450, h / 2, 'sister_normal').setDepth(90).setAlpha(0);
+                const tex = this.textures.exists('sister_normal') ? this.textures.get('sister_normal').getSourceImage() : null;
+                const sW = (tex && tex.width) || 1080;
+                const sH = (tex && tex.height) || 1920;
+                const sScale = 750 / sW;
+                this.sisterImage.setScale(sScale);
+                this.sisterImage.setY(100 + (sH * sScale) / 2);
+              }
+              if (!this.brotherImage || !this.brotherImage.active) {
+                this.brotherImage = this.add.image(w - 200, h / 2, 'brother_normal').setDepth(90).setAlpha(0);
+                const tex = this.textures.exists('brother_normal') ? this.textures.get('brother_normal').getSourceImage() : null;
+                const bW = (tex && tex.width) || 1080;
+                const bH = (tex && tex.height) || 1920;
+                const bScale = 750 / bW;
+                this.brotherImage.setScale(bScale);
+                this.brotherImage.setY(100 + (bH * bScale) / 2);
+              }
+            };
+
+            const sayTwinsEpilogue = (speaker, text) => new Promise(res => {
+              ensureTwinsEpilogue();
+              if (dimBg && dimBg.active) this.tweens.add({ targets: dimBg, alpha: 0.6, duration: 250 });
+              if (this.heroImage && this.heroImage.active) this.tweens.add({ targets: this.heroImage, alpha: 0.4, duration: 250 });
+              if (this.rightSpeakerImage && this.rightSpeakerImage.active) {
+                this.tweens.add({ targets: this.rightSpeakerImage, alpha: 0, duration: 250 });
+              }
+              if (speaker === 'エナリア') {
+                if (this.sisterImage && this.sisterImage.active) {
+                  this.tweens.add({ targets: this.sisterImage, alpha: 1, duration: 250 });
+                  this.sisterImage.setDepth(91);
+                }
+                if (this.brotherImage && this.brotherImage.active) {
+                  this.tweens.add({ targets: this.brotherImage, alpha: 0.4, duration: 250 });
+                  this.brotherImage.setDepth(90);
+                }
+              } else {
+                if (this.brotherImage && this.brotherImage.active) {
+                  this.tweens.add({ targets: this.brotherImage, alpha: 1, duration: 250 });
+                  this.brotherImage.setDepth(91);
+                }
+                if (this.sisterImage && this.sisterImage.active) {
+                  this.tweens.add({ targets: this.sisterImage, alpha: 0.4, duration: 250 });
+                  this.sisterImage.setDepth(90);
+                }
+              }
+              this.showDialogue(speaker, text, res);
             });
 
             const sayDoctor = (text, tex = 'doctor_awaken_normal_dying') => sayRight('博士', tex, text, 900, 0);
@@ -4631,8 +4742,8 @@ class BossScene extends Phaser.Scene {
             const sayInuneko = (text, tex = 'inuneko_stand') => sayRight('犬猫☆スター', tex, text, 500, 50);
             const sayKratos = (text, tex = 'boss1_normal') => sayRight('クラトス', tex, text, 800, 0);
             const sayTourelos = (text, tex = 'boss2_normal') => sayRight('トゥレロス', tex, text, 750, 20);
-            const sayEnaria = (text, tex = 'sister_normal') => sayRight('エナリア', tex, text, 650, 40);
-            const sayEdio = (text, tex = 'brother_normal') => sayRight('エディオ', tex, text, 700, 20);
+            const sayEnaria = (text) => sayTwinsEpilogue('エナリア', text);
+            const sayEdio = (text) => sayTwinsEpilogue('エディオ', text);
 
             (async () => {
               // 博士撃破直後会話
@@ -4761,6 +4872,14 @@ class BossScene extends Phaser.Scene {
               if (this.rightSpeakerImage && this.rightSpeakerImage.destroy) {
                 this.rightSpeakerImage.destroy();
                 this.rightSpeakerImage = null;
+              }
+              if (this.sisterImage && this.sisterImage.destroy) {
+                this.sisterImage.destroy();
+                this.sisterImage = null;
+              }
+              if (this.brotherImage && this.brotherImage.destroy) {
+                this.brotherImage.destroy();
+                this.brotherImage = null;
               }
               if (this.heroImage && this.heroImage.destroy) {
                 this.heroImage.destroy();
