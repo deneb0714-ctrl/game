@@ -281,6 +281,7 @@ class BossScene extends Phaser.Scene {
     }
     this.bossPhase = 0;
     this.bossAttackTimer = 0;
+    this.demonHomingTimer = 0;
     this.twinsReviving = false;
     this.isLaneBeamActive = false;
     this.bossDefeated = false;
@@ -1275,6 +1276,20 @@ class BossScene extends Phaser.Scene {
         this.bossAttack();
       }
     }
+
+    // 魔王（demon_lord）：体力が半分以下になったら10秒に一回追尾弾を発射
+    if (this.currentBoss && this.currentBoss.active && this.currentBoss.visible && !this.dialogActive && this.currentBoss.configKey === 'demon_lord') {
+      if (this.bossHP <= this.bossMaxHP * 0.5) {
+        if (!this.demonHomingTimer) this.demonHomingTimer = 0;
+        this.demonHomingTimer += delta;
+        if (this.demonHomingTimer >= 10000) {
+          this.demonHomingTimer = 0;
+          this.fireDemonHomingBullet();
+        }
+      } else {
+        this.demonHomingTimer = 0;
+      }
+    }
     
     // Sister attacks
     if (this.currentBoss && this.currentBoss.configKey === 'boss3_twins' && this.sisterBoss && this.sisterBoss.active && this.sisterBoss.visible && !this.dialogActive && !this.twinsReviving) {
@@ -1890,6 +1905,75 @@ class BossScene extends Phaser.Scene {
         }, [], this);
       }
     }
+  }
+
+  // 魔王の追尾弾（HP50%以下で10秒に一回発射）
+  fireDemonHomingBullet() {
+    if (!this.currentBoss || !this.currentBoss.active || !this.player || !this.player.active || this.dialogActive) return;
+
+    const bx = this.currentBoss.x;
+    const by = this.currentBoss.y;
+
+    // 発射時のダークパープル衝撃波エフェクト
+    const chargeRing = this.add.circle(bx, by, 20)
+      .setStrokeStyle(3, 0xd500f9, 0.9)
+      .setDepth(15);
+    this.tweens.add({
+      targets: chargeRing,
+      radius: 80,
+      alpha: 0,
+      duration: 350,
+      ease: 'Cubic.easeOut',
+      onComplete: () => chargeRing.destroy()
+    });
+
+    if (MOT.Audio && MOT.Audio.playShot) MOT.Audio.playShot();
+
+    // 追尾弾（bullet_enemy_white をベースに濃い魔王パープルで描画）
+    const bullet = this.enemyBullets.create(bx, by, 'bullet_enemy_white');
+    if (!bullet) return;
+
+    bullet.setScale(2.4);
+    bullet.setTint(0x9900ff);
+    bullet.setDepth(14);
+    bullet.isHoming = true;
+    bullet.damage = 1;
+
+    // 初速はプレイヤー方向へ向けて発射
+    const initAngle = Phaser.Math.Angle.Between(bx, by, this.player.x, this.player.y);
+    const baseSpeed = 260; // 回避可能な適正スピード
+    bullet.setVelocity(Math.cos(initAngle) * baseSpeed, Math.sin(initAngle) * baseSpeed);
+    bullet.spawnTime = this.time.now;
+    bullet.homingDuration = 6000; // 6秒間プレイヤーを追跡、その後は直進
+
+    const scene = this;
+    bullet.updateBehavior = function(now, delta) {
+      if (!this.active) return;
+
+      const elapsed = now - this.spawnTime;
+      // 追尾時間内かつプレイヤーが生存している場合、滑らかに追跡
+      if (elapsed < this.homingDuration && scene.player && scene.player.active) {
+        const curVx = this.body.velocity.x;
+        const curVy = this.body.velocity.y;
+        const currentAngle = Math.atan2(curVy, curVx);
+        const targetAngle = Phaser.Math.Angle.Between(this.x, this.y, scene.player.x, scene.player.y);
+
+        // 角度差を -PI .. PI に正規化
+        const angleDiff = Phaser.Math.Angle.Wrap(targetAngle - currentAngle);
+
+        // 毎秒約2.5ラジアンの旋回速度（自然にカーブしつつ、切り返しでかわせる絶妙な追尾）
+        const maxTurn = 2.5 * (delta / 1000);
+        const turn = Phaser.Math.Clamp(angleDiff, -maxTurn, maxTurn);
+        const newAngle = currentAngle + turn;
+
+        this.setVelocity(Math.cos(newAngle) * baseSpeed, Math.sin(newAngle) * baseSpeed);
+        this.setRotation(newAngle);
+
+        // 追尾弾の不気味な脈動エフェクト
+        const pulse = (Math.sin(now / 100) + 1) / 2;
+        this.setScale(2.2 + pulse * 0.4);
+      }
+    };
   }
 
   // 斬撃攻撃（幹部1筋肉用）
