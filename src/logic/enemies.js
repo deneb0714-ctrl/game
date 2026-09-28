@@ -62,6 +62,15 @@ MOT.fireLinear = function (scene, x, y, vx, vy, color, tex) {
     bullet.setVelocity(vx, vy);
     bullet.setScale(1);
     if (color !== undefined) bullet.setTint(color);
+
+    // 魔王戦で犬猫☆スターの攻撃力バフ発動中（威力2倍＆弾丸強化）
+    if (scene.demonLordAttackBoostActive && scene.currentBoss && scene.currentBoss.configKey === 'demon_lord') {
+      bullet.damage = 2;
+      bullet.setTint(0xFF0055);
+      bullet.setScale(1.4);
+    } else {
+      bullet.damage = 1;
+    }
     
     // For laser, align rotation with velocity
     if (tex === 'bullet_laser') {
@@ -100,6 +109,15 @@ MOT.fireHoming = function (scene, x, y, speed, player, color, tex) {
     const angle = Phaser.Math.Angle.Between(x, y, player.x, player.y);
     bullet.setVelocity(Math.cos(angle) * speed, Math.sin(angle) * speed);
     bullet.setTint(color !== undefined ? color : 0xFF4B6E);
+
+    // 魔王戦で犬猫☆スターの攻撃力バフ発動中（威力2倍＆弾丸強化）
+    if (scene.demonLordAttackBoostActive && scene.currentBoss && scene.currentBoss.configKey === 'demon_lord') {
+      bullet.damage = 2;
+      bullet.setTint(0xFF0055);
+      bullet.setScale(1.4);
+    } else {
+      bullet.damage = 1;
+    }
     
     if (tex === 'bullet_laser') {
       // レーザーの起点を左端に

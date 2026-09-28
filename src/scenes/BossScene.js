@@ -1043,29 +1043,175 @@ class BossScene extends Phaser.Scene {
       }
     });
 
-    // 補助魔法（8〜15秒ごとにランダムで弾幕加速 or バリア）
+    // 補助魔法（8〜14秒ごとに4種類のバフから選択）
+    let lastInunekoAction = -1;
     const supportAction = () => {
       if (this.bossDefeated || this.dialogActive || this.cutsceneActive || !this.inunekoEnemy || !this.inunekoEnemy.visible) {
         if (!this.bossDefeated) {
-          this.time.delayedCall(Phaser.Math.Between(8000, 15000), supportAction);
+          this.time.delayedCall(Phaser.Math.Between(8000, 13000), supportAction);
         }
         return;
       }
-      const action = Phaser.Math.Between(0, 1);
+      const available = [0, 1, 2, 3].filter(a => a !== lastInunekoAction);
+      const action = Phaser.Utils.Array.GetRandom(available);
+      lastInunekoAction = action;
+
       if (action === 0) {
-        this.inunekoSpeedBoost();
-      } else {
         this.inunekoBarrier(boss);
+      } else if (action === 1) {
+        this.inunekoAttackBuff(boss);
+      } else if (action === 2) {
+        this.inunekoHealBuff(boss);
+      } else {
+        this.inunekoSpeedBoost(boss);
       }
-      this.time.delayedCall(Phaser.Math.Between(8000, 15000), supportAction);
+      this.time.delayedCall(Phaser.Math.Between(9000, 14000), supportAction);
     };
-    this.time.delayedCall(Phaser.Math.Between(8000, 15000), supportAction);
+    this.time.delayedCall(Phaser.Math.Between(6000, 9000), supportAction);
   }
 
-  // 補助魔法1: 弾幕加速（8秒間ボスの攻撃間隔を短縮）
-  inunekoSpeedBoost() {
-    MOT.Audio.playMagic();
-    // キラキラエフェクト（犬猫の位置から）
+  // 魔王のランダム返事（犬猫のバフに対して「助かった」「わらわの使い魔は頼りになるな」「ふふ、愛いやつじゃ」）
+  triggerDemonReply() {
+    this.time.delayedCall(700, () => {
+      if (this.currentBoss && this.currentBoss.active && this.currentBoss.visible && !this.dialogActive && !this.bossDefeated) {
+        const replies = [
+          '「助かった」',
+          '「わらわの使い魔は頼りになるな」',
+          '「ふふ、愛いやつじゃ」'
+        ];
+        const reply = Phaser.Utils.Array.GetRandom(replies);
+        this.showPixelSpeechBubble(this.currentBoss, '魔王', reply, 2400);
+      }
+    });
+  }
+
+  // 補助魔法1: シールド（魔王にシールドを張り、ダメージカット90%を5秒間）
+  inunekoBarrier(boss) {
+    if (this.demonLordBarrierActive) return;
+    if (MOT.Audio && MOT.Audio.playMagic) MOT.Audio.playMagic();
+    this.demonLordBarrierActive = true;
+
+    // 犬猫のセリフ吹き出し＆魔王の返事
+    this.showPixelSpeechBubble(this.inunekoEnemy, '犬猫☆スター', '「魔王様を守るわん」', 2600);
+    this.triggerDemonReply();
+
+    // バリアの見た目（ボスの周囲に黄金＆紫の二重光輪）
+    if (this.barrierGraphic) {
+      this.barrierGraphic.destroy();
+      this.barrierGraphic = null;
+    }
+    this.barrierGraphic = this.add.graphics().setDepth(15);
+    const drawBarrier = () => {
+      if (!this.barrierGraphic || !boss || !boss.active) return;
+      this.barrierGraphic.clear();
+      const pulse = 0.8 + 0.2 * Math.sin(Date.now() / 120);
+      this.barrierGraphic.lineStyle(4, 0xFFDD00, pulse);
+      this.barrierGraphic.strokeCircle(boss.x, boss.y, 90);
+      this.barrierGraphic.lineStyle(2, 0xD500F9, 0.7);
+      this.barrierGraphic.strokeCircle(boss.x, boss.y, 80);
+    };
+    this.barrierUpdateCb = drawBarrier;
+
+    // 5秒後に解除
+    this.time.delayedCall(5000, () => {
+      this.demonLordBarrierActive = false;
+      if (this.barrierGraphic) {
+        this.barrierGraphic.destroy();
+        this.barrierGraphic = null;
+      }
+      this.barrierUpdateCb = null;
+    });
+  }
+
+  // 補助魔法2: 攻撃力バフ（3秒間発射された弾の威力二倍）
+  inunekoAttackBuff(boss) {
+    if (this.demonLordAttackBoostActive) return;
+    if (MOT.Audio && MOT.Audio.playMagic) MOT.Audio.playMagic();
+    this.demonLordAttackBoostActive = true;
+
+    // 犬猫のセリフ吹き出し＆魔王の返事
+    this.showPixelSpeechBubble(this.inunekoEnemy, '犬猫☆スター', '「これで威力二倍だにゃん」', 2600);
+    this.triggerDemonReply();
+
+    // 魔王に赤い攻撃力オーラ付与
+    if (boss && boss.active) {
+      boss.setTint(0xFF3366);
+    }
+
+    // キラキラ紅炎エフェクト
+    for (let i = 0; i < 8; i++) {
+      this.time.delayedCall(i * 70, () => {
+        if (!boss || !boss.active) return;
+        const flame = this.add.text(
+          boss.x + Phaser.Math.Between(-40, 40),
+          boss.y + Phaser.Math.Between(-30, 30),
+          '🔥', { fontSize: '20px' }
+        ).setDepth(20);
+        this.tweens.add({
+          targets: flame,
+          y: flame.y - 50,
+          alpha: 0,
+          scale: 1.5,
+          duration: 600,
+          onComplete: () => flame.destroy()
+        });
+      });
+    }
+
+    // 3秒後に解除
+    this.time.delayedCall(3000, () => {
+      this.demonLordAttackBoostActive = false;
+      if (boss && boss.active) {
+        boss.clearTint();
+      }
+    });
+  }
+
+  // 補助魔法3: 回復バフ（魔王のHPをほんの少し回復）
+  inunekoHealBuff(boss) {
+    if (MOT.Audio && MOT.Audio.playMagic) MOT.Audio.playMagic();
+
+    // 犬猫のセリフ吹き出し＆魔王の返事
+    this.showPixelSpeechBubble(this.inunekoEnemy, '犬猫☆スター', '「魔王様にボクの癒しをあげるにゃん♡」', 2600);
+    this.triggerDemonReply();
+
+    // 魔王のHPをほんの少し回復 (+3 HP、最大HPを超えない)
+    const healAmount = 3;
+    this.bossHP = Math.min(this.bossMaxHP, this.bossHP + healAmount);
+    boss.hp = this.bossHP;
+
+    // 頭上にポップアップと癒しエフェクト
+    this.showFloatingText(boss.x, boss.y - 90, `+${healAmount} HP`, '#00FF88');
+    for (let i = 0; i < 10; i++) {
+      this.time.delayedCall(i * 60, () => {
+        if (!boss || !boss.active) return;
+        const heart = this.add.text(
+          boss.x + Phaser.Math.Between(-50, 50),
+          boss.y + Phaser.Math.Between(-30, 30),
+          Phaser.Math.Between(0, 1) === 0 ? '💚' : '💖',
+          { fontSize: '20px' }
+        ).setDepth(25);
+        this.tweens.add({
+          targets: heart,
+          y: heart.y - 60,
+          alpha: 0,
+          duration: 800,
+          onComplete: () => heart.destroy()
+        });
+      });
+    }
+  }
+
+  // 補助魔法4: 速度バフ（5秒間攻撃速度アップ）
+  inunekoSpeedBoost(boss) {
+    if (MOT.Audio && MOT.Audio.playMagic) MOT.Audio.playMagic();
+    this.inunekoBoostActive = true;
+
+    // 犬猫のセリフ吹き出し＆魔王の返事
+    this.showPixelSpeechBubble(this.inunekoEnemy, '犬猫☆スター', '「スピード、アップだにゃん！！」', 2600);
+    this.triggerDemonReply();
+
+    // キラキラ星エフェクト（犬猫と魔王の位置から）
     for (let i = 0; i < 8; i++) {
       this.time.delayedCall(i * 60, () => {
         if (!this.inunekoEnemy) return;
@@ -1077,29 +1223,30 @@ class BossScene extends Phaser.Scene {
         this.tweens.add({ targets: star, y: star.y - 40, alpha: 0, duration: 600, onComplete: () => star.destroy() });
       });
     }
-    this.inunekoBoostActive = true;
-    this.time.delayedCall(8000, () => { this.inunekoBoostActive = false; });
-  }
 
-  // 補助魔法2: 魔王にバリアを張る（5秒間ダメージ無効）
-  inunekoBarrier(boss) {
-    if (this.demonLordBarrierActive) return;
-    MOT.Audio.playMagic();
-    this.demonLordBarrierActive = true;
-    // バリアの見た目（ボスの周囲に光輪）
-    this.barrierGraphic = this.add.graphics().setDepth(15);
-    const drawBarrier = () => {
-      if (!this.barrierGraphic) return;
-      this.barrierGraphic.clear();
-      this.barrierGraphic.lineStyle(3, 0xAA88FF, 0.7 + 0.3 * Math.sin(Date.now() / 150));
-      this.barrierGraphic.strokeCircle(boss.x, boss.y, 80);
-    };
-    this.barrierUpdateCb = drawBarrier;
     // 5秒後に解除
     this.time.delayedCall(5000, () => {
-            this.demonLordBarrierActive = false;
-      if (this.barrierGraphic) { this.barrierGraphic.destroy(); this.barrierGraphic = null; }
-      this.barrierUpdateCb = null;
+      this.inunekoBoostActive = false;
+    });
+  }
+
+  // 頭上ポップアップテキスト表示ヘルパー
+  showFloatingText(x, y, text, color = '#00FF88') {
+    const txt = this.add.text(x, y, text, {
+      fontFamily: '"DotGothic16", monospace',
+      fontSize: '28px',
+      color: color,
+      fontStyle: 'bold',
+      stroke: '#050814',
+      strokeThickness: 4
+    }).setOrigin(0.5).setDepth(650);
+    this.tweens.add({
+      targets: txt,
+      y: y - 50,
+      alpha: 0,
+      duration: 1000,
+      ease: 'Power1.easeOut',
+      onComplete: () => txt.destroy()
     });
   }
 
@@ -1317,10 +1464,10 @@ class BossScene extends Phaser.Scene {
       this.bossAttackTimer += delta;
       var interval = this.bossHP < this.bossMaxHP * 0.5 ? 600 : 1000;
       if (this.currentBoss.configKey === 'boss1') interval = 3000; // ボス1の攻撃頻度を下げる
-      if (this.inunekoBoostActive) interval = Math.floor(interval * 0.5); // 犬猫スター弾幕加速
       if (this.currentBoss.configKey === 'boss3_twins') interval = 2400; // 兄の攻撃頻度を下げる（元1200）
       if (this.currentBoss.configKey === 'doctor') interval = this.bossHP < this.bossMaxHP * 0.5 ? 1400 : 1800; // 博士の攻撃頻度を上げる
       if (this.currentBoss.configKey === 'demon_lord') interval = this.bossHP < this.bossMaxHP * 0.5 ? 2500 : 3000; // 魔王の螺旋弾幕（2.4秒）と重ならないように大幅緩和
+      if (this.inunekoBoostActive) interval = Math.floor(interval * 0.5); // 犬猫スター速度バフ（攻撃速度アップ）
       
       if (this.bossAttackTimer >= interval) {
         this.bossAttackTimer = 0;
@@ -1472,6 +1619,8 @@ class BossScene extends Phaser.Scene {
       themeColor = 0xE11D48; themeHex = '#E11D48'; nameLabel = '魔王';
     } else if (speaker.includes('博士')) {
       themeColor = 0x00FF88; themeHex = '#00FF88'; nameLabel = '博士';
+    } else if (speaker.includes('犬猫') || speaker.includes('スター')) {
+      themeColor = 0xFFD700; themeHex = '#FFD700'; nameLabel = '犬猫☆スター';
     }
 
     if (target._speechBubble && target._speechBubble.active) {
@@ -1944,6 +2093,10 @@ class BossScene extends Phaser.Scene {
                 let angle = targetAngle - spread + spread * i;
                 let b = MOT.fireLinear(self, bx, by, Math.cos(angle)*400, Math.sin(angle)*400, 0xff00ff, 'bullet_enemy_white');
                 if (b) {
+                  if (this.damage && this.damage > 1) {
+                    b.damage = this.damage;
+                    b.setTint(0xFF0055);
+                  }
                   b.setScale(1.5);
                   b.spawnTime = now;
                   b.baseAngle = angle;
@@ -2036,7 +2189,13 @@ class BossScene extends Phaser.Scene {
     bullet.setTint(0xEA00D9);
     bullet.setDepth(14);
     bullet.isHoming = true;
-    bullet.damage = 1;
+    if (this.demonLordAttackBoostActive) {
+      bullet.damage = 2;
+      bullet.setTint(0xFF0033);
+      bullet.setScale(2.7);
+    } else {
+      bullet.damage = 1;
+    }
 
     // 星型弾の軌跡パーティクル
     const starTrail = this.add.particles(0, 0, 'particle', {
@@ -3875,12 +4034,12 @@ class BossScene extends Phaser.Scene {
       dmg = dmg * 0.5;
     }
 
-    // 犬猫バリア中は魔王ボスへのダメージ無効（バリア光エフェクト）
+    // 犬猫シールド中は魔王ボスへのダメージ90%カット（被ダメージ0.1倍）＆シールド発光
     if (this.demonLordBarrierActive && boss === this.currentBoss) {
+      dmg = dmg * 0.1;
       if (this.barrierGraphic) {
-        this.tweens.add({ targets: this.barrierGraphic, alpha: 0, duration: 80, yoyo: true });
+        this.tweens.add({ targets: this.barrierGraphic, alpha: 0.3, duration: 80, yoyo: true, repeat: 1 });
       }
-      return;
     }
 
     // ── 幕間中の雑魚敵の場合 ──────────────────────────────────────
