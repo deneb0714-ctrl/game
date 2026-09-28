@@ -9,6 +9,29 @@
     console.log('🎮 真理のマリオネット – Marionette of Truth');
     console.log('   Starting game...');
 
+    // PhaserのSprite.playでアニメーションのframesが未ロード等の原因で空配列のとき、
+    // Phaser内部でTypeError: Cannot read properties of undefined (reading 'duration') が発生して
+    // ゲーム全体がクラッシュするのを完全に防御するプロテクション
+    if (window.Phaser && Phaser.GameObjects && Phaser.GameObjects.Sprite) {
+      var origPlay = Phaser.GameObjects.Sprite.prototype.play;
+      Phaser.GameObjects.Sprite.prototype.play = function (key, ignoreIfPlaying) {
+        try {
+          var animKey = typeof key === 'string' ? key : (key && key.key);
+          if (animKey && this.scene && this.scene.anims) {
+            var anim = this.scene.anims.get(animKey);
+            if (!anim || !anim.frames || anim.frames.length === 0) {
+              console.warn('[SafePlay] Animation "' + animKey + '" has no valid frames. Skipping play to prevent crash.');
+              return this;
+            }
+          }
+          return origPlay.call(this, key, ignoreIfPlaying);
+        } catch (err) {
+          console.warn('[SafePlay Error] Caught animation play error for "' + key + '":', err);
+          return this;
+        }
+      };
+    }
+
     // Create Phaser game instance
     var game = new Phaser.Game(MOT.GAME_CONFIG);
 

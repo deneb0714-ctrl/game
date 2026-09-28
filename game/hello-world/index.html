@@ -20,6 +20,11 @@
 
     gtag('config', '__NEXT_PUBLIC_GA_ID__');
   </script>
+  <script>
+    window.addEventListener('error', function(e) {
+      console.error('GLOBAL_ERROR_CAUGHT:', e.message, e.filename, e.lineno, e.colno, e.error);
+    });
+  </script>
 
   <!-- PWA Manifest -->
   <link rel="manifest" href="manifest.json" />
@@ -76,32 +81,32 @@
   <div id="game-root"></div>
   
   <!-- Phaser 3 from CDN -->
-  <script src="https://cdn.jsdelivr.net/npm/phaser@3.80.1/dist/phaser.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/phaser@3.80.1/dist/phaser.min.js" crossorigin="anonymous"></script>
 
   <!-- Game Logic -->
   <script>
-    window.GAME_VERSION = 'v616';
+    window.GAME_VERSION = 'v617';
   </script>
-  <script src="src/logic/audio.js?v=616"></script>
-  <script src="src/logic/flags.js?v=616"></script>
-  <script src="src/logic/endings.js?v=616"></script>
-  <script src="src/logic/controls.js?v=616"></script>
-  <script src="src/logic/enemies.js?v=616"></script>
-  <script src="src/logic/items.js?v=616"></script>
-  <script src="src/logic/doctorDirective.js?v=616"></script>
-  <script src="src/logic/specialCutin.js?v=616"></script>
+  <script src="src/logic/audio.js?v=617"></script>
+  <script src="src/logic/flags.js?v=617"></script>
+  <script src="src/logic/endings.js?v=617"></script>
+  <script src="src/logic/controls.js?v=617"></script>
+  <script src="src/logic/enemies.js?v=617"></script>
+  <script src="src/logic/items.js?v=617"></script>
+  <script src="src/logic/doctorDirective.js?v=617"></script>
+  <script src="src/logic/specialCutin.js?v=617"></script>
 
   <!-- Scenes -->
-  <script src="src/scenes/BootScene.js?v=616"></script>
-  <script src="src/scenes/TitleScene.js?v=616"></script>
-  <script src="src/scenes/StoryScene.js?v=616"></script>
-  <script src="src/scenes/GameScene.js?v=616"></script>
-  <script src="src/scenes/EndingScene.js?v=616"></script>
-  <script src="src/scenes/BossScene.js?v=616"></script>
+  <script src="src/scenes/BootScene.js?v=617"></script>
+  <script src="src/scenes/TitleScene.js?v=617"></script>
+  <script src="src/scenes/StoryScene.js?v=617"></script>
+  <script src="src/scenes/GameScene.js?v=617"></script>
+  <script src="src/scenes/EndingScene.js?v=617"></script>
+  <script src="src/scenes/BossScene.js?v=617"></script>
 
   <!-- Core -->
-  <script src="src/config.js?v=616"></script>
-  <script src="src/main.js?v=616"></script>
+  <script src="src/config.js?v=617"></script>
+  <script src="src/main.js?v=617"></script>
 
   <script>
     // 全画面表示（フルスクリーン）切り替え

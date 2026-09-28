@@ -85,8 +85,11 @@ class GameScene extends Phaser.Scene {
     this.itemGroup = this.physics.add.group();
 
     // Player
-    this.player = this.physics.add.sprite(-100, 460, 'hero_combat_down_open').setScale(1.5);
-    this.player.play('hero_combat_anim');
+    const playerTex = this.textures.exists('hero_combat_down_open') ? 'hero_combat_down_open' : 'hero_stand';
+    this.player = this.physics.add.sprite(-100, 460, playerTex).setScale(1.5);
+    if (this.anims.exists('hero_combat_anim') && this.anims.get('hero_combat_anim').frames && this.anims.get('hero_combat_anim').frames.length > 0) {
+      this.player.play('hero_combat_anim');
+    }
     this.player.moveTween = this.tweens.add({ 
       targets: this.player, 
       x: 300, 

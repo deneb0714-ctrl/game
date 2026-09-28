@@ -132,13 +132,16 @@ class BossScene extends Phaser.Scene {
     this.itemGroup = this.physics.add.group();
 
     // Player
-    this.player = this.physics.add.sprite(-100, 460, 'hero_combat_down_open').setScale(1.5).setDepth(10);
+    const playerTex = this.textures.exists('hero_combat_down_open') ? 'hero_combat_down_open' : 'hero_stand';
+    this.player = this.physics.add.sprite(-100, 460, playerTex).setScale(1.5).setDepth(10);
     
     // 当たり判定可視化用グラフィックス
 //     this.playerHitboxGraphics = this.add.graphics();
 //     this.playerHitboxGraphics.setDepth(11);
 
-    this.player.play('hero_combat_anim');
+    if (this.anims.exists('hero_combat_anim') && this.anims.get('hero_combat_anim').frames && this.anims.get('hero_combat_anim').frames.length > 0) {
+      this.player.play('hero_combat_anim');
+    }
     // アニメーション再生後にサイズを指定（アニメーションによって上書きされるのを防ぐ）
     this.player.body.setSize(19, 80);
     this.player.body.setOffset(40, 10);

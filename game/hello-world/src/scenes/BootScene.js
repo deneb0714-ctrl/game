@@ -1,4 +1,4 @@
-﻿// =============================================
+// =============================================
 // BootScene.js – アセットプリロード＋プロシージャルスプライト生成
 // =============================================
 window.MOT = window.MOT || {};
@@ -169,14 +169,14 @@ class BootScene extends Phaser.Scene {
     // 主人公の立ち絵は以下で読み込みます
     
     // 主人公の戦闘時・他者との会話時の立ち絵
-    this.load.image('hero_combat_down_open', 'assets/images/勇者_下目開け.png' + qs);
-    this.load.image('hero_combat_down_close', 'assets/images/勇者_下目閉じ.png' + qs);
-    this.load.image('hero_combat_up_open', 'assets/images/勇者_上目開け.png' + qs);
-    this.load.image('hero_combat_up_close', 'assets/images/勇者_上目閉じ.png' + qs);
-    this.load.image('demon_combat_down_open', 'assets/images/魔王_下目開け.png' + qs);
-    this.load.image('demon_combat_down_close', 'assets/images/魔王_下目閉じ.png' + qs);
-    this.load.image('demon_combat_up_open', 'assets/images/魔王_上目開け.png' + qs);
-    this.load.image('demon_combat_up_close', 'assets/images/魔王_上目閉じ.png' + qs);
+    this.load.image('hero_combat_down_open', 'assets/images/hero_combat_down_open.png' + qs);
+    this.load.image('hero_combat_down_close', 'assets/images/hero_combat_down_close.png' + qs);
+    this.load.image('hero_combat_up_open', 'assets/images/hero_combat_up_open.png' + qs);
+    this.load.image('hero_combat_up_close', 'assets/images/hero_combat_up_close.png' + qs);
+    this.load.image('demon_combat_down_open', 'assets/images/demon_combat_down_open.png' + qs);
+    this.load.image('demon_combat_down_close', 'assets/images/demon_combat_down_close.png' + qs);
+    this.load.image('demon_combat_up_open', 'assets/images/demon_combat_up_open.png' + qs);
+    this.load.image('demon_combat_up_close', 'assets/images/demon_combat_up_close.png' + qs);
 
     // 主人公の必殺技カットイン（目を閉じる・開ける）
     this.load.image('hero_special_cutin_closed', 'assets/images/hero_special_cutin_closed.png' + qs);
@@ -188,15 +188,15 @@ class BootScene extends Phaser.Scene {
     this.load.image('hero_stand_silent', 'assets/images/hero_stand_silent.png' + qs);
     this.load.image('hero_stand_corrupted', 'assets/images/hero_stand_corrupted.png' + qs);
     this.load.image('hero_cry', 'assets/images/hero_cry.png' + qs);
-    this.load.image('doctor_awaken_smile', 'assets/images/覚醒_笑.png' + qs);
-    this.load.image('doctor_awaken_smile_weapon', 'assets/images/覚醒_笑_武器展開.png' + qs);
-    this.load.image('doctor_awaken_smile_dying', 'assets/images/覚醒_笑_瀕死.png' + qs);
-    this.load.image('doctor_awaken_straight', 'assets/images/覚醒_真顔.png' + qs);
-    this.load.image('doctor_awaken_straight_dying', 'assets/images/覚醒_真顔_瀕死.png' + qs);
-    this.load.image('doctor_awaken_straight_weapon', 'assets/images/覚醒_真顔_武器展開.png' + qs);
-    this.load.image('doctor_awaken_normal', 'assets/images/覚醒_通常.png' + qs);
-    this.load.image('doctor_awaken_normal_dying', 'assets/images/覚醒_通常_瀕死.png' + qs);
-    this.load.image('doctor_awaken_normal_weapon', 'assets/images/覚醒_通常_武器展開.png' + qs);
+    this.load.image('doctor_awaken_smile', 'assets/images/doctor_awaken_smile.png' + qs);
+    this.load.image('doctor_awaken_smile_weapon', 'assets/images/doctor_awaken_smile_weapon.png' + qs);
+    this.load.image('doctor_awaken_smile_dying', 'assets/images/doctor_awaken_smile_dying.png' + qs);
+    this.load.image('doctor_awaken_straight', 'assets/images/doctor_awaken_straight.png' + qs);
+    this.load.image('doctor_awaken_straight_dying', 'assets/images/doctor_awaken_straight_dying.png' + qs);
+    this.load.image('doctor_awaken_straight_weapon', 'assets/images/doctor_awaken_straight_weapon.png' + qs);
+    this.load.image('doctor_awaken_normal', 'assets/images/doctor_awaken_normal.png' + qs);
+    this.load.image('doctor_awaken_normal_dying', 'assets/images/doctor_awaken_normal_dying.png' + qs);
+    this.load.image('doctor_awaken_normal_weapon', 'assets/images/doctor_awaken_normal_weapon.png' + qs);
 
 
     this.load.image('demon_lord_normal', 'assets/images/demon_lord_normal.png' + qs);
@@ -234,10 +234,10 @@ class BootScene extends Phaser.Scene {
     this.load.image('boss1_wind_slash', 'assets/images/boss1_wind_slash.png' + qs);
     this.load.image('boss2_bullet', 'assets/images/boss2_bullet.png' + qs);
     this.load.spritesheet('boss1_combat', 'assets/images/boss1_combat_sheet.png' + qs, { frameWidth: 100, frameHeight: 100 });
-    this.load.image('boss2_combat_down_open', 'assets/images/狂人_下目開け.png' + qs);
-    this.load.image('boss2_combat_down_close', 'assets/images/狂人_下目閉じ.png' + qs);
-    this.load.image('boss2_combat_up_open', 'assets/images/狂人_上目開け.png' + qs);
-    this.load.image('boss2_combat_up_close', 'assets/images/狂人_上目閉じ.png' + qs);
+    this.load.image('boss2_combat_down_open', 'assets/images/boss2_combat_down_open.png' + qs);
+    this.load.image('boss2_combat_down_close', 'assets/images/boss2_combat_down_close.png' + qs);
+    this.load.image('boss2_combat_up_open', 'assets/images/boss2_combat_up_open.png' + qs);
+    this.load.image('boss2_combat_up_close', 'assets/images/boss2_combat_up_close.png' + qs);
     this.load.spritesheet('boss3_battle_anim', 'assets/images/boss3_battle.png' + qs, { frameWidth: 560, frameHeight: 533 });
     this.load.image('boss2_normal', 'assets/images/boss2_normal.png' + qs);
     this.load.image('boss2_normal_dying', 'assets/images/boss2_normal_dying.png' + qs);
@@ -263,20 +263,20 @@ class BootScene extends Phaser.Scene {
     this.load.image('sister_hurt', 'assets/images/sister_hurt.png' + qs);
     
     // New sister combat images
-    this.load.image('sister_shoot1', 'assets/images/妹_撃つ1.png' + qs);
-    this.load.image('sister_shoot1_blink', 'assets/images/妹_撃つ1目閉じ.png' + qs);
-    this.load.image('sister_shoot2', 'assets/images/妹_撃つ2.png' + qs);
-    this.load.image('sister_shoot2_blink', 'assets/images/妹_撃つ2目閉じ.png' + qs);
-    this.load.image('sister_revive1', 'assets/images/妹_兄蘇生1.png' + qs);
-    this.load.image('sister_revive2', 'assets/images/妹_兄蘇生2.png' + qs);
+    this.load.image('sister_shoot1', 'assets/images/sister_shoot1.png' + qs);
+    this.load.image('sister_shoot1_blink', 'assets/images/sister_shoot1_closed.png' + qs);
+    this.load.image('sister_shoot2', 'assets/images/sister_shoot2.png' + qs);
+    this.load.image('sister_shoot2_blink', 'assets/images/sister_shoot2_closed.png' + qs);
+    this.load.image('sister_revive1', 'assets/images/sister_revive1.png' + qs);
+    this.load.image('sister_revive2', 'assets/images/sister_revive2.png' + qs);
     this.load.image('brother_normal', 'assets/images/brother_normal.png' + qs);
     this.load.image('brother_closed', 'assets/images/brother_closed.png' + qs);
-    this.load.image('brother_stand_open', 'assets/images/双子兄_立つ目開け.png');
-    this.load.image('brother_stand_closed', 'assets/images/双子兄_目閉じ.png');
-    this.load.image('brother_sit_open', 'assets/images/双子兄_座る目開け.png');
-    this.load.image('brother_sit_closed', 'assets/images/双子兄_座る目閉じ.png');
-    this.load.image('brother_shoot_open', 'assets/images/双子兄_座る銃を打つ目開け.png');
-    this.load.image('brother_shoot_closed', 'assets/images/双子兄_座る銃を打つ目閉じ.png');
+    this.load.image('brother_stand_open', 'assets/images/brother_stand_open.png' + qs);
+    this.load.image('brother_stand_closed', 'assets/images/brother_stand_closed.png' + qs);
+    this.load.image('brother_sit_open', 'assets/images/brother_sit_open.png' + qs);
+    this.load.image('brother_sit_closed', 'assets/images/brother_sit_closed.png' + qs);
+    this.load.image('brother_shoot_open', 'assets/images/brother_shoot_open.png' + qs);
+    this.load.image('brother_shoot_closed', 'assets/images/brother_shoot_closed.png' + qs);
     this.load.image('brother_dying', 'assets/images/brother_dying.png' + qs);
     this.load.image('brother_dying_closed', 'assets/images/brother_dying_closed.png' + qs);
     this.load.image('brother_revive1', 'assets/images/brother_revive1.png' + qs);
@@ -356,7 +356,35 @@ class BootScene extends Phaser.Scene {
       repeat: 0
     });
 
-    this.anims.create({
+    const safeCreateAnim = (config) => {
+      if (!config || !config.key) return;
+      let validFrames = [];
+      if (Array.isArray(config.frames)) {
+        config.frames.forEach(f => {
+          const k = typeof f === 'string' ? f : (f && f.key);
+          if (k && this.textures.exists(k)) {
+            validFrames.push(f);
+          }
+        });
+      }
+      if (validFrames.length === 0) {
+        let fallbackKey = 'hero_stand';
+        if (config.key.includes('demon')) fallbackKey = 'demon_lord_normal';
+        else if (config.key.includes('boss2')) fallbackKey = 'boss2_normal';
+        else if (config.key.includes('brother')) fallbackKey = 'brother_normal';
+        else if (config.key.includes('sister')) fallbackKey = 'sister_normal';
+        else if (config.key.includes('boss1')) fallbackKey = 'boss1_normal';
+        if (this.textures.exists(fallbackKey)) {
+          validFrames = [{ key: fallbackKey, duration: 400 }];
+        }
+      }
+      if (validFrames.length > 0) {
+        config.frames = validFrames;
+        this.anims.create(config);
+      }
+    };
+
+    safeCreateAnim({
       key: 'boss2_battle_play',
       frames: [
           { key: 'boss2_combat_down_open', duration: 400 },
@@ -369,44 +397,46 @@ class BootScene extends Phaser.Scene {
       repeat: -1
     });
 
-    this.anims.create({
-      key: 'boss3_battle_play',
-      frames: this.anims.generateFrameNumbers('boss3_battle_anim', { start: 0, end: 19 }),
-      frameRate: 15,
-      repeat: -1
-    });
+    if (this.textures.exists('boss3_battle_anim')) {
+      this.anims.create({
+        key: 'boss3_battle_play',
+        frames: this.anims.generateFrameNumbers('boss3_battle_anim', { start: 0, end: 19 }),
+        frameRate: 15,
+        repeat: -1
+      });
+    }
 
-    this.anims.create({
+    safeCreateAnim({
       key: 'brother_idle',
       frames: [
-        { key: 'brother_stand_open' },
-        { key: 'brother_stand_closed' }
+        { key: 'brother_stand_open', duration: 400 },
+        { key: 'brother_stand_closed', duration: 400 }
       ],
       frameRate: 2,
       repeat: -1
     });
 
-    this.anims.create({
+    safeCreateAnim({
       key: 'brother_warn',
       frames: [
-        { key: 'brother_sit_open' },
-        { key: 'brother_sit_closed' }
+        { key: 'brother_sit_open', duration: 400 },
+        { key: 'brother_sit_closed', duration: 400 }
       ],
       frameRate: 2,
       repeat: -1
     });
 
-    this.anims.create({
+    safeCreateAnim({
       key: 'brother_fire',
       frames: [
-        { key: 'brother_shoot_open' },
-        { key: 'brother_shoot_closed' }
+        { key: 'brother_shoot_open', duration: 200 },
+        { key: 'brother_shoot_closed', duration: 200 }
       ],
       frameRate: 4,
       repeat: -1
     });
 
-    this.anims.create({
+    safeCreateAnim({
       key: 'hero_combat_anim',
       frames: [
           { key: 'hero_combat_down_open', duration: 400 },
@@ -419,7 +449,7 @@ class BootScene extends Phaser.Scene {
       repeat: -1
     });
     
-    this.anims.create({
+    safeCreateAnim({
       key: 'demon_combat_anim',
       frames: [
           { key: 'demon_combat_down_open', duration: 400 },
