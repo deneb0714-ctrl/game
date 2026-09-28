@@ -259,7 +259,7 @@ class GameScene extends Phaser.Scene {
     }
 
     // Barrier Logic
-    if (this.barrierCooldown > 0) {
+    if (!this.barrierActive && this.barrierCooldown > 0) {
       this.barrierCooldown -= delta;
       if (this.barrierCooldown < 0) this.barrierCooldown = 0;
     }
@@ -307,9 +307,13 @@ class GameScene extends Phaser.Scene {
       MOT.Audio.playBleep('博士');
       this.barrierActive = true;
       this.barrierTime = 0;
-      this.barrierCooldown = 2000;
+      this.barrierCooldown = 0;
       this.barrierActivatedTime = this.time.now; // ジャストガード用タイマー記録
       
+      if (this.barrierVisual) {
+        this.barrierVisual.destroy();
+        this.barrierVisual = null;
+      }
       this.barrierVisual = this.add.circle(this.player.x, this.player.y, 60, 0x00FFaa, 0.3);
       this.barrierVisual.setStrokeStyle(4, 0x00FFaa, 0.8);
       this.barrierVisual.setDepth(9);
@@ -317,7 +321,9 @@ class GameScene extends Phaser.Scene {
   }
 
   deactivateBarrier() {
+    if (!this.barrierActive) return;
     this.barrierActive = false;
+    this.barrierCooldown = 2000;
     if (this.barrierVisual) {
       this.tweens.add({
         targets: this.barrierVisual,
@@ -730,17 +736,44 @@ class GameScene extends Phaser.Scene {
   }
 
   onPlayerHit(player, obj) {
-    if (this.playerInvincible || this.dialogActive) return;
+    if (this.dialogActive) return;
+    if (this.playerInvincible && !this.barrierBreakInvincible) return;
 
-    if (this.barrierActive) {
-      obj.destroy();
-      this.deactivateBarrier();
+    if (this.barrierActive || this.barrierBreakInvincible) {
+      if (obj && obj.destroy) obj.destroy();
+      
+      // 同時ヒットの弾をまとめて一掃（プレイヤー周囲の敵弾を消滅させて多段被弾を完全に防止）
+      if (this.enemyBullets) {
+        this.enemyBullets.getChildren().slice().forEach(b => {
+          if (b && b.active && Phaser.Math.Distance.Between(player.x, player.y, b.x, b.y) <= 140) {
+            b.destroy();
+          }
+        });
+      }
 
-      // 短い無敵時間
-      this.playerInvincible = true;
-      this.time.delayedCall(150, () => {
-        this.playerInvincible = false;
-      });
+      if (this.barrierActive) {
+        this.deactivateBarrier();
+        // 短い無敵時間（同時にヒットした別の弾もシールドで防ぐため：150ms -> 500msに拡大）
+        this.barrierBreakInvincible = true;
+        this.playerInvincible = true;
+
+        this.tweens.add({
+          targets: player,
+          alpha: 0.4,
+          yoyo: true,
+          repeat: 3,
+          duration: 60,
+          onComplete: () => {
+            if (player && player.active) player.setAlpha(1);
+          }
+        });
+
+        this.time.delayedCall(500, () => {
+          this.barrierBreakInvincible = false;
+          this.playerInvincible = false;
+          if (player && player.active) player.setAlpha(1);
+        });
+      }
 
       // 反撃SE＆エフェクト（イエローフラッシュ＆ゴールド粒子）
       this.cameras.main.flash(200, 255, 215, 0);
@@ -998,11 +1031,19 @@ class GameScene extends Phaser.Scene {
     this.barrierIconBg.lineStyle(2, 0x334155, 1);
     this.barrierIconBg.strokeCircle(iconX, iconY, iconRadius);
 
-    if (this.barrierCooldown <= 0) {
+    if (this.barrierActive) {
+      this.barrierIconFg.clear();
+      this.barrierIconFg.fillStyle(0x00FFaa, 0.9);
+      this.barrierIconFg.fillCircle(iconX, iconY, iconRadius - 2);
+      this.barrierIconBg.lineStyle(3, 0x00FFaa, 1);
+      this.barrierIconBg.strokeCircle(iconX, iconY, iconRadius);
+    } else if (this.barrierCooldown <= 0) {
+      this.barrierIconFg.clear();
       this.barrierIconFg.fillStyle(0x00FFaa, 1);
       this.barrierIconFg.fillCircle(iconX, iconY, iconRadius - 2);
     } else {
       const cdPct = 1 - (this.barrierCooldown / 2000);
+      this.barrierIconFg.clear();
       this.barrierIconFg.fillStyle(0x00FFaa, 0.4);
       this.barrierIconFg.beginPath();
       this.barrierIconFg.moveTo(iconX, iconY);

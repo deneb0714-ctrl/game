@@ -175,7 +175,7 @@ class BossScene extends Phaser.Scene {
     this.barrierHitbox = this.physics.add.sprite(-100, 460, null).setVisible(false);
     this.barrierHitbox.body.setCircle(60);
     this.physics.add.overlap(this.barrierHitbox, this.enemyBullets, (hitbox, bullet) => {
-      if (this.barrierActive) {
+      if (this.barrierActive || this.barrierBreakInvincible) {
         this.onPlayerHit(this.player, bullet);
       }
     });
@@ -610,7 +610,7 @@ class BossScene extends Phaser.Scene {
       }
       this.heroImage.setScale(750 / this.heroImage.width);
       this.heroImage.setY(100 + (this.heroImage.height * this.heroImage.scaleY) / 2);
-      this.showDialogue(MOT.flags.heroName || '勇者', text, res);
+      this.showDialogue('勇者', text, res);
     });
 
     const sayDemon = (text, tex = 'demon_lord_normal') => new Promise(res => {
@@ -706,7 +706,7 @@ class BossScene extends Phaser.Scene {
       this.tweens.add({ targets: dimBg, alpha: 0.6, duration: 300 });
       this.tweens.add({ targets: this.heroImage, alpha: 1, duration: 300 });
       this.tweens.add({ targets: [maleFrame, maleLabel, femaleFrame, femaleLabel], alpha: 0.4, duration: 300 });
-      this.showDialogue(MOT.flags.heroName || '勇者', text, res);
+      this.showDialogue('勇者', text, res);
     });
 
     (async () => {
@@ -1032,14 +1032,14 @@ class BossScene extends Phaser.Scene {
 
     let isDialog = this.dialogActive || this.choiceActive || (this.choiceContainer && this.choiceContainer.active);
     
-    // 会話が終わった瞬間（dialogActive が true から false に変わった時）に、バリアのクールタイムを最大（0%からチャージ）にする
-    if (!isDialog && this.lastDialogActive) {
-      // 2秒（2000ms）のフルクールタイムをセットし、戦闘開始直後のバリアを完全に防ぐ
+    // 戦闘開始直後のみバリアクールタイム（2秒）をセット（会話ごとの理不尽リセットを防止）
+    if (!isDialog && !this.initialBarrierCDSet) {
+      this.initialBarrierCDSet = true;
       this.barrierCooldown = 2000;
     }
     this.lastDialogActive = isDialog;
 
-    if (isDialog || this.cutsceneActive) {
+    if (isDialog) {
       this.hideBossHPBar();
       this.updateHUD();
       return;
@@ -1050,7 +1050,7 @@ class BossScene extends Phaser.Scene {
       MOT.handleMovement(this, this.player);
       
       // バリアの更新（移動時に追従させるため）
-      if (this.barrierCooldown > 0) {
+      if (!this.barrierActive && this.barrierCooldown > 0) {
         this.barrierCooldown -= delta;
         if (this.barrierCooldown < 0) this.barrierCooldown = 0;
       }
@@ -1132,7 +1132,7 @@ class BossScene extends Phaser.Scene {
     }
 
     // Barrier Logic
-    if (this.barrierCooldown > 0) {
+    if (!this.barrierActive && this.barrierCooldown > 0) {
       this.barrierCooldown -= delta;
       if (this.barrierCooldown < 0) this.barrierCooldown = 0;
     }
@@ -1432,9 +1432,13 @@ class BossScene extends Phaser.Scene {
       MOT.Audio.playBleep('');
       this.barrierActive = true;
       this.barrierTime = 0;
-      this.barrierCooldown = 2000;
+      this.barrierCooldown = 0; // 展開中はクールタイム未開始
       this.barrierActivatedTime = this.time.now; // ジャストガード用タイマー記録
 
+      if (this.barrierVisual) {
+        this.barrierVisual.destroy();
+        this.barrierVisual = null;
+      }
       this.barrierVisual = this.add.circle(this.player.x, this.player.y, 60, 0x00FFaa, 0.3);
       this.barrierVisual.setStrokeStyle(4, 0x00FFaa, 0.8);
       this.barrierVisual.setDepth(9);
@@ -1442,7 +1446,9 @@ class BossScene extends Phaser.Scene {
   }
 
   deactivateBarrier() {
+    if (!this.barrierActive) return;
     this.barrierActive = false;
+    this.barrierCooldown = 2000; // バリア終了・破壊時に2秒間のクールタイムを開始
     if (this.barrierVisual) {
       this.tweens.add({
         targets: this.barrierVisual,
@@ -2016,23 +2022,50 @@ class BossScene extends Phaser.Scene {
   }
 
   onPlayerHit(player, obj) {
-    if (this.playerInvincible || this.dialogActive) return;
+    if (this.dialogActive) return;
+    if (this.playerInvincible && !this.barrierBreakInvincible) return;
 
-    if (this.barrierActive) {
+    if (this.barrierActive || this.barrierBreakInvincible) {
       const isJustGuard = (this.time.now - this.barrierActivatedTime) <= 150; // シビアな判定 (150ms)
 
       if (obj.isScenarioMinion) {
         this.onBossHit({ active: true, damage: 9999, silent: false, destroy: function(){} }, obj);
-      } else {
+      } else if (obj && obj.destroy) {
         obj.destroy();
       }
-      this.deactivateBarrier();
+
+      // 同時ヒットの弾をまとめて一掃（プレイヤー周囲の敵弾を消滅させて多段被弾を完全に防止）
+      if (this.enemyBullets) {
+        this.enemyBullets.getChildren().slice().forEach(b => {
+          if (b && b.active && Phaser.Math.Distance.Between(player.x, player.y, b.x, b.y) <= 140) {
+            b.destroy();
+          }
+        });
+      }
       
-      // 同時にヒットした別の弾の判定を無視するための短い無敵時間を付与
-      this.playerInvincible = true;
-      this.time.delayedCall(150, () => {
+      if (this.barrierActive) {
+        this.deactivateBarrier();
+        // 同時にヒットした別の弾もバリアとして判定・破壊するための無敵時間を付与（150ms -> 500msに拡大）
+        this.barrierBreakInvincible = true;
+        this.playerInvincible = true;
+
+        this.tweens.add({
+          targets: player,
+          alpha: 0.4,
+          yoyo: true,
+          repeat: 3,
+          duration: 60,
+          onComplete: () => {
+            if (player && player.active) player.setAlpha(1);
+          }
+        });
+
+        this.time.delayedCall(500, () => {
+          this.barrierBreakInvincible = false;
           this.playerInvincible = false;
-      });
+          if (player && player.active) player.setAlpha(1);
+        });
+      }
 
       if (isJustGuard) {
         // ジャストガード（黄色のエフェクト）
@@ -2913,188 +2946,144 @@ class BossScene extends Phaser.Scene {
         }
       };
 
-      // ── 画面全体に広がる鮮烈な赤い線の結晶亀裂システム ──
+      // ── 真ん中から赤と白のヒビが少しずつ入って広がる演出 ──
       const impactX = w / 2;
-      const impactY = startY + 60; // 選択肢中央の衝撃点
+      const impactY = h / 2; // 画面・選択肢の中央
 
-      let crackRays = [];
-      let crackWebs = [];
-      let crackFacets = [];
+      let redBarrier = null;
 
       const initCrackGraphics = () => {
         if (!crackGfx) {
           crackGfx = this.add.graphics().setDepth(200020).setScrollFactor(0);
           uiElements.push(crackGfx);
         }
-        crackRays = [];
-        crackWebs = [];
-        crackFacets = [];
+        if (!redBarrier) {
+          redBarrier = this.add.rectangle(w / 2, h / 2, w, h, 0xff0000, 0.05)
+            .setDepth(200005)
+            .setScrollFactor(0)
+            .setBlendMode(Phaser.BlendModes.ADD);
+          uiElements.push(redBarrier);
+        }
+      };
 
-        // 衝撃点から走る12本の放射状の赤い亀裂
-        const numRays = 12;
-        for (let i = 0; i < numRays; i++) {
-          const baseAngle = (i / numRays) * Math.PI * 2 + (Math.random() - 0.5) * 0.25;
-          crackRays.push({
-            angle: baseAngle,
-            currX: impactX,
-            currY: impactY,
-            points: [{ x: impactX, y: impactY }]
-          });
+      const drawCrack = (startX, startY, scale) => {
+        // メインの枝を生成する再帰関数（ストーリー更新前の赤と白の鋭いフラクタル亀裂）
+        const generateBranch = (x, y, angle, depth, length, thickness) => {
+          if (depth <= 0) return;
+
+          // 赤と白を交えた鋭い光る線
+          const isWhite = Math.random() > 0.65;
+          const mainColor = isWhite ? 0xffffff : (Math.random() > 0.4 ? 0xff1744 : 0xff3b30);
+          const alpha = isWhite ? Phaser.Math.FloatBetween(0.85, 1.0) : Phaser.Math.FloatBetween(0.7, 0.95);
+
+          let endX = x + Math.cos(angle) * length;
+          let endY = y + Math.sin(angle) * length;
+          endX += Phaser.Math.Between(-12, 12);
+          endY += Phaser.Math.Between(-12, 12);
+
+          // 下地：赤い発光オーラ
+          crackGfx.lineStyle(thickness + 2.5, 0xb71c1c, 0.45);
+          crackGfx.beginPath();
+          crackGfx.moveTo(x, y);
+          crackGfx.lineTo(endX, endY);
+          crackGfx.strokePath();
+
+          // メインライン（赤 または 白）
+          crackGfx.lineStyle(thickness, mainColor, alpha);
+          crackGfx.beginPath();
+          crackGfx.moveTo(x, y);
+          crackGfx.lineTo(endX, endY);
+          crackGfx.strokePath();
+
+          // 枝分かれ（1〜3本）
+          const numBranches = Phaser.Math.Between(1, 3);
+          for (let i = 0; i < numBranches; i++) {
+            const newAngle = angle + Phaser.Math.FloatBetween(-0.55, 0.55);
+            generateBranch(endX, endY, newAngle, depth - 1, length * 0.72, Math.max(1.5, thickness - 1));
+          }
+        };
+
+        // 放射状の主枝を真ん中から全方向へ生成
+        const numMainBranches = Phaser.Math.Between(3, 5);
+        for (let i = 0; i < numMainBranches; i++) {
+          const angle = (i / numMainBranches) * Math.PI * 2 + Phaser.Math.FloatBetween(-0.35, 0.35);
+          const branchDepth = Phaser.Math.Between(3, 5);
+          const branchLength = Phaser.Math.Between(45, 90) * scale;
+          const branchThickness = Math.min(5.5, 2.5 + scale * 0.6);
+          generateBranch(startX, startY, angle, branchDepth, branchLength, branchThickness);
         }
       };
 
       const growCracks = (step) => {
-        if (!crackGfx) initCrackGraphics();
+        initCrackGraphics();
 
-        // 打撃瞬間の赤い閃光フラッシュ
-        const hitFlash = this.add.rectangle(w / 2, h / 2, w, h, 0xff1744, 0.12 + step * 0.015).setDepth(200028).setScrollFactor(0);
+        // 赤いバリアが徐々に赤く強く発光する
+        if (redBarrier) {
+          redBarrier.setAlpha(0.06 + (step / 10) * 0.45);
+        }
+
+        // 真ん中からヒビを入れる（stepに応じてスケールが拡大し、画面全体へ少しずつ広がる）
+        const scale = 0.45 + step * 0.35;
+        drawCrack(impactX, impactY, scale);
+
+        // stepが3以上なら、中心から少し離れた亀裂先端からもランダムにサブヒビを伸ばしてより自然に侵食
+        if (step >= 3) {
+          const subAngle = Math.random() * Math.PI * 2;
+          const subDist = Phaser.Math.Between(50, 140 + step * 30);
+          const subX = impactX + Math.cos(subAngle) * subDist;
+          const subY = impactY + Math.sin(subAngle) * subDist;
+          drawCrack(subX, subY, scale * 0.65);
+        }
+
+        // 打撃瞬間の赤白閃光フラッシュ
+        const hitFlash = this.add.rectangle(w / 2, h / 2, w, h, 0xff1744, 0.12 + step * 0.015)
+          .setDepth(200028).setScrollFactor(0);
         this.tweens.add({ targets: hitFlash, alpha: 0, duration: 90, onComplete: () => hitFlash.destroy() });
 
-        // 衝撃点に走る赤いクロススパーク
-        const flare = this.add.graphics().setDepth(200025).setScrollFactor(0);
-        flare.lineStyle(3, 0xff1744, 0.95);
-        flare.lineBetween(impactX - 50, impactY, impactX + 50, impactY);
-        flare.lineBetween(impactX, impactY - 50, impactX, impactY + 50);
-        flare.lineStyle(1.5, 0xff5252, 1.0);
-        flare.lineBetween(impactX - 30, impactY, impactX + 30, impactY);
-        flare.lineBetween(impactX, impactY - 30, impactX, impactY + 30);
+        // 真ん中（中心）の白と赤の衝撃閃光スパーク
+        const spark = this.add.circle(impactX, impactY, 12 + step * 3, 0xffffff, 0.95)
+          .setDepth(200025).setScrollFactor(0);
         this.tweens.add({
-          targets: flare,
+          targets: spark,
+          scaleX: 2.2,
+          scaleY: 2.2,
           alpha: 0,
-          scaleX: 1.8,
-          scaleY: 1.8,
-          duration: 180,
-          onComplete: () => flare.destroy()
+          duration: 160,
+          onComplete: () => spark.destroy()
         });
-
-        // step（1〜10）に応じて少しずつ画面全体へ伸びる
-        const segLenBase = 22 + step * 7;
-
-        crackRays.forEach((ray, rayIdx) => {
-          ray.angle += (Math.random() - 0.5) * 0.45;
-          const segLen = Phaser.Math.Between(segLenBase - 5, segLenBase + 14);
-          ray.currX += Math.cos(ray.angle) * segLen;
-          ray.currY += Math.sin(ray.angle) * segLen;
-          const newPt = { x: ray.currX, y: ray.currY };
-          ray.points.push(newPt);
-
-          // 2. 隣接レイ間を結ぶ赤い結晶ウェブ
-          if (step >= 2 && Math.random() < 0.6) {
-            const nextRay = crackRays[(rayIdx + 1) % crackRays.length];
-            if (nextRay.points.length > 1) {
-              const p1 = newPt;
-              const p2 = nextRay.points[nextRay.points.length - 1];
-              crackWebs.push({ x1: p1.x, y1: p1.y, x2: p2.x, y2: p2.y });
-
-              // 薄い赤い結晶ファセット
-              if (Math.random() < 0.4 && ray.points.length >= 2) {
-                const p0 = ray.points[ray.points.length - 2];
-                crackFacets.push([
-                  { x: p0.x, y: p0.y },
-                  { x: p1.x, y: p1.y },
-                  { x: p2.x, y: p2.y }
-                ]);
-              }
-            }
-          }
-
-          // 3. 微細な赤いフォーク（枝分かれ）
-          if (step >= 3 && Math.random() < 0.45 && ray.points.length > 2) {
-            const startPt = ray.points[Phaser.Math.Between(1, ray.points.length - 1)];
-            const forkAngle = ray.angle + (Math.random() > 0.5 ? 1 : -1) * (0.4 + Math.random() * 0.4);
-            const forkLen = Phaser.Math.Between(15, 35 + step * 4);
-            crackWebs.push({
-              x1: startPt.x,
-              y1: startPt.y,
-              x2: startPt.x + Math.cos(forkAngle) * forkLen,
-              y2: startPt.y + Math.sin(forkAngle) * forkLen
-            });
-          }
-        });
-
-        // 描画実行
-        crackGfx.clear();
-
-        // [Layer 1] 薄い赤い屈折ファセット（半透明ポリゴン）
-        crackFacets.slice(-16).forEach(poly => {
-          crackGfx.fillStyle(0xff1744, Phaser.Math.FloatBetween(0.04, 0.12));
-          crackGfx.beginPath();
-          crackGfx.moveTo(poly[0].x, poly[0].y);
-          crackGfx.lineTo(poly[1].x, poly[1].y);
-          crackGfx.lineTo(poly[2].x, poly[2].y);
-          crackGfx.closePath();
-          crackGfx.fillPath();
-        });
-
-        const drawAllLines = (ox = 0, oy = 0) => {
-          crackRays.forEach(ray => {
-            if (ray.points.length > 1) {
-              crackGfx.beginPath();
-              crackGfx.moveTo(ray.points[0].x + ox, ray.points[0].y + oy);
-              for (let i = 1; i < ray.points.length; i++) {
-                crackGfx.lineTo(ray.points[i].x + ox, ray.points[i].y + oy);
-              }
-              crackGfx.strokePath();
-            }
-          });
-          crackWebs.forEach(web => {
-            crackGfx.beginPath();
-            crackGfx.moveTo(web.x1 + ox, web.y1 + oy);
-            crackGfx.lineTo(web.x2 + ox, web.y2 + oy);
-            crackGfx.strokePath();
-          });
-        };
-
-        // [Layer 2] シャドウクラック（深紅・黒の下地）
-        crackGfx.lineStyle(3.5, 0x2b0000, 0.7);
-        drawAllLines(1, 1);
-
-        // [Layer 3] 深紅のエネルギーオーラ（赤く光る外枠）
-        crackGfx.lineStyle(4.5, 0xb71c1c, 0.65);
-        drawAllLines(0, 0);
-
-        // [Layer 4] 鮮烈なクリムゾンレッド（メインの赤い線）
-        crackGfx.lineStyle(2.4, 0xff1744, 0.95);
-        drawAllLines(0, 0);
-
-        // [Layer 5] 最前面・鮮やかなハイライトレッド（ネオン朱色）
-        crackGfx.lineStyle(1.2, 0xff5252, 1.0);
-        drawAllLines(0, 0);
 
         // 衝撃波（赤いショックウェーブリング）
         const ring = this.add.circle(impactX, impactY, 15).setStrokeStyle(3, 0xff1744, 0.9).setDepth(200024).setScrollFactor(0);
         this.tweens.add({
           targets: ring,
-          radius: 80 + step * 20,
+          radius: 90 + step * 25,
           alpha: 0,
           duration: 250,
           ease: 'Cubic.easeOut',
           onComplete: () => ring.destroy()
         });
 
-        // 飛び散る微細な赤いガラス破片
-        for (let k = 0; k < 12; k++) {
-          const shardSize = Phaser.Math.Between(4, 12);
-          const color = k % 4 === 0 ? 0xffffff : (k % 4 === 1 ? 0xff1744 : (k % 4 === 2 ? 0xd50000 : 0xff5252));
-          const shard = this.add.triangle(
+        // 飛び散る微細な赤と白の破片
+        for (let k = 0; k < 8 + step * 2; k++) {
+          const color = Math.random() > 0.5 ? 0xffffff : (Math.random() > 0.4 ? 0xff1744 : 0xff5252);
+          const shardSize = Phaser.Math.Between(4, 11);
+          const shard = this.add.rectangle(
             impactX + Phaser.Math.Between(-15, 15),
             impactY + Phaser.Math.Between(-15, 15),
-            0, -shardSize,
-            shardSize * 0.5, shardSize,
-            -shardSize * 0.5, shardSize,
+            shardSize, shardSize,
             color, 0.95
           ).setDepth(200026).setScrollFactor(0);
 
           const angle = Math.random() * Math.PI * 2;
-          const dist = Phaser.Math.Between(40, 180 + step * 10);
+          const dist = Phaser.Math.Between(40, 160 + step * 18);
           this.tweens.add({
             targets: shard,
             x: shard.x + Math.cos(angle) * dist,
-            y: shard.y + Math.sin(angle) * dist + 25,
+            y: shard.y + Math.sin(angle) * dist + 20,
             angle: Phaser.Math.Between(-360, 360),
             alpha: 0,
             scale: 0.1,
-            duration: Phaser.Math.Between(300, 550),
+            duration: Phaser.Math.Between(280, 500),
             ease: 'Power2',
             onComplete: () => shard.destroy()
           });
@@ -3261,8 +3250,18 @@ class BossScene extends Phaser.Scene {
           }
           opt1Destroyed = true;
 
-          // ヒビグラフィック消去
+          // ヒビグラフィック消去＆バリア破壊演出
           if (crackGfx) { crackGfx.destroy(); crackGfx = null; }
+          if (redBarrier) {
+            this.tweens.add({
+              targets: redBarrier,
+              alpha: 0,
+              scaleX: 1.5,
+              scaleY: 1.5,
+              duration: 400,
+              onComplete: () => { if (redBarrier) { redBarrier.destroy(); redBarrier = null; } }
+            });
+          }
 
           // 「2. 殺さない」を灰色から完全解放！
           isGrayedOut = false;
@@ -3284,8 +3283,7 @@ class BossScene extends Phaser.Scene {
           if (sayHero) {
             await sayHero('「……それでも僕は、殺したくない……！！」');
           } else {
-            const heroName = MOT.flags.heroName || '勇者';
-            await new Promise(r => this.showDialogue(heroName, '「……それでも僕は、殺したくない……！！」', r));
+            await new Promise(r => this.showDialogue('勇者', '「……それでも僕は、殺したくない……！！」', r));
           }
 
           // 選択肢UIを再表示（画面上には解放された「2. 殺さない」だけが存在する！）
@@ -3602,7 +3600,7 @@ class BossScene extends Phaser.Scene {
       }
       this.heroImage.setScale(750 / this.heroImage.width);
       this.heroImage.setY(100 + (this.heroImage.height * this.heroImage.scaleY) / 2);
-      this.showDialogue(MOT.flags.heroName || '勇者', text, res);
+      this.showDialogue('勇者', text, res);
     });
 
             var key = this.currentBoss.configKey;
@@ -3878,7 +3876,7 @@ class BossScene extends Phaser.Scene {
               if (this.demonImage) this.tweens.add({ targets: this.demonImage, alpha: 0.4, duration: 300 });
               if (this.inunekoImage) this.tweens.add({ targets: this.inunekoImage, alpha: 0.4, duration: 300 });
               if (this.doctorImage) this.tweens.add({ targets: this.doctorImage, alpha: 0, duration: 300 });
-              this.showDialogue(MOT.flags.heroName || '勇者', text, res);
+              this.showDialogue('勇者', text, res);
             });
 
             const sayDoctor = (text, tex = 'doctor_stand') => new Promise(res => {
@@ -3942,8 +3940,6 @@ class BossScene extends Phaser.Scene {
                     { text: '2. 博士を信じられない', callback: () => { if(MOT.Audio.playSelect) MOT.Audio.playSelect(); res(2); } }
                   ]);
                 });
-
-                const heroName = MOT.flags.heroName || '勇者';
 
                 // 魔王の説明
                 await sayDemon('「そうか……英断だな…。」');
@@ -4349,7 +4345,7 @@ class BossScene extends Phaser.Scene {
                 this.tweens.add({ targets: dimBg, alpha: 0.6, duration: 300 });
                 if (this.heroImage) this.tweens.add({ targets: this.heroImage, alpha: 1, duration: 300 });
                 if (this.bossImage) this.tweens.add({ targets: this.bossImage, alpha: 0.4, duration: 300 });
-                this.showDialogue(MOT.flags.heroName || '勇者', text, res);
+                this.showDialogue('勇者', text, res);
               });
 
               const sayDevice = (text) => new Promise(res => {
@@ -4646,9 +4642,9 @@ class BossScene extends Phaser.Scene {
         });
         const sayDevice = (text) => new Promise(res => { this.tweens.add({ targets: dimBg, alpha: 0.6, duration: 300 }); this.tweens.add({targets: this.heroImage, alpha: 0.4, duration: 300}); if(this.sisterImage) this.tweens.add({targets: this.sisterImage, alpha: 0.4, duration: 300}); if(this.brotherImage) this.tweens.add({targets: this.brotherImage, alpha: 0.4, duration: 300}); this.showDeviceDialogue(text, res); });
         
-        const sayHero = (text) => new Promise(res => { this.tweens.add({ targets: dimBg, alpha: 0.6, duration: 300 }); this.tweens.add({targets: this.heroImage, alpha: 1, duration: 300}); if(this.sisterImage) this.tweens.add({targets: this.sisterImage, alpha: 0.4, duration: 300}); if(this.brotherImage) this.tweens.add({targets: this.brotherImage, alpha: 0.4, duration: 300}); if (text === '「……」' || text === '「……。」' || text === '「…」') { this.heroImage.setTexture('hero_stand_silent'); } else { this.heroImage.setTexture('hero_stand'); } this.heroImage.setScale(750 / this.heroImage.width); this.heroImage.setY(100 + (this.heroImage.height * this.heroImage.scaleY) / 2); this.showDialogue(MOT.flags.heroName || '勇者', text, res); });
-        const sayMan = (text, name = '男') => new Promise(res => { this.tweens.add({ targets: dimBg, alpha: 0.6, duration: 300 }); this.tweens.add({targets: this.heroImage, alpha: 0.4, duration: 300}); if(this.sisterImage) { this.tweens.add({targets: this.sisterImage, alpha: 0.4, duration: 300}); this.sisterImage.setDepth(90); } if(this.brotherImage) { this.tweens.add({targets: this.brotherImage, alpha: 1, duration: 300}); this.brotherImage.setDepth(91); } this.showDialogue(name, text, res); });
-        const sayWoman = (text, name = '女') => new Promise(res => { this.tweens.add({ targets: dimBg, alpha: 0.6, duration: 300 }); this.tweens.add({targets: this.heroImage, alpha: 0.4, duration: 300}); if(this.sisterImage) { this.tweens.add({targets: this.sisterImage, alpha: 1, duration: 300}); this.sisterImage.setDepth(91); } if(this.brotherImage) { this.tweens.add({targets: this.brotherImage, alpha: 0.4, duration: 300}); this.brotherImage.setDepth(90); } this.showDialogue(name, text, res); });
+        const sayHero = (text) => new Promise(res => { this.tweens.add({ targets: dimBg, alpha: 0.6, duration: 300 }); this.tweens.add({targets: this.heroImage, alpha: 1, duration: 300}); if(this.sisterImage) this.tweens.add({targets: this.sisterImage, alpha: 0.4, duration: 300}); if(this.brotherImage) this.tweens.add({targets: this.brotherImage, alpha: 0.4, duration: 300}); if (text === '「……」' || text === '「……。」' || text === '「…」') { this.heroImage.setTexture('hero_stand_silent'); } else { this.heroImage.setTexture('hero_stand'); } this.heroImage.setScale(750 / this.heroImage.width); this.heroImage.setY(100 + (this.heroImage.height * this.heroImage.scaleY) / 2); this.showDialogue('勇者', text, res); });
+        const sayMan = (text, name = 'エディオ') => new Promise(res => { this.tweens.add({ targets: dimBg, alpha: 0.6, duration: 300 }); this.tweens.add({targets: this.heroImage, alpha: 0.4, duration: 300}); if(this.sisterImage) { this.tweens.add({targets: this.sisterImage, alpha: 0.4, duration: 300}); this.sisterImage.setDepth(90); } if(this.brotherImage) { this.tweens.add({targets: this.brotherImage, alpha: 1, duration: 300}); this.brotherImage.setDepth(91); } this.showDialogue(name, text, res); });
+        const sayWoman = (text, name = 'エナリア') => new Promise(res => { this.tweens.add({ targets: dimBg, alpha: 0.6, duration: 300 }); this.tweens.add({targets: this.heroImage, alpha: 0.4, duration: 300}); if(this.sisterImage) { this.tweens.add({targets: this.sisterImage, alpha: 1, duration: 300}); this.sisterImage.setDepth(91); } if(this.brotherImage) { this.tweens.add({targets: this.brotherImage, alpha: 0.4, duration: 300}); this.brotherImage.setDepth(90); } this.showDialogue(name, text, res); });
 
         (async () => {
           await sayDevice('「さぁ早くとどめを刺せ！」');
@@ -4680,8 +4676,8 @@ class BossScene extends Phaser.Scene {
           } else {
             if (this.brotherImage) this.brotherImage.setTexture('brother_hurt');
             if (MOT.flags.killedBoss1 || MOT.flags.killedBoss2) {
-              await sayMan('「君も何かおかしいって気が付いて来ただろう？博士の言うことなんて聞くべきじゃない」', '男');
-              await sayWoman('「兄さまの言う通りよ。そんな奴、従う価値もない。」', '女');
+              await sayMan('「君も何かおかしいって気が付いて来ただろう？博士の言うことなんて聞くべきじゃない」', 'エディオ');
+              await sayWoman('「兄さまの言う通りよ。そんな奴、従う価値もない。」', 'エナリア');
               if(this.sisterImage) {
                 this.tweens.add({ targets: this.sisterImage, alpha: 0, duration: 300, onComplete: () => { if(this.sisterImage) { this.sisterImage.destroy(); this.sisterImage = null; } } });
               }
@@ -4691,8 +4687,8 @@ class BossScene extends Phaser.Scene {
               await new Promise(r => this.tweens.add({ targets: [this.currentBoss, this.sisterBoss], x: 2200, duration: 1500, ease: 'Power2', onComplete: r }));
               await sayDevice('「なぜ殺さない！よりによってあいつらを生かすとは！！」');
             } else {
-              await sayMan('「君は、最初から気が付いてるんじゃないか？博士がおかしいって。」', '男');
-              await sayWoman('「あなたは誰も殺してない。だから、こっち側に来なさい。魔王様も許してくれる。」', '女');
+              await sayMan('「君は、最初から気が付いてるんじゃないか？博士がおかしいって。」', 'エディオ');
+              await sayWoman('「あなたは誰も殺してない。だから、こっち側に来なさい。魔王様も許してくれる。」', 'エナリア');
               if(this.sisterImage) {
                 this.tweens.add({ targets: this.sisterImage, alpha: 0, duration: 300, onComplete: () => { if(this.sisterImage) { this.sisterImage.destroy(); this.sisterImage = null; } } });
               }
@@ -5701,7 +5697,13 @@ class BossScene extends Phaser.Scene {
     this.barrierIconBg.lineStyle(2, 0x334155, 1);
     this.barrierIconBg.strokeCircle(iconX, iconY, iconRadius);
 
-    if (this.barrierCooldown <= 0) {
+    if (this.barrierActive) {
+      this.barrierIconFg.clear();
+      this.barrierIconFg.fillStyle(0x00FFaa, 0.9);
+      this.barrierIconFg.fillCircle(iconX, iconY, iconRadius - 2);
+      this.barrierIconBg.lineStyle(3, 0x00FFaa, 1);
+      this.barrierIconBg.strokeCircle(iconX, iconY, iconRadius);
+    } else if (this.barrierCooldown <= 0) {
       this.barrierIconFg.clear();
       this.barrierIconFg.fillStyle(0x00FFaa, 1);
       this.barrierIconFg.fillCircle(iconX, iconY, iconRadius - 2);
