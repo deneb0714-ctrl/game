@@ -4673,20 +4673,31 @@ class BossScene extends Phaser.Scene {
               const redOverlay = this.add.rectangle(w / 2, h / 2, w, h, 0xff0000, 0.5).setDepth(200000);
               this.tweens.add({ targets: redOverlay, alpha: 0, duration: 300, onComplete: () => redOverlay.destroy() });
 
-              // 博士が倒れて非表示に
+              // 博士が倒れて破棄
               if (this.rightSpeakerImage) {
+                const docImg = this.rightSpeakerImage;
+                this.rightSpeakerImage = null;
+                this.tweens.killTweensOf(docImg);
                 this.tweens.add({
-                  targets: this.rightSpeakerImage,
+                  targets: docImg,
                   alpha: 0,
-                  y: this.rightSpeakerImage.y + 100,
-                  duration: 600
+                  y: docImg.y + 100,
+                  duration: 400,
+                  onComplete: () => {
+                    if (docImg && docImg.destroy) docImg.destroy();
+                  }
                 });
+              }
+              if (this.doctorImage) {
+                const dImg = this.doctorImage;
+                this.doctorImage = null;
+                this.tweens.killTweensOf(dImg);
+                if (dImg && dImg.destroy) dImg.destroy();
               }
 
               // 博士自害ナレーション
               const sayNarration = (text) => new Promise(res => {
                 if (this.heroImage && this.heroImage.active) this.tweens.add({ targets: this.heroImage, alpha: 0.3, duration: 250 });
-                if (this.rightSpeakerImage && this.rightSpeakerImage.active) this.tweens.add({ targets: this.rightSpeakerImage, alpha: 0, duration: 250 });
                 this.showDialogue('', text, res);
               });
               await sayNarration('博士は、自分に向かって引き金を引いた。');
