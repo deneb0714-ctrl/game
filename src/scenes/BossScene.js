@@ -858,20 +858,6 @@ class BossScene extends Phaser.Scene {
     var iScale = 300 / 691; // Fixed width from cropped image
     this.inunekoImage.setScale(iScale);
     this.inunekoImage.setY(350); // 顔の右側（高さを顔付近に調整）
-    this.time.addEvent({
-      delay: 3000, loop: true, callback: () => {
-        if (this.inunekoImage && this.inunekoImage.active && this.inunekoImage.alpha > 0) {
-          if (this.inunekoImage.texture.key === 'inuneko_stand') {
-            this.inunekoImage.setTexture('inuneko_blink');
-            this.time.delayedCall(150, () => {
-              if (this.inunekoImage && this.inunekoImage.active && this.inunekoImage.texture.key === 'inuneko_blink') {
-                this.inunekoImage.setTexture('inuneko_stand');
-              }
-            });
-          }
-        }
-      }
-    });
     
     const sayDevice = (text) => new Promise(res => {
       this.tweens.add({ targets: dimBg, alpha: 0, duration: 300 });
@@ -4302,26 +4288,7 @@ class BossScene extends Phaser.Scene {
               }
               bossImage.setScale(bScale);
               bossImage.setY(100 + (bossImage.height * bScale) / 2);
-              
-              if (this.currentBoss.configKey === 'boss3_twins') {
-                this.time.addEvent({
-                  delay: 3500, loop: true, callback: () => {
-                    if (bossImage && bossImage.active && bossImage.alpha > 0) {
-                      let k = bossImage.texture.key;
-                      let blinkTo = null;
-                      if (k === 'brother_normal') blinkTo = 'brother_closed';
-                      if (blinkTo) {
-                        bossImage.setTexture(blinkTo);
-                        this.time.delayedCall(150, () => {
-                          if (bossImage && bossImage.active && bossImage.texture.key === blinkTo) {
-                            bossImage.setTexture(k);
-                          }
-                        });
-                      }
-                    }
-                  }
-                });
-              }
+              this.bossImage = bossImage;
 
               enemyFrame.setVisible(false);
               enemyLabel.setVisible(false);
@@ -4339,21 +4306,7 @@ class BossScene extends Phaser.Scene {
               sisterImage.setScale(sScale);
               sisterImage.setY(100 + (sisterImage.height * sScale) / 2);
               bossImage.setX(w - 200); // 兄を右へ
-              
-              this.time.addEvent({
-                delay: 3000, loop: true, callback: () => {
-                  if (sisterImage && sisterImage.active && sisterImage.alpha > 0) {
-                    if (sisterImage.texture.key === 'sister_normal') {
-                      sisterImage.setTexture('sister_blink');
-                      this.time.delayedCall(150, () => {
-                        if (sisterImage && sisterImage.active && sisterImage.texture.key === 'sister_blink') {
-                          sisterImage.setTexture('sister_normal');
-                        }
-                      });
-                    }
-                  }
-                }
-              });
+              this.sisterImage = sisterImage;
             }
             
             let lastEnemySpeaker = '男'; // '男' or '女'
@@ -6031,36 +5984,6 @@ class BossScene extends Phaser.Scene {
         this.brotherImage.setScale(bScale);
         this.brotherImage.setY(100 + (this.brotherImage.height * bScale) / 2);
 
-        // Sister & Brother Blinking logic
-        this.time.addEvent({
-          delay: 3000, loop: true, callback: () => {
-            if (this.sisterImage && this.sisterImage.active && this.sisterImage.alpha > 0) {
-              if (this.sisterImage.texture.key === 'sister_normal') {
-                this.sisterImage.setTexture('sister_blink');
-                this.time.delayedCall(150, () => {
-                  if (this.sisterImage && this.sisterImage.active && this.sisterImage.texture.key === 'sister_blink') {
-                    this.sisterImage.setTexture('sister_normal');
-                  }
-                });
-              }
-            }
-            if (this.brotherImage && this.brotherImage.active && this.brotherImage.alpha > 0) {
-              let k = this.brotherImage.texture.key;
-              let blinkTo = null;
-              if (k === 'brother_dying') blinkTo = 'brother_dying_closed';
-              if (k === 'brother_hurt') blinkTo = 'brother_hurt_closed';
-              if (blinkTo) {
-                this.brotherImage.setTexture(blinkTo);
-                this.time.delayedCall(150, () => {
-                  if (this.brotherImage && this.brotherImage.active && this.brotherImage.texture.key === blinkTo) {
-                    this.brotherImage.setTexture(k);
-                  }
-                });
-              }
-            }
-          }
-        });
-
         const askChoice = (label1, label2) => new Promise(res => {
           this.showChoice([
             { text: label1, callback: () => { MOT.Audio.playSelect(); res(1); } },
@@ -6826,38 +6749,15 @@ class BossScene extends Phaser.Scene {
         bodyText.setText(text.substring(0, charIndex));
         if (text[charIndex - 1] !== ' ' && window.MOT && MOT.Audio && MOT.Audio.playBleep) MOT.Audio.playBleep(speaker);
 
-        // まばたき演出（話し始めのみ一瞬、明るい時のみ）
-        const isHero = speaker && speaker.includes('勇者');
-        if (isHero && this.heroImage && this.heroImage.active && this.heroImage.alpha >= 0.75) {
-          if (charIndex === 1 && text[charIndex - 1] !== ' ') {
-            if (this.heroImage.texture.key === 'hero_stand') {
-              this.heroImage.setTexture('hero_stand_blink');
-            }
-          } else if (charIndex === 4 || charIndex >= text.length) {
-            if (this.heroImage.texture.key === 'hero_stand_blink') {
-              this.heroImage.setTexture('hero_stand');
-            }
-          }
-        }
-
-        const isDemon = speaker && speaker.includes('魔王');
-        if (isDemon && this.demonImage && this.demonImage.active && this.demonImage.alpha >= 0.75) {
-          const currentTex = this.demonImage.texture.key;
-          if (currentTex === 'demon_lord_normal' || currentTex === 'demon_lord_blink' || currentTex === 'demon_lord_silent') {
-            if (charIndex < text.length && (charIndex % 15 === 1 || charIndex % 15 === 2)) {
-              this.demonImage.setTexture('demon_lord_blink');
-            } else {
-              this.demonImage.setTexture('demon_lord_normal');
-            }
-          }
-        }
-
         if (charIndex >= text.length) {
           typeTimer.destroy();
           contText.setAlpha(1);
         }
       }, callbackScope: this, loop: true
     });
+
+    // 会話開始時にも暗くないキャラが一回瞬き
+    this.triggerActiveBlink();
 
     const advance = () => {
       this.dialogEndTime = Date.now();
@@ -6882,8 +6782,11 @@ class BossScene extends Phaser.Scene {
       if (event && typeof event.stopPropagation === 'function') event.stopPropagation();
       else if (arg1 && typeof arg1.stopPropagation === 'function') arg1.stopPropagation();
       const now = Date.now();
-      if (now - lastTapTime < 200) return;
+      if (now - lastTapTime < 180) return;
       lastTapTime = now;
+
+      // 文字をおくる（スペースキー・Enterキー・クリック）たびに暗くなっていないキャラが一回瞬き
+      this.triggerActiveBlink();
 
       if (charIndex < text.length) {
         typeTimer.destroy();
@@ -6905,6 +6808,61 @@ class BossScene extends Phaser.Scene {
     this.input.off('pointerdown', handleInput);
     this.input.on('pointerdown', handleInput);
     this.input.keyboard.on('keydown', handleKey);
+  }
+
+  // 暗くなっていない立ち絵キャラだけを一回瞬きさせる
+  triggerActiveBlink() {
+    const candidates = [
+      this.heroImage,
+      this.demonImage,
+      this.inunekoImage,
+      this.sisterImage,
+      this.brotherImage,
+      this.bossImage,
+      this.rightSpeakerImage,
+      this.doctorImage
+    ];
+
+    candidates.forEach(img => {
+      // 暗くなっているキャラ（alpha < 0.75）や非表示・非アクティブは一切瞬きさせない
+      if (!img || !img.active || !img.visible || img.alpha < 0.75) return;
+
+      const key = (img.texture && img.texture.key) ? img.texture.key : '';
+      let blinkTex = null;
+      let restoreTex = key;
+
+      if (key === 'hero_stand' || key === 'hero_stand_blink') {
+        blinkTex = 'hero_stand_blink';
+        restoreTex = 'hero_stand';
+      } else if (key === 'demon_lord_normal' || key === 'demon_lord_blink' || key === 'demon_lord_silent') {
+        blinkTex = 'demon_lord_blink';
+        restoreTex = (key === 'demon_lord_silent') ? 'demon_lord_silent' : 'demon_lord_normal';
+      } else if (key === 'inuneko_stand' || key === 'inuneko_blink') {
+        blinkTex = 'inuneko_blink';
+        restoreTex = 'inuneko_stand';
+      } else if (key === 'sister_normal' || key === 'sister_blink') {
+        blinkTex = 'sister_blink';
+        restoreTex = 'sister_normal';
+      } else if (key === 'brother_normal' || key === 'brother_closed') {
+        blinkTex = 'brother_closed';
+        restoreTex = 'brother_normal';
+      } else if (key === 'brother_dying' || key === 'brother_dying_closed') {
+        blinkTex = 'brother_dying_closed';
+        restoreTex = 'brother_dying';
+      } else if (key === 'brother_hurt' || key === 'brother_hurt_closed') {
+        blinkTex = 'brother_hurt_closed';
+        restoreTex = 'brother_hurt';
+      }
+
+      if (blinkTex && this.textures.exists(blinkTex)) {
+        img.setTexture(blinkTex);
+        this.time.delayedCall(130, () => {
+          if (img && img.active && img.texture && img.texture.key === blinkTex) {
+            img.setTexture(restoreTex);
+          }
+        });
+      }
+    });
   }
 
   showPuppetGlitchTerminal() {
