@@ -1483,24 +1483,33 @@ class GameScene extends Phaser.Scene {
           this.physics.resume();
 
           // 雑魚敵3体がやってくる（必ず赤・青ダイヤドロップ）
+          const tutorial3Enemies = [];
           for (let i = 0; i < 3; i++) {
             let e = this.spawnTutorialEnemy(i, 0);
             e.x = 1920 + Phaser.Math.Between(0, 80);
             e.stationaryDrop = true;
             e.tutorialRed = (i === 1);
+            e.isInvulnerable = true; // 博士のセリフが終わるまで倒されないよう無敵化
+            tutorial3Enemies.push(e);
             
             this.tweens.add({
               targets: e,
               x: 1400 + Phaser.Math.Between(0, 80),
-              duration: 2000,
+              duration: 1800,
               ease: 'Power2'
             });
           }
 
-          this.time.delayedCall(2000, () => {
+          this.time.delayedCall(1800, () => {
             this.physics.pause();
             this.dialogActive = true;
             this.showDeviceDialogue('「試しに全部倒してみろ」', () => {
+              // 博士が「倒してみろ」と指示した後に無敵を解除
+              tutorial3Enemies.forEach(enemy => {
+                if (enemy && enemy.active) {
+                  enemy.isInvulnerable = false;
+                }
+              });
               this.dialogActive = false;
               this.tutorialPhase = 4;
               this.physics.resume();
