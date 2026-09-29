@@ -277,6 +277,36 @@ class TitleScene extends Phaser.Scene {
         directKey: 'bad_puppet'
       },
       'Digit6': {
+        name: 'BAD END (強制シャットダウン) 分岐前 (魔王戦・命令20回未満)',
+        action: () => {
+          MOT.resetFlags();
+          MOT.flags.killedBoss1 = true;
+          MOT.flags.killedBoss2 = false;
+          MOT.flags.killedTwins = false;
+          MOT.flags.doctorObeyCount = 5;
+          MOT.flags.obeyDoctor = 0;
+          MOT.flags.playerHP = 5;
+          return { startBossIndex: 3, initialBossHP: 60 };
+        },
+        directKey: 'bad_shutdown'
+      },
+      'Digit7': {
+        name: '隠しエンド (自由の身) 直前 (魔王戦・ダイヤ20個以上)',
+        action: () => {
+          MOT.resetFlags();
+          MOT.flags.killedBoss1 = false;
+          MOT.flags.killedBoss2 = false;
+          MOT.flags.killedTwins = false;
+          MOT.flags.killingIntent = 250;
+          MOT.flags.redDiamondCount = 25;
+          MOT.flags.doctorObeyCount = 5;
+          MOT.flags.playerMaxHP = 5;
+          MOT.flags.playerHP = 5;
+          return { startBossIndex: 3, initialBossHP: 60 };
+        },
+        directKey: 'hidden_freedom'
+      },
+      'Digit8': {
         name: '博士戦 (ハッピーエンド決戦)',
         action: () => {
           MOT.resetFlags();
@@ -286,40 +316,16 @@ class TitleScene extends Phaser.Scene {
           MOT.flags.playerHP = 5;
           return { startBossIndex: 4, initialBossHP: 120 };
         },
-        directKey: 'bad_shutdown'
-      },
-      'Digit7': {
-        name: '隠しエンド (自由の身) 直前 (魔王戦)',
-        action: () => {
-          MOT.resetFlags();
-          MOT.flags.killedBoss1 = false;
-          MOT.flags.killedBoss2 = false;
-          MOT.flags.killedTwins = false;
-          MOT.flags.killingIntent = 250;
-          MOT.flags.redDiamondCount = 25;
-          MOT.flags.doctorObeyCount = 5;
-          MOT.flags.playerHP = 5;
-          return { startBossIndex: 3, initialBossHP: 60 };
-        },
-        directKey: 'hidden_freedom'
-      },
-      'Digit8': {
-        name: 'GAME OVER 直前 (HP1戦闘)',
-        action: () => {
-          MOT.resetFlags();
-          MOT.flags.playerHP = 1;
-          return { startBossIndex: 3, initialBossHP: 60 };
-        },
-        directKey: 'BAD_GAMEOVER'
+        directKey: 'hello_world'
       },
       'Digit9': {
-        name: '双子戦 (エディオ＆エナリア)',
+        name: 'クラトス戦 (ボス1)',
         action: () => {
           MOT.resetFlags();
           MOT.flags.playerHP = 5;
-          return { startBossIndex: 2 };
+          return { startBossIndex: 0 };
         },
-        directKey: 'hello_world'
+        directKey: 'BAD_GAMEOVER'
       }
     };
 
@@ -360,9 +366,9 @@ class TitleScene extends Phaser.Scene {
 
     // 画面左下にエンディングショートカット案内を表示
     const guideLines = [
-      '【分岐直前ショートカット (1〜8キーで戦闘から開始 / Shift+数字で直行)】',
-      '1: HAPPY END分岐(魔王戦・全生存)  |  2: 日常(魔王戦・殺す)  |  3: 役立たず(魔王戦・見逃す)',
-      '4: 抗えない(魔王戦・殺害)  |  5: 傀儡(魔王戦・全殺害)  |  6: 博士戦  |  7: クラトス戦  |  8: GAME OVER直前'
+      '【分岐直前ショートカット (1〜9キーで戦闘から開始 / Shift+数字で直行)】',
+      '1: HAPPY END(Hello World) | 2: 日常 | 3: 役立たず | 4: 抗えない | 5: 傀儡',
+      '6: 強制シャットダウン | 7: 自由の身(隠し) | 8: 博士戦 | 9: クラトス戦'
     ];
     this.add.text(20, h - 20, guideLines.join('\n'), {
       fontFamily: '"DotGothic16", sans-serif',
