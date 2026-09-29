@@ -4779,6 +4779,15 @@ class BossScene extends Phaser.Scene {
                   await sayDemon('「殺すならわらわだけで十分であろう！？わらわを殺せば組織は終わる！お前の目的だって達成される！！！」');
                   await sayInuneko('「何を言っとるにゃ！？魔王様も殺すなわん！！」');
                   await sayHero('「…」');
+
+                  // 【選択肢】「殺さない」という選択肢しか表示されない
+                  await new Promise(res => {
+                    this.showChoice([
+                      { text: '1. 殺さない', callback: () => { if(MOT.Audio && MOT.Audio.playSelect) MOT.Audio.playSelect(); res(1); } },
+                      { text: '2. 殺さない', callback: () => { if(MOT.Audio && MOT.Audio.playSelect) MOT.Audio.playSelect(); res(2); } }
+                    ]);
+                  });
+
                   await sayDevice('「おい、何をしている？早くしろ。」');
                   await sayHero('「うるさいな」');
 
