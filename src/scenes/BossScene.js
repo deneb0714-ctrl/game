@@ -4878,7 +4878,11 @@ class BossScene extends Phaser.Scene {
 
                   // 【ここからエンディングイラスト：立ち絵は一切表示せず動くGIFをアニメーション再生】
                   this.hideStandingPortraits();
+                  this.hideCombatField();
                   if (this.bg) this.bg.setVisible(false);
+
+                  // イラスト背面用の真っ黒な下地（水槽や研究所が一切透けないように）
+                  let illustrationBlackBg = this.add.rectangle(w / 2, h / 2, w * 2, h * 2, 0x000000, 1).setDepth(0).setScrollFactor(0);
 
                   // Phaser DOMコンテナをCanvasの背後に配置してダイアログを手前に保つ
                   if (this.game && this.game.domContainer) {
@@ -4934,7 +4938,7 @@ class BossScene extends Phaser.Scene {
 
                   await sayHero('「……。」');
 
-                  // 【暗転の中、文字だけ表示】
+                  // 【暗転の中、文字だけ表示：背景は完全な黒、最後まで黒】
                   this.cameras.main.fadeOut(800, 0, 0, 0);
                   await new Promise(r => this.time.delayedCall(850, r));
 
@@ -4943,10 +4947,26 @@ class BossScene extends Phaser.Scene {
                   }
                   let removeGif = document.getElementById('trueDemonLordImg');
                   if (removeGif) removeGif.remove();
+                  if (this.game && this.game.domContainer) {
+                    this.game.domContainer.style.zIndex = '';
+                  }
 
                   if (this.heroImage) { this.heroImage.destroy(); this.heroImage = null; }
                   if (this.doctorImage) { this.doctorImage.destroy(); this.doctorImage = null; }
+                  if (this.bg) { this.bg.setVisible(false); }
                   if (dimBg) { dimBg.destroy(); dimBg = null; }
+
+                  // 戦闘フィールド・プレイヤー・全UIを徹底的に非表示・画面外へ
+                  this.hideCombatField();
+                  if (this.player) {
+                    this.player.setVisible(false);
+                    this.player.setAlpha(0);
+                    this.player.setPosition(-9999, -9999);
+                  }
+
+                  // 画面全体を覆う完全な黒背景（depth: 95）を配置。ダイアログ（depth: 100以上）のみが暗闇に浮かぶ
+                  let fullBlackBg = this.add.rectangle(w / 2, h / 2, w * 4, h * 4, 0x000000, 1).setDepth(95).setScrollFactor(0);
+                  this.cameras.main.setBackgroundColor('#000000');
 
                   const sayDarkMono = (text) => new Promise(res => {
                     this.showDialogue('勇者', text, res);
@@ -4956,8 +4976,12 @@ class BossScene extends Phaser.Scene {
                   await sayDarkMono('「何をするにもこれから自由だ。誰に縛られることもない。」');
                   await sayDarkMono('「……ふふ、世界を掌握するっていうのも面白いかもな」');
 
+                  // 最後まで黒のままフェードアウトしてエンディングへ
                   this.cameras.main.fadeOut(1000, 0, 0, 0);
                   await new Promise(r => this.time.delayedCall(1000, r));
+
+                  if (illustrationBlackBg && illustrationBlackBg.destroy) illustrationBlackBg.destroy();
+                  if (fullBlackBg && fullBlackBg.destroy) fullBlackBg.destroy();
 
                   MOT.flags.finalEnding = 'hidden_freedom';
                   this.scene.start('EndingScene', { endingKey: 'hidden_freedom' });
@@ -7203,6 +7227,8 @@ class BossScene extends Phaser.Scene {
     if (this.player) {
       this.player.setVisible(false);
       this.player.setActive(false);
+      this.player.setAlpha(0);
+      this.player.setPosition(-9999, -9999);
       if (this.player.body) this.player.body.enable = false;
     }
     if (this.barrierVisual) {
@@ -7230,16 +7256,16 @@ class BossScene extends Phaser.Scene {
     if (this.itemGroup) this.itemGroup.clear(true, true);
 
     // 戦闘HUD UI
-    if (this.hpText) this.hpText.setVisible(false);
-    if (this.energyText) this.energyText.setVisible(false);
+    if (this.hpText) { this.hpText.setVisible(false); this.hpText.setText(''); }
+    if (this.energyText) { this.energyText.setVisible(false); this.energyText.setText(''); }
     if (this.energyBar) { this.energyBar.setVisible(false); this.energyBar.clear(); }
-    if (this.energyBarBgObj) this.energyBarBgObj.setVisible(false);
-    if (this.energyBarFgObj) this.energyBarFgObj.setVisible(false);
+    if (this.energyBarBgObj) { this.energyBarBgObj.setVisible(false); this.energyBarBgObj.setAlpha(0); }
+    if (this.energyBarFgObj) { this.energyBarFgObj.setVisible(false); this.energyBarFgObj.setAlpha(0); }
     if (this.energyBarOutline) { this.energyBarOutline.setVisible(false); this.energyBarOutline.clear(); }
     if (this.barrierIconBg) { this.barrierIconBg.setVisible(false); this.barrierIconBg.clear(); }
     if (this.barrierIconFg) { this.barrierIconFg.setVisible(false); this.barrierIconFg.clear(); }
-    if (this.bossHPText) this.bossHPText.setVisible(false);
-    if (this.sisterHPText) this.sisterHPText.setVisible(false);
+    if (this.bossHPText) { this.bossHPText.setVisible(false); this.bossHPText.setText(''); }
+    if (this.sisterHPText) { this.sisterHPText.setVisible(false); this.sisterHPText.setText(''); }
     if (this.bossHPBar) { this.bossHPBar.setVisible(false); this.bossHPBar.clear(); }
     if (this.areaNameText) { this.areaNameText.setVisible(false); this.areaNameText.setText(''); }
 
