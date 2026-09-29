@@ -345,7 +345,8 @@ class EndingScene extends Phaser.Scene {
               this.cameras.main.fadeOut(800, 5, 8, 20);
               this.time.delayedCall(800, function () {
                 const startIdx = (saveData && saveData.bossIndex !== undefined) ? saveData.bossIndex : 0;
-                this.scene.start('BossScene', { startBossIndex: startIdx, fromContinue: true });
+                const isDoctorP2 = Boolean((saveData && saveData.flags && (saveData.flags.doctorPhase2 || saveData.flags.isDoctorPhase2)) || (MOT.flags && (MOT.flags.doctorPhase2 || MOT.flags.isDoctorPhase2)));
+                this.scene.start('BossScene', { startBossIndex: startIdx, fromContinue: true, isDoctorPhase2: isDoctorP2 });
               }, [], this);
             }
           });
@@ -548,7 +549,8 @@ class EndingScene extends Phaser.Scene {
       this.cameras.main.fadeOut(800, 5, 8, 20);
       this.time.delayedCall(800, function () {
         const startIdx = (saveData && saveData.bossIndex !== undefined) ? saveData.bossIndex : 0;
-        this.scene.start('BossScene', { startBossIndex: startIdx, fromContinue: true });
+        const isDoctorP2 = Boolean((saveData && saveData.flags && (saveData.flags.doctorPhase2 || saveData.flags.isDoctorPhase2)) || (MOT.flags && (MOT.flags.doctorPhase2 || MOT.flags.isDoctorPhase2)));
+        this.scene.start('BossScene', { startBossIndex: startIdx, fromContinue: true, isDoctorPhase2: isDoctorP2 });
       }, [], this);
     }, this);
   }

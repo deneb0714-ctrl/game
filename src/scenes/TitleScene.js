@@ -168,9 +168,10 @@ class TitleScene extends Phaser.Scene {
           MOT.flags.useGlitchTitle = false;
         }
         const startIdx = (saveData && saveData.bossIndex !== undefined) ? saveData.bossIndex : 0;
+        const isDoctorP2 = Boolean((saveData && saveData.flags && (saveData.flags.doctorPhase2 || saveData.flags.isDoctorPhase2)) || (MOT.flags && (MOT.flags.doctorPhase2 || MOT.flags.isDoctorPhase2)));
         this.cameras.main.fadeOut(500, 5, 8, 20);
         this.time.delayedCall(500, function () {
-          this.scene.start('BossScene', { startBossIndex: startIdx, fromContinue: true });
+          this.scene.start('BossScene', { startBossIndex: startIdx, fromContinue: true, isDoctorPhase2: isDoctorP2 });
         }, [], this);
       }.bind(this));
     }
@@ -290,11 +291,20 @@ class TitleScene extends Phaser.Scene {
           return { startBossIndex: 3, initialBossHP: 60 };
         },
         directKey: 'BAD_GAMEOVER'
+      },
+      'Digit9': {
+        name: '双子戦 (エディオ＆エナリア)',
+        action: () => {
+          MOT.resetFlags();
+          MOT.flags.playerHP = 5;
+          return { startBossIndex: 2 };
+        },
+        directKey: 'hello_world'
       }
     };
 
     // テンキー対応
-    for (let i = 1; i <= 8; i++) {
+    for (let i = 1; i <= 9; i++) {
       branchConfigs['Numpad' + i] = branchConfigs['Digit' + i];
     }
 
