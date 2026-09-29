@@ -843,14 +843,35 @@ class TitleScene extends Phaser.Scene {
         
         titleText.setText((currentIndex + 1) + " / " + endings.length + "  " + (isUnlocked ? end.label : ""));
         
+        const existingGif = document.getElementById('trueDemonLordGalleryImg');
+        if (existingGif) existingGif.remove();
+
         if (isUnlocked) {
             if (end.cg) {
-                cgImage.setTexture(end.cg);
-                const scale = Math.min(1200 / cgImage.width, 675 / cgImage.height);
-                cgImage.setScale(scale);
-                cgImage.setVisible(true);
-                blackBg.setVisible(false);
-                condText.setVisible(false);
+                if (end.cg === 'true_demon_lord') {
+                    cgImage.setVisible(false);
+                    blackBg.setVisible(false);
+                    condText.setVisible(false);
+                    const gifDom = this.add.dom(w/2, h/2 - 20, 'img').setDepth(200005);
+                    if (gifDom.node) {
+                        gifDom.node.id = 'trueDemonLordGalleryImg';
+                        gifDom.node.src = 'assets/images/true_demon_lord.gif?v=' + (window.GAME_VERSION || Date.now());
+                        gifDom.node.style.width = '1200px';
+                        gifDom.node.style.height = '675px';
+                        gifDom.node.style.objectFit = 'cover';
+                        gifDom.node.style.border = '4px solid #4FD1FF';
+                        gifDom.node.style.boxSizing = 'border-box';
+                        gifDom.node.style.pointerEvents = 'none';
+                    }
+                    this.endContainer.add(gifDom);
+                } else {
+                    cgImage.setTexture(end.cg);
+                    const scale = Math.min(1200 / cgImage.width, 675 / cgImage.height);
+                    cgImage.setScale(scale);
+                    cgImage.setVisible(true);
+                    blackBg.setVisible(false);
+                    condText.setVisible(false);
+                }
             } else {
                 cgImage.setVisible(false);
                 blackBg.setVisible(true);
@@ -894,6 +915,8 @@ class TitleScene extends Phaser.Scene {
     
     closeBtn.on('pointerdown', () => {
       if (MOT.Audio && MOT.Audio.playSelect) MOT.Audio.playSelect();
+      const existingGif = document.getElementById('trueDemonLordGalleryImg');
+      if (existingGif) existingGif.remove();
       this.endContainer.destroy();
       this.endContainer = null;
       this.canClick = true;
@@ -911,10 +934,25 @@ class TitleScene extends Phaser.Scene {
     const bg = this.add.rectangle(w/2, h/2, w, h, 0x000000, 0.9).setInteractive();
     this.cgContainer.add(bg);
     
-    const cg = this.add.image(w/2, h/2, cgKey);
-    const scale = Math.min(w / cg.width, h / cg.height);
-    cg.setScale(scale);
-    this.cgContainer.add(cg);
+    if (cgKey === 'true_demon_lord') {
+      const oldCgGif = document.getElementById('trueDemonLordFullscreenImg');
+      if (oldCgGif) oldCgGif.remove();
+      const gifDom = this.add.dom(w/2, h/2, 'img').setDepth(300005);
+      if (gifDom.node) {
+        gifDom.node.id = 'trueDemonLordFullscreenImg';
+        gifDom.node.src = 'assets/images/true_demon_lord.gif?v=' + (window.GAME_VERSION || Date.now());
+        gifDom.node.style.width = `${w}px`;
+        gifDom.node.style.height = `${h}px`;
+        gifDom.node.style.objectFit = 'cover';
+        gifDom.node.style.pointerEvents = 'none';
+      }
+      this.cgContainer.add(gifDom);
+    } else {
+      const cg = this.add.image(w/2, h/2, cgKey);
+      const scale = Math.min(w / cg.width, h / cg.height);
+      cg.setScale(scale);
+      this.cgContainer.add(cg);
+    }
     
     const closeTxt = this.add.text(w/2, h - 50, "クリックで戻る", {
       fontFamily: '"DotGothic16"', fontSize: '28px', color: '#ffffff'
@@ -923,6 +961,8 @@ class TitleScene extends Phaser.Scene {
     
     bg.on('pointerdown', () => {
       if (MOT.Audio && MOT.Audio.playSelect) MOT.Audio.playSelect();
+      const oldCgGif = document.getElementById('trueDemonLordFullscreenImg');
+      if (oldCgGif) oldCgGif.remove();
       this.cgContainer.destroy();
       this.cgContainer = null;
     });

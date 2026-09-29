@@ -4876,15 +4876,41 @@ class BossScene extends Phaser.Scene {
                     ]);
                   });
 
-                  // 【ここからエンディングイラスト：立ち絵は一切表示しない】
+                  // 【ここからエンディングイラスト：立ち絵は一切表示せず動くGIFをアニメーション再生】
                   this.hideStandingPortraits();
-                  if (this.textures.exists('true_demon_lord')) {
-                    this.bg.setTexture('true_demon_lord');
-                    this.bg.setOrigin(0.5, 0.5);
-                    this.bg.setPosition(w / 2, h / 2);
-                    let scale = Math.max(w / this.bg.width, h / this.bg.height);
-                    this.bg.setScale(scale);
+                  if (this.bg) this.bg.setVisible(false);
+
+                  // Phaser DOMコンテナをCanvasの背後に配置してダイアログを手前に保つ
+                  if (this.game && this.game.domContainer) {
+                    this.game.domContainer.style.zIndex = '0';
                   }
+                  if (this.game && this.game.canvas) {
+                    this.game.canvas.style.position = 'relative';
+                    this.game.canvas.style.zIndex = '1';
+                  }
+
+                  let oldGif = document.getElementById('trueDemonLordImg');
+                  if (oldGif) oldGif.remove();
+
+                  let trueDemonLord = this.add.dom(w / 2, h / 2, 'img').setDepth(89);
+                  if (trueDemonLord.node) {
+                    trueDemonLord.node.id = 'trueDemonLordImg';
+                    trueDemonLord.node.src = 'assets/images/true_demon_lord.gif?v=' + (window.GAME_VERSION || Date.now());
+                    trueDemonLord.node.style.width = '1920px';
+                    trueDemonLord.node.style.height = '1080px';
+                    trueDemonLord.node.style.objectFit = 'cover';
+                    trueDemonLord.node.style.pointerEvents = 'none';
+                  }
+
+                  const cleanupBossGif = () => {
+                    let removeGif = document.getElementById('trueDemonLordImg');
+                    if (removeGif) removeGif.remove();
+                    if (this.game && this.game.domContainer) {
+                      this.game.domContainer.style.zIndex = '';
+                    }
+                  };
+                  this.events.once('shutdown', cleanupBossGif);
+                  this.events.once('destroy', cleanupBossGif);
 
                   await sayHero('「…」');
                   await sayDoctor('「こちらに銃を構えてどうした？ああ、私を倒したいでも言うのか。」');
@@ -4911,6 +4937,12 @@ class BossScene extends Phaser.Scene {
                   // 【暗転の中、文字だけ表示】
                   this.cameras.main.fadeOut(800, 0, 0, 0);
                   await new Promise(r => this.time.delayedCall(850, r));
+
+                  if (trueDemonLord && trueDemonLord.destroy) {
+                    trueDemonLord.destroy();
+                  }
+                  let removeGif = document.getElementById('trueDemonLordImg');
+                  if (removeGif) removeGif.remove();
 
                   if (this.heroImage) { this.heroImage.destroy(); this.heroImage = null; }
                   if (this.doctorImage) { this.doctorImage.destroy(); this.doctorImage = null; }

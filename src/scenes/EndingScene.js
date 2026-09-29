@@ -244,8 +244,47 @@ class EndingScene extends Phaser.Scene {
     
     let cgKey = ending.bgImageEnding || ending.bgImagePost || ending.bgImage;
     if (cgKey) {
-        let cgBg = this.add.image(w/2, h/2, cgKey).setDisplaySize(w, h).setDepth(0.5).setAlpha(0);
-        this.tweens.add({ targets: cgBg, alpha: 1, duration: 1500 });
+        if (cgKey === 'true_demon_lord') {
+            if (this.game && this.game.domContainer) {
+                this.game.domContainer.style.zIndex = '0';
+            }
+            if (this.game && this.game.canvas) {
+                this.game.canvas.style.position = 'relative';
+                this.game.canvas.style.zIndex = '1';
+                this.game.canvas.style.pointerEvents = 'auto';
+            }
+
+            const oldGif = document.getElementById('trueDemonLordEndingImg');
+            if (oldGif) oldGif.remove();
+
+            const gifDom = this.add.dom(w / 2, h / 2, 'img').setDepth(0.5);
+            if (gifDom.node) {
+                gifDom.node.id = 'trueDemonLordEndingImg';
+                gifDom.node.src = 'assets/images/true_demon_lord.gif?v=' + (window.GAME_VERSION || Date.now());
+                gifDom.node.style.width = `${w}px`;
+                gifDom.node.style.height = `${h}px`;
+                gifDom.node.style.objectFit = 'cover';
+                gifDom.node.style.pointerEvents = 'none';
+                gifDom.node.style.opacity = '0';
+                gifDom.node.style.transition = 'opacity 1.5s ease-in-out';
+                setTimeout(() => {
+                    if (gifDom.node) gifDom.node.style.opacity = '1';
+                }, 50);
+            }
+
+            const cleanupEndingGif = () => {
+                const el = document.getElementById('trueDemonLordEndingImg');
+                if (el) el.remove();
+                if (this.game && this.game.domContainer) {
+                    this.game.domContainer.style.zIndex = '';
+                }
+            };
+            this.events.once('shutdown', cleanupEndingGif);
+            this.events.once('destroy', cleanupEndingGif);
+        } else {
+            let cgBg = this.add.image(w/2, h/2, cgKey).setDisplaySize(w, h).setDepth(0.5).setAlpha(0);
+            this.tweens.add({ targets: cgBg, alpha: 1, duration: 1500 });
+        }
     }
 
     // Background particles
@@ -526,6 +565,11 @@ class EndingScene extends Phaser.Scene {
       if (actionTriggered) return;
       actionTriggered = true;
       cleanup();
+      const el = document.getElementById('trueDemonLordEndingImg');
+      if (el) {
+        el.style.transition = 'opacity 0.8s ease-in-out';
+        el.style.opacity = '0';
+      }
       if (MOT.Audio && MOT.Audio.playSelect) MOT.Audio.playSelect();
       this.cameras.main.fadeOut(800, 0, 0, 0);
       this.time.delayedCall(800, function () {
