@@ -50,27 +50,28 @@ MOT.Audio = (function () {
       const gain = ctx.createGain();
       
       if (isGlitch) {
-        // 赤文字ターミナルやエラー用：少し歪んだ低〜中域の不規則電子音
-        const freqs = [280, 360, 440, 520, 680];
+        // 赤文字ターミナルやエラー用：低く重いノイズ・バズ音（90Hz〜230Hz）
+        const freqs = [90, 120, 150, 180, 230];
         const freq = freqs[Math.floor(Math.random() * freqs.length)];
-        osc.type = Math.random() < 0.5 ? 'sawtooth' : 'square';
+        osc.type = Math.random() < 0.6 ? 'sawtooth' : 'square';
         osc.frequency.setValueAtTime(freq, now);
-        osc.frequency.exponentialRampToValueAtTime(freq * 0.75, now + 0.04);
-        gain.gain.setValueAtTime(0.05 * masterVol, now);
-        gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.04);
+        osc.frequency.exponentialRampToValueAtTime(freq * 0.7, now + 0.045);
+        gain.gain.setValueAtTime(0.06 * masterVol, now);
+        gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.045);
         osc.connect(gain);
         gain.connect(ctx.destination);
         osc.start(now);
-        osc.stop(now + 0.045);
+        osc.stop(now + 0.05);
       } else {
-        // 緑CRT・GGSターミナル用：澄んだSFデータ通信音（高周波サイン波/矩形波の不規則ビープ）
-        const freqs = [1046.5, 1318.5, 1567.98, 1760.0, 2093.0, 2637.02, 3135.96];
+        // 緑CRT・GGSターミナル用：落ち着いた低〜中低域のデータ処理音（180Hz〜440Hz）
+        // 高音のチャラつき感をなくし、重厚感のある低音パルス・端末アクセス音に
+        const freqs = [180, 220, 260, 310, 370, 440];
         const f1 = freqs[Math.floor(Math.random() * freqs.length)];
-        osc.type = Math.random() < 0.4 ? 'square' : (Math.random() < 0.75 ? 'sine' : 'triangle');
+        osc.type = Math.random() < 0.5 ? 'triangle' : (Math.random() < 0.8 ? 'sine' : 'square');
         osc.frequency.setValueAtTime(f1, now);
         
-        const dur = (0.015 + Math.random() * 0.02);
-        const vol = (0.03 + Math.random() * 0.03) * masterVol;
+        const dur = (0.025 + Math.random() * 0.02);
+        const vol = (0.04 + Math.random() * 0.03) * masterVol;
         gain.gain.setValueAtTime(vol, now);
         gain.gain.exponentialRampToValueAtTime(0.0001, now + dur);
         
@@ -79,19 +80,19 @@ MOT.Audio = (function () {
         osc.start(now);
         osc.stop(now + dur);
 
-        // たまにダブルビープ（ピピッ）
+        // たまに低音のダブルパルス（トトッ）
         if (Math.random() < 0.35) {
           const osc2 = ctx.createOscillator();
           const gain2 = ctx.createGain();
           const f2 = freqs[Math.floor(Math.random() * freqs.length)];
           osc2.type = osc.type;
-          osc2.frequency.setValueAtTime(f2, now + 0.03);
-          gain2.gain.setValueAtTime(vol * 0.75, now + 0.03);
-          gain2.gain.exponentialRampToValueAtTime(0.0001, now + 0.03 + dur);
+          osc2.frequency.setValueAtTime(f2, now + 0.035);
+          gain2.gain.setValueAtTime(vol * 0.8, now + 0.035);
+          gain2.gain.exponentialRampToValueAtTime(0.0001, now + 0.035 + dur);
           osc2.connect(gain2);
           gain2.connect(ctx.destination);
-          osc2.start(now + 0.03);
-          osc2.stop(now + 0.03 + dur);
+          osc2.start(now + 0.035);
+          osc2.stop(now + 0.035 + dur);
         }
       }
     },
