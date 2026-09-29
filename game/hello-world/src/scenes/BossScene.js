@@ -4697,68 +4697,78 @@ class BossScene extends Phaser.Scene {
             this.heroImage.setY(100 + (this.heroImage.height * hScale) / 2);
 
             const sayDevice = (text) => new Promise(res => {
-              this.tweens.add({ targets: dimBg, alpha: 0.6, duration: 300 });
-              if (this.heroImage) this.tweens.add({ targets: this.heroImage, alpha: 0.4, duration: 300 });
-              if (this.demonImage) this.tweens.add({ targets: this.demonImage, alpha: 0.4, duration: 300 });
-              if (this.inunekoImage) this.tweens.add({ targets: this.inunekoImage, alpha: 0.4, duration: 300 });
-              if (this.doctorImage) this.tweens.add({ targets: this.doctorImage, alpha: 0, duration: 300 });
+              if (!this.showingEndingIllustration) {
+                this.tweens.add({ targets: dimBg, alpha: 0.6, duration: 300 });
+                if (this.heroImage) this.tweens.add({ targets: this.heroImage, alpha: 0.4, duration: 300 });
+                if (this.demonImage) this.tweens.add({ targets: this.demonImage, alpha: 0.4, duration: 300 });
+                if (this.inunekoImage) this.tweens.add({ targets: this.inunekoImage, alpha: 0.4, duration: 300 });
+                if (this.doctorImage) this.tweens.add({ targets: this.doctorImage, alpha: 0, duration: 300 });
+              }
               this.showDeviceDialogue(text, res);
             });
 
             const sayDemon = (text, tex = 'demon_lord_normal') => new Promise(res => {
-              this.tweens.add({ targets: dimBg, alpha: 0.6, duration: 300 });
-              if (this.heroImage) this.tweens.add({ targets: this.heroImage, alpha: 0.4, duration: 300 });
-              if (this.doctorImage) this.tweens.add({ targets: this.doctorImage, alpha: 0, duration: 300 });
-              if (this.inunekoImage) this.tweens.add({ targets: this.inunekoImage, alpha: 0.4, duration: 300 });
-              if (this.demonImage) {
-                this.tweens.add({ targets: this.demonImage, alpha: 1, duration: 300 });
-                this.demonImage.setTexture(tex);
-                this.demonImage.setDepth(90);
+              if (!this.showingEndingIllustration) {
+                this.tweens.add({ targets: dimBg, alpha: 0.6, duration: 300 });
+                if (this.heroImage) this.tweens.add({ targets: this.heroImage, alpha: 0.4, duration: 300 });
+                if (this.doctorImage) this.tweens.add({ targets: this.doctorImage, alpha: 0, duration: 300 });
+                if (this.inunekoImage) this.tweens.add({ targets: this.inunekoImage, alpha: 0.4, duration: 300 });
+                if (this.demonImage) {
+                  this.tweens.add({ targets: this.demonImage, alpha: 1, duration: 300 });
+                  this.demonImage.setTexture(tex);
+                  this.demonImage.setDepth(90);
+                }
               }
               this.showDialogue('魔王', text, res);
             });
 
             const sayHero = (text) => new Promise(res => {
-              this.tweens.add({ targets: dimBg, alpha: 0.6, duration: 300 });
-              if (this.heroImage) this.tweens.add({ targets: this.heroImage, alpha: 1, duration: 300 });
-              if (this.demonImage) this.tweens.add({ targets: this.demonImage, alpha: 0.4, duration: 300 });
-              if (this.inunekoImage) this.tweens.add({ targets: this.inunekoImage, alpha: 0.4, duration: 300 });
-              if (this.doctorImage) this.tweens.add({ targets: this.doctorImage, alpha: 0, duration: 300 });
+              if (!this.showingEndingIllustration) {
+                this.tweens.add({ targets: dimBg, alpha: 0.6, duration: 300 });
+                if (this.heroImage) this.tweens.add({ targets: this.heroImage, alpha: 1, duration: 300 });
+                if (this.demonImage) this.tweens.add({ targets: this.demonImage, alpha: 0.4, duration: 300 });
+                if (this.inunekoImage) this.tweens.add({ targets: this.inunekoImage, alpha: 0.4, duration: 300 });
+                if (this.doctorImage) this.tweens.add({ targets: this.doctorImage, alpha: 0, duration: 300 });
+              }
               this.showDialogue('勇者', text, res);
             });
 
             const sayDoctor = (text, tex = 'doctor_stand') => new Promise(res => {
-              this.tweens.add({ targets: dimBg, alpha: 0.6, duration: 300 });
-              if (this.heroImage) this.tweens.add({ targets: this.heroImage, alpha: 0.4, duration: 300 });
-              if (this.demonImage) this.tweens.add({ targets: this.demonImage, alpha: 0, duration: 300 });
-              if (!this.doctorImage) {
-                this.doctorImage = this.add.image(w - 300, h / 2, tex).setDepth(91);
-              } else {
-                this.doctorImage.setTexture(tex);
-                this.doctorImage.setDepth(91);
-              }
-              const srcImg = this.textures.get(tex).getSourceImage();
-              const imgW = (srcImg && srcImg.width) || 750;
-              const imgH = (srcImg && srcImg.height) || 1000;
-              const docScale = 900 / imgW;
-              this.doctorImage.setScale(docScale);
-              this.doctorImage.setY(100 + (imgH * docScale) / 2);
+              if (!this.showingEndingIllustration) {
+                this.tweens.add({ targets: dimBg, alpha: 0.6, duration: 300 });
+                if (this.heroImage) this.tweens.add({ targets: this.heroImage, alpha: 0.4, duration: 300 });
+                if (this.demonImage) this.tweens.add({ targets: this.demonImage, alpha: 0, duration: 300 });
+                if (!this.doctorImage) {
+                  this.doctorImage = this.add.image(w - 300, h / 2, tex).setDepth(91);
+                } else {
+                  this.doctorImage.setTexture(tex);
+                  this.doctorImage.setDepth(91);
+                }
+                const srcImg = this.textures.get(tex).getSourceImage();
+                const imgW = (srcImg && srcImg.width) || 750;
+                const imgH = (srcImg && srcImg.height) || 1000;
+                const docScale = 900 / imgW;
+                this.doctorImage.setScale(docScale);
+                this.doctorImage.setY(100 + (imgH * docScale) / 2);
 
-              this.tweens.add({ targets: this.doctorImage, alpha: 1, duration: 300 });
+                this.tweens.add({ targets: this.doctorImage, alpha: 1, duration: 300 });
+              }
               this.showDialogue('博士', text, res);
             });
 
             const sayInuneko = (text, speakerName = '犬猫☆すたー') => new Promise(res => {
-              this.tweens.add({ targets: dimBg, alpha: 0.6, duration: 300 });
-              if (this.heroImage) this.tweens.add({ targets: this.heroImage, alpha: 0.4, duration: 300 });
-              if (this.demonImage) this.tweens.add({ targets: this.demonImage, alpha: 0.4, duration: 300 });
-              if (this.doctorImage) this.tweens.add({ targets: this.doctorImage, alpha: 0, duration: 300 });
-              if (!this.inunekoImage) {
-                this.inunekoImage = this.add.image(w - 550, h / 2 + 100, 'inuneko_stand').setDepth(91).setAlpha(0);
-                const inuScale = 500 / ((this.textures.exists('inuneko_stand') && this.textures.get('inuneko_stand').getSourceImage().width) || 500);
-                this.inunekoImage.setScale(inuScale);
+              if (!this.showingEndingIllustration) {
+                this.tweens.add({ targets: dimBg, alpha: 0.6, duration: 300 });
+                if (this.heroImage) this.tweens.add({ targets: this.heroImage, alpha: 0.4, duration: 300 });
+                if (this.demonImage) this.tweens.add({ targets: this.demonImage, alpha: 0.4, duration: 300 });
+                if (this.doctorImage) this.tweens.add({ targets: this.doctorImage, alpha: 0, duration: 300 });
+                if (!this.inunekoImage) {
+                  this.inunekoImage = this.add.image(w - 550, h / 2 + 100, 'inuneko_stand').setDepth(91).setAlpha(0);
+                  const inuScale = 500 / ((this.textures.exists('inuneko_stand') && this.textures.get('inuneko_stand').getSourceImage().width) || 500);
+                  this.inunekoImage.setScale(inuScale);
+                }
+                this.tweens.add({ targets: this.inunekoImage, alpha: 1, duration: 300 });
               }
-              this.tweens.add({ targets: this.inunekoImage, alpha: 1, duration: 300 });
               this.showDialogue(speakerName, text, res);
             });
 
@@ -4825,6 +4835,9 @@ class BossScene extends Phaser.Scene {
                   this.cameras.main.fadeOut(800, 0, 0, 0);
                   await new Promise(r => this.time.delayedCall(850, r));
 
+                  // 戦闘用フィールド（レーン、HUD、プレイヤー等）を完全非表示
+                  this.hideCombatField();
+
                   if (boss && boss.active) {
                     boss.destroy();
                     this.currentBoss = null;
@@ -4836,8 +4849,9 @@ class BossScene extends Phaser.Scene {
                   if (this.demonImage) { this.demonImage.destroy(); this.demonImage = null; }
                   if (this.inunekoImage) { this.inunekoImage.destroy(); this.inunekoImage = null; }
 
-                  if (this.textures.exists('bg_lab')) {
-                    this.bg.setTexture('bg_lab');
+                  let labKey = this.textures.exists('bg_lab') ? 'bg_lab' : (this.textures.exists('bg_doctor') ? 'bg_doctor' : null);
+                  if (labKey) {
+                    this.bg.setTexture(labKey);
                     this.bg.setOrigin(0.5, 0.5);
                     this.bg.setPosition(w / 2, h / 2);
                     let scale = Math.max(w / this.bg.width, h / this.bg.height);
@@ -4862,7 +4876,8 @@ class BossScene extends Phaser.Scene {
                     ]);
                   });
 
-                  // 【ここからエンディングイラスト】
+                  // 【ここからエンディングイラスト：立ち絵は一切表示しない】
+                  this.hideStandingPortraits();
                   if (this.textures.exists('true_demon_lord')) {
                     this.bg.setTexture('true_demon_lord');
                     this.bg.setOrigin(0.5, 0.5);
@@ -4978,6 +4993,8 @@ class BossScene extends Phaser.Scene {
                   // （エンディングイラスト表示へ）
                   this.cameras.main.fadeOut(1000, 0, 0, 0);
                   await new Promise(r => this.time.delayedCall(1000, r));
+                  this.hideCombatField();
+                  this.hideStandingPortraits();
                   const dec = (window.MOT && MOT.decideEnding) ? MOT.decideEnding() : { key: 'normal_unresistable' };
                   MOT.flags.finalEnding = dec.key;
                   this.scene.start('EndingScene', { endingKey: dec.key });
@@ -5159,6 +5176,8 @@ class BossScene extends Phaser.Scene {
 
                 this.cameras.main.fadeOut(1000, 0, 0, 0);
                 await new Promise(r => this.time.delayedCall(1000, r));
+                this.hideCombatField();
+                this.hideStandingPortraits();
 
                 MOT.flags.finalEnding = 'bad_puppet';
                 this.scene.start('EndingScene', { endingKey: 'bad_puppet' });
@@ -5209,8 +5228,12 @@ class BossScene extends Phaser.Scene {
                     this.cameras.main.fadeOut(800, 0, 0, 0);
                     await new Promise(r => this.time.delayedCall(850, r));
 
-                    if (this.textures.exists('bg_lab')) {
-                      this.bg.setTexture('bg_lab');
+                    // 戦闘用フィールドを完全非表示
+                    this.hideCombatField();
+
+                    let labKeyShutdown = this.textures.exists('bg_lab') ? 'bg_lab' : (this.textures.exists('bg_doctor') ? 'bg_doctor' : null);
+                    if (labKeyShutdown) {
+                      this.bg.setTexture(labKeyShutdown);
                       this.bg.setOrigin(0.5, 0.5);
                       this.bg.setPosition(w / 2, h / 2);
                       let scale = Math.max(w / this.bg.width, h / this.bg.height);
@@ -5273,6 +5296,8 @@ class BossScene extends Phaser.Scene {
                       this.tweens.add({ targets: this.inunekoImage, scale: 2, alpha: 0, duration: 500, ease: 'Power2' });
                     }
                     await new Promise(r => this.time.delayedCall(1000, r));
+                    this.hideCombatField();
+                    this.hideStandingPortraits();
                     MOT.flags.finalEnding = decKill.key;
                     this.scene.start('EndingScene', { endingKey: decKill.key });
                     return;
@@ -5307,6 +5332,8 @@ class BossScene extends Phaser.Scene {
                   MOT.flags.finalEnding = decSpare.key;
                   this.cameras.main.fadeOut(800, 0, 0, 0);
                   this.time.delayedCall(800, () => {
+                    this.hideCombatField();
+                    this.hideStandingPortraits();
                     this.scene.start('EndingScene', { endingKey: decSpare.key });
                   });
                 }
@@ -5317,12 +5344,7 @@ class BossScene extends Phaser.Scene {
             MOT.flags.doctorPhase2 = false;
             MOT.flags.isDoctorPhase2 = false;
             this.isDoctorPhase2 = false;
-            if (this.currentBoss) {
-              this.currentBoss.setVisible(false);
-              this.currentBoss.setActive(false);
-            }
-            this.hideBossHPBar();
-            if (this.laneGraphics) { this.laneGraphics.setVisible(false); }
+            this.hideCombatField();
 
             var w = 1920, h = 1080;
             var dimBg = this.add.rectangle(w / 2, h / 2, w, h, 0x000000, 0.6).setAlpha(0).setDepth(89);
@@ -5652,6 +5674,8 @@ class BossScene extends Phaser.Scene {
                 'mmƂ̃````bbggggO 「ごほん。……”またね”だにゃん！」'
               ]);
 
+              this.hideCombatField();
+              this.hideStandingPortraits();
               const dec = (window.MOT && MOT.decideEnding) ? MOT.decideEnding() : { key: 'END_ORPHAN' };
               MOT.flags.finalEnding = dec.key;
               this.scene.start('EndingScene', { endingKey: dec.key });
@@ -6833,6 +6857,7 @@ class BossScene extends Phaser.Scene {
 
   // 暗くなっていない立ち絵キャラだけを一回瞬きさせる
   triggerActiveBlink() {
+    if (this.showingEndingIllustration) return;
     const candidates = [
       this.heroImage,
       this.demonImage,
@@ -7131,6 +7156,118 @@ class BossScene extends Phaser.Scene {
     }
   }
 
+  hideCombatField() {
+    this.combatFieldHidden = true;
+    this.combatActive = false;
+    if (this.physics && this.physics.pause) this.physics.pause();
+
+    // レーン線
+    if (this.laneGraphics) {
+      this.laneGraphics.setVisible(false);
+      this.laneGraphics.clear();
+    }
+
+    // プレイヤー本体および関連エフェクト
+    if (this.player) {
+      this.player.setVisible(false);
+      this.player.setActive(false);
+      if (this.player.body) this.player.body.enable = false;
+    }
+    if (this.barrierVisual) {
+      this.barrierVisual.setVisible(false);
+    }
+    if (this.barrierHitbox) {
+      this.barrierHitbox.setVisible(false);
+    }
+    if (this.specialCutinFlash) {
+      this.specialCutinFlash.clear();
+    }
+
+    // ボススプライト・敵弾・味方弾・アイテム
+    if (this.currentBoss) {
+      this.currentBoss.setVisible(false);
+      this.currentBoss.setActive(false);
+    }
+    if (this.inunekoEnemy) {
+      this.inunekoEnemy.setVisible(false);
+      this.inunekoEnemy.setActive(false);
+    }
+    if (this.enemyBullets) this.enemyBullets.clear(true, true);
+    if (this.playerBullets) this.playerBullets.clear(true, true);
+    if (this.enemyGroup) this.enemyGroup.clear(true, true);
+    if (this.itemGroup) this.itemGroup.clear(true, true);
+
+    // 戦闘HUD UI
+    if (this.hpText) this.hpText.setVisible(false);
+    if (this.energyText) this.energyText.setVisible(false);
+    if (this.energyBar) { this.energyBar.setVisible(false); this.energyBar.clear(); }
+    if (this.energyBarBgObj) this.energyBarBgObj.setVisible(false);
+    if (this.energyBarFgObj) this.energyBarFgObj.setVisible(false);
+    if (this.energyBarOutline) { this.energyBarOutline.setVisible(false); this.energyBarOutline.clear(); }
+    if (this.barrierIconBg) { this.barrierIconBg.setVisible(false); this.barrierIconBg.clear(); }
+    if (this.barrierIconFg) { this.barrierIconFg.setVisible(false); this.barrierIconFg.clear(); }
+    if (this.bossHPText) this.bossHPText.setVisible(false);
+    if (this.sisterHPText) this.sisterHPText.setVisible(false);
+    if (this.bossHPBar) { this.bossHPBar.setVisible(false); this.bossHPBar.clear(); }
+    if (this.areaNameText) { this.areaNameText.setVisible(false); this.areaNameText.setText(''); }
+
+    // 博士の指示UI
+    if (window.MOT && MOT.DoctorDirective) {
+      if (MOT.DoctorDirective.directiveContainer) {
+        MOT.DoctorDirective.directiveContainer.destroy();
+        MOT.DoctorDirective.directiveContainer = null;
+      }
+      if (MOT.DoctorDirective.currentMaskShape) {
+        MOT.DoctorDirective.currentMaskShape.destroy();
+        MOT.DoctorDirective.currentMaskShape = null;
+      }
+      if (MOT.DoctorDirective.currentHighlight) {
+        MOT.DoctorDirective.currentHighlight.destroy();
+        MOT.DoctorDirective.currentHighlight = null;
+      }
+    }
+
+    // アシストUI
+    if (this.assistDialog) {
+      this.assistDialog.destroy();
+      this.assistDialog = null;
+    }
+    if (this.assistText) {
+      this.assistText.destroy();
+      this.assistText = null;
+    }
+    if (this.assistImage) {
+      this.assistImage.destroy();
+      this.assistImage = null;
+    }
+
+    // バーチャルパッド
+    const vpad = document.getElementById('virtual-gamepad');
+    if (vpad) vpad.style.display = 'none';
+  }
+
+  hideStandingPortraits() {
+    this.showingEndingIllustration = true;
+    const portraits = [
+      this.heroImage,
+      this.doctorImage,
+      this.demonImage,
+      this.inunekoImage,
+      this.sisterImage,
+      this.brotherImage,
+      this.bossImage,
+      this.rightSpeakerImage,
+      this.dimBg
+    ];
+    portraits.forEach(p => {
+      if (p) {
+        this.tweens.killTweensOf(p);
+        if (p.setVisible) p.setVisible(false);
+        if (p.setAlpha) p.setAlpha(0);
+      }
+    });
+  }
+
   createHUD() {
     this.hpText = this.add.text(30, 20, '', { fontFamily: '"Press Start 2P"', fontSize: '24px', color: '#FF4B6E' }).setDepth(100);
     this.energyText = this.add.text(30, 50, '', { fontFamily: '"Press Start 2P"', fontSize: '18px', color: '#4FD1FF' }).setDepth(100);
@@ -7222,6 +7359,7 @@ class BossScene extends Phaser.Scene {
   }
 
   updateHUD() {
+    if (this.combatFieldHidden) return;
     let areaText = '';
     if (this.currentBossIndex === 0) areaText = '黄昏の荒野';
     else if (this.currentBossIndex === 1) areaText = '宵闇の森';
