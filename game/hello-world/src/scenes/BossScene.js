@@ -3044,7 +3044,7 @@ class BossScene extends Phaser.Scene {
         safeTween(this.demonImage, 0);
 
         // 心の叫び
-        await sayHeroSoliloquy('「（ああ、結局僕は人形なのか……。」');
+        await sayHeroSoliloquy('「（……結局、僕は博士の”創造物”でしかなかった。）」');
 
         // 「負けるわけにはいかないんだ」のセリフのところでBGMをフェードアウト
         const activeBgms = [this.boss5Bgm, this.boss4Bgm, this.twinsBgm, this.boss2Bgm, this.boss1Bgm, this.bgm].filter(b => b && b.isPlaying);
