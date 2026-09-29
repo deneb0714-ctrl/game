@@ -305,32 +305,11 @@ class TitleScene extends Phaser.Scene {
           return { startBossIndex: 3, initialBossHP: 60 };
         },
         directKey: 'hidden_freedom'
-      },
-      'Digit8': {
-        name: '博士戦 (ハッピーエンド決戦)',
-        action: () => {
-          MOT.resetFlags();
-          MOT.flags.killedBoss1 = false;
-          MOT.flags.killedBoss2 = false;
-          MOT.flags.killedTwins = false;
-          MOT.flags.playerHP = 5;
-          return { startBossIndex: 4, initialBossHP: 120 };
-        },
-        directKey: 'hello_world'
-      },
-      'Digit9': {
-        name: 'クラトス戦 (ボス1)',
-        action: () => {
-          MOT.resetFlags();
-          MOT.flags.playerHP = 5;
-          return { startBossIndex: 0 };
-        },
-        directKey: 'BAD_GAMEOVER'
       }
     };
 
-    // テンキー対応
-    for (let i = 1; i <= 9; i++) {
+    // テンキー対応 (1〜7)
+    for (let i = 1; i <= 7; i++) {
       branchConfigs['Numpad' + i] = branchConfigs['Digit' + i];
     }
 
@@ -366,9 +345,9 @@ class TitleScene extends Phaser.Scene {
 
     // 画面左下にエンディングショートカット案内を表示
     const guideLines = [
-      '【分岐直前ショートカット (1〜9キーで戦闘から開始 / Shift+数字で直行)】',
-      '1: HAPPY END(Hello World) | 2: 日常 | 3: 役立たず | 4: 抗えない | 5: 傀儡',
-      '6: 強制シャットダウン | 7: 自由の身(隠し) | 8: 博士戦 | 9: クラトス戦'
+      '【エンディング分岐直前ショートカット (1〜7キーで魔王戦から開始 / Shift+数字で直行)】',
+      '1: HAPPY END(Hello World) | 2: 日常 | 3: 役立たず | 4: 抗えない',
+      '5: 傀儡 | 6: 強制シャットダウン | 7: 自由の身(隠し)'
     ];
     this.add.text(20, h - 20, guideLines.join('\n'), {
       fontFamily: '"DotGothic16", sans-serif',
