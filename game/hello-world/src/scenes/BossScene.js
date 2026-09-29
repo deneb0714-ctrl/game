@@ -4789,6 +4789,18 @@ class BossScene extends Phaser.Scene {
                   });
 
                   await sayDevice('「おい、何をしている？早くしろ。」');
+
+                  // 覚醒した勇者の立ち絵に切り替え
+                  if (this.heroImage && this.textures.exists('hero_stand_corrupted')) {
+                    const corruptedTex = this.textures.get('hero_stand_corrupted').getSourceImage();
+                    const corruptedW = (corruptedTex && corruptedTex.width) || 1080;
+                    const corruptedH = (corruptedTex && corruptedTex.height) || 1920;
+                    const corruptedScale = 750 / corruptedW;
+                    this.heroImage.setTexture('hero_stand_corrupted');
+                    this.heroImage.setScale(corruptedScale);
+                    this.heroImage.setY(100 + (corruptedH * corruptedScale) / 2);
+                  }
+
                   await sayHero('「うるさいな」');
 
                   // 破壊音SE（通信機を壊す）
