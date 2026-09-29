@@ -1132,7 +1132,7 @@ class BossScene extends Phaser.Scene {
             duration: 800,
             ease: 'Cubic.easeInOut',
             onComplete: function () {
-              if (this.currentBoss && this.currentBoss.active && !this.dialogActive) {
+              if (this.currentBoss && this.currentBoss.active && !this.dialogActive && this.currentBoss.hp > 0 && !this.bossDefeated) {
                 this.tweens.add({
                   targets: this.currentBoss,
                   y: targetY - 15,
@@ -4685,6 +4685,24 @@ class BossScene extends Phaser.Scene {
       boss.body.enable = false;
       this.cameras.main.shake(300, 0.02);
 
+      // ★ ボス撃破時：Tweenとアニメーションを即時完全停止し静止化
+      this.tweens.killTweensOf(boss);
+      if (boss.setVelocity) boss.setVelocity(0, 0);
+      if (boss.anims) boss.anims.stop();
+      if (boss.configKey === 'boss1') {
+        if (boss.setFrame) boss.setFrame(0);
+      } else if (boss.configKey === 'boss2') {
+        if (this.textures.exists('boss2_combat_down_open')) boss.setTexture('boss2_combat_down_open');
+      } else if (boss.configKey === 'demon_lord') {
+        if (this.textures.exists('demon_combat_down_open')) boss.setTexture('demon_combat_down_open');
+        if (this.inunekoEnemy) {
+          this.tweens.killTweensOf(this.inunekoEnemy);
+          if (this.inunekoEnemy.setVelocity) this.inunekoEnemy.setVelocity(0, 0);
+          if (this.inunekoEnemy.anims) this.inunekoEnemy.anims.stop();
+          if (this.inunekoEnemy.setFrame) this.inunekoEnemy.setFrame(0);
+        }
+      }
+
       var key = boss.configKey || this.bossQueue[this.currentBossIndex];
       var cfg = this.getBossConfig(key);
 
@@ -5865,18 +5883,20 @@ class BossScene extends Phaser.Scene {
       };
 
       if (key === 'demon_lord') {
-        // とどめを刺す前なので魔王のドットは消さずに玉座の前へ移動・表示維持
+        // とどめを刺す前なので魔王のドットは消さずに玉座の前へ移動・静止維持
         boss.setVisible(true);
         boss.setAlpha(1);
-        if (this.anims.exists('demon_combat_anim')) {
-          boss.play('demon_combat_anim');
-        } else {
+        if (boss.anims) boss.anims.stop();
+        if (this.textures.exists('demon_combat_down_open')) {
           boss.setTexture('demon_combat_down_open');
         }
         if (this.inunekoEnemy && this.inunekoEnemy.active) {
           this.tweens.killTweensOf(this.inunekoEnemy);
+          if (this.inunekoEnemy.anims) this.inunekoEnemy.anims.stop();
+          if (this.inunekoEnemy.setFrame) this.inunekoEnemy.setFrame(0);
           this.tweens.add({ targets: this.inunekoEnemy, x: 1300, y: 500, duration: 600, ease: 'Power2' });
         }
+        this.tweens.killTweensOf(boss);
         this.tweens.add({
           targets: boss,
           x: 1400,
@@ -5884,15 +5904,21 @@ class BossScene extends Phaser.Scene {
           duration: 600,
           ease: 'Power2',
           onComplete: () => {
+            this.tweens.killTweensOf(boss);
+            if (boss.anims) boss.anims.stop();
             handleDefeatedDialogue();
           }
         });
       } else {
         boss.setVisible(true);
         boss.setAlpha(1);
-        if (key === 'boss2' && this.textures.exists('boss2_combat_down_open')) {
+        if (boss.anims) boss.anims.stop();
+        if (key === 'boss1') {
+          if (boss.setFrame) boss.setFrame(0);
+        } else if (key === 'boss2' && this.textures.exists('boss2_combat_down_open')) {
           boss.setTexture('boss2_combat_down_open');
         }
+        this.tweens.killTweensOf(boss);
         this.tweens.add({
           targets: boss,
           x: 1400,
@@ -5900,6 +5926,9 @@ class BossScene extends Phaser.Scene {
           duration: 600,
           ease: 'Power2',
           onComplete: () => {
+            this.tweens.killTweensOf(boss);
+            if (boss.anims) boss.anims.stop();
+            if (key === 'boss1' && boss.setFrame) boss.setFrame(0);
             handleDefeatedDialogue();
           }
         });
@@ -5918,25 +5947,56 @@ class BossScene extends Phaser.Scene {
     if (this.sisterLaneTimer) this.sisterLaneTimer.destroy();
     this.enemyBullets.clear(true, true);
 
-    this.currentBoss.body.enable = false;
-    this.sisterBoss.body.enable = false;
+    if (this.currentBoss) {
+      this.currentBoss.body.enable = false;
+      this.tweens.killTweensOf(this.currentBoss);
+      if (this.currentBoss.setVelocity) this.currentBoss.setVelocity(0, 0);
+      if (this.currentBoss.anims) this.currentBoss.anims.stop();
+    }
+    if (this.sisterBoss) {
+      this.sisterBoss.body.enable = false;
+      this.tweens.killTweensOf(this.sisterBoss);
+      if (this.sisterBoss.setVelocity) this.sisterBoss.setVelocity(0, 0);
+      if (this.sisterBoss.anims) this.sisterBoss.anims.stop();
+    }
     
     this.cameras.main.shake(300, 0.02);
     
     // Both sprites remain visible or become visible
-    this.currentBoss.setVisible(true).setAlpha(1);
-    this.sisterBoss.setVisible(true).setAlpha(1);
+    if (this.currentBoss) this.currentBoss.setVisible(true).setAlpha(1);
+    if (this.sisterBoss) this.sisterBoss.setVisible(true).setAlpha(1);
     
+    const twinTargets = [this.currentBoss, this.sisterBoss].filter(b => b && b.active);
     this.tweens.add({
-      targets: [this.currentBoss, this.sisterBoss], alpha: 0.3, yoyo: true, repeat: 4, duration: 150,
+      targets: twinTargets, alpha: 0.3, yoyo: true, repeat: 4, duration: 150,
       onComplete: () => {
         if (this.currentBoss) {
           this.currentBoss.setVisible(true).setAlpha(1);
-          this.tweens.add({ targets: this.currentBoss, x: 1400, y: 460, duration: 600, ease: 'Power2' });
+          if (this.currentBoss.anims) this.currentBoss.anims.stop();
+          this.tweens.killTweensOf(this.currentBoss);
+          this.tweens.add({ 
+            targets: this.currentBoss, x: 1400, y: 460, duration: 600, ease: 'Power2',
+            onComplete: () => {
+              if (this.currentBoss) {
+                this.tweens.killTweensOf(this.currentBoss);
+                if (this.currentBoss.anims) this.currentBoss.anims.stop();
+              }
+            }
+          });
         }
         if (this.sisterBoss) {
           this.sisterBoss.setVisible(true).setAlpha(1);
-          this.tweens.add({ targets: this.sisterBoss, x: 1550, y: 500, duration: 600, ease: 'Power2' });
+          if (this.sisterBoss.anims) this.sisterBoss.anims.stop();
+          this.tweens.killTweensOf(this.sisterBoss);
+          this.tweens.add({ 
+            targets: this.sisterBoss, x: 1550, y: 500, duration: 600, ease: 'Power2',
+            onComplete: () => {
+              if (this.sisterBoss) {
+                this.tweens.killTweensOf(this.sisterBoss);
+                if (this.sisterBoss.anims) this.sisterBoss.anims.stop();
+              }
+            }
+          });
         }
         
         this.dialogActive = true;
