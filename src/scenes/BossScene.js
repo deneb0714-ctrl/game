@@ -5348,6 +5348,8 @@ class BossScene extends Phaser.Scene {
 
                     await sayHero('「…」');
                     await sayDoctor('「こちらに銃を構えてどうした？私を倒したいでも言うのか。」');
+                    this.cameras.main.shake(500, 0.025);
+                    if (MOT.Audio && MOT.Audio.playClack) MOT.Audio.playClack();
                     await sayHero('「……！？」');
                     await sayDoctor('「ふははは、残念だが、お前にその権限はない。」');
                     await sayDoctor('「お前にできることは、このまま邪魔者を倒し私の役に立つことだけだ。」');
