@@ -2968,9 +2968,9 @@ class BossScene extends Phaser.Scene {
     this.doctorImage.setY(100 + ((this.doctorImage.height || 1000) * docScale) / 2);
 
     this.demonImage = this.add.image(w - 300, h / 2, 'demon_lord_normal').setAlpha(0).setDepth(90);
-    const demScale = 850 / (this.demonImage.width || 750);
+    const demScale = 1000 / (this.demonImage.width || 750);
     this.demonImage.setScale(demScale);
-    this.demonImage.setY(100 + ((this.demonImage.height || 1000) * demScale) / 2 - 50);
+    this.demonImage.setY(100 + ((this.demonImage.height || 1000) * demScale) / 2 - 200);
 
     this.tweens.add({ targets: this.dimBg, alpha: 0.6, duration: 300 });
 
