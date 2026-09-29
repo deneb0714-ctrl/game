@@ -198,6 +198,9 @@ class TitleScene extends Phaser.Scene {
       this.showHintMenu();
     }.bind(this));
 
+    // タイトルメニューのキーボード（矢印キー・Enter）操作のセットアップ
+    this.setupTitleMenuKeyboard();
+
     // Version text
     const versionText = window.GAME_VERSION ? `v0.1.0 (${window.GAME_VERSION})` : 'v0.1.0';
     this.add.text(w - 20, h - 20, versionText, {
@@ -537,6 +540,8 @@ class TitleScene extends Phaser.Scene {
       if (maskGraphics) maskGraphics.destroy();
       this.creditsContainer.destroy();
       this.creditsContainer = null;
+      this.titleMenuActionTaken = false;
+      this.updateTitleMenuVisuals();
     };
     touchZone.on('pointerdown', handleClose);
     closeText.on('pointerdown', (pointer, localX, localY, event) => {
@@ -596,6 +601,8 @@ class TitleScene extends Phaser.Scene {
         this.hintContainer.destroy();
         this.hintContainer = null;
         this.canClick = true;
+        this.titleMenuActionTaken = false;
+        this.updateTitleMenuVisuals();
       }
     };
     touchZone.on('pointerdown', handleClose);
@@ -621,30 +628,124 @@ class TitleScene extends Phaser.Scene {
       ease: 'Power2'
     });
 
-    // Hover effects
-    btn.on('pointerover', function () {
-      this.tweens.add({ targets: [btn, txt], scale: 1.08, duration: 150 });
-      txt.setColor('#ffffff');
-    }, this);
-    btn.on('pointerout', function () {
-      this.tweens.add({ targets: [btn, txt], scale: 1.0, duration: 150 });
-      txt.setColor('#4FD1FF');
-    }, this);
+    const item = {
+      btn: btn,
+      txt: txt,
+      label: label,
+      callback: callback,
+      trigger: () => {
+        if (window.MOT && MOT.Audio && MOT.Audio.playSelect) MOT.Audio.playSelect();
+        if (label !== 'CREDITS' && label !== 'CHARACTER' && label !== 'ENDING' && label !== 'HINT') {
+          btn.disableInteractive();
+          this.titleMenuActionTaken = true;
+        }
+        // Quick flash then execute
+        txt.setColor('#ffffff');
+        btn.setAlpha(0.5);
+        this.time.delayedCall(150, () => {
+          btn.setAlpha(1);
+          callback();
+        });
+      }
+    };
+
+    if (!this.titleMenuButtons) {
+      this.titleMenuButtons = [];
+    }
+    this.titleMenuButtons.push(item);
+
+    // マウスホバーでキーボード選択インデックスとハイライトを連動
+    btn.on('pointerover', () => {
+      const idx = this.titleMenuButtons.indexOf(item);
+      if (idx !== -1) {
+        this.titleMenuIndex = idx;
+        this.updateTitleMenuVisuals();
+      }
+    });
 
     // Click
-    btn.on('pointerdown', function () {
-      if (window.MOT && MOT.Audio) MOT.Audio.playSelect();
-      if (label !== 'CREDITS' && label !== 'CHARACTER' && label !== 'ENDING' && label !== 'HINT') {
-        btn.disableInteractive();
+    btn.on('pointerdown', () => {
+      item.trigger();
+    });
+
+    return item;
+  }
+
+  setupTitleMenuKeyboard() {
+    this.titleMenuIndex = 0;
+    this.titleMenuActionTaken = false;
+
+    // 初期の見た目を反映
+    this.updateTitleMenuVisuals();
+
+    this._onTitleMenuKeyDown = (event) => {
+      // モーダルや名前入力オーバーレイ、設定モーダルが表示中の時は無効
+      if (
+        this.titleMenuActionTaken ||
+        this.creditsContainer ||
+        this.hintContainer ||
+        this.charContainer ||
+        this.endContainer ||
+        this.cgContainer ||
+        document.getElementById('name-input-overlay') ||
+        document.getElementById('mot-settings-modal')
+      ) {
+        return;
       }
-      // Quick flash then execute
-      txt.setColor('#ffffff');
-      btn.setAlpha(0.5);
-      this.time.delayedCall(150, function () {
-        btn.setAlpha(1);
-        callback();
-      }, [], this);
-    }, this);
+
+      if (!this.titleMenuButtons || this.titleMenuButtons.length === 0) return;
+      const len = this.titleMenuButtons.length;
+
+      if (event.code === 'ArrowUp' || event.code === 'KeyW' || event.code === 'ArrowLeft' || event.code === 'KeyA') {
+        event.preventDefault();
+        this.titleMenuIndex = (this.titleMenuIndex - 1 + len) % len;
+        if (window.MOT && MOT.Audio && MOT.Audio.playSelect) {
+          MOT.Audio.playSelect();
+        }
+        this.updateTitleMenuVisuals();
+      } else if (event.code === 'ArrowDown' || event.code === 'KeyS' || event.code === 'ArrowRight' || event.code === 'KeyD') {
+        event.preventDefault();
+        this.titleMenuIndex = (this.titleMenuIndex + 1) % len;
+        if (window.MOT && MOT.Audio && MOT.Audio.playSelect) {
+          MOT.Audio.playSelect();
+        }
+        this.updateTitleMenuVisuals();
+      } else if (event.code === 'Enter' || event.code === 'NumpadEnter' || event.code === 'Space') {
+        event.preventDefault();
+        const currentItem = this.titleMenuButtons[this.titleMenuIndex];
+        if (currentItem && currentItem.trigger) {
+          currentItem.trigger();
+        }
+      }
+    };
+
+    this.input.keyboard.on('keydown', this._onTitleMenuKeyDown);
+    this.events.once('shutdown', () => {
+      if (this._onTitleMenuKeyDown) {
+        this.input.keyboard.off('keydown', this._onTitleMenuKeyDown);
+      }
+    });
+  }
+
+  updateTitleMenuVisuals() {
+    if (!this.titleMenuButtons || this.titleMenuButtons.length === 0) return;
+    this.titleMenuButtons.forEach((item, index) => {
+      const isSelected = (index === this.titleMenuIndex);
+      this.tweens.killTweensOf([item.btn, item.txt]);
+      this.tweens.add({
+        targets: [item.btn, item.txt],
+        scale: isSelected ? 1.10 : 1.0,
+        duration: 150,
+        ease: 'Quad.easeOut'
+      });
+      if (isSelected) {
+        item.btn.setTint(0x4FD1FF);
+        item.txt.setColor('#ffffff');
+      } else {
+        item.btn.clearTint();
+        item.txt.setColor('#4FD1FF');
+      }
+    });
   }
 
   showCharacterList() {
@@ -806,6 +907,8 @@ class TitleScene extends Phaser.Scene {
       this.charContainer.destroy();
       this.charContainer = null;
       this.canClick = true;
+      this.titleMenuActionTaken = false;
+      this.updateTitleMenuVisuals();
     });
   }
 
@@ -931,6 +1034,8 @@ class TitleScene extends Phaser.Scene {
       this.endContainer.destroy();
       this.endContainer = null;
       this.canClick = true;
+      this.titleMenuActionTaken = false;
+      this.updateTitleMenuVisuals();
     });
     closeBtn.on('pointerover', () => closeBtn.setBackgroundColor('#555'));
     closeBtn.on('pointerout', () => closeBtn.setBackgroundColor('#333'));
