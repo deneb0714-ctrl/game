@@ -2954,7 +2954,7 @@ class BossScene extends Phaser.Scene {
     if (this.rightSpeakerImage && this.rightSpeakerImage.destroy) { this.rightSpeakerImage.destroy(); this.rightSpeakerImage = null; }
 
     // 暗転背景
-    this.dimBg = this.add.rectangle(w / 2, h / 2, w, h, 0x000000, 0.6).setAlpha(0).setDepth(89);
+    this.dimBg = this.add.rectangle(w / 2, h / 2, w * 2, h * 2, 0x000000, 0.6).setAlpha(0).setDepth(89);
 
     // 立ち絵を新規生成（※魔王は最初非表示 alpha: 0）
     this.heroImage = this.add.image(300, h / 2, 'hero_stand').setAlpha(0).setDepth(90);
@@ -3028,9 +3028,15 @@ class BossScene extends Phaser.Scene {
         await sayDoctorDefeat('「お前らが完全な状態でも太刀打ちできないこの私に、そんな状態で勝てると本気で思っているのか？」');
         await sayDemonDefeat('「っ……。」');
 
-        // 2. 勇者の独白：勇者以外背景も含め暗くする（dimBg 0.88）
+        // 2. 勇者の独白：背景は完全に真っ黒（dimBg 1.0）、主人公の立ち絵のみくっきり表示
+        this.hideCombatField();
+        if (this.dimBg) {
+          this.dimBg.setDisplaySize(w * 2, h * 2);
+          this.dimBg.setPosition(w / 2, h / 2);
+        }
+
         const sayHeroSoliloquy = (text) => new Promise(res => {
-          safeTween(this.dimBg, 0.88);
+          safeTween(this.dimBg, 1.0);
           safeTween(this.heroImage, 1);
           safeTween(this.doctorImage, 0);
           safeTween(this.demonImage, 0);
@@ -3038,7 +3044,7 @@ class BossScene extends Phaser.Scene {
           this.showDialogue('勇者', text, res);
         });
 
-        safeTween(this.dimBg, 0.88);
+        safeTween(this.dimBg, 1.0);
         safeTween(this.heroImage, 1);
         safeTween(this.doctorImage, 0);
         safeTween(this.demonImage, 0);
