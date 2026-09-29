@@ -170,43 +170,13 @@ MOT.updateSpecialAura = function (scene) {
       const px = scene.player.x;
       const py = scene.player.y;
 
-      // (A) 勇者の背後に広がる縦長の柔らかなエネルギー光柱
-      scene.specialAuraGraphics.fillStyle(0xFF1744, 0.13 + 0.07 * pulse);
-      scene.specialAuraGraphics.fillCircle(px, py, 46 + pulse * 6);
+      // (A) 勇者の背後に広がる柔らかなエネルギー光彩
+      scene.specialAuraGraphics.fillStyle(0xFF1744, 0.12 + 0.06 * pulse);
+      scene.specialAuraGraphics.fillCircle(px, py, 44 + pulse * 6);
 
       // (B) より高輝度な黄金・オレンジのエネルギーコア
-      scene.specialAuraGraphics.fillStyle(0xFFA000, 0.16 + 0.08 * pulse);
-      scene.specialAuraGraphics.fillCircle(px, py - 4, 30 + pulse * 4);
-
-      // (C) 足元から頭上へ立ち上り揺らめくオーラの炎筋（Phaser.Graphicsで安全な多段階lineToで滑らかにベジェ描画）
-      const t = now / 140;
-      const tendrils = [
-        { ox: -16, baseY: 28, height: 62 + Math.sin(t * 1.5) * 12, sway: 6, color: 0xFF1744, alpha: 0.50 },
-        { ox: -6,  baseY: 32, height: 78 + Math.cos(t * 1.8) * 15, sway: 8, color: 0xFF5252, alpha: 0.60 },
-        { ox: 6,   baseY: 30, height: 82 + Math.sin(t * 2.1) * 14, sway: -7, color: 0xFFFF52, alpha: 0.65 },
-        { ox: 16,  baseY: 26, height: 64 + Math.cos(t * 1.6) * 12, sway: -5, color: 0xFF7043, alpha: 0.50 }
-      ];
-
-      tendrils.forEach(tr => {
-        scene.specialAuraGraphics.lineStyle(2.5, tr.color, tr.alpha * (0.8 + 0.2 * pulse));
-        scene.specialAuraGraphics.beginPath();
-        const sx = px + tr.ox;
-        const sy = py + tr.baseY;
-        const cx = sx + Math.sin(t + tr.ox) * tr.sway;
-        const cy = py - tr.height * 0.35;
-        const ex = sx + Math.cos(t * 1.4 + tr.ox) * (tr.sway * 1.4);
-        const ey = py + tr.baseY - tr.height;
-        scene.specialAuraGraphics.moveTo(sx, sy);
-        // 5分割ステップでベジェ曲線を安全・滑らかに描画
-        for (let step = 1; step <= 5; step++) {
-          const u = step / 5;
-          const inv = 1 - u;
-          const qx = inv * inv * sx + 2 * inv * u * cx + u * u * ex;
-          const qy = inv * inv * sy + 2 * inv * u * cy + u * u * ey;
-          scene.specialAuraGraphics.lineTo(qx, qy);
-        }
-        scene.specialAuraGraphics.strokePath();
-      });
+      scene.specialAuraGraphics.fillStyle(0xFFA000, 0.15 + 0.07 * pulse);
+      scene.specialAuraGraphics.fillCircle(px, py - 4, 28 + pulse * 4);
 
       // 3. プレイヤー本体自身のエネルギー脈動（必殺技チャージ完了状態の明示）
       if (scene.player.setTint && !scene.playerInvincible) {
