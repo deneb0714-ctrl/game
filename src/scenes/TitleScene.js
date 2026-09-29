@@ -154,25 +154,36 @@ class TitleScene extends Phaser.Scene {
 
     if (hasSave) {
       this.createButton(w / 2, h * 0.84, 'CONTINUE', 700, function () {
-        const saveData = window.MOT && MOT.loadGame ? MOT.loadGame() : null;
-        if (saveData && saveData.flags) {
-          if (MOT.loadFlags) {
-            MOT.loadFlags(saveData.flags);
-          } else {
-            const newFlags = JSON.parse(JSON.stringify(saveData.flags));
-            delete newFlags.maxEnergy;
-            Object.assign(MOT.flags, newFlags);
+        const proceedContinue = () => {
+          const saveData = window.MOT && MOT.loadGame ? MOT.loadGame() : null;
+          if (saveData && saveData.flags) {
+            if (MOT.loadFlags) {
+              MOT.loadFlags(saveData.flags);
+            } else {
+              const newFlags = JSON.parse(JSON.stringify(saveData.flags));
+              delete newFlags.maxEnergy;
+              Object.assign(MOT.flags, newFlags);
+            }
+            MOT.flags.diedCount = 0;
+            MOT.flags.playerHP = MOT.flags.playerMaxHP || 5;
+            MOT.flags.useGlitchTitle = false;
           }
-          MOT.flags.diedCount = 0;
-          MOT.flags.playerHP = MOT.flags.playerMaxHP || 5;
-          MOT.flags.useGlitchTitle = false;
+          const startIdx = (saveData && saveData.bossIndex !== undefined) ? saveData.bossIndex : 0;
+          const isDoctorP2 = Boolean((saveData && saveData.flags && (saveData.flags.doctorPhase2 || saveData.flags.isDoctorPhase2)) || (MOT.flags && (MOT.flags.doctorPhase2 || MOT.flags.isDoctorPhase2)));
+          this.cameras.main.fadeOut(500, 5, 8, 20);
+          this.time.delayedCall(500, function () {
+            this.scene.start('BossScene', { startBossIndex: startIdx, fromContinue: true, isDoctorPhase2: isDoctorP2 });
+          }, [], this);
+        };
+
+        if (this.heroGif) {
+          this.heroGif.play('play_hero_title');
+          this.heroGif.once('animationcomplete', function () {
+            proceedContinue();
+          }, this);
+        } else {
+          proceedContinue();
         }
-        const startIdx = (saveData && saveData.bossIndex !== undefined) ? saveData.bossIndex : 0;
-        const isDoctorP2 = Boolean((saveData && saveData.flags && (saveData.flags.doctorPhase2 || saveData.flags.isDoctorPhase2)) || (MOT.flags && (MOT.flags.doctorPhase2 || MOT.flags.isDoctorPhase2)));
-        this.cameras.main.fadeOut(500, 5, 8, 20);
-        this.time.delayedCall(500, function () {
-          this.scene.start('BossScene', { startBossIndex: startIdx, fromContinue: true, isDoctorPhase2: isDoctorP2 });
-        }, [], this);
       }.bind(this));
     }
 
