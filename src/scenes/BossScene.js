@@ -4713,6 +4713,11 @@ class BossScene extends Phaser.Scene {
             var dimBg = this.add.rectangle(w / 2, h / 2, w, h, 0x000000, 0.6).setAlpha(0).setDepth(89);
             this.dimBg = dimBg;
 
+            if (this.doctorImage) {
+              if (this.doctorImage.destroy) this.doctorImage.destroy();
+              this.doctorImage = null;
+            }
+
             this.demonImage = this.add.image(w - 300, h / 2, 'demon_lord_normal').setAlpha(0).setDepth(90);
             this.demonImage.setScale(1000 / (this.demonImage.width || 750));
             this.demonImage.setY(100 + (this.demonImage.height * this.demonImage.scaleY) / 2 - 200);
@@ -5265,8 +5270,8 @@ class BossScene extends Phaser.Scene {
                 this.scene.start('EndingScene', { endingKey: 'bad_puppet' });
                 return;
               } else {
-                // 1~2 bosses killed -> normal choice
-                await sayDoctor('「よくやった。とどめを刺せ」');
+                // 1~2 bosses killed -> normal choice (魔王城のため通信機越し)
+                await sayDevice('「よくやった。とどめを刺せ」');
                 await sayDemon('「…ここまでか…」');
                 let c = await new Promise(res => {
                   this.showChoice([
