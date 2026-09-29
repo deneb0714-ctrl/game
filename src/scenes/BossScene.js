@@ -3102,7 +3102,7 @@ class BossScene extends Phaser.Scene {
           '',
           termPrefix + '...logging complete',
           termPrefix + '...connection closed'
-        ]);
+        ], { noFlicker: true });
 
         // 5. 暗転終了後。勇者以外背景も含め暗くして心臓の音を鳴らす（勇者の覚醒）
         const sayHeroAwakening = (speakerName, text) => new Promise(res => {
@@ -3383,7 +3383,7 @@ class BossScene extends Phaser.Scene {
     })();
   }
 
-  terminalEffect(lines) {
+  terminalEffect(lines, options = {}) {
     return new Promise(resolve => {
       this.cutsceneActive = true;
       this.dialogActive = true;
@@ -3447,7 +3447,8 @@ class BossScene extends Phaser.Scene {
       // 「観測者のログ」チラ見えグリッチ演出
       let isFlickering = false;
       let flickerTimer = null;
-      const hasGlitch = lines.some(l => l.includes('bbggggO') || l.includes('観測者'));
+      const enableFlicker = !(options && (options.noFlicker || options.disableFlicker));
+      const hasGlitch = enableFlicker && lines.some(l => l.includes('bbggggO') || l.includes('観測者'));
 
       const triggerFlicker = () => {
         if (!textObj || !textObj.active) return;
