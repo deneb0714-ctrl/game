@@ -136,6 +136,7 @@ class TitleScene extends Phaser.Scene {
     this.cameras.main.fadeIn(600, 5, 8, 20);
 
     // START, CONTINUE, CREDITS buttons
+    this.titleMenuButtons = [];
     const hasSave = (window.MOT && MOT.hasSaveData && MOT.hasSaveData());
     const startY = hasSave ? h * 0.75 : h * 0.80;
 
@@ -660,8 +661,8 @@ class TitleScene extends Phaser.Scene {
     this.titleMenuIndex = 0;
     this.titleMenuActionTaken = false;
 
-    // 初期の見た目を反映
-    this.updateTitleMenuVisuals();
+    // 初期の見た目を即時反映（Tweenなしで設定しフェードインに干渉させない）
+    this.updateTitleMenuVisuals(false);
 
     this._onTitleMenuKeyDown = (event) => {
       // モーダルや名前入力オーバーレイ、設定モーダルが表示中の時は無効
@@ -687,14 +688,14 @@ class TitleScene extends Phaser.Scene {
         if (window.MOT && MOT.Audio && MOT.Audio.playSelect) {
           MOT.Audio.playSelect();
         }
-        this.updateTitleMenuVisuals();
+        this.updateTitleMenuVisuals(true);
       } else if (event.code === 'ArrowDown' || event.code === 'KeyS' || event.code === 'ArrowRight' || event.code === 'KeyD') {
         event.preventDefault();
         this.titleMenuIndex = (this.titleMenuIndex + 1) % len;
         if (window.MOT && MOT.Audio && MOT.Audio.playSelect) {
           MOT.Audio.playSelect();
         }
-        this.updateTitleMenuVisuals();
+        this.updateTitleMenuVisuals(true);
       } else if (event.code === 'Enter' || event.code === 'NumpadEnter' || event.code === 'Space') {
         event.preventDefault();
         const currentItem = this.titleMenuButtons[this.titleMenuIndex];
@@ -712,17 +713,22 @@ class TitleScene extends Phaser.Scene {
     });
   }
 
-  updateTitleMenuVisuals() {
+  updateTitleMenuVisuals(animate = true) {
     if (!this.titleMenuButtons || this.titleMenuButtons.length === 0) return;
     this.titleMenuButtons.forEach((item, index) => {
       const isSelected = (index === this.titleMenuIndex);
-      this.tweens.killTweensOf([item.btn, item.txt]);
-      this.tweens.add({
-        targets: [item.btn, item.txt],
-        scale: isSelected ? 1.10 : 1.0,
-        duration: 150,
-        ease: 'Quad.easeOut'
-      });
+      const targetScale = isSelected ? 1.10 : 1.0;
+      if (animate) {
+        this.tweens.add({
+          targets: [item.btn, item.txt],
+          scale: targetScale,
+          duration: 150,
+          ease: 'Quad.easeOut'
+        });
+      } else {
+        item.btn.setScale(targetScale);
+        item.txt.setScale(targetScale);
+      }
       if (isSelected) {
         item.btn.setTint(0x4FD1FF);
         item.txt.setColor('#ffffff');
