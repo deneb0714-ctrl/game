@@ -24,7 +24,8 @@ MOT.Audio = (function () {
     osc.type = type || 'square';
     osc.frequency.setValueAtTime(freq, ctx.currentTime);
 
-    gain.gain.setValueAtTime(volume || 0.1, ctx.currentTime);
+    let masterVol = (window.MOT && MOT.Settings) ? (MOT.Settings.seVolume / 100) : 1.0;
+    gain.gain.setValueAtTime((volume || 0.1) * masterVol, ctx.currentTime);
     gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + duration);
 
     osc.connect(gain);
@@ -38,6 +39,61 @@ MOT.Audio = (function () {
     // Musical note for barrier counter
     playMusicalNote: function(freq) {
       playTone(freq, 'square', 0.1, 0.1);
+    },
+    // ターミナル用・不規則なサイバー電子音（データ通信・処理ビープ音）
+    playTerminalBeep: function (isGlitch = false) {
+      resume();
+      const now = ctx.currentTime;
+      let masterVol = (window.MOT && MOT.Settings) ? (MOT.Settings.seVolume / 100) : 1.0;
+      
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      
+      if (isGlitch) {
+        // 赤文字ターミナルやエラー用：少し歪んだ低〜中域の不規則電子音
+        const freqs = [280, 360, 440, 520, 680];
+        const freq = freqs[Math.floor(Math.random() * freqs.length)];
+        osc.type = Math.random() < 0.5 ? 'sawtooth' : 'square';
+        osc.frequency.setValueAtTime(freq, now);
+        osc.frequency.exponentialRampToValueAtTime(freq * 0.75, now + 0.04);
+        gain.gain.setValueAtTime(0.05 * masterVol, now);
+        gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.04);
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start(now);
+        osc.stop(now + 0.045);
+      } else {
+        // 緑CRT・GGSターミナル用：澄んだSFデータ通信音（高周波サイン波/矩形波の不規則ビープ）
+        const freqs = [1046.5, 1318.5, 1567.98, 1760.0, 2093.0, 2637.02, 3135.96];
+        const f1 = freqs[Math.floor(Math.random() * freqs.length)];
+        osc.type = Math.random() < 0.4 ? 'square' : (Math.random() < 0.75 ? 'sine' : 'triangle');
+        osc.frequency.setValueAtTime(f1, now);
+        
+        const dur = (0.015 + Math.random() * 0.02);
+        const vol = (0.03 + Math.random() * 0.03) * masterVol;
+        gain.gain.setValueAtTime(vol, now);
+        gain.gain.exponentialRampToValueAtTime(0.0001, now + dur);
+        
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start(now);
+        osc.stop(now + dur);
+
+        // たまにダブルビープ（ピピッ）
+        if (Math.random() < 0.35) {
+          const osc2 = ctx.createOscillator();
+          const gain2 = ctx.createGain();
+          const f2 = freqs[Math.floor(Math.random() * freqs.length)];
+          osc2.type = osc.type;
+          osc2.frequency.setValueAtTime(f2, now + 0.03);
+          gain2.gain.setValueAtTime(vol * 0.75, now + 0.03);
+          gain2.gain.exponentialRampToValueAtTime(0.0001, now + 0.03 + dur);
+          osc2.connect(gain2);
+          gain2.connect(ctx.destination);
+          osc2.start(now + 0.03);
+          osc2.stop(now + 0.03 + dur);
+        }
+      }
     },
     // Typewriter bleep
         playBleep: function (speaker) {
@@ -105,76 +161,129 @@ MOT.Audio = (function () {
     // 必殺技カットイン：エネルギー集中・チャージ音
     playCutinCharge: function () {
       resume();
-      const osc = ctx.createOscillator();
-      const osc2 = ctx.createOscillator();
-      const gain = ctx.createGain();
-
-      osc.type = 'sine';
-      osc2.type = 'sawtooth';
-
       const now = ctx.currentTime;
-      osc.frequency.setValueAtTime(140, now);
-      osc.frequency.exponentialRampToValueAtTime(880, now + 0.2);
+      
+      // 1. ベースのエネルギー上昇（ノコギリ波でギュイーン）
+      const osc1 = ctx.createOscillator();
+      const gain1 = ctx.createGain();
+      osc1.type = 'sawtooth';
+      osc1.frequency.setValueAtTime(200, now);
+      osc1.frequency.exponentialRampToValueAtTime(2400, now + 0.2);
+      gain1.gain.setValueAtTime(0.01, now);
+      gain1.gain.exponentialRampToValueAtTime(0.3, now + 0.18);
+      gain1.gain.exponentialRampToValueAtTime(0.01, now + 0.23);
+      osc1.connect(gain1);
+      gain1.connect(ctx.destination);
+      osc1.start(now);
+      osc1.stop(now + 0.25);
 
-      osc2.frequency.setValueAtTime(70, now);
-      osc2.frequency.exponentialRampToValueAtTime(440, now + 0.2);
-
-      gain.gain.setValueAtTime(0.01, now);
-      gain.gain.linearRampToValueAtTime(0.22, now + 0.17);
-      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.23);
-
-      osc.connect(gain);
-      osc2.connect(gain);
-      gain.connect(ctx.destination);
-
-      osc.start(now);
+      // 2. 高音の共鳴（サイン波でキーン）
+      const osc2 = ctx.createOscillator();
+      const gain2 = ctx.createGain();
+      osc2.type = 'sine';
+      osc2.frequency.setValueAtTime(800, now);
+      osc2.frequency.exponentialRampToValueAtTime(3200, now + 0.2);
+      gain2.gain.setValueAtTime(0.01, now);
+      gain2.gain.exponentialRampToValueAtTime(0.2, now + 0.18);
+      gain2.gain.exponentialRampToValueAtTime(0.01, now + 0.23);
+      osc2.connect(gain2);
+      gain2.connect(ctx.destination);
       osc2.start(now);
-      osc.stop(now + 0.25);
       osc2.stop(now + 0.25);
+
+      // 3. 風切り音/エネルギー収束ノイズ
+      const bufferSize = Math.floor(ctx.sampleRate * 0.25);
+      const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+      const data = buffer.getChannelData(0);
+      for (let i = 0; i < bufferSize; i++) {
+        data[i] = Math.random() * 2 - 1;
+      }
+      const noise = ctx.createBufferSource();
+      noise.buffer = buffer;
+      
+      const noiseFilter = ctx.createBiquadFilter();
+      noiseFilter.type = 'bandpass';
+      noiseFilter.frequency.setValueAtTime(400, now);
+      noiseFilter.frequency.exponentialRampToValueAtTime(4000, now + 0.2);
+      noiseFilter.Q.value = 5;
+
+      const noiseGain = ctx.createGain();
+      noiseGain.gain.setValueAtTime(0.01, now);
+      noiseGain.gain.exponentialRampToValueAtTime(0.3, now + 0.18);
+      noiseGain.gain.exponentialRampToValueAtTime(0.01, now + 0.23);
+
+      noise.connect(noiseFilter);
+      noiseFilter.connect(noiseGain);
+      noiseGain.connect(ctx.destination);
+      
+      noise.start(now);
+      noise.stop(now + 0.25);
     },
     // 必殺技カットイン：開眼・解放インパクト音
     playCutinRelease: function () {
       resume();
       const now = ctx.currentTime;
       
-      const snapOsc = ctx.createOscillator();
-      const snapGain = ctx.createGain();
-      snapOsc.type = 'sawtooth';
-      snapOsc.frequency.setValueAtTime(1800, now);
-      snapOsc.frequency.exponentialRampToValueAtTime(220, now + 0.15);
-      snapGain.gain.setValueAtTime(0.3, now);
-      snapGain.gain.exponentialRampToValueAtTime(0.001, now + 0.18);
-      snapOsc.connect(snapGain);
-      snapGain.connect(ctx.destination);
-      snapOsc.start(now);
-      snapOsc.stop(now + 0.2);
+      // 1. ズバーン！という重低音インパクト
+      const boomOsc = ctx.createOscillator();
+      const boomGain = ctx.createGain();
+      boomOsc.type = 'sine';
+      boomOsc.frequency.setValueAtTime(200, now);
+      boomOsc.frequency.exponentialRampToValueAtTime(20, now + 0.3);
+      boomGain.gain.setValueAtTime(0.8, now);
+      boomGain.gain.exponentialRampToValueAtTime(0.01, now + 0.5);
+      boomOsc.connect(boomGain);
+      boomGain.connect(ctx.destination);
+      boomOsc.start(now);
+      boomOsc.stop(now + 0.6);
 
-      const subOsc = ctx.createOscillator();
-      const subGain = ctx.createGain();
-      subOsc.type = 'sine';
-      subOsc.frequency.setValueAtTime(160, now);
-      subOsc.frequency.exponentialRampToValueAtTime(40, now + 0.45);
-      subGain.gain.setValueAtTime(0.4, now);
-      subGain.gain.exponentialRampToValueAtTime(0.001, now + 0.5);
-      subOsc.connect(subGain);
-      subGain.connect(ctx.destination);
-      subOsc.start(now);
-      subOsc.stop(now + 0.5);
+      // 2. 斬撃・閃光の高音インパクト（金属的なシャキーン！）
+      const flashOsc = ctx.createOscillator();
+      const flashGain = ctx.createGain();
+      flashOsc.type = 'square';
+      flashOsc.frequency.setValueAtTime(4000, now);
+      flashOsc.frequency.exponentialRampToValueAtTime(800, now + 0.15);
+      flashGain.gain.setValueAtTime(0.4, now);
+      flashGain.gain.exponentialRampToValueAtTime(0.01, now + 0.3);
+      flashOsc.connect(flashGain);
+      flashGain.connect(ctx.destination);
+      flashOsc.start(now);
+      flashOsc.stop(now + 0.4);
 
-      const bufferSize = Math.floor(ctx.sampleRate * 0.35);
+      // 3. 高音の余韻（キーン...というエコー）
+      const ringOsc = ctx.createOscillator();
+      const ringGain = ctx.createGain();
+      ringOsc.type = 'sine';
+      ringOsc.frequency.setValueAtTime(3200, now);
+      ringGain.gain.setValueAtTime(0.3, now);
+      ringGain.gain.exponentialRampToValueAtTime(0.01, now + 0.8);
+      ringOsc.connect(ringGain);
+      ringGain.connect(ctx.destination);
+      ringOsc.start(now);
+      ringOsc.stop(now + 1.0);
+
+      // 4. エネルギー爆発のホワイトノイズ
+      const bufferSize = Math.floor(ctx.sampleRate * 0.8);
       const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
       const data = buffer.getChannelData(0);
       for (let i = 0; i < bufferSize; i++) {
-        data[i] = (Math.random() * 2 - 1) * Math.exp(-i / (bufferSize * 0.25));
+        data[i] = (Math.random() * 2 - 1) * Math.exp(-i / (bufferSize * 0.15));
       }
       const noise = ctx.createBufferSource();
+      const noiseFilter = ctx.createBiquadFilter();
+      noiseFilter.type = 'lowpass';
+      noiseFilter.frequency.setValueAtTime(8000, now);
+      noiseFilter.frequency.exponentialRampToValueAtTime(1000, now + 0.5);
+      
       const noiseGain = ctx.createGain();
       noise.buffer = buffer;
-      noiseGain.gain.setValueAtTime(0.25, now);
-      noiseGain.gain.exponentialRampToValueAtTime(0.001, now + 0.35);
-      noise.connect(noiseGain);
+      noiseGain.gain.setValueAtTime(0.7, now);
+      noiseGain.gain.exponentialRampToValueAtTime(0.01, now + 0.6);
+      noise.connect(noiseFilter);
+      noiseFilter.connect(noiseGain);
       noiseGain.connect(ctx.destination);
       noise.start(now);
+      noise.stop(now + 0.8);
     },
     // Clock tick
     playTick: function () {

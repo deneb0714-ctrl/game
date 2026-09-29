@@ -92,12 +92,22 @@ class BootScene extends Phaser.Scene {
       }
     });
 
+    // 不規則なデータパケット通信音ループ
+    let beepTimer = null;
+    const scheduleRandomBeep = () => {
+      if (this.isTypingDone && this.isLoadDone) return;
+      if (MOT.Audio && MOT.Audio.playTerminalBeep) MOT.Audio.playTerminalBeep();
+      beepTimer = this.time.delayedCall(Phaser.Math.Between(200, 600), scheduleRandomBeep);
+    };
+    this.time.delayedCall(400, scheduleRandomBeep);
+
     const typeNextChar = () => {
       if (currentLine >= lines.length) {
         this.isTypingDone = true;
         if (this.isLoadDone) {
           this.time.delayedCall(1800, () => {
             if (this.cursorTimer) { this.cursorTimer.remove(); this.cursorTimer = null; }
+            if (beepTimer) { beepTimer.remove(); beepTimer = null; }
             this.scene.start('TitleScene');
           });
         }
@@ -106,10 +116,16 @@ class BootScene extends Phaser.Scene {
       
       const lineText = lines[currentLine];
       if (currentChar < lineText.length) {
-        displayText += lineText[currentChar];
+        const char = lineText[currentChar];
+        displayText += char;
         textObj.setText(displayText + "■");
         currentChar++;
         
+        // 文字入力時の不規則な電子音
+        if (Math.random() < 0.35 && char !== ' ' && char !== '\n') {
+          if (MOT.Audio && MOT.Audio.playTerminalBeep) MOT.Audio.playTerminalBeep();
+        }
+
         let delay = 15; 
         const lastChar = lineText[currentChar - 1];
         if (lastChar === '。' || lastChar === '、') delay = 200;

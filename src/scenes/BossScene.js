@@ -3497,7 +3497,19 @@ class BossScene extends Phaser.Scene {
         }
       });
 
+      // 不規則なデータパケット通信音ループ
+      let beepTimer = null;
+      let isSceneClosed = false;
+      const scheduleRandomBeep = () => {
+        if (isSceneClosed) return;
+        if (MOT.Audio && MOT.Audio.playTerminalBeep) MOT.Audio.playTerminalBeep();
+        beepTimer = this.time.delayedCall(Phaser.Math.Between(220, 650), scheduleRandomBeep);
+      };
+      this.time.delayedCall(300, scheduleRandomBeep);
+
       const cleanupAndResolve = () => {
+        isSceneClosed = true;
+        if (beepTimer) beepTimer.remove();
         if (timerEvent) timerEvent.remove();
         if (cursorTimer) cursorTimer.remove();
         if (flickerTimer) flickerTimer.remove();
@@ -3520,9 +3532,15 @@ class BossScene extends Phaser.Scene {
 
         const lineText = lines[currentLine];
         if (currentChar < lineText.length) {
-          displayText += lineText[currentChar];
+          const char = lineText[currentChar];
+          displayText += char;
           textObj.setText(displayText + "■");
           currentChar++;
+
+          // 文字入力時の不規則な電子音
+          if (Math.random() < 0.35 && char !== ' ' && char !== '\n') {
+            if (MOT.Audio && MOT.Audio.playTerminalBeep) MOT.Audio.playTerminalBeep();
+          }
 
           let delay = 16;
           const lastChar = lineText[currentChar - 1];
@@ -3544,7 +3562,8 @@ class BossScene extends Phaser.Scene {
       };
 
       const handleInput = () => {
-        if (MOT.Audio && MOT.Audio.playBleep) MOT.Audio.playBleep('');
+        if (MOT.Audio && MOT.Audio.playTerminalBeep) MOT.Audio.playTerminalBeep();
+        else if (MOT.Audio && MOT.Audio.playBleep) MOT.Audio.playBleep('');
 
         if (!isTypingDone) {
           // タイピング中なら、現在の行を即座に全文出して次の行に進める（文字送り）
@@ -7048,7 +7067,19 @@ class BossScene extends Phaser.Scene {
         }
       });
 
+      // 不規則なエラーデータ通信音ループ
+      let beepTimer = null;
+      let isClosed = false;
+      const scheduleGlitchBeep = () => {
+        if (isClosed) return;
+        if (MOT.Audio && MOT.Audio.playTerminalBeep) MOT.Audio.playTerminalBeep(true);
+        beepTimer = this.time.delayedCall(Phaser.Math.Between(180, 500), scheduleGlitchBeep);
+      };
+      this.time.delayedCall(250, scheduleGlitchBeep);
+
       const cleanup = () => {
+        isClosed = true;
+        if (beepTimer) beepTimer.remove();
         if (cursorTimer) cursorTimer.remove();
         this.input.off('pointerdown', handleSkip);
         this.input.keyboard.off('keydown', handleKey);
@@ -7093,7 +7124,14 @@ class BossScene extends Phaser.Scene {
         callback: () => {
           if (isDone) return;
           charIdx++;
+          const char = fullText[charIdx - 1];
           textObj.setText(fullText.substring(0, charIdx) + cursorChar);
+
+          // 不規則なエラー電子音
+          if (Math.random() < 0.35 && char !== ' ' && char !== '\n') {
+            if (MOT.Audio && MOT.Audio.playTerminalBeep) MOT.Audio.playTerminalBeep(true);
+          }
+
           if (charIdx >= fullText.length) {
             isDone = true;
             this.time.delayedCall(1200, () => {
