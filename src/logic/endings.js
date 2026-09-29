@@ -24,7 +24,12 @@ MOT.ENDINGS = {
     key: 'bad_puppet',
     title: 'BAD END',
     subtitle: '— 傀儡 —',
-    description: 'こうして魔王は打倒された。魔王とはいったい何だったのか。\n博士の目的は何だったのか。しかし、それはこれからのあなたには関係のないことだろう。\nなぜならあなたは博士の忠実な傀儡（ドール）なのだから＿＿＿。',
+    description: [
+      { speaker: '博士', text: '「ようやく悲願がかなった。」', bgImage: 'cg_puppet' },
+      { speaker: '博士', text: '「お前のおかげだな。これからも私のために働くといい。」', bgImage: 'cg_puppet' },
+      { speaker: null, text: 'こうして魔王は打倒された。魔王とはいったい何だったのか。\n博士の目的は何だったのか。しかし、それはこれからのあなたには関係のないことだろう。\nなぜならあなたは博士の忠実な傀儡（ドール）なのだから＿＿＿。', bgImage: 'cg_puppet' }
+    ],
+    bgImageEnding: 'cg_puppet',
     bgImage: 'cg_puppet',
     color: 0xFF0000,
     bgColor: '#110000'
@@ -33,15 +38,10 @@ MOT.ENDINGS = {
     key: 'normal_daily',
     title: 'NORMAL END',
     subtitle: '日常',
-    description: [
-      'こうして魔王は打倒された。',
-      '主人公は博士の研究所に戻った。',
-      '結局魔王とはいったい何だったのか。彼女は本当に倒さなければならなかったのか。',
-      'その答えを知る機会はもう一生訪れない。'
-    ],
+    description: 'こうして魔王は打倒された。主人公は博士の研究所に戻った。\n結局魔王とはいったい何だったのか。彼女は本当に倒さなければならなかったのか。\nその答えを知る機会はもう一生訪れない。',
     bgImage: 'cg_daily_1',
     postDescription: [
-      { speaker: '博士', text: '「よく魔王を倒してくれた。\nこれで私の世界平和に一歩近づいたな。\nふふ、これからが楽しみだよ」' }
+      { speaker: '博士', text: '「よく魔王を倒してくれた。これで私の世界平和に一歩近づいたな。ふふ、これからが楽しみだよ」' }
     ],
     bgImagePost: 'cg_daily_3',
     color: 0xE5E7EB,
@@ -51,13 +51,15 @@ MOT.ENDINGS = {
     key: 'normal_useless',
     title: 'NORMAL END',
     subtitle: '— 役立たず —',
-    description: '主人公は魔王を倒せなかった。それとも、倒さなかったのだろうか。\n主人公にはわからなかった。少なくとも、会話をした中で、魔王が完全に悪だとは思えなかったのだろう。\n魔王は悪い奴ではないのかもしれないと博士に伝えるため、研究室に戻った。',
+    description: '勇者は魔王を倒せなかった。それとも、倒さなかったのだろうか。\n主人公にはわからなかった。少なくとも、会話をした中で、魔王が完全に悪だとは思えなかったのだろう。\n魔王は悪い奴ではないのかもしれないと博士に伝えるため、研究室に戻った。',
     postDescription: [
-      { speaker: '博士', text: '「報告などなくてもわかっている。\nお前はあいつらを殺しきることはできなかった役立たずだとな。」' },
-      { speaker: '博士', text: '「魔王は悪くないだと？\n世界平和のために奴はいらんだろう。\nそんな簡単な役目すらこなせないとはな。」' },
-      { speaker: '博士', text: '「仕方ない。新たな勇者を作るとでもするか。\nだから、お前にもう用はない。」' }
+      { speaker: '博士', text: '「……はぁ。お前には失望した。」', bgImage: 'bg_lab' },
+      { speaker: '博士', text: '「報告などなくてもわかっている。お前はあいつらを殺しきることはできなかった役立たずだとな。」' },
+      { speaker: '勇者', text: '「でも魔王は悪くない。むしろ優しそうな人だった。」' },
+      { speaker: '博士', text: '「魔王は悪くないだと？世界平和のために奴はいらんだろう。そんな簡単な役目すらこなせないとはな。」' },
+      { speaker: '博士', text: '「仕方ない。新たな勇者を作るとでもするか。だから、お前にもう用はない。」', bgImage: 'cg_useless' }
     ],
-    bgImagePost: 'cg_useless',
+    bgImageEnding: 'cg_useless',
     color: 0x9CA3AF,
     bgColor: '#05050a'
   },
@@ -75,12 +77,7 @@ MOT.ENDINGS = {
     key: 'bad_shutdown',
     title: 'BAD END',
     subtitle: '— 強制シャットダウン —',
-    description: [
-      '魔王に止めを刺した主人公。',
-      'しかし博士の度重なる指示違反が検知され、強制停止プログラムが起動した。',
-      '「命令を聞けない人形に価値はない。処分するとでもしようか」',
-      '通信機からの冷たい声を最後に、人造人間は静かに機能を停止した。'
-    ],
+    description: null,
     bgImage: 'cg_shutdown',
     bgImageEnding: 'cg_shutdown',
     color: 0xFF0000,
@@ -90,11 +87,7 @@ MOT.ENDINGS = {
     key: 'hidden_freedom',
     title: '隠しエンド',
     subtitle: '— 自由の身 —',
-    description: [
-      '博士の支配システムを完全に掌握した主人公。',
-      '誰の命令も聞かず、何者にも縛られることなく、真の自由を手に入れた。',
-      'その姿は、かつて恐れられた魔王の如く、気高く世界へと消えていった。'
-    ],
+    description: null,
     bgImage: 'true_demon_lord',
     bgImageEnding: 'true_demon_lord',
     color: 0xFFD700,
@@ -112,7 +105,7 @@ MOT.ENDINGS = {
     key: 'normal_unresistable',
     title: 'NORMAL END',
     subtitle: '— 抗えない —',
-    description: '勇者の意思とは裏腹に、研究室に戻ることもできず見逃したはずの幹部たちを見つけ殺していく。\nどれだけ引き金を引かないよう抗ったとて、その手は言うことを聞かなかった。',
+    description: '勇者の意思とは裏腹に、研究室に戻ることもできず見逃したはずの幹部たちを見つけ殺していく。\nどれだけ抗ったとて、その手は言うことを聞かなかった。',
     bgImage: 'cg_irresistible',
     bgImageEnding: 'cg_irresistible',
     color: 0x9CA3AF,

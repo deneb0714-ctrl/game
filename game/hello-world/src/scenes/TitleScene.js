@@ -275,11 +275,17 @@ class TitleScene extends Phaser.Scene {
         directKey: 'bad_shutdown'
       },
       'Digit7': {
-        name: '第1分岐点 (クラトス戦)',
+        name: '隠しエンド (自由の身) 直前 (魔王戦)',
         action: () => {
           MOT.resetFlags();
+          MOT.flags.killedBoss1 = false;
+          MOT.flags.killedBoss2 = false;
+          MOT.flags.killedTwins = false;
+          MOT.flags.killingIntent = 250;
+          MOT.flags.redDiamondCount = 25;
+          MOT.flags.doctorObeyCount = 5;
           MOT.flags.playerHP = 5;
-          return { startBossIndex: 0, initialBossHP: 60 };
+          return { startBossIndex: 3, initialBossHP: 60 };
         },
         directKey: 'hidden_freedom'
       },
@@ -926,81 +932,170 @@ class TitleScene extends Phaser.Scene {
     const w = this.cameras.main.width;
     const h = this.cameras.main.height;
 
-    const modalGroup = [];
+    // ゲーム画面側を覆う黒背景（画面遷移時まで維持）
     const bgOverlay = this.add.graphics();
     bgOverlay.fillStyle(0x000000, 1.0);
     bgOverlay.fillRect(0, 0, w, h);
     bgOverlay.setDepth(200000);
-    modalGroup.push(bgOverlay);
 
-    const boxW = 860;
-    const boxH = 380;
-    const boxX = (w - boxW) / 2;
-    const boxY = (h - boxH) / 2;
+    // 既存のモーダルがあれば削除
+    const existing = document.getElementById('name-input-overlay');
+    if (existing) existing.remove();
 
-    const modalBox = this.add.graphics();
-    modalBox.fillStyle(0x0a0a1a, 0.95);
-    modalBox.fillRoundedRect(boxX, boxY, boxW, boxH, 16);
-    modalBox.lineStyle(3, 0x4FD1FF, 0.9);
-    modalBox.strokeRoundedRect(boxX, boxY, boxW, boxH, 16);
-    modalBox.setDepth(200001);
-    modalGroup.push(modalBox);
+    // オーバーレイコンテナ
+    const overlay = document.createElement('div');
+    overlay.id = 'name-input-overlay';
+    overlay.style.cssText = `
+      position: fixed;
+      inset: 0;
+      width: 100vw;
+      width: 100dvw;
+      height: 100vh;
+      height: 100dvh;
+      background: rgba(0, 0, 0, 0.78);
+      backdrop-filter: blur(6px);
+      -webkit-backdrop-filter: blur(6px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 999999;
+      box-sizing: border-box;
+      padding: 16px;
+      user-select: none;
+      -webkit-user-select: none;
+      transition: opacity 0.2s ease-out;
+    `;
 
-    const titleText = this.add.text(w / 2, boxY + 55, '勇者に名前を付けてください', {
-      fontFamily: '"DotGothic16", sans-serif',
-      fontSize: '40px',
-      color: '#4FD1FF',
-      align: 'center'
-    }).setOrigin(0.5).setDepth(200002);
-    modalGroup.push(titleText);
+    // モーダルボックス
+    const modalBox = document.createElement('div');
+    modalBox.style.cssText = `
+      background: #0a0a1a;
+      border: 2px solid #4FD1FF;
+      border-radius: 16px;
+      box-shadow: 0 0 25px rgba(79, 209, 255, 0.35), inset 0 0 15px rgba(79, 209, 255, 0.08);
+      width: min(92vw, 520px);
+      max-width: 100%;
+      padding: clamp(22px, 4vw, 36px) clamp(18px, 4vw, 32px);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: clamp(14px, 2.5vw, 22px);
+      box-sizing: border-box;
+    `;
 
+    // タイトル
+    const title = document.createElement('div');
+    title.textContent = '勇者に名前を付けてください';
+    title.style.cssText = `
+      font-family: 'DotGothic16', sans-serif;
+      font-size: clamp(20px, 4.2vw, 28px);
+      color: #4FD1FF;
+      text-align: center;
+      font-weight: bold;
+      letter-spacing: 1px;
+      text-shadow: 0 0 10px rgba(79, 209, 255, 0.5);
+    `;
+
+    // 入力欄
+    const defaultName = (window.MOT && MOT.flags && MOT.flags.heroName) ? MOT.flags.heroName : 'メエリア';
     const inputEl = document.createElement('input');
     inputEl.type = 'text';
-    inputEl.value = (window.MOT && MOT.flags && MOT.flags.heroName) ? MOT.flags.heroName : 'メエリア';
+    inputEl.value = defaultName;
     inputEl.maxLength = 12;
     inputEl.placeholder = 'メエリア';
-    inputEl.style.position = 'fixed';
-    inputEl.style.top = '50%';
-    inputEl.style.left = '50%';
-    inputEl.style.transform = 'translate(-50%, -35%)';
-    inputEl.style.width = '360px';
-    inputEl.style.height = '56px';
-    inputEl.style.fontSize = '32px';
-    inputEl.style.fontFamily = "'DotGothic16', sans-serif";
-    inputEl.style.textAlign = 'center';
-    inputEl.style.color = '#FFFFFF';
-    inputEl.style.background = '#0F172A';
-    inputEl.style.border = '2px solid #4FD1FF';
-    inputEl.style.borderRadius = '8px';
-    inputEl.style.boxShadow = '0 0 15px rgba(79, 209, 255, 0.4)';
-    inputEl.style.zIndex = '999999';
-    inputEl.style.outline = 'none';
+    inputEl.style.cssText = `
+      width: min(100%, 340px);
+      height: clamp(46px, 7.5vw, 54px);
+      font-size: clamp(20px, 4vw, 26px);
+      font-family: 'DotGothic16', sans-serif;
+      text-align: center;
+      color: #FFFFFF;
+      background: #0F172A;
+      border: 2px solid #4FD1FF;
+      border-radius: 8px;
+      box-shadow: 0 0 12px rgba(79, 209, 255, 0.35);
+      outline: none;
+      box-sizing: border-box;
+      padding: 0 12px;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    `;
+    inputEl.addEventListener('focus', () => {
+      inputEl.style.borderColor = '#00FF88';
+      inputEl.style.boxShadow = '0 0 16px rgba(0, 255, 136, 0.45)';
+    });
+    inputEl.addEventListener('blur', () => {
+      inputEl.style.borderColor = '#4FD1FF';
+      inputEl.style.boxShadow = '0 0 12px rgba(79, 209, 255, 0.35)';
+    });
 
-    document.body.appendChild(inputEl);
-    setTimeout(() => { try { inputEl.focus(); inputEl.select(); } catch(e){} }, 100);
+    // ヒントテキスト
+    const hint = document.createElement('div');
+    hint.textContent = '※最大12文字 / 空欄の場合は「メエリア」';
+    hint.style.cssText = `
+      font-family: 'DotGothic16', sans-serif;
+      font-size: clamp(12px, 2.2vw, 14px);
+      color: #9CA3AF;
+      text-align: center;
+      margin-top: -6px;
+    `;
 
-    const btnY = boxY + boxH - 65;
-    const confirmBtn = this.add.image(w / 2, btnY, 'ui_button_wide')
-      .setDisplaySize(280, 60)
-      .setInteractive({ useHandCursor: true })
-      .setDepth(200002);
+    // 決定ボタン
+    const confirmBtn = document.createElement('button');
+    confirmBtn.textContent = '【 決 定 】';
+    confirmBtn.style.cssText = `
+      width: min(100%, 280px);
+      height: clamp(46px, 7vw, 54px);
+      font-family: 'DotGothic16', sans-serif;
+      font-size: clamp(20px, 3.5vw, 24px);
+      font-weight: bold;
+      color: #00FF88;
+      background: rgba(0, 255, 136, 0.12);
+      border: 2px solid #00FF88;
+      border-radius: 8px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 0 15px rgba(0, 255, 136, 0.25);
+      transition: all 0.15s ease;
+      touch-action: manipulation;
+    `;
+    confirmBtn.addEventListener('mouseenter', () => {
+      confirmBtn.style.background = 'rgba(0, 255, 136, 0.25)';
+      confirmBtn.style.boxShadow = '0 0 20px rgba(0, 255, 136, 0.45)';
+      confirmBtn.style.transform = 'scale(1.02)';
+    });
+    confirmBtn.addEventListener('mouseleave', () => {
+      confirmBtn.style.background = 'rgba(0, 255, 136, 0.12)';
+      confirmBtn.style.boxShadow = '0 0 15px rgba(0, 255, 136, 0.25)';
+      confirmBtn.style.transform = 'scale(1)';
+    });
+    confirmBtn.addEventListener('mousedown', () => {
+      confirmBtn.style.transform = 'scale(0.97)';
+    });
+    confirmBtn.addEventListener('mouseup', () => {
+      confirmBtn.style.transform = 'scale(1.02)';
+    });
 
-    const confirmTxt = this.add.text(w / 2, btnY, '【 決 定 】', {
-      fontFamily: '"DotGothic16", sans-serif',
-      fontSize: '32px',
-      color: '#00FF88'
-    }).setOrigin(0.5).setDepth(200003);
+    modalBox.appendChild(title);
+    modalBox.appendChild(inputEl);
+    modalBox.appendChild(hint);
+    modalBox.appendChild(confirmBtn);
+    overlay.appendChild(modalBox);
+    document.body.appendChild(overlay);
 
-    modalGroup.push(confirmBtn, confirmTxt);
+    setTimeout(() => {
+      try {
+        inputEl.focus();
+        inputEl.select();
+      } catch (e) {}
+    }, 100);
 
-    const cleanup = () => {
-      if (inputEl && inputEl.parentNode) {
-        inputEl.parentNode.removeChild(inputEl);
-      }
-      modalGroup.forEach(el => { if (el && el.destroy) el.destroy(); });
-    };
-
+    let isSubmitted = false;
     const submit = () => {
+      if (isSubmitted) return;
+      isSubmitted = true;
+
       let val = inputEl.value.trim();
       if (!val) val = 'メエリア';
       if (window.MOT && MOT.flags) {
@@ -1008,14 +1103,11 @@ class TitleScene extends Phaser.Scene {
       }
       if (MOT.Audio && MOT.Audio.playSelect) MOT.Audio.playSelect();
 
-      // 入力要素とモーダル枠のみを削除し、真っ黒な背景(bgOverlay)は残してタイトル画面を見せない
-      if (inputEl && inputEl.parentNode) {
-        inputEl.parentNode.removeChild(inputEl);
-      }
-      if (modalBox && modalBox.destroy) modalBox.destroy();
-      if (titleText && titleText.destroy) titleText.destroy();
-      if (confirmBtn && confirmBtn.destroy) confirmBtn.destroy();
-      if (confirmTxt && confirmTxt.destroy) confirmTxt.destroy();
+      // モーダルをフェードアウトして削除
+      overlay.style.opacity = '0';
+      setTimeout(() => {
+        if (overlay.parentNode) overlay.parentNode.removeChild(overlay);
+      }, 200);
 
       // 明転（白フェードアウト）して物語へ移行
       this.cameras.main.fadeOut(500, 255, 255, 255);
@@ -1025,10 +1117,14 @@ class TitleScene extends Phaser.Scene {
       });
     };
 
-    confirmBtn.on('pointerdown', submit);
+    confirmBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      submit();
+    });
 
     inputEl.addEventListener('keydown', (e) => {
       if (e.key === 'Enter') {
+        e.preventDefault();
         submit();
       }
     });

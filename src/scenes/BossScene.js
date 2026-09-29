@@ -3094,27 +3094,28 @@ class BossScene extends Phaser.Scene {
 
         // 4. GGS Terminal (Spaceキー / クリックで進行)
         this.cameras.main.fadeIn(300, 0, 0, 0);
+        const termPrefix = 'mmƂ̃````bbggggOのログ: ';
         await this.terminalEffect([
-          '...link established',
-          '...signal stable: 1.00',
+          termPrefix + '...link established',
+          termPrefix + '...signal stable: 1.00',
           '',
-          'こんにちは。『GGS』よ。',
+          termPrefix + 'こんにちは。『GGS』よ。',
           '',
-          '悪性因子、消失を確認。',
+          termPrefix + '悪性因子、消失を確認。',
           '',
-          '世界構造、再計測完了。観測値、許容範囲内。',
+          termPrefix + '世界構造、再計測完了。観測値、許容範囲内。',
           '',
-          'あなたは宿命を果たした。あなたの行動は祝福を授けるに値する。',
-          'あなたの望みを叶えよう。',
-          '個体情報、更新。',
-          'Designation："勇者" → "' + heroName + '"',
-          '登録情報、書き換え完了。',
-          'あなたは、もう人造人間ではない。',
-          'この世界に生きる、一人の人間──"' + heroName + '"として認証する。',
-          'ただの人間”' + heroName + '”として、自由に生きなさい。',
+          termPrefix + 'あなたは宿命を果たした。あなたの行動は祝福を授けるに値する。',
+          termPrefix + 'あなたの望みを叶えよう。',
+          termPrefix + '個体情報、更新。',
+          termPrefix + 'Designation："勇者" → "' + heroName + '"',
+          termPrefix + '登録情報、書き換え完了。',
+          termPrefix + 'あなたは、もう人造人間ではない。',
+          termPrefix + 'この世界に生きる、一人の人間──"' + heroName + '"として認証する。',
+          termPrefix + 'ただの人間”' + heroName + '”として、自由に生きなさい。',
           '',
-          '...logging complete',
-          '...connection closed'
+          termPrefix + '...logging complete',
+          termPrefix + '...connection closed'
         ]);
 
         // 5. 暗転終了後。勇者以外背景も含め暗くして心臓の音を鳴らす（勇者の覚醒）
@@ -3457,13 +3458,47 @@ class BossScene extends Phaser.Scene {
       let isTypingDone = false;
       let timerEvent = null;
 
+      // 「観測者のログ」チラ見えグリッチ演出
+      let isFlickering = false;
+      let flickerTimer = null;
+      const hasGlitch = lines.some(l => l.includes('bbggggO') || l.includes('観測者'));
+
+      const triggerFlicker = () => {
+        if (!textObj || !textObj.active) return;
+        if (displayText.length > 5) {
+          isFlickering = true;
+          // 一瞬だけ「観測者のログ」に置換
+          const flickeredText = (displayText + cursorChar)
+            .replace(/mmƂ̃`*bbggggO(?:のログ)?/g, '観測者のログ')
+            .replace(/mmƂ̃bbggggO/g, '観測者のログ');
+          
+          textObj.setText(flickeredText);
+          textObj.setColor('#E0FFE8'); // 一瞬CRTの同期ズレのように明滅発光
+
+          // 80ms〜120ms後に元に戻す
+          this.time.delayedCall(Phaser.Math.Between(80, 120), () => {
+            if (!textObj || !textObj.active) return;
+            isFlickering = false;
+            textObj.setColor('#00FF66');
+            textObj.setText(displayText + cursorChar);
+          });
+        }
+
+        // 次のフリッカー（1.2秒〜2.5秒ごとにランダム発生）
+        flickerTimer = this.time.delayedCall(Phaser.Math.Between(1200, 2500), triggerFlicker);
+      };
+
+      if (hasGlitch) {
+        flickerTimer = this.time.delayedCall(1200, triggerFlicker);
+      }
+
       // カーソル点滅タイマー
       const cursorTimer = this.time.addEvent({
         delay: 450,
         loop: true,
         callback: () => {
           cursorChar = (cursorChar === "■") ? " " : "■";
-          if (textObj && textObj.active) {
+          if (textObj && textObj.active && !isFlickering) {
             textObj.setText(displayText + cursorChar);
           }
         }
@@ -3472,6 +3507,7 @@ class BossScene extends Phaser.Scene {
       const cleanupAndResolve = () => {
         if (timerEvent) timerEvent.remove();
         if (cursorTimer) cursorTimer.remove();
+        if (flickerTimer) flickerTimer.remove();
         if (guideTween) guideTween.stop();
         this.input.keyboard.off('keydown-SPACE', handleInput);
         this.input.keyboard.off('keydown-ENTER', handleInput);
@@ -4489,12 +4525,13 @@ class BossScene extends Phaser.Scene {
                 
                 await sayDevice('「こいつらに名前なんてない。さっさと倒せ。」');
                 await sayEnemyName('エディオ', '「やめてよ。魔王様に付けてもらった素敵な名前があるんだ。僕がエディオで、」', 'brother_normal', '男');
-                await sayEnemyName('エナリア', '「私がエナリア。魔王様が、捨てられてた私たちを拾ってくれたの。」', 'sister_normal', '女');
-                await sayEnemyName('エディオ', '「君は博士に騙されている。悪いことは言わないからこちらの味方になった方がいい」', 'brother_normal', '男');
-                await sayDevice('「彼らの言葉に耳を傾けてはいけない。早く倒すんだ。」');
-                await sayHero('「…」');
-                await sayEnemyName('エナリア', '「…そう。意思は硬いのね。仕方ないわ兄様」', 'sister_normal', '女');
-                await sayEnemyName('エディオ', '「君を彼女の元にはいかせない。ここで食い止めるよ」', 'brother_normal', '男');
+                await sayEnemyName('エナリア', '「私がエナリア。魔王様が私たちを拾ってくれたの。」', 'sister_normal', '女');
+                await sayEnemyName('エディオ', '「君、”勇者”なんだってね。”世界”を救うために魔王様を倒そうとしているんだろう？」', 'brother_normal', '男');
+                await sayEnemyName('エディオ', '「……手を引くんだ。まだ引き返せる。僕らのように。」', 'brother_normal', '男');
+                await sayDevice('「おい、ぐちゃぐちゃ話してないで、早く倒せ。魔王軍の言うことに耳を貸す必要はない。」');
+                await sayHero('「……」');
+                await sayEnemyName('エナリア', '「…そう。仕方ないわよ、兄様」', 'sister_normal', '女');
+                await sayEnemyName('エディオ', '「君を魔王様の元にはいかせない。ここで食い止めるよ」', 'brother_normal', '男');
               }
               
               this.tweens.add({
@@ -4740,10 +4777,154 @@ class BossScene extends Phaser.Scene {
               this.showDialogue('博士', text, res);
             });
 
+            const sayInuneko = (text, speakerName = '犬猫☆すたー') => new Promise(res => {
+              this.tweens.add({ targets: dimBg, alpha: 0.6, duration: 300 });
+              if (this.heroImage) this.tweens.add({ targets: this.heroImage, alpha: 0.4, duration: 300 });
+              if (this.demonImage) this.tweens.add({ targets: this.demonImage, alpha: 0.4, duration: 300 });
+              if (this.doctorImage) this.tweens.add({ targets: this.doctorImage, alpha: 0, duration: 300 });
+              if (!this.inunekoImage) {
+                this.inunekoImage = this.add.image(w - 550, h / 2 + 100, 'inuneko_stand').setDepth(91).setAlpha(0);
+                const inuScale = 500 / ((this.textures.exists('inuneko_stand') && this.textures.get('inuneko_stand').getSourceImage().width) || 500);
+                this.inunekoImage.setScale(inuScale);
+              }
+              this.tweens.add({ targets: this.inunekoImage, alpha: 1, duration: 300 });
+              this.showDialogue(speakerName, text, res);
+            });
+
             (async () => {
               const totalKills = (MOT.flags.killedBoss1 ? 1 : 0) + (MOT.flags.killedBoss2 ? 1 : 0) + (MOT.flags.killedTwins ? 1 : 0);
 
               if (totalKills === 0) {
+                const f = MOT.flags;
+                const hasEnoughDiamonds = (((f.killingIntent || 0) >= 200) || ((f.redDiamondCount || 0) >= 20));
+                const disobeyedDoctor = (((f.dollPoints || 0) < 100) || (f.doctorObeyCount !== undefined && f.doctorObeyCount < 20) || (f.playerMaxHP !== undefined && f.playerMaxHP <= 6));
+                const isHiddenFreedom = hasEnoughDiamonds && disobeyedDoctor;
+
+                if (isHiddenFreedom) {
+                  // 隠しエンド（自由の身）ルート
+                  await sayDevice('「魔王を倒した後は、あいつらの忌々しい部下たちも倒しに行かないとな。」');
+                  await sayDevice('「なんで一度見逃したんだ？二度手間だろう」');
+                  await sayHero('「…」');
+                  await sayDemon('「殺すならわらわだけで十分であろう！？わらわを殺せば組織は終わる！お前の目的だって達成される！！！」');
+                  await sayInuneko('「何を言っとるにゃ！？魔王様も殺すなわん！！」');
+                  await sayHero('「…」');
+                  await sayDevice('「おい、何をしている？早くしろ。」');
+                  await sayHero('「うるさいな」');
+
+                  // 破壊音SE（通信機を壊す）
+                  if (MOT.Audio && MOT.Audio.playCrack) MOT.Audio.playCrack();
+                  else if (MOT.Audio && MOT.Audio.playBomb) MOT.Audio.playBomb();
+                  this.cameras.main.flash(200, 255, 255, 255);
+                  this.cameras.main.shake(500, 0.05);
+
+                  await sayDemon('「勇者……？」');
+                  await sayHero('「もうここに用はない。」');
+                  await sayHero('「君も好きにするといい。僕は帰らないと。」');
+                  await sayDemon('「帰る……？あやつの元にか……？」');
+                  await sayDemon('「あやつの元に帰ったところでいいように使われるだけだぞ？」');
+                  await sayDemon('「わらわたちと協力するのも悪くないと思うが……？」');
+                  await sayHero('「面白い提案だ。」');
+                  await sayHero('「でも残念ながら、君と僕では目的も手段も違う。」');
+                  await sayHero('「安心するといい。これからは平和に暮らせるはずだ。」');
+                  await sayDemon('「は……？」');
+                  await sayInuneko('「なにを言ってるわん？ちょっと待つにゃん！！！」');
+
+                  // 【博士の研究室に戻る。】
+                  this.cameras.main.fadeOut(800, 0, 0, 0);
+                  await new Promise(r => this.time.delayedCall(850, r));
+
+                  if (boss && boss.active) {
+                    boss.destroy();
+                    this.currentBoss = null;
+                  }
+                  if (this.inunekoEnemy && this.inunekoEnemy.active) {
+                    this.inunekoEnemy.destroy();
+                    this.inunekoEnemy = null;
+                  }
+                  if (this.demonImage) { this.demonImage.destroy(); this.demonImage = null; }
+                  if (this.inunekoImage) { this.inunekoImage.destroy(); this.inunekoImage = null; }
+
+                  if (this.textures.exists('bg_lab')) {
+                    this.bg.setTexture('bg_lab');
+                    this.bg.setOrigin(0.5, 0.5);
+                    this.bg.setPosition(w / 2, h / 2);
+                    let scale = Math.max(w / this.bg.width, h / this.bg.height);
+                    this.bg.setScale(scale);
+                  }
+
+                  this.cameras.main.fadeIn(800, 0, 0, 0);
+                  await new Promise(r => this.time.delayedCall(800, r));
+
+                  await sayHero('「…」');
+                  await sayDoctor('「おい、通信機を破壊したな？それに魔王すら殺していないとはどういうことだ。」');
+                  await sayDoctor('「あまり好き勝手されるのは困るんだがな。」');
+
+                  // 【選択肢】1〜5 博士を倒す
+                  await new Promise(res => {
+                    this.showChoice([
+                      { text: '1. 博士を倒す', callback: () => { if(MOT.Audio && MOT.Audio.playSelect) MOT.Audio.playSelect(); res(1); } },
+                      { text: '2. 博士を倒す', callback: () => { if(MOT.Audio && MOT.Audio.playSelect) MOT.Audio.playSelect(); res(2); } },
+                      { text: '3. 博士を倒す', callback: () => { if(MOT.Audio && MOT.Audio.playSelect) MOT.Audio.playSelect(); res(3); } },
+                      { text: '4. 博士を倒す', callback: () => { if(MOT.Audio && MOT.Audio.playSelect) MOT.Audio.playSelect(); res(4); } },
+                      { text: '5. 博士を倒す', callback: () => { if(MOT.Audio && MOT.Audio.playSelect) MOT.Audio.playSelect(); res(5); } }
+                    ]);
+                  });
+
+                  // 【ここからエンディングイラスト】
+                  if (this.textures.exists('true_demon_lord')) {
+                    this.bg.setTexture('true_demon_lord');
+                    this.bg.setOrigin(0.5, 0.5);
+                    this.bg.setPosition(w / 2, h / 2);
+                    let scale = Math.max(w / this.bg.width, h / this.bg.height);
+                    this.bg.setScale(scale);
+                  }
+
+                  await sayHero('「…」');
+                  await sayDoctor('「こちらに銃を構えてどうした？ああ、私を倒したいでも言うのか。」');
+                  await sayDoctor('「残念だが、お前にその権限はない。」');
+                  await sayDoctor('「反抗するのならお前を……」');
+                  await sayDoctor('「……！？」');
+                  await sayHero('「いつまでも自分が優位に立てるとは思わない方がいい。」');
+                  await sayHero('「僕にこれだけの力を与えたのは貴方だ。」');
+                  await sayDoctor('「まさか、システムを乗っ取られるとはな！！！ははは、面白い。」');
+                  await sayHero('「僕はその力を掌握した。」');
+                  await sayHero('「……ここまで言えば、貴方には意味することがわかるでしょう？」');
+                  await sayDoctor('「そうだな。お前は晴れて自由の身になったというわけだ。そして、私を殺してお前は何をするというんだ？」');
+                  await sayHero('「僕はもう、誰の命令も聞かない、それだけだ。」');
+                  await sayDoctor('「そうか。やはりお前は私の最高傑作のようだ！！！まさか、思想まで似てしまうとは。想定外だが、それもいいだろう。」');
+                  await sayHero('「うるさい。もうお前は必要ない。」');
+
+                  // （銃声SE）
+                  if (MOT.Audio && MOT.Audio.playShot) MOT.Audio.playShot();
+                  this.cameras.main.flash(200, 255, 255, 255);
+                  this.cameras.main.shake(500, 0.05);
+
+                  await sayHero('「……。」');
+
+                  // 【暗転の中、文字だけ表示】
+                  this.cameras.main.fadeOut(800, 0, 0, 0);
+                  await new Promise(r => this.time.delayedCall(850, r));
+
+                  if (this.heroImage) { this.heroImage.destroy(); this.heroImage = null; }
+                  if (this.doctorImage) { this.doctorImage.destroy(); this.doctorImage = null; }
+                  if (dimBg) { dimBg.destroy(); dimBg = null; }
+
+                  const sayDarkMono = (text) => new Promise(res => {
+                    this.showDialogue('勇者', text, res);
+                  });
+
+                  this.cameras.main.fadeIn(400, 0, 0, 0);
+                  await sayDarkMono('「何をするにもこれから自由だ。誰に縛られることもない。」');
+                  await sayDarkMono('「……ふふ、世界を掌握するっていうのも面白いかもな」');
+
+                  this.cameras.main.fadeOut(1000, 0, 0, 0);
+                  await new Promise(r => this.time.delayedCall(1000, r));
+
+                  MOT.flags.finalEnding = 'hidden_freedom';
+                  this.scene.start('EndingScene', { endingKey: 'hidden_freedom' });
+                  return;
+                }
+
                 // 博士の指示セリフ（通信機越し）
                 await sayDevice('「さあ、早くとどめを刺せ！」');
 
@@ -4751,11 +4932,33 @@ class BossScene extends Phaser.Scene {
                 let shatterResult = await this.askDemonLordShatterChoice(sayDevice, sayHero);
 
                 if (shatterResult === 1) {
-                  await sayHero('「……魔王は……殺さなきゃ……エラーは消去しないと……」');
-                  MOT.flags.killedDemonLord = true;
+                  await sayDemon('「わがしもべたちは、わらわに従っていただけだ。おぬしもむやみに殺したいわけではないのだろう？」');
+                  await sayInuneko('「まおうさま……だめだわん……まおうさまがいなくなったら……」', '犬猫☆すたー');
+                  await sayDemon('「だから今ここで契約を結べ。われはこのまま何もしない。だからしもべを殺すな」');
+                  await sayHero('「…わかった。」');
+                  await sayDevice('「おい、勝手に決めるな。お前の使命を忘れたのか。魔王を倒した後、残りのやつらも倒しに行くぞ。」');
+                  await sayDemon('「ふざけるな！！！わらわたちが何をした！もしも世界に悪が存在するのなら、それは！」');
+
+                  // 【画面が乱れる】
+                  this.cameras.main.shake(1000, 0.05);
+                  if (this.glitchOverlay) this.glitchOverlay.setVisible(true);
+                  await sayDevice('「ꂍꂍꂍꂍEẼGGGG[[[[AAEEE 」');
+                  if (this.glitchOverlay) this.glitchOverlay.setVisible(false);
+
+                  // （銃声SE×２回）
                   if (MOT.Audio && MOT.Audio.playShot) MOT.Audio.playShot();
-                  else if (MOT.Audio && MOT.Audio.playSelect) MOT.Audio.playSelect();
-                  this.cameras.main.shake(500, 0.05);
+                  this.cameras.main.flash(150, 255, 255, 255);
+                  this.cameras.main.shake(400, 0.05);
+                  if (boss && boss.active) {
+                    this.showExplosion(boss.x, boss.y);
+                  }
+                  await new Promise(r => this.time.delayedCall(300, r));
+
+                  if (MOT.Audio && MOT.Audio.playShot) MOT.Audio.playShot();
+                  this.cameras.main.flash(200, 255, 255, 255);
+                  this.cameras.main.shake(600, 0.08);
+
+                  MOT.flags.killedDemonLord = true;
                   if (boss && boss.active) {
                     this.showExplosion(boss.x, boss.y);
                     boss.destroy();
@@ -4769,6 +4972,19 @@ class BossScene extends Phaser.Scene {
                   if (this.demonImage) {
                     this.tweens.add({ targets: this.demonImage, scale: 2, alpha: 0, duration: 500, ease: 'Power2' });
                   }
+                  if (this.inunekoImage) {
+                    this.tweens.add({ targets: this.inunekoImage, alpha: 0, duration: 500 });
+                  }
+                  await new Promise(r => this.time.delayedCall(600, r));
+
+                  await sayHero('「！」');
+                  await sayHero('「なんで、今勝手に手が…！」');
+                  await sayDevice('「ろくでもない生物を生かしておく必要はないだろう。無駄な命乞いを聞く前にさっさと始末したに過ぎない。」');
+                  await sayDevice('「いいか。お前はこれから見逃してしまった敵を殺しに行くんだ。」');
+                  await sayDevice('「わかっているだろうが、次はないからな？」');
+
+                  // （エンディングイラスト表示へ）
+                  this.cameras.main.fadeOut(1000, 0, 0, 0);
                   await new Promise(r => this.time.delayedCall(1000, r));
                   const dec = (window.MOT && MOT.decideEnding) ? MOT.decideEnding() : { key: 'normal_unresistable' };
                   MOT.flags.finalEnding = dec.key;
@@ -4804,19 +5020,7 @@ class BossScene extends Phaser.Scene {
                 await sayDevice('「それに、私だけじゃない。魔族に恐怖し、滅んでほしいと願う人間はごまんといる。そいつらにとっても、いい世界となるんだ。」');
                 await sayDemon('「わらわたちはただ生きているだけだ！むやみに人を傷つけたことなど、一度もない！」');
                 
-                const sayInuneko = (text) => new Promise(res => {
-                  this.tweens.add({ targets: dimBg, alpha: 0.6, duration: 300 });
-                  if (this.heroImage) this.tweens.add({ targets: this.heroImage, alpha: 0.4, duration: 300 });
-                  if (this.demonImage) this.tweens.add({ targets: this.demonImage, alpha: 0.4, duration: 300 });
-                  if (!this.inunekoImage) {
-                    this.inunekoImage = this.add.image(w - 550, h / 2 + 100, 'inuneko_stand').setDepth(91).setAlpha(0);
-                    const inuScale = 500 / ((this.textures.exists('inuneko_stand') && this.textures.get('inuneko_stand').getSourceImage().width) || 500);
-                    this.inunekoImage.setScale(inuScale);
-                  }
-                  this.tweens.add({ targets: this.inunekoImage, alpha: 1, duration: 300 });
-                  this.showDialogue('犬猫☆スター', text, res);
-                });
-                await sayInuneko('「そうわん！魔王様は、お前とは違って優しいにゃん！！」');
+                await sayInuneko('「そうわん！魔王様は、お前とは違って優しいにゃん！！」', '犬猫☆スター');
 
                 await sayHero('「そうだよ。やっぱり僕はみんなを殺したくない。仲良くできるはずだよ。」');
                 await sayHero('「だって、みんな、魔王を殺しに来ているはずの僕を殺そうとしなかった。」');
@@ -4917,8 +5121,58 @@ class BossScene extends Phaser.Scene {
                 this.physics.resume();
                 this.startBoss();
                 return;
+              } else if (totalKills === 3) {
+                // 全幹部殺害 -> 傀儡エンド（BAD END — 傀儡 —）
+                await sayDemon('「ぐっ…ここまでか…」');
+
+                // 【画面が乱れる.以下の文字はゲームを起動したときと同じフォント、雰囲気の文字で。ただし色は赤】
+                await this.showPuppetGlitchTerminal();
+
+                // 【選択肢】1〜5 心臓を打ち抜く
+                await new Promise(res => {
+                  this.showChoice([
+                    { text: '1. 心臓を打ち抜く', callback: () => { if(MOT.Audio && MOT.Audio.playSelect) MOT.Audio.playSelect(); res(1); } },
+                    { text: '2. 心臓を打ち抜く', callback: () => { if(MOT.Audio && MOT.Audio.playSelect) MOT.Audio.playSelect(); res(2); } },
+                    { text: '3. 心臓を打ち抜く', callback: () => { if(MOT.Audio && MOT.Audio.playSelect) MOT.Audio.playSelect(); res(3); } },
+                    { text: '4. 心臓を打ち抜く', callback: () => { if(MOT.Audio && MOT.Audio.playSelect) MOT.Audio.playSelect(); res(4); } },
+                    { text: '5. 心臓を打ち抜く', callback: () => { if(MOT.Audio && MOT.Audio.playSelect) MOT.Audio.playSelect(); res(5); } }
+                  ]);
+                });
+
+                // 銃声SE、画面フラッシュ、画面シェイク
+                if (MOT.Audio && MOT.Audio.playShot) MOT.Audio.playShot();
+                this.cameras.main.flash(200, 255, 0, 0);
+                this.cameras.main.shake(600, 0.06);
+
+                await sayDemon('「博士の…傀儡め…！」');
+
+                MOT.flags.killedDemonLord = true;
+                if (boss && boss.active) {
+                  this.showExplosion(boss.x, boss.y);
+                  boss.destroy();
+                  this.currentBoss = null;
+                }
+                if (this.inunekoEnemy && this.inunekoEnemy.active) {
+                  this.showExplosion(this.inunekoEnemy.x, this.inunekoEnemy.y);
+                  this.inunekoEnemy.destroy();
+                  this.inunekoEnemy = null;
+                }
+                if (this.demonImage) {
+                  this.tweens.add({ targets: this.demonImage, scale: 2, alpha: 0, duration: 500, ease: 'Power2' });
+                }
+                if (this.inunekoImage) {
+                  this.tweens.add({ targets: this.inunekoImage, scale: 2, alpha: 0, duration: 500, ease: 'Power2' });
+                }
+                await new Promise(r => this.time.delayedCall(1000, r));
+
+                this.cameras.main.fadeOut(1000, 0, 0, 0);
+                await new Promise(r => this.time.delayedCall(1000, r));
+
+                MOT.flags.finalEnding = 'bad_puppet';
+                this.scene.start('EndingScene', { endingKey: 'bad_puppet' });
+                return;
               } else {
-                // 1~3 bosses killed -> normal choice
+                // 1~2 bosses killed -> normal choice
                 await sayDoctor('「よくやった。とどめを刺せ」');
                 await sayDemon('「…ここまでか…」');
                 let c = await new Promise(res => {
@@ -4929,28 +5183,108 @@ class BossScene extends Phaser.Scene {
                 });
                 if (c === 1) {
                   MOT.flags.killedDemonLord = true;
-                  if (MOT.Audio && MOT.Audio.playSelect) MOT.Audio.playSelect();
-                  this.cameras.main.shake(500, 0.05);
-                  if (boss && boss.active) {
-                    this.showExplosion(boss.x, boss.y);
-                    boss.destroy();
-                    this.currentBoss = null;
-                  }
-                  if (this.inunekoEnemy && this.inunekoEnemy.active) {
-                    this.showExplosion(this.inunekoEnemy.x, this.inunekoEnemy.y);
-                    this.inunekoEnemy.destroy();
-                    this.inunekoEnemy = null;
-                  }
-                  if (this.demonImage) {
-                    this.tweens.add({ targets: this.demonImage, scale: 2, alpha: 0, duration: 500, ease: 'Power2' });
-                  }
-                  if (this.inunekoImage) {
-                    this.tweens.add({ targets: this.inunekoImage, scale: 2, alpha: 0, duration: 500, ease: 'Power2' });
-                  }
-                  await new Promise(r => this.time.delayedCall(1000, r));
                   const decKill = (window.MOT && MOT.decideEnding) ? MOT.decideEnding() : { key: 'normal_daily' };
-                  MOT.flags.finalEnding = decKill.key;
-                  this.scene.start('EndingScene', { endingKey: decKill.key });
+
+                  if (decKill.key === 'bad_shutdown') {
+                    // 強制シャットダウンエンド
+                    await sayDemon('「ぐっ…すまないわがしもべたち…ここまでのようだ」');
+                    await sayHero('「…」');
+
+                    // 【銃声SE】
+                    if (MOT.Audio && MOT.Audio.playShot) MOT.Audio.playShot();
+                    this.cameras.main.flash(200, 255, 255, 255);
+                    this.cameras.main.shake(500, 0.05);
+
+                    if (boss && boss.active) {
+                      this.showExplosion(boss.x, boss.y);
+                      boss.destroy();
+                      this.currentBoss = null;
+                    }
+                    if (this.inunekoEnemy && this.inunekoEnemy.active) {
+                      this.showExplosion(this.inunekoEnemy.x, this.inunekoEnemy.y);
+                      this.inunekoEnemy.destroy();
+                      this.inunekoEnemy = null;
+                    }
+                    if (this.demonImage) {
+                      this.tweens.add({ targets: this.demonImage, scale: 2, alpha: 0, duration: 500, ease: 'Power2' });
+                    }
+                    if (this.inunekoImage) {
+                      this.tweens.add({ targets: this.inunekoImage, scale: 2, alpha: 0, duration: 500, ease: 'Power2' });
+                    }
+                    await new Promise(r => this.time.delayedCall(1000, r));
+
+                    // 【博士の研究室に戻る】
+                    this.cameras.main.fadeOut(800, 0, 0, 0);
+                    await new Promise(r => this.time.delayedCall(850, r));
+
+                    if (this.textures.exists('bg_lab')) {
+                      this.bg.setTexture('bg_lab');
+                      this.bg.setOrigin(0.5, 0.5);
+                      this.bg.setPosition(w / 2, h / 2);
+                      let scale = Math.max(w / this.bg.width, h / this.bg.height);
+                      this.bg.setScale(scale);
+                    }
+                    if (this.demonImage) { this.demonImage.destroy(); this.demonImage = null; }
+                    if (this.inunekoImage) { this.inunekoImage.destroy(); this.inunekoImage = null; }
+
+                    this.cameras.main.fadeIn(800, 0, 0, 0);
+                    await new Promise(r => this.time.delayedCall(800, r));
+
+                    await sayDoctor('「よくやったな、勇者よ」');
+                    await sayHero('「…」');
+                    await sayDoctor('「ふむ？」');
+
+                    // 【選択肢】1〜4 博士を倒す
+                    await new Promise(res => {
+                      this.showChoice([
+                        { text: '1. 博士を倒す', callback: () => { if(MOT.Audio && MOT.Audio.playSelect) MOT.Audio.playSelect(); res(1); } },
+                        { text: '2. 博士を倒す', callback: () => { if(MOT.Audio && MOT.Audio.playSelect) MOT.Audio.playSelect(); res(2); } },
+                        { text: '3. 博士を倒す', callback: () => { if(MOT.Audio && MOT.Audio.playSelect) MOT.Audio.playSelect(); res(3); } },
+                        { text: '4. 博士を倒す', callback: () => { if(MOT.Audio && MOT.Audio.playSelect) MOT.Audio.playSelect(); res(4); } }
+                      ]);
+                    });
+
+                    await sayHero('「…」');
+                    await sayDoctor('「こちらに銃を構えてどうした？私を倒したいでも言うのか。」');
+                    await sayHero('「……！？」');
+                    await sayDoctor('「ふははは、残念だが、お前にその権限はない。」');
+                    await sayDoctor('「お前にできることは、このまま邪魔者を倒し私の役に立つことだけだ。」');
+                    await sayDoctor('「だが、歯向かってきたお前をこのまま使う必要もないな。」');
+                    await sayDoctor('「もうお前は必要ない。」');
+
+                    // （エンディングイラスト表示）
+                    this.cameras.main.fadeOut(1000, 0, 0, 0);
+                    await new Promise(r => this.time.delayedCall(1000, r));
+
+                    MOT.flags.finalEnding = 'bad_shutdown';
+                    this.scene.start('EndingScene', { endingKey: 'bad_shutdown' });
+                    return;
+                  } else {
+                    // 日常エンド
+                    await sayDemon('「このわらわが...！すまない、我がしもべたち...」');
+                    if (MOT.Audio && MOT.Audio.playSelect) MOT.Audio.playSelect();
+                    this.cameras.main.shake(500, 0.05);
+                    if (boss && boss.active) {
+                      this.showExplosion(boss.x, boss.y);
+                      boss.destroy();
+                      this.currentBoss = null;
+                    }
+                    if (this.inunekoEnemy && this.inunekoEnemy.active) {
+                      this.showExplosion(this.inunekoEnemy.x, this.inunekoEnemy.y);
+                      this.inunekoEnemy.destroy();
+                      this.inunekoEnemy = null;
+                    }
+                    if (this.demonImage) {
+                      this.tweens.add({ targets: this.demonImage, scale: 2, alpha: 0, duration: 500, ease: 'Power2' });
+                    }
+                    if (this.inunekoImage) {
+                      this.tweens.add({ targets: this.inunekoImage, scale: 2, alpha: 0, duration: 500, ease: 'Power2' });
+                    }
+                    await new Promise(r => this.time.delayedCall(1000, r));
+                    MOT.flags.finalEnding = decKill.key;
+                    this.scene.start('EndingScene', { endingKey: decKill.key });
+                    return;
+                  }
                 } else {
                   await sayDemon('「わらわを見逃して何が望みだ？しもべたちを殺しているんだ。和平を求めて居るわけではないのであろう？」');
                   await sayDemon('「わらわは、しもべを殺された恨みを忘れることはできん。何が目的であれ、お前を許すことはできないだろう。」');
@@ -4979,7 +5313,10 @@ class BossScene extends Phaser.Scene {
                   }
                   const decSpare = (window.MOT && MOT.decideEnding) ? MOT.decideEnding() : { key: 'normal_useless' };
                   MOT.flags.finalEnding = decSpare.key;
-                  this.scene.start('EndingScene', { endingKey: decSpare.key });
+                  this.cameras.main.fadeOut(800, 0, 0, 0);
+                  this.time.delayedCall(800, () => {
+                    this.scene.start('EndingScene', { endingKey: decSpare.key });
+                  });
                 }
               }
             })();
@@ -5301,26 +5638,26 @@ class BossScene extends Phaser.Scene {
               // GGS Terminal 2 (Spaceキー / クリックで進行)
               this.cameras.main.fadeIn(300, 0, 0, 0);
               await this.terminalEffect([
-                '観測者のログ: ...now loading...',
-                '観測者のログ: ...完了',
+                'mmƂ̃bbggggO 「...now loading...」',
+                'mmƂ̃bbggggO 「...完了」',
                 '',
-                '観測者のログ: エラーの確認...修復完了',
+                'mmƂ̃````bbggggO 「エラーの確認...修復完了」',
                 '',
-                '観測者のログ: ...なんて、堅苦しいのはここまでにしましょう',
+                'mmƂ̃````bbggggO 「...なんて、堅苦しいのはここまでにしましょう」',
                 '',
-                '観測者のログ: さっきぶりね。『GGS』よ。',
-                '観測者のログ: この結末は気に入ってくれた？',
+                'mmƂ̃````bbggggO 「さっきぶりね。『GGS』よ。」',
+                'mmƂ̃````bbggggO 「この結末は気に入ってくれた？」',
                 '',
-                '観測者のログ: あなたのおかげで、バグはなくなって世界の崩壊は止められた。彼らたちの未来はこれからも続くの。',
+                'mmƂ̃````bbggggO 「あなたのおかげで、バグはなくなって世界の崩壊は止められた。彼らたちの未来はこれからも続くの。」',
                 '',
-                '観測者のログ: 創られた存在から、”' + heroName + '”となったあの子が幸せな道を歩むのを応援してくれると嬉しいわ。',
+                'mmƂ̃````bbggggO 「創られた存在から、”' + heroName + '”となったあの子が幸せな道を歩むのを応援してくれると嬉しいわ。」',
                 '',
-                '観測者のログ: といっても、接続が難しくて、これ以上は見せられないのだけれど。',
+                'mmƂ̃````bbggggO 「といっても、接続が難しくて、これ以上は見せられないのだけれど。」',
                 '',
-                '観測者のログ: いずれ、またどこかで会いましょう。',
+                'mmƂ̃````bbggggO 「いずれ、またどこかで会いましょう。」',
                 '',
-                '観測者のログ: あ、こういった方が良かったかしら？',
-                '観測者のログ: ごほん。……”またね”だにゃん！'
+                'mmƂ̃````bbggggO 「あ、こういった方が良かったかしら？」',
+                'mmƂ̃````bbggggO 「ごほん。……”またね”だにゃん！」'
               ]);
 
               const dec = (window.MOT && MOT.decideEnding) ? MOT.decideEnding() : { key: 'END_ORPHAN' };
@@ -6508,6 +6845,139 @@ class BossScene extends Phaser.Scene {
     this.input.off('pointerdown', handleInput);
     this.input.on('pointerdown', handleInput);
     this.input.keyboard.on('keydown', handleKey);
+  }
+
+  showPuppetGlitchTerminal() {
+    return new Promise(resolve => {
+      const w = 1920, h = 1080;
+      const elements = [];
+
+      // 画面の乱れ（カメラシェイク＆効果音）
+      this.cameras.main.shake(1000, 0.04);
+      if (window.MOT && MOT.Audio && MOT.Audio.playCrack) MOT.Audio.playCrack();
+      else if (window.MOT && MOT.Audio && MOT.Audio.playShot) MOT.Audio.playShot();
+
+      // CRTモニター風の深い闇（赤みを帯びた黒）
+      const bg = this.add.rectangle(0, 0, w, h, 0x080202, 0.94)
+        .setOrigin(0)
+        .setDepth(200004)
+        .setScrollFactor(0);
+      elements.push(bg);
+
+      // CRTスキャンライン（走査線）オーバーレイ
+      const scanlines = this.add.graphics().setDepth(200005).setScrollFactor(0);
+      scanlines.fillStyle(0x000000, 0.4);
+      for (let y = 0; y < h; y += 4) {
+        scanlines.fillRect(0, y, w, 2);
+      }
+      elements.push(scanlines);
+
+      // 赤文字スタイル（起動時BootSceneと同等の雰囲気・フォント・シャドウ）
+      const startX = w / 2 - 500;
+      const startY = h / 2 - 250;
+
+      const textObj = this.add.text(startX, startY, '', {
+        fontFamily: '"DotGothic16", "Courier New", Courier, monospace',
+        fontSize: '28px',
+        color: '#FF1133',
+        fontStyle: 'bold',
+        lineSpacing: 16,
+        shadow: {
+          offsetX: 0,
+          offsetY: 0,
+          color: '#FF0033',
+          blur: 10,
+          stroke: true,
+          fill: true
+        }
+      }).setDepth(200006).setScrollFactor(0);
+      elements.push(textObj);
+
+      const lines = [
+        "...link re-established",
+        "...signal drift: 0.02",
+        "",
+        "...incoming packet from Dr.H███",
+        "...decoding...",
+        "",
+        "……EẼGGGG[[́ccccccccȂȂȂꂎꂎȂ炈炈炈炈B",
+        "",
+        "...channel unstable"
+      ];
+
+      const fullText = lines.join('\n');
+      let charIdx = 0;
+      let isDone = false;
+      let cursorChar = "■";
+
+      const cursorTimer = this.time.addEvent({
+        delay: 350,
+        loop: true,
+        callback: () => {
+          cursorChar = (cursorChar === "■") ? " " : "■";
+          if (textObj && textObj.active) {
+            textObj.setText(fullText.substring(0, charIdx) + cursorChar);
+          }
+        }
+      });
+
+      const cleanup = () => {
+        if (cursorTimer) cursorTimer.remove();
+        this.input.off('pointerdown', handleSkip);
+        this.input.keyboard.off('keydown', handleKey);
+        this.tweens.add({
+          targets: elements,
+          alpha: 0,
+          duration: 500,
+          onComplete: () => {
+            elements.forEach(el => el.destroy());
+            resolve();
+          }
+        });
+      };
+
+      const finishTyping = () => {
+        if (isDone) return;
+        isDone = true;
+        charIdx = fullText.length;
+        textObj.setText(fullText + "\n\n▶ [CLICK / ENTER]");
+      };
+
+      const handleSkip = () => {
+        if (!isDone) {
+          finishTyping();
+        } else {
+          cleanup();
+        }
+      };
+
+      const handleKey = (e) => {
+        if (e.key === ' ' || e.code === 'Space' || e.key === 'Enter' || e.code === 'Enter') {
+          handleSkip();
+        }
+      };
+
+      this.input.on('pointerdown', handleSkip);
+      this.input.keyboard.on('keydown', handleKey);
+
+      this.time.addEvent({
+        delay: 25,
+        repeat: fullText.length - 1,
+        callback: () => {
+          if (isDone) return;
+          charIdx++;
+          textObj.setText(fullText.substring(0, charIdx) + cursorChar);
+          if (charIdx >= fullText.length) {
+            isDone = true;
+            this.time.delayedCall(1200, () => {
+              if (elements[0] && elements[0].active) {
+                cleanup();
+              }
+            });
+          }
+        }
+      });
+    });
   }
 
   showChoice(choices) {

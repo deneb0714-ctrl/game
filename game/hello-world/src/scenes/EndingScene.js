@@ -27,6 +27,14 @@ class EndingScene extends Phaser.Scene {
     }
 
     if (!ending.description) {
+        const isHappyEnd = (ending.key === 'hello_world' || ending.key === 'END_ORPHAN');
+        if (isHappyEnd) {
+            this.cameras.main.setBackgroundColor('#050814');
+            this.playCreditsRoll(w, h, ending, () => {
+                this.showEndingScreen(w, h, ending);
+            });
+            return;
+        }
         this.cameras.main.setBackgroundColor(ending.bgColor || '#000000');
         this.showEndingScreen(w, h, ending);
         return;
@@ -72,7 +80,7 @@ class EndingScene extends Phaser.Scene {
         if (Array.isArray(descVal)) {
             descVal.forEach(d => {
                 if (typeof d === 'string') pages.push({text: d, speaker: null, isPost: isPost});
-                else pages.push({text: d.text, speaker: d.speaker, isPost: isPost});
+                else pages.push({text: d.text, speaker: d.speaker, isPost: isPost, bgImage: d.bgImage});
             });
         } else {
             pages.push({text: descVal, speaker: null, isPost: isPost});
@@ -113,6 +121,15 @@ class EndingScene extends Phaser.Scene {
                 nameText.setVisible(false);
             }
 
+            if (p.bgImage) {
+                if (bgImg) {
+                    this.tweens.add({ targets: bgImg, alpha: 0, duration: 400, onComplete: () => { if (bgImg) bgImg.destroy(); }});
+                }
+                bgImg = this.add.image(w / 2, h / 2, p.bgImage).setDisplaySize(w, h).setDepth(10).setAlpha(0);
+                this.tweens.add({ targets: bgImg, alpha: 1, duration: 800 });
+                this.textPhaseElements.push(bgImg);
+            }
+
             let proceedTyping = () => {
                 if (!isTyping) return; // User already skipped
                 typeTimer = this.time.addEvent({
@@ -129,7 +146,7 @@ class EndingScene extends Phaser.Scene {
                 });
             };
 
-            if (p.isPost && ending.bgImagePost && !this.bgImagePostShown) {
+            if (p.isPost && ending.bgImagePost && !this.bgImagePostShown && !p.bgImage) {
                 this.bgImagePostShown = true;
                 if (ending.key === 'normal_daily') {
                     isTyping = true;
@@ -254,38 +271,52 @@ class EndingScene extends Phaser.Scene {
         });
     }
 
-    // Ending title (Larger)
+    // Ending title & Subtitle (右下に配置し、背景CGを隠さないレイアウト)
+    const rightX = w - 70;
     var titleColor = '#' + ending.color.toString(16).padStart(6, '0');
-    var title = this.add.text(w / 2, h * 0.35, ending.title, {
+
+    // 右下の文字視認性を高めるエレガントな半透明ダークパネル
+    let infoPanel = this.add.rectangle(rightX - 300, h - 140, 640, 240, 0x050814, 0.65)
+      .setStrokeStyle(2, ending.color, 0.4)
+      .setOrigin(0.5)
+      .setAlpha(0)
+      .setDepth(4);
+    this.tweens.add({ targets: infoPanel, alpha: 0.65, duration: 800, delay: 200 });
+
+    var title = this.add.text(rightX, h - 195, ending.title, {
       fontFamily: '"Press Start 2P"',
-      fontSize: '80px',
+      fontSize: '46px',
       color: titleColor,
       stroke: '#000000',
-      strokeThickness: 8
-    }).setOrigin(0.5).setAlpha(0).setDepth(5);
+      strokeThickness: 8,
+      align: 'right',
+      shadow: { offsetX: 3, offsetY: 3, color: '#000000', blur: 8, stroke: true, fill: true }
+    }).setOrigin(1, 1).setAlpha(0).setDepth(5);
 
-    // Subtitle (Larger)
-    var subtitle = this.add.text(w / 2, h * 0.55, ending.subtitle, {
+    var subtitle = this.add.text(rightX, h - 145, ending.subtitle, {
       fontFamily: '"DotGothic16"',
-      fontSize: '52px',
-      color: '#E5E7EB'
-    }).setOrigin(0.5).setAlpha(0).setDepth(5);
+      fontSize: '32px',
+      color: '#E5E7EB',
+      stroke: '#000000',
+      strokeThickness: 6,
+      align: 'right',
+      shadow: { offsetX: 2, offsetY: 2, color: '#000000', blur: 6, stroke: true, fill: true }
+    }).setOrigin(1, 1).setAlpha(0).setDepth(5);
 
-    this.tweens.add({ targets: title, alpha: 1, y: h * 0.3, duration: 1500, ease: 'Power2', delay: 500 });
-    this.tweens.add({ targets: subtitle, alpha: 1, duration: 1500, delay: 1500 });
+    this.tweens.add({ targets: title, alpha: 1, y: h - 205, duration: 800, ease: 'Power2', delay: 300 });
+    this.tweens.add({ targets: subtitle, alpha: 1, duration: 800, delay: 500 });
 
     // Show ending-specific sprite
     var spriteKey = null;
-    // (Removed END_ORPHAN sprite to show CG background instead)
 
     if (spriteKey) {
       var endSprite = this.add.image(w / 2, h * 0.8, spriteKey).setScale(4).setAlpha(0).setDepth(4);
       this.tweens.add({ targets: endSprite, alpha: 1, duration: 2000, delay: 3000, ease: 'Power2' });
     }
 
-    // Title button
-    this.time.delayedCall(4000, () => {
-      this.createReturnButton(w / 2, h * 0.90);
+    // Title button (右下情報群の下部に配置。待ち時間を短縮しすぐにEnterキーで決定可能に)
+    this.time.delayedCall(400, () => {
+      this.createReturnButton(rightX - 160, h - 70);
     });
   }
 
@@ -465,19 +496,36 @@ class EndingScene extends Phaser.Scene {
 
   createReturnButton(x, y) {
     var btn = this.add.image(x, y, 'ui_button').setInteractive({ useHandCursor: true }).setAlpha(0).setDepth(10);
-    var txt = this.add.text(x, y, 'TITLE に戻る', {
+    var txt = this.add.text(x, y, 'TITLE に戻る [Enter]', {
       fontFamily: '"DotGothic16"',
-      fontSize: '24px',
-      color: '#4FD1FF'
+      fontSize: '22px',
+      color: '#4FD1FF',
+      stroke: '#000000',
+      strokeThickness: 3
     }).setOrigin(0.5).setAlpha(0).setDepth(11);
 
-    this.tweens.add({ targets: [btn, txt], alpha: 1, duration: 800 });
+    this.tweens.add({ 
+      targets: [btn, txt], 
+      alpha: 1, 
+      duration: 500,
+      onComplete: () => {
+        // キーボード操作中であることを示す穏やかなパルス演出
+        this.tweens.add({
+          targets: [btn, txt],
+          scale: 1.05,
+          duration: 900,
+          yoyo: true,
+          repeat: -1,
+          ease: 'Sine.easeInOut'
+        });
+      }
+    });
 
     let actionTriggered = false;
     const doReturn = () => {
       if (actionTriggered) return;
       actionTriggered = true;
-      if (onKeyDown) this.input.keyboard.off('keydown', onKeyDown);
+      cleanup();
       if (MOT.Audio && MOT.Audio.playSelect) MOT.Audio.playSelect();
       this.cameras.main.fadeOut(800, 0, 0, 0);
       this.time.delayedCall(800, function () {
@@ -486,22 +534,31 @@ class EndingScene extends Phaser.Scene {
     };
 
     const onKeyDown = (event) => {
-      if (event.code === 'Enter' || event.code === 'Space') {
+      if (actionTriggered) return;
+      const isEnter = event.code === 'Enter' || event.key === 'Enter' || event.code === 'NumpadEnter' || event.keyCode === 13;
+      const isSpace = event.code === 'Space' || event.key === ' ' || event.keyCode === 32;
+      if (isEnter || isSpace) {
         doReturn();
       }
     };
-    this.input.keyboard.on('keydown', onKeyDown);
-    this.events.once('shutdown', () => {
+
+    const cleanup = () => {
       this.input.keyboard.off('keydown', onKeyDown);
-    });
+      this.input.keyboard.off('keydown-ENTER', doReturn);
+      this.input.keyboard.off('keydown-SPACE', doReturn);
+    };
+
+    this.input.keyboard.on('keydown', onKeyDown);
+    this.input.keyboard.on('keydown-ENTER', doReturn);
+    this.input.keyboard.on('keydown-SPACE', doReturn);
+
+    this.events.once('shutdown', cleanup);
 
     btn.on('pointerover', function () {
-      this.tweens.add({ targets: [btn, txt], scale: 1.08, duration: 150 });
       btn.setTint(0x4FD1FF);
       txt.setColor('#ffffff');
     }, this);
     btn.on('pointerout', function () {
-      this.tweens.add({ targets: [btn, txt], scale: 1.0, duration: 150 });
       btn.clearTint();
       txt.setColor('#4FD1FF');
     }, this);
@@ -553,6 +610,212 @@ class EndingScene extends Phaser.Scene {
         this.scene.start('BossScene', { startBossIndex: startIdx, fromContinue: true, isDoctorPhase2: isDoctorP2 });
       }, [], this);
     }, this);
+  }
+
+  playCreditsRoll(w, h, ending, onComplete) {
+    try {
+      if (this.sound.get('twins_bgm')) {
+        this.sound.get('twins_bgm').stop();
+      }
+      this.sound.play('twins_bgm', { loop: true, volume: 0.25 });
+    } catch (e) {
+      console.warn("Failed to play credits BGM:", e);
+    }
+
+    // Background floating particles
+    const particles = [];
+    for (let i = 0; i < 70; i++) {
+      const p = this.add.circle(
+        Phaser.Math.Between(0, w),
+        Phaser.Math.Between(0, h),
+        Phaser.Math.Between(2, 5),
+        Phaser.Math.RND.pick([0x4FD1FF, 0xFFFFFF, 0x93C5FD, 0xFEF08A]),
+        Phaser.Math.FloatBetween(0.1, 0.45)
+      ).setDepth(1);
+      this.tweens.add({
+        targets: p,
+        y: p.y - Phaser.Math.Between(60, 240),
+        alpha: { from: p.alpha, to: 0 },
+        duration: Phaser.Math.Between(4000, 8000),
+        repeat: -1,
+        yoyo: true,
+        ease: 'Sine.easeInOut'
+      });
+      particles.push(p);
+    }
+
+    // Credits container
+    const creditContainer = this.add.container(w / 2, h + 60).setDepth(10);
+
+    const creditsData = [
+      { type: 'title', text: 'Hello World' },
+      { type: 'sub', text: '— Staff Credits —' },
+      { type: 'spacer', height: 90 },
+
+      { type: 'category', text: '【 ゲーム制作 / 企画 / シナリオ 】' },
+      { type: 'name', text: '[Hello World] 制作チーム' },
+      { type: 'name', text: 'たまご' },
+      { type: 'name', text: 'かすてゐら' },
+      { type: 'name', text: 'こひぺん' },
+      { type: 'spacer', height: 75 },
+
+      { type: 'category', text: '【 キャラクターデザイン ＆ イラスト 】' },
+      { type: 'name', text: '[Hello World] 制作チーム' },
+      { type: 'spacer', height: 75 },
+
+      { type: 'category', text: '【 音楽提供 】' },
+      { type: 'name', text: '9uo (@muranaka_san)' },
+      { type: 'spacer', height: 75 },
+
+      { type: 'category', text: '【 背景素材提供 】' },
+      { type: 'name', text: 'ゲームまてりあるず (https://game-materials.com/)' },
+      { type: 'sub', text: '：墓、森' },
+      { type: 'spacer', height: 25 },
+      { type: 'name', text: 'AIPICT (https://aipict.com/)' },
+      { type: 'sub', text: '：研究室' },
+      { type: 'spacer', height: 25 },
+      { type: 'name', text: 'みんちりえ (https://min-chi.material.jp/)' },
+      { type: 'sub', text: '：森、墓地' },
+      { type: 'spacer', height: 75 },
+
+      { type: 'category', text: '【 開発プラットフォーム 】' },
+      { type: 'name', text: 'Powered by Google Antigravity' },
+      { type: 'spacer', height: 75 },
+
+      { type: 'category', text: '【 Special Thanks 】' },
+      { type: 'name', text: '奥村研究室' },
+      { type: 'spacer', height: 60 },
+      { type: 'name', text: 'and' },
+      { type: 'special', text: 'YOU (Player)' },
+      { type: 'spacer', height: 130 },
+
+      { type: 'end', text: 'Thank you for playing!' }
+    ];
+
+    let currentY = 0;
+    creditsData.forEach(item => {
+      let textObj = null;
+      if (item.type === 'title') {
+        textObj = this.add.text(0, currentY, item.text, {
+          fontFamily: '"Press Start 2P"',
+          fontSize: '48px',
+          color: '#4FD1FF',
+          stroke: '#000000',
+          strokeThickness: 6,
+          align: 'center'
+        }).setOrigin(0.5);
+        currentY += 60;
+      } else if (item.type === 'sub') {
+        textObj = this.add.text(0, currentY, item.text, {
+          fontFamily: '"DotGothic16"',
+          fontSize: '26px',
+          color: '#9CA3AF',
+          align: 'center'
+        }).setOrigin(0.5);
+        currentY += 40;
+      } else if (item.type === 'category') {
+        textObj = this.add.text(0, currentY, item.text, {
+          fontFamily: '"DotGothic16"',
+          fontSize: '30px',
+          color: '#38BDF8',
+          fontStyle: 'bold',
+          align: 'center'
+        }).setOrigin(0.5);
+        currentY += 45;
+      } else if (item.type === 'name') {
+        textObj = this.add.text(0, currentY, item.text, {
+          fontFamily: '"DotGothic16"',
+          fontSize: '32px',
+          color: '#F3F4F6',
+          align: 'center'
+        }).setOrigin(0.5);
+        currentY += 45;
+      } else if (item.type === 'special') {
+        textObj = this.add.text(0, currentY, item.text, {
+          fontFamily: '"Press Start 2P"',
+          fontSize: '36px',
+          color: '#FDE047',
+          stroke: '#000000',
+          strokeThickness: 4,
+          align: 'center'
+        }).setOrigin(0.5);
+        currentY += 50;
+      } else if (item.type === 'end') {
+        textObj = this.add.text(0, currentY, item.text, {
+          fontFamily: '"Press Start 2P"',
+          fontSize: '34px',
+          color: '#FFFFFF',
+          stroke: '#4FD1FF',
+          strokeThickness: 3,
+          align: 'center'
+        }).setOrigin(0.5);
+        currentY += 50;
+      } else if (item.type === 'spacer') {
+        currentY += item.height;
+      }
+      if (textObj) {
+        creditContainer.add(textObj);
+      }
+    });
+
+    // Skip notification
+    const skipNotice = this.add.text(w - 40, h - 30, 'SPACE / ENTER / クリック でスキップ', {
+      fontFamily: '"DotGothic16"',
+      fontSize: '22px',
+      color: '#9CA3AF'
+    }).setOrigin(1, 1).setDepth(20).setAlpha(0.6);
+    this.tweens.add({
+      targets: skipNotice,
+      alpha: { from: 0.25, to: 0.8 },
+      duration: 1200,
+      yoyo: true,
+      repeat: -1
+    });
+
+    let isFinished = false;
+    let scrollTween = null;
+
+    const finishRoll = () => {
+      if (isFinished) return;
+      isFinished = true;
+
+      this.input.off('pointerdown', finishRoll);
+      this.input.keyboard.off('keydown-ENTER', finishRoll);
+      this.input.keyboard.off('keydown-SPACE', finishRoll);
+
+      if (scrollTween) scrollTween.stop();
+
+      this.tweens.add({
+        targets: [creditContainer, skipNotice],
+        alpha: 0,
+        duration: 900,
+        onComplete: () => {
+          creditContainer.destroy();
+          skipNotice.destroy();
+          particles.forEach(p => p.destroy());
+          if (onComplete) onComplete();
+        }
+      });
+    };
+
+    this.input.on('pointerdown', finishRoll);
+    this.input.keyboard.on('keydown-ENTER', finishRoll);
+    this.input.keyboard.on('keydown-SPACE', finishRoll);
+
+    const totalDistance = h + currentY + 200;
+    const duration = Math.max(24000, totalDistance * 11);
+
+    scrollTween = this.tweens.add({
+      targets: creditContainer,
+      y: -currentY - 120,
+      duration: duration,
+      ease: 'Linear',
+      onComplete: () => {
+        this.time.delayedCall(1500, () => {
+          finishRoll();
+        });
+      }
+    });
   }
 
   update(time, delta) {
