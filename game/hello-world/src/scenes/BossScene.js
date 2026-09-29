@@ -3117,7 +3117,7 @@ class BossScene extends Phaser.Scene {
           safeTween(this.doctorImage, 0);
           safeTween(this.demonImage, 0);
           if (this.rightSpeakerImage) safeTween(this.rightSpeakerImage, 0);
-          this.showDialogue(speakerName, text, res);
+          this.showDialogue(speakerName, text, res, false, '勇者');
         });
 
         safeTween(this.dimBg, 0.88);
@@ -6841,7 +6841,7 @@ class BossScene extends Phaser.Scene {
     this.choicesList = [];
   }
 
-  showDialogue(speaker, text, onComplete, keepOpen = false) {
+  showDialogue(speaker, text, onComplete, keepOpen = false, voiceSpeaker = null) {
     text = String(text || '');
     this.dialogActive = true;
     this.input.setTopOnly(true);
@@ -6877,11 +6877,12 @@ class BossScene extends Phaser.Scene {
     this.dialogContainer.add(contText);
 
     var charIndex = 0;
+    const soundSpeaker = voiceSpeaker || speaker;
     var typeTimer = this.time.addEvent({
       delay: 40, callback: function () {
         charIndex++;
         bodyText.setText(text.substring(0, charIndex));
-        if (text[charIndex - 1] !== ' ' && window.MOT && MOT.Audio && MOT.Audio.playBleep) MOT.Audio.playBleep(speaker);
+        if (text[charIndex - 1] !== ' ' && window.MOT && MOT.Audio && MOT.Audio.playBleep) MOT.Audio.playBleep(soundSpeaker);
 
         if (charIndex >= text.length) {
           typeTimer.destroy();

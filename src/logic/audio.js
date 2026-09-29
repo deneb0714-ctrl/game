@@ -97,9 +97,9 @@ MOT.Audio = (function () {
       }
     },
     // Typewriter bleep
-        playBleep: function (speaker) {
+    playBleep: function (speaker) {
       if (!speaker) speaker = "";
-      let freqBase = 250;
+      let freqBase = 400; // デフォルトは勇者（400Hz）
       let freqSpread = 50;
 
       if (speaker.includes('犬猫')) {
