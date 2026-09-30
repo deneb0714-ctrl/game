@@ -99,9 +99,9 @@ class StoryScene extends Phaser.Scene {
     this.contText = this.add.text(w - 100, boxY + boxH - 40, '▶ NEXT [TAP/SPACE]', {
       fontFamily: '"Press Start 2P"',
       fontSize: '20px',
-      color: '#9CA3AF'
+      color: '#FFFFFF'
     }).setOrigin(1, 0).setAlpha(0);
-    this.tweens.add({ targets: this.contText, alpha: 0.3, yoyo: true, repeat: -1, duration: 500 });
+    // 点滅（アルファTween）は無効化
 
     // Advance on click
     this.input.on('pointerdown', () => {
@@ -460,7 +460,7 @@ class StoryScene extends Phaser.Scene {
       this.time.delayedCall(3000, () => {
         this.cameras.main.fadeOut(1000);
         this.cameras.main.once('camerafadeoutcomplete', () => {
-          this.scene.start('GameScene', { stage: 2 });
+          this.scene.start('GameScene', { stage: 2, fromTutorialSkip: true });
         });
       });
     } else {

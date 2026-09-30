@@ -460,7 +460,7 @@ class StoryScene extends Phaser.Scene {
       this.time.delayedCall(3000, () => {
         this.cameras.main.fadeOut(1000);
         this.cameras.main.once('camerafadeoutcomplete', () => {
-          this.scene.start('GameScene', { stage: 2 });
+          this.scene.start('GameScene', { stage: 2, fromTutorialSkip: true });
         });
       });
     } else {

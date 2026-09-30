@@ -8,6 +8,7 @@ class GameScene extends Phaser.Scene {
 
   init(data) {
     this.currentStage = (data && data.stage) || 1;
+    this.fromTutorialSkip = Boolean(data && data.fromTutorialSkip);
     this.stageTimer = 0;
     this.stageLength = 30000; // 30 seconds per stage
     this.waveIndex = 0;
@@ -27,6 +28,17 @@ class GameScene extends Phaser.Scene {
     MOT.DoctorDirective.init();
 
     // UI初期化（シーン再開時の参照残存を防ぐため）
+    this.hpText = null;
+    this.energyText = null;
+    this.energyBar = null;
+    this.barrierIconBg = null;
+    this.barrierIconFg = null;
+    this.bossHPBar = null;
+    this.bossHPText = null;
+    this.enemyHPBars = null;
+    this.targetEnemy = null;
+    this.targetEnemyTimer = 0;
+    this.areaNameText = null;
     this.energyBarBgObj = null;
     this.energyBarFgObj = null;
     this.energyBarOutline = null;
@@ -221,9 +233,15 @@ class GameScene extends Phaser.Scene {
       this.dialogActive = true;
       
       let text = '';
-      if (this.currentStage === 2) text = '「次のエリアに着いたか。そこは、黄昏の荒野だ。魔王城までまだ距離があるからそこまで敵は強くないが気は抜くなよ。」';
-      if (this.currentStage === 3) text = '「次のエリアに着いたか。そこは、宵闇の森だ。」';
-      if (this.currentStage === 4) text = '「次のエリアに着いたか。そこは、子夜の城塞だ。そろそろ魔王城に着くだろう。敵も強くなっている。気を付けてくれ」';
+      if (this.currentStage === 2) {
+        text = this.fromTutorialSkip
+          ? '「着いたようだな。そこは、黄昏の荒野だ。魔王城までまだ距離があるからそこまで敵は強くないが気は抜くなよ。」'
+          : '「次のエリアに着いたか。そこは、黄昏の荒野だ。魔王城までまだ距離があるからそこまで敵は強くないが気は抜くなよ。」';
+      } else if (this.currentStage === 3) {
+        text = '「次のエリアに着いたか。そこは、宵闇の森だ。」';
+      } else if (this.currentStage === 4) {
+        text = '「次のエリアに着いたか。そこは、子夜の城塞だ。そろそろ魔王城に着くだろう。敵も強くなっている。気を付けてくれ」';
+      }
       
       this.showDeviceDialogue(text, () => {
         this.dialogActive = false;
@@ -279,11 +297,23 @@ class GameScene extends Phaser.Scene {
       }
     }
 
+    // Target Enemy Timer update
+    if (this.targetEnemyTimer > 0) {
+      this.targetEnemyTimer -= delta;
+      if (this.targetEnemyTimer <= 0 || !this.targetEnemy || !this.targetEnemy.active || this.targetEnemy.hp <= 0) {
+        this.targetEnemy = null;
+        this.targetEnemyTimer = 0;
+      }
+    }
+
     // Process wave schedule
     this.processWaves();
 
     // Special Aura Effect
     if (MOT.updateSpecialAura) MOT.updateSpecialAura(this);
+
+    // Update floating enemy HP bars
+    this.drawEnemyHPBars();
 
     // Update HUD
     this.updateHUD();
@@ -953,7 +983,15 @@ class GameScene extends Phaser.Scene {
     enemy.setTint(0xffffff);
     this.time.delayedCall(50, function(){ if(enemy.active) enemy.clearTint(); });
 
+    // 攻撃した敵をターゲットとして記録し、上部HPバーに表示
+    this.targetEnemy = enemy;
+    this.targetEnemyTimer = 3000;
+
     if (enemy.hp <= 0) {
+      if (this.targetEnemy === enemy) {
+        this.targetEnemy = null;
+        this.targetEnemyTimer = 0;
+      }
       if (enemy === this.minion1) {
         this.onMinion1Defeated();
         return;
@@ -997,17 +1035,26 @@ class GameScene extends Phaser.Scene {
 
   createHUD() {
     this.hpText = this.add.text(30, 20, '', {
-      fontFamily: '"Press Start 2P"', fontSize: '24px', color: '#FF4B6E'
+      fontFamily: '"Press Start 2P", "DotGothic16", monospace, sans-serif', fontSize: '24px', color: '#FF4B6E'
     }).setDepth(100).setScrollFactor(0);
 
     this.energyText = this.add.text(30, 50, '', {
-      fontFamily: '"Press Start 2P"', fontSize: '18px', color: '#4FD1FF'
+      fontFamily: '"Press Start 2P", "DotGothic16", monospace, sans-serif', fontSize: '18px', color: '#4FD1FF'
     }).setDepth(100).setScrollFactor(0);
 
     this.energyBar = this.add.graphics().setDepth(100).setScrollFactor(0);
     this.barrierIconBg = this.add.graphics().setDepth(100).setScrollFactor(0);
     this.barrierIconFg = this.add.graphics().setDepth(100).setScrollFactor(0);
     this.isEnergyHighlighted = false;
+
+    // 敵HPバー（画面上部ターゲットゲージ）
+    this.bossHPBar = this.add.graphics().setDepth(100).setScrollFactor(0);
+    this.bossHPText = this.add.text(960, 20, '', {
+      fontFamily: '"Press Start 2P", "DotGothic16", monospace, sans-serif', fontSize: '16px', color: '#FF2E2E'
+    }).setOrigin(0.5, 0).setDepth(100).setScrollFactor(0).setVisible(false);
+
+    // 敵頭上のミニHPバー
+    this.enemyHPBars = this.add.graphics().setDepth(60).setScrollFactor(0);
 
     let areaText = '';
     if (this.currentStage === 2) areaText = '黄昏の荒野';
@@ -1020,15 +1067,19 @@ class GameScene extends Phaser.Scene {
         backgroundColor: 'rgba(0,0,0,0.5)', padding: { x: 10, y: 5 }
       }).setOrigin(1, 0).setDepth(100).setScrollFactor(0);
     }
+
+    this.updateHUD();
   }
 
   updateHUD() {
-    // HP as hearts
+    // HP as numbers and hearts
     let hearts = '';
     for (let i = 0; i < MOT.flags.playerMaxHP; i++) {
       hearts += i < MOT.flags.playerHP ? '♥ ' : '♡ ';
     }
-    this.hpText.setText(hearts);
+    if (this.hpText) {
+      this.hpText.setText(`HP: ${MOT.flags.playerHP}/${MOT.flags.playerMaxHP}  ${hearts}`);
+    }
 
     // HUD Elements Initialization
     if (!this.energyBarBgObj) {
@@ -1037,70 +1088,129 @@ class GameScene extends Phaser.Scene {
       this.energyBarOutline = this.add.graphics().setDepth(100).setScrollFactor(0);
       this.energyBarOutline.lineStyle(2, 0x4FD1FF, 0.6);
       this.energyBarOutline.strokeRect(30, 80, 300, 24);
-      
-//       this.iconPersonBg = this.add.image(390, 44, 'icon_person').setOrigin(0, 0).setTint(0x555555).setDepth(100).setScrollFactor(0).setScale(1.5);
-//       this.iconPersonFill = this.add.image(390, 44, 'icon_person').setOrigin(0, 0).setTint(0xFFFF00).setDepth(100).setScrollFactor(0).setScale(1.5);
-      
-//       this.batteryUI = this.add.graphics().setDepth(100).setScrollFactor(0);
     }
 
     // Energy bar update (using scaleX instead of clear/fillRect)
     const pct = MOT.flags.energy / MOT.flags.maxEnergyThreshold;
     const isSpecialReady = (MOT.flags.energy >= MOT.flags.maxEnergyThreshold);
     const barColor = isSpecialReady ? 0xFF4B6E : 0x4FD1FF;
-    this.energyBarFgObj.setFillStyle(barColor, 1);
-    this.energyBarFgObj.scaleX = Math.max(0.001, pct);
+    if (this.energyBarFgObj) {
+      this.energyBarFgObj.setFillStyle(barColor, 1);
+      this.energyBarFgObj.scaleX = Math.max(0.001, pct);
+    }
 
     // 必殺技ゲージのハイライト
-    this.energyBar.clear();
-    if (this.isHPHighlighted) {
-      const flash = (Math.sin(Date.now() / 150) + 1) / 2;
-      this.energyBar.lineStyle(4, 0xFFFF00, 0.4 + 0.6 * flash);
-      this.energyBar.strokeRect(26, 16, 200, 44);
-    }
-    if (this.isEnergyHighlighted || isSpecialReady) {
-      const flash = (Math.sin(Date.now() / 150) + 1) / 2;
-      const strokeColor = isSpecialReady ? 0xFF2255 : 0xFFFF00;
-      this.energyBar.lineStyle(4, strokeColor, 0.5 + 0.5 * flash);
-      this.energyBar.strokeRect(26, 76, 308, 32);
+    if (this.energyBar) {
+      this.energyBar.clear();
+      if (this.isHPHighlighted) {
+        const flash = (Math.sin(Date.now() / 150) + 1) / 2;
+        this.energyBar.lineStyle(4, 0xFFFF00, 0.4 + 0.6 * flash);
+        this.energyBar.strokeRect(26, 16, 200, 44);
+      }
+      if (this.isEnergyHighlighted || isSpecialReady) {
+        const flash = (Math.sin(Date.now() / 150) + 1) / 2;
+        const strokeColor = isSpecialReady ? 0xFF2255 : 0xFFFF00;
+        this.energyBar.lineStyle(4, strokeColor, 0.5 + 0.5 * flash);
+        this.energyBar.strokeRect(26, 76, 308, 32);
+      }
     }
 
-    this.energyText.setText('EN: ' + MOT.flags.energy + '/' + MOT.flags.maxEnergyThreshold);
+    if (this.energyText) {
+      this.energyText.setText('EN: ' + MOT.flags.energy + '/' + MOT.flags.maxEnergyThreshold);
+    }
 
-    // UI Meters removed per user request
+    // Barrier UI
     const iconX = 360;
     const iconY = 92;
     const iconRadius = 18;
 
-    this.barrierIconBg.clear();
-    this.barrierIconFg.clear();
-
-    this.barrierIconBg.fillStyle(0x1F2933, 1);
-    this.barrierIconBg.fillCircle(iconX, iconY, iconRadius);
-    this.barrierIconBg.lineStyle(2, 0x334155, 1);
-    this.barrierIconBg.strokeCircle(iconX, iconY, iconRadius);
-
-    if (this.barrierActive) {
+    if (this.barrierIconBg && this.barrierIconFg) {
+      this.barrierIconBg.clear();
       this.barrierIconFg.clear();
-      this.barrierIconFg.fillStyle(0x00FFaa, 0.9);
-      this.barrierIconFg.fillCircle(iconX, iconY, iconRadius - 2);
-      this.barrierIconBg.lineStyle(3, 0x00FFaa, 1);
+
+      this.barrierIconBg.fillStyle(0x1F2933, 1);
+      this.barrierIconBg.fillCircle(iconX, iconY, iconRadius);
+      this.barrierIconBg.lineStyle(2, 0x334155, 1);
       this.barrierIconBg.strokeCircle(iconX, iconY, iconRadius);
-    } else if (this.barrierCooldown <= 0) {
-      this.barrierIconFg.clear();
-      this.barrierIconFg.fillStyle(0x00FFaa, 1);
-      this.barrierIconFg.fillCircle(iconX, iconY, iconRadius - 2);
+
+      if (this.barrierActive) {
+        this.barrierIconFg.clear();
+        this.barrierIconFg.fillStyle(0x00FFaa, 0.9);
+        this.barrierIconFg.fillCircle(iconX, iconY, iconRadius - 2);
+        this.barrierIconBg.lineStyle(3, 0x00FFaa, 1);
+        this.barrierIconBg.strokeCircle(iconX, iconY, iconRadius);
+      } else if (this.barrierCooldown <= 0) {
+        this.barrierIconFg.clear();
+        this.barrierIconFg.fillStyle(0x00FFaa, 1);
+        this.barrierIconFg.fillCircle(iconX, iconY, iconRadius - 2);
+      } else {
+        const cdPct = 1 - (this.barrierCooldown / 2000);
+        this.barrierIconFg.clear();
+        this.barrierIconFg.fillStyle(0x00FFaa, 0.4);
+        this.barrierIconFg.beginPath();
+        this.barrierIconFg.moveTo(iconX, iconY);
+        this.barrierIconFg.arc(iconX, iconY, iconRadius - 2, Phaser.Math.DegToRad(-90), Phaser.Math.DegToRad(-90 + 360 * cdPct), false);
+        this.barrierIconFg.closePath();
+        this.barrierIconFg.fillPath();
+      }
+    }
+
+    // Top Target Enemy HP Bar
+    if (this.bossHPBar) this.bossHPBar.clear();
+    if (this.targetEnemy && this.targetEnemy.active && this.targetEnemy.hp > 0 && this.targetEnemyTimer > 0) {
+      const maxHp = this.targetEnemy.maxHp || (this.currentStage > 1 ? 4 : 1);
+      const curHp = Math.max(0, this.targetEnemy.hp);
+      const bpct = Math.min(1, curHp / maxHp);
+
+      if (this.bossHPBar) {
+        this.bossHPBar.fillStyle(0x1F2933, 1);
+        this.bossHPBar.fillRect(560, 40, 800, 16);
+        this.bossHPBar.fillStyle(0xFF2E2E, 1);
+        this.bossHPBar.fillRect(562, 42, 796 * bpct, 12);
+        this.bossHPBar.lineStyle(1, 0xFF2E2E, 0.8);
+        this.bossHPBar.strokeRect(560, 40, 800, 16);
+      }
+      if (this.bossHPText) {
+        this.bossHPText.setVisible(true);
+        this.bossHPText.setText(`ENEMY HP: ${Math.ceil(curHp)} / ${maxHp}`);
+      }
     } else {
-      const cdPct = 1 - (this.barrierCooldown / 2000);
-      this.barrierIconFg.clear();
-      this.barrierIconFg.fillStyle(0x00FFaa, 0.4);
-      this.barrierIconFg.beginPath();
-      this.barrierIconFg.moveTo(iconX, iconY);
-      this.barrierIconFg.arc(iconX, iconY, iconRadius - 2, Phaser.Math.DegToRad(-90), Phaser.Math.DegToRad(-90 + 360 * cdPct), false);
-      this.barrierIconFg.closePath();
-      this.barrierIconFg.fillPath();
+      if (this.bossHPText) this.bossHPText.setVisible(false);
     }
   }
+
+  drawEnemyHPBars() {
+    if (!this.enemyHPBars) return;
+    this.enemyHPBars.clear();
+    if (!this.enemyGroup) return;
+
+    this.enemyGroup.getChildren().forEach(enemy => {
+      if (enemy && enemy.active && enemy.visible && enemy.hp > 0 && enemy.x > -50 && enemy.x < 1970) {
+        const maxHp = enemy.maxHp || (this.currentStage > 1 ? 4 : 1);
+        const curHp = Math.max(0, enemy.hp);
+        const pct = Math.min(1, curHp / maxHp);
+
+        const barW = 56;
+        const barH = 6;
+        const barX = enemy.x - barW / 2;
+        const barY = enemy.y - (enemy.displayHeight ? enemy.displayHeight / 2 : 28) - 12;
+
+        // Background
+        this.enemyHPBars.fillStyle(0x0a0a1a, 0.9);
+        this.enemyHPBars.fillRect(barX - 1, barY - 1, barW + 2, barH + 2);
+
+        // Border
+        this.enemyHPBars.lineStyle(1, 0xFF4B6E, 0.8);
+        this.enemyHPBars.strokeRect(barX - 1, barY - 1, barW + 2, barH + 2);
+
+        // Fill bar
+        const color = pct > 0.5 ? 0xFF2E2E : (pct > 0.25 ? 0xFFA500 : 0xFF0055);
+        this.enemyHPBars.fillStyle(color, 1);
+        this.enemyHPBars.fillRect(barX, barY, Math.max(1, barW * pct), barH);
+      }
+    });
+  }
+
   showDeviceDialogue(text, onComplete, highlightConfig) {
     this.dialogActive = true;
     this.updateHUD();
@@ -1203,18 +1313,23 @@ class GameScene extends Phaser.Scene {
     var charIndex = 0;
     var typeTimer = this.time.addEvent({
       delay: 40, callback: function () {
+        if (!bodyText || !bodyText.active || !this.dialogContainer) {
+          if (typeTimer) typeTimer.destroy();
+          return;
+        }
         charIndex++;
         bodyText.setText(text.substring(0, charIndex));
         if (text[charIndex - 1] !== ' ' && window.MOT && MOT.Audio) MOT.Audio.playBleep('博士');
         if (charIndex >= text.length) {
           typeTimer.destroy();
-          contText.setAlpha(1);
+          if (contText && contText.active) contText.setAlpha(1);
           // 点滅（アルファTween）は無効化
         }
       }, callbackScope: this, loop: true
     });
 
     const advance = () => {
+      if (typeTimer) typeTimer.destroy();
       this.dialogActive = false;
       this.input.off('pointerdown', handleInput);
       if (touchZone && touchZone.active) {
@@ -1264,6 +1379,7 @@ class GameScene extends Phaser.Scene {
     const enemy = this.enemyGroup.create(1920, laneYs[laneIndex], 'enemy_basic');
     enemy.setVelocityX(-speed);
     enemy.hp = this.currentStage >= 3 ? 2 : 1;
+    enemy.maxHp = enemy.hp;
     enemy.fireTimer = this.time.addEvent({
       delay: Phaser.Math.Between(1500, 2500),
       callback: () => {

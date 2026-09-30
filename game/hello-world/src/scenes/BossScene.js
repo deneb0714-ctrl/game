@@ -382,6 +382,7 @@ class BossScene extends Phaser.Scene {
     boss.hp = this.bossHP;
     boss.maxHp = this.bossMaxHP;
     boss.configKey = key;
+    boss.name = cfg.name;
     boss.setVisible(false);
     boss.body.enable = false;
     if (key === 'boss3_twins') {
@@ -7380,16 +7381,17 @@ class BossScene extends Phaser.Scene {
   }
 
   createHUD() {
-    this.hpText = this.add.text(30, 20, '', { fontFamily: '"Press Start 2P"', fontSize: '24px', color: '#FF4B6E' }).setDepth(100);
-    this.energyText = this.add.text(30, 50, '', { fontFamily: '"Press Start 2P"', fontSize: '18px', color: '#4FD1FF' }).setDepth(100);
+    this.hpText = this.add.text(30, 20, '', { fontFamily: '"Press Start 2P", "DotGothic16", monospace, sans-serif', fontSize: '20px', color: '#FF4B6E' }).setDepth(100);
+    this.energyText = this.add.text(30, 50, '', { fontFamily: '"Press Start 2P", "DotGothic16", monospace, sans-serif', fontSize: '16px', color: '#4FD1FF' }).setDepth(100);
     this.energyBar = this.add.graphics().setDepth(100);
     this.barrierIconBg = this.add.graphics().setDepth(100);
     this.barrierIconFg = this.add.graphics().setDepth(100);
-    this.bossHPText = this.add.text(960, 20, '', { fontFamily: '"Press Start 2P"', fontSize: '14px', color: '#FF2E2E' }).setOrigin(0.5, 0).setDepth(100);
-    this.sisterHPText = this.add.text(960, 65, '', { fontFamily: '"Press Start 2P"', fontSize: '14px', color: '#FF4B6E' }).setOrigin(0.5, 0).setDepth(100).setVisible(false);
+    this.bossHPText = this.add.text(960, 20, '', { fontFamily: '"Press Start 2P", "DotGothic16", monospace, sans-serif', fontSize: '14px', color: '#FF2E2E' }).setOrigin(0.5, 0).setDepth(100);
+    this.sisterHPText = this.add.text(960, 65, '', { fontFamily: '"Press Start 2P", "DotGothic16", monospace, sans-serif', fontSize: '14px', color: '#FF4B6E' }).setOrigin(0.5, 0).setDepth(100).setVisible(false);
     this.bossHPBar = this.add.graphics().setDepth(100);
 
-    this.areaNameText = this.add.text(1920 - 30, 20, '', { fontFamily: '"DotGothic16"', fontSize: '32px', color: '#FFFFFF', backgroundColor: 'rgba(0,0,0,0.5)', padding: { x: 10, y: 5 } }).setOrigin(1, 0).setDepth(100);
+    this.areaNameText = this.add.text(1920 - 30, 20, '', { fontFamily: '"DotGothic16", monospace, sans-serif', fontSize: '32px', color: '#FFFFFF', backgroundColor: 'rgba(0,0,0,0.5)', padding: { x: 10, y: 5 } }).setOrigin(1, 0).setDepth(100);
+    this.updateHUD();
   }
 
   triggerAllyAssist() {
@@ -7480,7 +7482,7 @@ class BossScene extends Phaser.Scene {
 
     var hearts = '';
     for (var i = 0; i < MOT.flags.playerMaxHP; i++) hearts += i < MOT.flags.playerHP ? '♥ ' : '♡ ';
-    this.hpText.setText(hearts);
+    this.hpText.setText(`HP: ${MOT.flags.playerHP}/${MOT.flags.playerMaxHP}  ${hearts}`);
 
     var pct = MOT.flags.energy / MOT.flags.maxEnergyThreshold;
     
@@ -7578,7 +7580,7 @@ class BossScene extends Phaser.Scene {
       if (key === 'boss3_twins') {
         // 双子はHPバー2本
         if (this.bossHPText && this.bossHPText.scene) {
-          this.bossHPText.setText(cfg.name);
+          this.bossHPText.setText(`${cfg.name} HP: ${Math.max(0, this.currentBoss ? this.currentBoss.hp : 0)} / ${cfg.hp}`);
           this.bossHPText.setVisible(true);
         }
         var bpct1 = (this.currentBoss && this.currentBoss.active && this.currentBoss.hp > 0) ? this.currentBoss.hp / cfg.hp : 0;
@@ -7591,9 +7593,9 @@ class BossScene extends Phaser.Scene {
         }
         
         if (!this.sisterHPText || !this.sisterHPText.scene) {
-          this.sisterHPText = this.add.text(960, 65, '', { fontFamily: '"Press Start 2P"', fontSize: '14px', color: '#FF4B6E' }).setOrigin(0.5, 0).setDepth(100);
+          this.sisterHPText = this.add.text(960, 65, '', { fontFamily: '"Press Start 2P", "DotGothic16", monospace, sans-serif', fontSize: '14px', color: '#FF4B6E' }).setOrigin(0.5, 0).setDepth(100);
         }
-        this.sisterHPText.setText(cfg.name2);
+        this.sisterHPText.setText(`${cfg.name2} HP: ${Math.max(0, this.sisterBoss ? this.sisterBoss.hp : 0)} / ${cfg.hp2}`);
         this.sisterHPText.setVisible(true);
         var bpct2 = (this.sisterBoss && this.sisterBoss.active && this.sisterBoss.hp > 0) ? this.sisterBoss.hp / cfg.hp2 : 0;
         if (this.bossHPBar) {
@@ -7606,7 +7608,7 @@ class BossScene extends Phaser.Scene {
       } else {
         if (this.sisterHPText && this.sisterHPText.scene) this.sisterHPText.setVisible(false);
         if (this.bossHPText && this.bossHPText.scene) {
-          this.bossHPText.setText(cfg.name);
+          this.bossHPText.setText(`${cfg.name} HP: ${Math.max(0, this.bossHP)} / ${this.bossMaxHP}`);
           this.bossHPText.setVisible(true);
         }
         var bpct = Math.max(0, this.bossHP) / this.bossMaxHP;
