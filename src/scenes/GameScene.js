@@ -235,7 +235,7 @@ class GameScene extends Phaser.Scene {
       let text = '';
       if (this.currentStage === 2) {
         text = this.fromTutorialSkip
-          ? '「着いたようだな。そこは、黄昏の荒野だ。魔王城までまだ距離があるからそこまで敵は強くないが気は抜くなよ。」'
+          ? '「ここは、黄昏の荒野だ。魔王城までまだ距離があるからそこまで敵は強くないが気は抜くなよ。」'
           : '「次のエリアに着いたか。そこは、黄昏の荒野だ。魔王城までまだ距離があるからそこまで敵は強くないが気は抜くなよ。」';
       } else if (this.currentStage === 3) {
         text = '「次のエリアに着いたか。そこは、宵闇の森だ。」';

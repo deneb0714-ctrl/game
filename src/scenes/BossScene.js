@@ -3324,7 +3324,10 @@ class BossScene extends Phaser.Scene {
         MOT.saveGame(4);
       }
       MOT.flags.playerHP = MOT.flags.playerMaxHP || 5;
-      this.updateHUD();
+      
+      // 勇者の戦闘ドットおよび戦闘フィールド・UIを完全に復帰
+      this.restoreCombatField();
+
       this.heroAttackSpeedBoost = false;
       this.heroFirepowerBoost = false;
       this.inunekoBoostActive = false;
@@ -3385,6 +3388,12 @@ class BossScene extends Phaser.Scene {
       this.cutsceneActive = false;
       this.dialogActive = false;
       this.playerInvincible = false;
+      this.combatActive = true;
+      if (this.player) {
+        this.player.setVisible(true);
+        this.player.setActive(true);
+        this.player.setAlpha(1);
+      }
       this.physics.resume();
       this.startBossLaneMovement();
     })();
@@ -5191,11 +5200,14 @@ class BossScene extends Phaser.Scene {
                 }
 
                 // 主人公はその場所（戦闘定位置 x: 300）にスタンバイ（左からの歩き入場はなし）
+                this.restoreCombatField();
                 this.tweens.killTweensOf(this.player);
                 this.player.setPosition(300, 460);
                 if (this.player.body) this.player.body.reset(300, 460);
                 this.player.currentCol = 1;
                 this.player.currentLane = 1;
+                this.player.setVisible(true);
+                this.player.setActive(true);
                 this.player.setAlpha(1);
 
                 // 暗転明け
@@ -7356,6 +7368,71 @@ class BossScene extends Phaser.Scene {
     // バーチャルパッド
     const vpad = document.getElementById('virtual-gamepad');
     if (vpad) vpad.style.display = 'none';
+  }
+
+  restoreCombatField() {
+    this.combatFieldHidden = false;
+    this.combatActive = true;
+    if (this.physics && this.physics.resume) this.physics.resume();
+
+    // レーン線の復帰・再描画
+    if (this.laneGraphics) {
+      this.laneGraphics.setVisible(true);
+      this.laneGraphics.clear();
+      this.laneGraphics.lineStyle(2, 0x4FD1FF, 0.25);
+      const laneYs = [220, 460, 700];
+      laneYs.forEach(y => {
+        this.laneGraphics.lineBetween(0, y, 1920, y);
+      });
+    }
+
+    // プレイヤー本体および関連エフェクトの復帰
+    if (this.player) {
+      this.tweens.killTweensOf(this.player);
+      this.player.setVisible(true);
+      this.player.setActive(true);
+      this.player.setAlpha(1);
+      this.player.clearTint();
+      this.player.setPosition(300, 460);
+      if (this.player.body) {
+        this.player.body.enable = true;
+        this.player.body.reset(300, 460);
+        this.player.body.setSize(19, 80);
+        this.player.body.setOffset(40, 10);
+      }
+      this.player.currentCol = 1;
+      this.player.currentLane = 1;
+      this.player.setCollideWorldBounds(true);
+      if (this.anims.exists('hero_combat_anim')) {
+        this.player.play('hero_combat_anim');
+      }
+    }
+
+    // バリア関連の復帰
+    if (this.barrierHitbox) {
+      this.barrierHitbox.setPosition(300, 460);
+      if (this.barrierHitbox.body) this.barrierHitbox.body.reset(300, 460);
+    }
+
+    // 戦闘HUD UIの復帰
+    if (this.hpText) this.hpText.setVisible(true);
+    if (this.energyText) this.energyText.setVisible(true);
+    if (this.energyBar) this.energyBar.setVisible(true);
+    if (this.energyBarBgObj) { this.energyBarBgObj.setVisible(true); this.energyBarBgObj.setAlpha(1); }
+    if (this.energyBarFgObj) { this.energyBarFgObj.setVisible(true); this.energyBarFgObj.setAlpha(1); }
+    if (this.energyBarOutline) this.energyBarOutline.setVisible(true);
+    if (this.barrierIconBg) this.barrierIconBg.setVisible(true);
+    if (this.barrierIconFg) this.barrierIconFg.setVisible(true);
+    if (this.bossHPText) this.bossHPText.setVisible(true);
+    if (this.bossHPBar) this.bossHPBar.setVisible(true);
+    if (this.areaNameText) this.areaNameText.setVisible(true);
+
+    const vpad = document.getElementById('virtual-gamepad');
+    if (vpad && ('ontouchstart' in window || navigator.maxTouchPoints > 0)) {
+      vpad.style.display = 'block';
+    }
+
+    this.updateHUD();
   }
 
   hideStandingPortraits() {
