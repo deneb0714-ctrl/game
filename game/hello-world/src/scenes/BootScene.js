@@ -37,20 +37,21 @@ class BootScene extends Phaser.Scene {
       scanlines.fillRect(0, y, w, 2);
     }
 
-    const prefix = "mmƂ̃````bbggggOのログ: ";
+    const prefix = "mmƂ̃````bbggggO 「";
+    const suffix = "」";
     const lines = [
-      prefix + "...link established",
-      prefix + "...signal drift: 0.03",
+      prefix + "...link established" + suffix,
+      prefix + "...signal drift: 0.03" + suffix,
       "",
-      prefix + "こんにちは。『GGS 』よ。",
+      prefix + "こんにちは。『GGS 』よ。" + suffix,
       "",
-      prefix + "世界構造の誤差、観測値より逸脱。",
-      prefix + "あなたには、それを正すだけの力がある。",
+      prefix + "世界構造の誤差、観測値より逸脱。" + suffix,
+      prefix + "あなたには、それを正すだけの力がある。" + suffix,
       "",
-      prefix + "悪性因子、未除去。この世界を救う宿命を背負いなさい。",
+      prefix + "悪性因子、未除去。この世界を救う宿命を背負いなさい。" + suffix,
       "",
-      prefix + "...trace lost",
-      prefix + "...reconnecting..."
+      prefix + "...trace lost" + suffix,
+      prefix + "...reconnecting..." + suffix
     ];
     
     // 画面中央付近に配置するための計算

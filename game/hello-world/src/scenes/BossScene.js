@@ -3087,29 +3087,29 @@ class BossScene extends Phaser.Scene {
 
         // 4. GGS Terminal (Spaceキー / クリックで進行)
         this.cameras.main.fadeIn(300, 0, 0, 0);
-        const termPrefix = 'mmƂ̃````bbggggOのログ: ';
+        const termPrefix = 'mmƂ̃````bbggggO 「';
+        const termSuffix = '」';
         await this.terminalEffect([
-          termPrefix + '...link established',
-          termPrefix + '...signal stable: 1.00',
+          termPrefix + '...link established' + termSuffix,
+          termPrefix + '...signal stable: 1.00' + termSuffix,
           '',
-          termPrefix + 'こんにちは。『GGS』よ。',
+          termPrefix + 'こんにちは。『GGS』よ。' + termSuffix,
           '',
-          termPrefix + '悪性因子、消失を確認。',
+          termPrefix + '悪性因子、消失を確認。' + termSuffix,
           '',
-          termPrefix + '世界構造、再計測完了。観測値、許容範囲内。',
+          termPrefix + '世界構造、再計測完了。観測値、許容範囲内。' + termSuffix,
           '',
-          termPrefix + 'あなたは宿命を果たした。あなたの行動は祝福を授けるに値する。',
-          termPrefix + 'あなたの望みを叶えよう。',
-          termPrefix + '個体情報、更新。',
-          termPrefix + 'Designation："勇者" → "' + heroName + '"',
-          termPrefix + '登録情報、書き換え完了。',
-          termPrefix + 'あなたは、もう人造人間ではない。',
-          termPrefix + 'この世界に生きる、一人の人間──"' + heroName + '"として認証する。',
-          termPrefix + 'ただの人間”' + heroName + '”として、自由に生きなさい。',
+          termPrefix + 'あなたは宿命を果たした。あなたの行動は祝福を授けるに値する。' + termSuffix,
+          termPrefix + 'あなたの望みを叶えよう。' + termSuffix,
+          termPrefix + '個体情報、更新。' + termSuffix,
+          termPrefix + 'Designation：\"\u52c7者\" → \"' + heroName + '\"' + termSuffix,
+          termPrefix + '登録情報、書き換え完了。' + termSuffix,
+          termPrefix + 'あなたは、もう人造人間ではない。' + termSuffix,
+          termPrefix + 'この世界に生きる、一人の人間――\"' + heroName + '\"として認証する。' + termSuffix,
+          termPrefix + 'ただの人間“' + heroName + '”として、自由に生きなさい。' + termSuffix,
           '',
-          termPrefix + '...logging complete',
-          termPrefix + '...connection closed'
-        ], { noFlicker: true });
+          termPrefix + '...logging complete' + termSuffix,
+          termPrefix + '...connection closed' + termSuffix], { noFlicker: true });
 
         // 5. 暗転終了後。勇者以外背景も含め暗くして心臓の音を鳴らす（勇者の覚醒）
         const sayHeroAwakening = (speakerName, text) => new Promise(res => {
