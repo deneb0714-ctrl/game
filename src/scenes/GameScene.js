@@ -1155,28 +1155,9 @@ class GameScene extends Phaser.Scene {
       }
     }
 
-    // Top Target Enemy HP Bar
+    // Top Target Enemy HP Bar - 雑魚戦では画面上部HPバーは非表示
     if (this.bossHPBar) this.bossHPBar.clear();
-    if (this.targetEnemy && this.targetEnemy.active && this.targetEnemy.hp > 0 && this.targetEnemyTimer > 0) {
-      const maxHp = this.targetEnemy.maxHp || (this.currentStage > 1 ? 4 : 1);
-      const curHp = Math.max(0, this.targetEnemy.hp);
-      const bpct = Math.min(1, curHp / maxHp);
-
-      if (this.bossHPBar) {
-        this.bossHPBar.fillStyle(0x1F2933, 1);
-        this.bossHPBar.fillRect(560, 40, 800, 16);
-        this.bossHPBar.fillStyle(0xFF2E2E, 1);
-        this.bossHPBar.fillRect(562, 42, 796 * bpct, 12);
-        this.bossHPBar.lineStyle(1, 0xFF2E2E, 0.8);
-        this.bossHPBar.strokeRect(560, 40, 800, 16);
-      }
-      if (this.bossHPText) {
-        this.bossHPText.setVisible(true);
-        this.bossHPText.setText(`ENEMY HP: ${Math.ceil(curHp)} / ${maxHp}`);
-      }
-    } else {
-      if (this.bossHPText) this.bossHPText.setVisible(false);
-    }
+    if (this.bossHPText) this.bossHPText.setVisible(false);
   }
 
   drawEnemyHPBars() {

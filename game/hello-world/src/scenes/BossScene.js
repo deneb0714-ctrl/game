@@ -4847,7 +4847,7 @@ class BossScene extends Phaser.Scene {
       return;
     }
 
-    this.bossHP -= dmg;
+    this.bossHP = Math.round((this.bossHP - dmg) * 10) / 10;
     boss.hp = this.bossHP;
     boss.setTint(0xffffff);
     this.time.delayedCall(50, function () { if (boss.active) boss.clearTint(); });
@@ -7872,7 +7872,7 @@ class BossScene extends Phaser.Scene {
       if (key === 'boss3_twins') {
         // 双子はHPバー2本
         if (this.bossHPText && this.bossHPText.scene) {
-          this.bossHPText.setText(`${cfg.name} HP: ${Math.max(0, this.currentBoss ? this.currentBoss.hp : 0)} / ${cfg.hp}`);
+          this.bossHPText.setText(cfg.name);
           this.bossHPText.setVisible(true);
         }
         var bpct1 = (this.currentBoss && this.currentBoss.active && this.currentBoss.hp > 0) ? this.currentBoss.hp / cfg.hp : 0;
@@ -7887,7 +7887,7 @@ class BossScene extends Phaser.Scene {
         if (!this.sisterHPText || !this.sisterHPText.scene) {
           this.sisterHPText = this.add.text(960, 65, '', { fontFamily: '"Press Start 2P", "DotGothic16", monospace, sans-serif', fontSize: '14px', color: '#FF4B6E' }).setOrigin(0.5, 0).setDepth(100);
         }
-        this.sisterHPText.setText(`${cfg.name2} HP: ${Math.max(0, this.sisterBoss ? this.sisterBoss.hp : 0)} / ${cfg.hp2}`);
+        this.sisterHPText.setText(cfg.name2);
         this.sisterHPText.setVisible(true);
         var bpct2 = (this.sisterBoss && this.sisterBoss.active && this.sisterBoss.hp > 0) ? this.sisterBoss.hp / cfg.hp2 : 0;
         if (this.bossHPBar) {
@@ -7900,7 +7900,7 @@ class BossScene extends Phaser.Scene {
       } else {
         if (this.sisterHPText && this.sisterHPText.scene) this.sisterHPText.setVisible(false);
         if (this.bossHPText && this.bossHPText.scene) {
-          this.bossHPText.setText(`${cfg.name} HP: ${Math.max(0, this.bossHP)} / ${this.bossMaxHP}`);
+          this.bossHPText.setText(cfg.name);
           this.bossHPText.setVisible(true);
         }
         var bpct = Math.max(0, this.bossHP) / this.bossMaxHP;
