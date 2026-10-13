@@ -2197,7 +2197,7 @@ class BossScene extends Phaser.Scene {
       if (this.currentBoss.demonPatternIdx === undefined) {
         this.currentBoss.demonPatternIdx = 0;
       } else {
-        this.currentBoss.demonPatternIdx = (this.currentBoss.demonPatternIdx + 1) % 2;
+        this.currentBoss.demonPatternIdx = (this.currentBoss.demonPatternIdx + 1) % 3;
       }
       let pattern = this.currentBoss.demonPatternIdx;
       
@@ -2242,11 +2242,40 @@ class BossScene extends Phaser.Scene {
                       this.setVelocity(Math.cos(currentAngle)*400, Math.sin(currentAngle)*400);
                     };
                   } else if (splitType === 2) {
-                    // 透明化
+                    // 虚空潜行（途中で消え、勇者に当たる約1秒前に魔力閃光とともに姿を現す弾）
+                    b.speed = 400;
+                    b.phase = 'spawning';
+                    b.isStealth = false;
                     b.updateBehavior = function(t, d) {
                       let elapsed = t - this.spawnTime;
-                      if (elapsed > 300) {
-                        this.alpha = Math.max(0.1, Math.abs(Math.cos(elapsed * 0.008)));
+                      if (this.phase === 'spawning') {
+                        if (elapsed >= 250) {
+                          this.phase = 'vanished';
+                          this.isStealth = true;
+                          this.alpha = 0;
+                          if (this.body) this.body.checkCollision.none = true;
+                          let vr = self.add.circle(this.x, this.y, 14).setStrokeStyle(2, 0xd000ff, 0.8).setDepth(15);
+                          self.tweens.add({ targets: vr, scale: 0.1, alpha: 0, duration: 150, onComplete: () => vr.destroy() });
+                        }
+                      } else if (this.phase === 'vanished') {
+                        if (self.player && self.player.active) {
+                          let curVx = this.body ? this.body.velocity.x : -400;
+                          let timeToX = (curVx < -30 && this.x > self.player.x) ? (this.x - self.player.x) / Math.abs(curVx) : 999;
+                          let dist = Phaser.Math.Distance.Between(this.x, this.y, self.player.x, self.player.y);
+                          let timeToDist = dist / 400;
+
+                          if (timeToX <= 1.0 || timeToDist <= 1.05) {
+                            this.phase = 'reappeared';
+                            this.isStealth = false;
+                            this.alpha = 1;
+                            if (this.body) this.body.checkCollision.none = false;
+                            let ar = self.add.circle(this.x, this.y, 22).setStrokeStyle(3, 0xff00ff, 1).setDepth(15);
+                            self.tweens.add({ targets: ar, scale: 1.8, alpha: 0, duration: 250, onComplete: () => ar.destroy() });
+                            this.setScale(2.2);
+                            self.tweens.add({ targets: this, scale: 1.5, duration: 150, ease: 'Back.easeOut' });
+                            if (MOT.Audio && MOT.Audio.playTone) MOT.Audio.playTone(1150, 'sine', 0.08, 0.04);
+                          }
+                        }
                       }
                     };
                   }
@@ -2255,7 +2284,7 @@ class BossScene extends Phaser.Scene {
             }
           };
         }
-      } else {
+      } else if (pattern === 1) {
         // パターンB: 螺旋弾幕
         let spiralCount = 30;
         let delayPerShot = 80;
@@ -2271,6 +2300,9 @@ class BossScene extends Phaser.Scene {
              if (i % 3 === 0) MOT.Audio.playShot();
           });
         }
+      } else {
+        // パターンC: 虚空消失弾幕（発射途中で消滅し、勇者に当たる約1秒前に現れる秘奥弾幕！）
+        this.fireDemonPhantomBarrage(x, y);
       }
       return;
     }
@@ -2290,6 +2322,188 @@ class BossScene extends Phaser.Scene {
         }, [], this);
       }
     }
+  }
+
+  // 魔王の虚空潜行弾（発射途中に消え、勇者に当たる約1秒前に再出現する秘奥弾）
+  fireDemonPhantomBullet(bx, by, vx, vy, options = {}) {
+    if (!this.enemyBullets || this.dialogActive) return null;
+    
+    const texture = options.texture || 'bullet_diamond';
+    const color = options.color || 0xd500f9; // 妖しい魔王パープル
+    const scale = options.scale || 1.6;
+    const vanishDelay = options.vanishDelay || 400; // 発射後消えるまでのミリ秒 (約0.4秒)
+    const reappearLeadTime = options.reappearLeadTime || 1.0; // 勇者に当たる約1秒前に現れる
+
+    const bullet = this.enemyBullets.create(bx, by, texture);
+    if (!bullet) return null;
+
+    bullet.setVelocity(vx, vy);
+    bullet.setScale(scale);
+    bullet.setTint(color);
+    bullet.setDepth(14);
+    
+    if (this.demonLordAttackBoostActive) {
+      bullet.damage = 2;
+      bullet.setTint(0xFF0033);
+      bullet.setScale(scale * 1.2);
+    } else {
+      bullet.damage = 1;
+    }
+
+    const speed = Math.sqrt(vx * vx + vy * vy) || 380;
+    bullet.speed = speed;
+    bullet.spawnTime = this.time.now;
+    bullet.phase = 'spawning'; // spawning -> vanished -> reappeared
+    bullet.isStealth = false;
+
+    const scene = this;
+
+    bullet.updateBehavior = function(now, delta) {
+      if (!this.active) return;
+
+      // 弾の回転演出
+      this.rotation += 0.05;
+
+      const elapsed = now - this.spawnTime;
+
+      // フェーズ1: 発射直後 -> 一定時間で虚空へ消失
+      if (this.phase === 'spawning') {
+        if (elapsed >= vanishDelay) {
+          this.phase = 'vanished';
+          this.isStealth = true;
+          this.alpha = 0;
+          if (this.body) this.body.checkCollision.none = true;
+
+          // 消失時の虚空歪みエフェクト
+          const vanishRing = scene.add.circle(this.x, this.y, 16)
+            .setStrokeStyle(2, 0xba68c8, 0.8)
+            .setDepth(15);
+          scene.tweens.add({
+            targets: vanishRing,
+            scale: 0.1,
+            alpha: 0,
+            duration: 180,
+            ease: 'Quad.easeIn',
+            onComplete: () => vanishRing.destroy()
+          });
+        }
+      }
+      // フェーズ2: 消失中 -> 勇者に当たる約1秒前で再出現
+      else if (this.phase === 'vanished') {
+        if (scene.player && scene.player.active) {
+          // 水平方向（X軸）での勇者到達予測残り時間
+          const curVx = this.body ? this.body.velocity.x : vx;
+          let timeToPlayerX = 999;
+          if (curVx < -30 && this.x > scene.player.x) {
+            timeToPlayerX = (this.x - scene.player.x) / Math.abs(curVx);
+          }
+
+          // 直線距離での到達予測残り時間
+          const dist = Phaser.Math.Distance.Between(this.x, this.y, scene.player.x, scene.player.y);
+          const timeToPlayerDist = dist / speed;
+
+          // 「勇者に当たる一秒くらい前（約1.0秒前）」に達したら再出現！
+          if (timeToPlayerX <= reappearLeadTime || timeToPlayerDist <= (reappearLeadTime * 1.05)) {
+            this.phase = 'reappeared';
+            this.isStealth = false;
+            this.alpha = 1;
+            if (this.body) this.body.checkCollision.none = false;
+
+            // 再出現エフェクト（紫の魔法陣リング＆ポップ拡大演出）
+            const appearRing = scene.add.circle(this.x, this.y, 22)
+              .setStrokeStyle(3, 0xff00ff, 1)
+              .setDepth(15);
+            scene.tweens.add({
+              targets: appearRing,
+              scale: 1.8,
+              alpha: 0,
+              duration: 280,
+              ease: 'Quad.easeOut',
+              onComplete: () => appearRing.destroy()
+            });
+
+            // 弾自体のポップ出現アニメーション
+            const targetScale = (scene.demonLordAttackBoostActive ? scale * 1.2 : scale);
+            this.setScale(targetScale * 1.6);
+            scene.tweens.add({
+              targets: this,
+              scale: targetScale,
+              duration: 160,
+              ease: 'Back.easeOut'
+            });
+
+            // 再出現音（鋭く妖しい魔力実体化音）
+            if (MOT.Audio && MOT.Audio.playTone) {
+              MOT.Audio.playTone(1150, 'sine', 0.08, 0.04);
+            }
+          }
+        }
+      }
+    };
+
+    return bullet;
+  }
+
+  // 魔王の虚空消失弾幕（発射途中に消えて、勇者に当たる約1秒前に現れる秘奥弾幕）
+  fireDemonPhantomBarrage(bx, by) {
+    if (!this.currentBoss || !this.currentBoss.active || !this.player || !this.player.active || this.dialogActive) return;
+
+    // 発射前のダークチャージ演出
+    const chargeRing = this.add.circle(bx, by, 25)
+      .setStrokeStyle(3, 0xba68c8, 0.9)
+      .setDepth(15);
+    this.tweens.add({
+      targets: chargeRing,
+      radius: 70,
+      alpha: 0,
+      duration: 300,
+      ease: 'Cubic.easeOut',
+      onComplete: () => chargeRing.destroy()
+    });
+
+    if (MOT.Audio && MOT.Audio.playShot) MOT.Audio.playShot();
+
+    // プレイヤーの方向
+    const targetAngle = Phaser.Math.Angle.Between(bx, by, this.player.x, this.player.y);
+    const speed = 380; // 勇者までの到達時間約3秒のうち、1秒前（約380px手前）で出現
+
+    // 第1波: 扇状5WAY（HP半分以下なら7WAY）の虚空弾
+    const count1 = (this.bossHP <= this.bossMaxHP * 0.5) ? 7 : 5;
+    const spread1 = (count1 === 7) ? 0.55 : 0.45;
+    const step1 = spread1 * 2 / (count1 - 1);
+
+    for (let i = 0; i < count1; i++) {
+      const angle = targetAngle - spread1 + step1 * i;
+      const vx = Math.cos(angle) * speed;
+      const vy = Math.sin(angle) * speed;
+      this.fireDemonPhantomBullet(bx, by, vx, vy, {
+        texture: 'bullet_diamond',
+        color: 0xd500f9,
+        scale: 1.6,
+        vanishDelay: 420,
+        reappearLeadTime: 1.0 // 勇者に当たる約1秒前に現れる
+      });
+    }
+
+    // 第2波: 時間差（280ms後）でプレイヤーを狙う追加の虚空弾（3WAY）
+    this.time.delayedCall(280, () => {
+      if (!this.currentBoss || !this.currentBoss.active || !this.player || !this.player.active || this.dialogActive) return;
+      if (MOT.Audio && MOT.Audio.playShot) MOT.Audio.playShot();
+
+      const curAngle = Phaser.Math.Angle.Between(this.currentBoss.x, this.currentBoss.y, this.player.x, this.player.y);
+      const angles = [curAngle - 0.18, curAngle, curAngle + 0.18];
+      angles.forEach(a => {
+        const vx = Math.cos(a) * (speed + 20);
+        const vy = Math.sin(a) * (speed + 20);
+        this.fireDemonPhantomBullet(this.currentBoss.x, this.currentBoss.y, vx, vy, {
+          texture: 'bullet_star',
+          color: 0xaa00ff,
+          scale: 1.5,
+          vanishDelay: 380,
+          reappearLeadTime: 1.0
+        });
+      });
+    });
   }
 
   // 魔王の追尾弾（HP50%以下で10秒に一回発射：星型＆スピードUP）
@@ -2654,6 +2868,7 @@ class BossScene extends Phaser.Scene {
 
   onPlayerHit(player, obj) {
     if (this.dialogActive) return;
+    if (obj && obj.isStealth) return; // ステルス中（不可視状態）は当たり判定無効
     if ((this.playerInvincible || (player && (player.isInvincible || player.isInvulnerable))) && !this.barrierBreakInvincible) return;
 
     if (this.barrierActive || this.barrierBreakInvincible) {
